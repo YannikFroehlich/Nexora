@@ -1,0 +1,17 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% trans "About" %}
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/about.css' %}">
+{% endblock %}
+
+{% block content %}
+    <section class="main">
+        <h1>{% translate 'About' %}</h1>
+    </section>
+{% endblock %}
