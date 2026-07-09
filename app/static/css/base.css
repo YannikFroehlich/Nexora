@@ -39,6 +39,14 @@
     transform: translateY(0) scale(0.98);
 }
 
+.action-button {
+    background: cornflowerblue;
+}
+
+.action-button:hover {
+    background: #547ec6;
+}
+
 .footer-glass-design {
     border-radius: 25px 25px 0 0;
 
@@ -66,7 +74,7 @@ body {
     display: flex;
     flex-direction: column;
 
-    background-image: url("../imgs/background2.jpg");
+    background-image: url("../imgs/background/background2.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

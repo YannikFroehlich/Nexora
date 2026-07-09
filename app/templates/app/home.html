@@ -12,6 +12,29 @@
 
 {% block content %}
     <section class="main">
-        <h1>{% translate 'Welcome' %}</h1>
+        <div class="hero-text">
+            <h1>{% translate 'Welcome to Nexora' %}</h1>
+            <p>
+                {% translate 'Create browser-based stream overlays for Spotify, win challenges, counters, and more — all customizable to match your stream’s style' %}
+            </p>
+        </div>
+        <div class="cards">
+            <div class="card">
+                <div class="card-image">
+                    <img src="{% static 'imgs/icons/spotify.webp' %}" alt="Spotify">
+                </div>
+                <h2>{% translate 'Spotify Overlay' %}</h2>
+                <p>{% translate 'Create an overlay to show your currently played spotify song' %}</p>
+                <a href="#" class="glass-design action-button">{% translate 'Create Spotify overlay' %}</a>
+            </div>
+            <div class="card">
+                <div class="card-image">
+                    <img src="{% static 'imgs/icons/winchallenge.png' %}" alt="Winchallenge">
+                </div>
+                <h2>{% translate 'Win Challenges' %}</h2>
+                <p>{% translate 'Create an overlay to show your Winchallenge' %}</p>
+                <a href="#" class="glass-design action-button">{% translate 'Create Winchallenge' %}</a>
+            </div>
+        </div>
     </section>
 {% endblock %}

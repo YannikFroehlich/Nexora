@@ -6,4 +6,58 @@
     justify-content: center;
     align-items: center;
     text-align: center;
+    margin: 0 100px 0 100px;
+}
+
+.hero-text {
+    margin: 0 auto;
+    max-width: 600px;
+}
+
+.hero-text h1 {
+    font-size: 4rem;
+}
+
+.hero-text p {
+    font-size: 1.5rem;
+    color: var(--color-text-muted);
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 50px;
+    margin-top: 50px;
+}
+
+.cards .card {
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: var(--color-box-bg);
+    border: 1px solid var(--color-box-border);
+}
+
+.cards .card .card-image {
+    background-color: var(--color-box-bg);
+    margin: 0 auto;
+    padding: 20px;
+    width: 100px;
+    height: 100px;
+
+    border-radius: 25px;
+    border: 1px solid var(--color-box-border);
+}
+
+.cards .card .card-image img {
+    width: 100px;
+    height: 100px;
+}
+
+.cards .card p {
+    color: var(--color-text-muted);
+}
+
+.cards .card a {
+    margin-top: 25px;
 }
