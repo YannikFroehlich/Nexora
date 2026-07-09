@@ -66,7 +66,7 @@ body {
     display: flex;
     flex-direction: column;
 
-    background-image: url("../imgs/background1.jpg");
+    background-image: url("../imgs/background2.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -162,8 +162,10 @@ header .right {
 .theme-toggle {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    min-width: 92px;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
     border: 1px solid var(--color-glass-border);
     font-family: inherit;
     cursor: pointer;
@@ -195,31 +197,27 @@ header .right {
 
 .theme-light .theme-toggle__indicator::before {
     inset: 1px;
-    background: var(--color-button-bg);
+    background: #ffffff;
     mask-image: radial-gradient(circle at 68% 35%, transparent 0 7px, #000 7.5px);
     -webkit-mask-image: radial-gradient(circle at 68% 35%, transparent 0 7px, #000 7.5px);
 }
 
 .theme-dark .theme-toggle__indicator::before {
     inset: 5px;
-    background: var(--color-button-bg);
+    background: #fbbf24;
     box-shadow:
-        0 -8px 0 -3px var(--color-button-bg),
-        0 8px 0 -3px var(--color-button-bg),
-        8px 0 0 -3px var(--color-button-bg),
-        -8px 0 0 -3px var(--color-button-bg),
-        6px 6px 0 -3px var(--color-button-bg),
-        -6px 6px 0 -3px var(--color-button-bg),
-        6px -6px 0 -3px var(--color-button-bg),
-        -6px -6px 0 -3px var(--color-button-bg);
+        0 -8px 0 -3px #fbbf24,
+        0 8px 0 -3px #fbbf24,
+        8px 0 0 -3px #fbbf24,
+        -8px 0 0 -3px #fbbf24,
+        6px 6px 0 -3px #fbbf24,
+        -6px 6px 0 -3px #fbbf24,
+        6px -6px 0 -3px #fbbf24,
+        -6px -6px 0 -3px #fbbf24;
 }
 
 .theme-dark .theme-toggle__indicator::after {
     opacity: 0;
-}
-
-.theme-toggle__text {
-    line-height: 1;
 }
 
 /* ==============================

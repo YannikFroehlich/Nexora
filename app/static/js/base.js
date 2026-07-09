@@ -7,8 +7,6 @@
         return;
     }
 
-    const toggleText = toggleButton.querySelector(".theme-toggle__text");
-
     const readSavedTheme = () => {
         try {
             return localStorage.getItem(storageKey);
@@ -33,12 +31,6 @@
         body.dataset.theme = theme;
 
         toggleButton.setAttribute("aria-pressed", String(isDark));
-
-        if (toggleText) {
-            toggleText.textContent = isDark
-                ? toggleButton.dataset.lightLabel
-                : toggleButton.dataset.darkLabel;
-        }
     };
 
     const currentTheme = () => body.classList.contains("theme-dark") ? "dark" : "light";
