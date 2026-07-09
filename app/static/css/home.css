@@ -32,10 +32,6 @@
 
 .cards .card {
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    background-color: var(--color-box-bg);
-    border: 1px solid var(--color-box-border);
 }
 
 .cards .card .card-image {
@@ -47,6 +43,7 @@
 
     border-radius: 25px;
     border: 1px solid var(--color-box-border);
+    box-shadow: 0 10px 30px var(--color-glass-shadow);
 }
 
 .cards .card .card-image img {

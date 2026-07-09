@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-09 11:50+0200\n"
+"POT-Creation-Date: 2026-07-09 15:59+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,24 +21,52 @@ msgstr ""
 #: .\app\templates\app\about.html:6 .\app\templates\app\about.html:15
 #: .\app\templates\app\base.html:27
 msgid "About"
-msgstr ""
+msgstr "Über"
 
 #: .\app\templates\app\base.html:24 .\app\templates\app\home.html:6
 msgid "Home"
-msgstr ""
+msgstr "Start"
 
-#: .\app\templates\app\base.html:36
+#: .\app\templates\app\base.html:41
+msgid "Language"
+msgstr "Sprache"
+
+#: .\app\templates\app\base.html:57
 msgid "Switch theme"
-msgstr ""
+msgstr "Theme wechseln"
 
-#: .\app\templates\app\base.html:38
-msgid "Light"
-msgstr ""
+#: .\app\templates\app\home.html:16
+msgid "Welcome to Nexora"
+msgstr "Willkommen bei Nexora"
 
-#: .\app\templates\app\base.html:39 .\app\templates\app\base.html:42
-msgid "Dark"
+#: .\app\templates\app\home.html:18
+msgid ""
+"Create browser-based stream overlays for Spotify, win challenges, counters, "
+"and more — all customizable to match your stream’s style"
 msgstr ""
+"Erstelle browserbasierte Stream-Overlays für Spotify, gewinne Herausforderungen, Zähler, "
+"und vieles mehr – alles individuell anpassbar, damit es zum Stil deines Streams passt"
 
-#: .\app\templates\app\home.html:15
-msgid "Welcome"
-msgstr ""
+#: .\app\templates\app\home.html:26
+msgid "Spotify Overlay"
+msgstr "Spotify Overlay"
+
+#: .\app\templates\app\home.html:27
+msgid "Create an overlay to show your currently played spotify song"
+msgstr "Erstelle ein Overlay, um den aktuell auf Spotify abgespielten Titel anzuzeigen"
+
+#: .\app\templates\app\home.html:28
+msgid "Create Spotify overlay"
+msgstr "Spotify-Overlay erstellen"
+
+#: .\app\templates\app\home.html:34
+msgid "Win Challenges"
+msgstr "Win Challenges"
+
+#: .\app\templates\app\home.html:35
+msgid "Create an overlay to show your Winchallenge"
+msgstr "Erstelle ein Overlay, um deine Winchallenge anzuzeigen"
+
+#: .\app\templates\app\home.html:36
+msgid "Create Winchallenge"
+msgstr "Winchallenge erstellen"

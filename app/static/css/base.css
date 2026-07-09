@@ -27,14 +27,14 @@
     will-change: transform;
 }
 
-.glass-design:hover {
+.glass-design:not(.card):not(.action-button):hover {
     background: var(--color-glass-bg-strong);
     border-color: var(--color-focus-ring);
     box-shadow: 0 10px 28px var(--color-glass-shadow);
     transform: translateY(-2px);
 }
 
-.glass-design:active {
+.glass-design:not(.card):not(.action-button):active {
     box-shadow: 0 4px 14px var(--color-glass-shadow);
     transform: translateY(0) scale(0.98);
 }
@@ -45,6 +45,10 @@
 
 .action-button:hover {
     background: #547ec6;
+}
+
+.action-button:active {
+    background: #496fae;
 }
 
 .footer-glass-design {
@@ -332,6 +336,7 @@ footer {
     padding: 25px 30px;
     background-color: var(--color-footer-bg);
     color: var(--color-footer-text);
+    margin-top: 50px;
 }
 
 footer .footer-left {

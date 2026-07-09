@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-09 11:50+0200\n"
+"POT-Creation-Date: 2026-07-09 15:59+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,18 +27,53 @@ msgstr "Über"
 msgid "Home"
 msgstr "Start"
 
-#: .\app\templates\app\base.html:36
+#: .\app\templates\app\base.html:41
+msgid "Language"
+msgstr ""
+
+#: .\app\templates\app\base.html:57
 msgid "Switch theme"
 msgstr "Theme wechseln"
 
-#: .\app\templates\app\base.html:38
-msgid "Light"
-msgstr "Hell"
+#: .\app\templates\app\home.html:16
+msgid "Welcome to Nexora"
+msgstr ""
 
-#: .\app\templates\app\base.html:39 .\app\templates\app\base.html:42
-msgid "Dark"
-msgstr "Dunkel"
+#: .\app\templates\app\home.html:18
+msgid ""
+"Create browser-based stream overlays for Spotify, win challenges, counters, "
+"and more — all customizable to match your stream’s style"
+msgstr ""
 
-#: .\app\templates\app\home.html:15
-msgid "Welcome"
-msgstr "Willkommen"
+#: .\app\templates\app\home.html:26
+msgid "Spotify Overlay"
+msgstr ""
+
+#: .\app\templates\app\home.html:27
+msgid "Create an overlay to show your currently played spotify song"
+msgstr ""
+
+#: .\app\templates\app\home.html:28
+msgid "Create Spotify overlay"
+msgstr ""
+
+#: .\app\templates\app\home.html:34
+msgid "Win Challenges"
+msgstr ""
+
+#: .\app\templates\app\home.html:35
+msgid "Create an overlay to show your Winchallenge"
+msgstr ""
+
+#: .\app\templates\app\home.html:36
+msgid "Create Winchallenge"
+msgstr ""
+
+#~ msgid "Light"
+#~ msgstr "Hell"
+
+#~ msgid "Dark"
+#~ msgstr "Dunkel"
+
+#~ msgid "Welcome"
+#~ msgstr "Willkommen"
