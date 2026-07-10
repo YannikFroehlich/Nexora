@@ -17,13 +17,13 @@
 <body class="theme-light">
     <header>
         {% block header %}
-            <a href="{% url 'home' %}" class="title glass-design">Nexora</a>
+            <a href="{% url 'home' %}" class="title btn glass-design">Nexora</a>
 
             <nav>
-                <a class="glass-design" href="{% url 'home' %}">
+                <a class="btn glass-design" href="{% url 'home' %}">
                     {% trans "Home" %}
                 </a>
-                <a class="glass-design" href="{% url 'about' %}">
+                <a class="btn glass-design" href="{% url 'about' %}">
                     {% trans "About" %}
                 </a>
             </nav>
@@ -31,7 +31,7 @@
             <div class="right">
                 {% get_current_language as CURRENT_LANGUAGE %}
 
-                <form class="language-switcher glass-design" action="{% url 'set_language' %}" method="post">
+                <form class="language-switcher btn glass-design" action="{% url 'set_language' %}" method="post">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
                     <select
@@ -53,7 +53,7 @@
                 <button
                     type="button"
                     id="theme-toggle"
-                    class="theme-toggle glass-design"
+                    class="theme-toggle btn glass-design"
                     aria-label="{% trans 'Switch theme' %}"
                     aria-pressed="false"
                 >

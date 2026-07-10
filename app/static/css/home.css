@@ -32,6 +32,7 @@
 
 .cards .card {
     padding: 20px;
+    border-radius: 25px;
 }
 
 .cards .card .card-image {
