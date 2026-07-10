@@ -161,6 +161,7 @@ header .right {
     font-weight: 700;
     cursor: pointer;
     transition: color 0.2s ease;
+    outline: none;
 }
 
 .language-switcher:hover .language-switcher__select {
@@ -168,7 +169,6 @@ header .right {
 }
 
 .language-switcher__select:focus-visible {
-    outline: 3px solid var(--color-focus-ring);
     outline-offset: 3px;
     border-radius: 8px;
 }
