@@ -1,64 +1,76 @@
-/* ==============================
-   Theme Color Variables
-   ============================== */
+/* Theme tokens used by shared layouts, components, and page styles. */
 
 :root,
 .theme-light {
+    /* Page and typography */
     --color-page-bg: #f4f8fb;
     --color-background-overlay: rgba(255, 255, 255, 0);
     --color-text: #16202a;
     --color-text-muted: #536271;
     --color-heading: #0f2433;
 
+    /* Links */
     --color-link-text: #1e2933;
     --color-link-hover: #0f766e;
 
+    /* Glass surfaces */
     --color-glass-bg: rgba(255, 255, 255, 0.2);
     --color-glass-bg-strong: rgba(255, 255, 255, 0.34);
     --color-glass-border: rgba(255, 255, 255, 0.4);
     --color-glass-shadow: rgba(15, 23, 42, 0.22);
 
+    /* Content boxes */
     --color-box-bg: rgba(255, 255, 255, 0.72);
     --color-box-border: rgba(15, 118, 110, 0.18);
 
+    /* Buttons */
     --color-button-bg: #0f766e;
     --color-button-bg-hover: #115e59;
     --color-button-text: #ffffff;
     --color-button-border: #115e59;
 
+    /* Footer */
     --color-footer-bg: rgba(22, 32, 42, 0.88);
     --color-footer-text: #16202a;
     --color-footer-link: #d9f4ef;
 
+    /* Focus states */
     --color-focus-ring: rgba(20, 184, 166, 0.42);
 }
 
 .theme-dark,
 [data-theme="dark"] {
+    /* Page and typography */
     --color-page-bg: #0d141c;
     --color-background-overlay: rgba(0, 0, 0, 0.48);
     --color-text: #e8eef4;
     --color-text-muted: #a7b4c2;
     --color-heading: #f8fbff;
 
+    /* Links */
     --color-link-text: #ecfeff;
     --color-link-hover: #67e8f9;
 
+    /* Glass surfaces */
     --color-glass-bg: rgba(15, 23, 42, 0.46);
     --color-glass-bg-strong: rgba(30, 41, 59, 0.68);
     --color-glass-border: rgba(148, 163, 184, 0.28);
     --color-glass-shadow: rgba(0, 0, 0, 0.42);
 
+    /* Content boxes */
     --color-box-bg: rgba(15, 23, 42, 0.78);
     --color-box-border: rgba(103, 232, 249, 0.2);
 
+    /* Buttons */
     --color-button-bg: #14b8a6;
     --color-button-bg-hover: #2dd4bf;
     --color-button-text: #061316;
 
+    /* Footer */
     --color-footer-bg: rgba(5, 10, 18, 0.9);
     --color-footer-text: #e8eef4;
     --color-footer-link: #a5f3fc;
 
+    /* Focus states */
     --color-focus-ring: rgba(103, 232, 249, 0.36);
 }

@@ -1,81 +1,6 @@
-/* ==============================
-   Shared Glass Effects
-   ============================== */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+/* Global page foundation and reusable UI primitives. */
 
-    padding: 10px 20px;
-    border-radius: 25px;
-
-    color: var(--color-link-text);
-    text-decoration: none;
-    font-weight: 600;
-
-    cursor: pointer;
-    font-family: inherit;
-
-    transition:
-        background-color 0.2s ease,
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        transform 0.2s ease,
-        color 0.2s ease;
-}
-
-.glass-design {
-    background: var(--color-glass-bg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-
-    border: 1px solid var(--color-glass-border);
-    box-shadow: 0 4px 20px var(--color-glass-shadow);
-}
-
-.glass-design:not(.card):hover {
-    background: var(--color-glass-bg-strong);
-    border-color: var(--color-focus-ring);
-    box-shadow: 0 10px 28px var(--color-glass-shadow);
-}
-
-.glass-design:not(.card):active {
-    box-shadow: 0 4px 14px var(--color-glass-shadow);
-}
-
-.action-button {
-    background: var(--color-button-bg);
-    border: 1px solid var(--color-button-border);
-    color: var(--color-button-text);
-    transition: background 0.20s ease;
-}
-
-.action-button:hover {
-    background: var(--color-button-bg-hover);
-}
-
-.action-button:active {
-    background: var(--color-button-bg-hover);
-}
-
-.footer-glass-design {
-    border-radius: 25px 25px 0 0;
-
-    color: var(--color-footer-text);
-    text-decoration: none;
-    font-weight: 600;
-
-    background: var(--color-glass-bg-strong);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-
-    border: 1px solid var(--color-glass-border);
-}
-
-/* ==============================
-   Global Page Foundation
-   ============================== */
-
+/* Document foundation */
 html,
 body {
     height: 100%;
@@ -109,9 +34,129 @@ body::before {
     transition: background-color 0.3s ease;
 }
 
-/* ==============================
-   Header & Navigation
-   ============================== */
+main {
+    position: relative;
+    z-index: 1;
+
+    flex: 1;
+}
+
+h1,
+h2,
+h3 {
+    color: var(--color-heading);
+}
+
+.text-muted {
+    color: var(--color-text-muted);
+}
+
+/* Shared controls */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 10px 20px;
+    border-radius: 25px;
+
+    color: var(--color-link-text);
+    text-decoration: none;
+    font-family: inherit;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease,
+        color 0.2s ease;
+}
+
+.action-button {
+    border: 1px solid var(--color-button-border);
+
+    color: var(--color-button-text);
+    background: var(--color-button-bg);
+    transition: background 0.20s ease;
+}
+
+.action-button:hover,
+.action-button:active {
+    background: var(--color-button-bg-hover);
+}
+
+/* Shared glass surface */
+.glass-design {
+    border: 1px solid var(--color-glass-border);
+
+    background: var(--color-glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px var(--color-glass-shadow);
+}
+
+.glass-design:not(.card):hover {
+    border-color: var(--color-focus-ring);
+
+    background: var(--color-glass-bg-strong);
+    box-shadow: 0 10px 28px var(--color-glass-shadow);
+}
+
+.glass-design:not(.card):active {
+    box-shadow: 0 4px 14px var(--color-glass-shadow);
+}
+
+/* Reusable themed content blocks */
+.theme-box {
+    padding: 20px;
+    border: 1px solid var(--color-box-border);
+    border-radius: 12px;
+
+    color: var(--color-text);
+    background: var(--color-box-bg);
+    box-shadow: 0 10px 30px var(--color-glass-shadow);
+}
+
+.theme-button {
+    display: inline-block;
+    padding: 10px 18px;
+    border: 1px solid transparent;
+    border-radius: 25px;
+
+    color: var(--color-button-text);
+    background: var(--color-button-bg);
+    text-decoration: none;
+    font-weight: 700;
+
+    cursor: pointer;
+    box-shadow: 0 6px 18px var(--color-glass-shadow);
+    transition:
+        background-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: transform;
+}
+
+.theme-button:hover {
+    background: var(--color-button-bg-hover);
+    box-shadow: 0 10px 26px var(--color-glass-shadow);
+    transform: translateY(-2px);
+}
+
+.theme-button:active {
+    box-shadow: 0 4px 14px var(--color-glass-shadow);
+    transform: translateY(0) scale(0.98);
+}
+
+.theme-button:focus-visible,
+.glass-design:focus-visible {
+    outline: 3px solid var(--color-focus-ring);
+    outline-offset: 3px;
+}
+
+/* Header layout */
 
 header {
     position: relative;
@@ -147,6 +192,7 @@ header .right {
     justify-self: end;
 }
 
+/* Header controls */
 .language-switcher {
     display: inline-flex;
     align-items: center;
@@ -239,77 +285,7 @@ header .right {
     opacity: 0;
 }
 
-/* ==============================
-   Main Content
-   ============================== */
-
-main {
-    position: relative;
-    z-index: 1;
-
-    flex: 1;
-}
-
-/* ==============================
-   Reusable Themed Elements
-   ============================== */
-
-h1,
-h2,
-h3 {
-    color: var(--color-heading);
-}
-
-.text-muted {
-    color: var(--color-text-muted);
-}
-
-.theme-box {
-    color: var(--color-text);
-    background: var(--color-box-bg);
-    border: 1px solid var(--color-box-border);
-    border-radius: 12px;
-    box-shadow: 0 10px 30px var(--color-glass-shadow);
-    padding: 20px;
-}
-
-.theme-button {
-    display: inline-block;
-    padding: 10px 18px;
-    border: 1px solid transparent;
-    border-radius: 25px;
-
-    color: var(--color-button-text);
-    background: var(--color-button-bg);
-    text-decoration: none;
-    font-weight: 700;
-
-    cursor: pointer;
-    box-shadow: 0 6px 18px var(--color-glass-shadow);
-    transition:
-        background-color 0.25s ease,
-        box-shadow 0.25s ease,
-        transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-    will-change: transform;
-}
-
-.theme-button:hover {
-    background: var(--color-button-bg-hover);
-    box-shadow: 0 10px 26px var(--color-glass-shadow);
-    transform: translateY(-2px);
-}
-
-.theme-button:active {
-    box-shadow: 0 4px 14px var(--color-glass-shadow);
-    transform: translateY(0) scale(0.98);
-}
-
-.theme-button:focus-visible,
-.glass-design:focus-visible {
-    outline: 3px solid var(--color-focus-ring);
-    outline-offset: 3px;
-}
-
+/* Motion preferences */
 @media (prefers-reduced-motion: reduce) {
     .glass-design,
     .theme-button,
@@ -329,9 +305,7 @@ h3 {
     }
 }
 
-/* ==============================
-   Footer
-   ============================== */
+/* Footer layout */
 
 footer {
     position: relative;
@@ -344,6 +318,19 @@ footer {
     background-color: var(--color-footer-bg);
     color: var(--color-footer-text);
     margin-top: 50px;
+}
+
+.footer-glass-design {
+    border: 1px solid var(--color-glass-border);
+    border-radius: 25px 25px 0 0;
+
+    color: var(--color-footer-text);
+    background: var(--color-glass-bg-strong);
+    text-decoration: none;
+    font-weight: 600;
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 footer .footer-left {
