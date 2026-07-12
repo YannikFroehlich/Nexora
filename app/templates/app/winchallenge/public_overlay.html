@@ -1,0 +1,25 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'de' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="{% static 'css/winchallenge.css' %}">
+    <title>{{ challenge.display_title }}</title>
+</head>
+<body
+    class="overlay-source"
+    data-overlay-source
+    data-state-url="{% url 'winchallenge_overlay_state' challenge.public_token %}"
+    data-last-updated="{{ challenge.updated_at.isoformat }}"
+>
+    <main class="overlay-source__frame">
+        {% include "app/partials/_winchallenge_overlay.html" with challenge=challenge %}
+    </main>
+
+    <script src="{% static 'js/winchallenge.js' %}"></script>
+</body>
+</html>

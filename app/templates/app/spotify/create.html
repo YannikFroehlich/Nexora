@@ -1,0 +1,20 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% translate "Spotify Overlay" %}
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="main">
+        <section class="hero" aria-labelledby="spotify-title">
+            <p class="section-label">{% translate "Spotify Overlay" %}</p>
+            <h1 id="spotify-title">Coming soon</h1>
+        </section>
+    </div>
+{% endblock %}

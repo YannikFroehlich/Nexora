@@ -1,0 +1,377 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {{ challenge.display_title }}
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/winchallenge.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="winchallenge-page winchallenge-editor-page" data-winchallenge-editor>
+        <section class="winchallenge-page__hero" aria-labelledby="manage-title">
+            <p class="section-label">{% translate "Win Challenge" %}</p>
+            <h1 id="manage-title">{{ challenge.display_title }}</h1>
+            <p>
+                <span data-total-wins>{{ challenge.total_wins }}</span>
+                {% translate "Wins" %}
+                -
+                <span data-games-count>{{ challenge.games_count }}</span>
+                {% translate "Games" %}
+            </p>
+        </section>
+
+        {% if messages %}
+            <div class="message-stack" aria-live="polite">
+                {% for message in messages %}
+                    <p class="message-stack__item">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <nav class="manage-tabs" aria-label="{% translate 'Win Challenge sections' %}">
+            <a class="btn glass-design" href="#challenge">{% translate "Overlay" %}</a>
+            <a class="btn glass-design" href="#games">{% translate "Games" %}</a>
+            <a class="btn glass-design" href="#design">{% translate "Design" %}</a>
+            <a class="btn glass-design" href="#obs-link">{% translate "OBS Link" %}</a>
+        </nav>
+
+        <div class="manage-layout">
+            <div class="manage-main">
+                <section id="challenge" class="glass-design card editor-panel" aria-labelledby="challenge-title">
+                    <div class="panel-heading">
+                        <p class="section-label">{% translate "Settings" %}</p>
+                        <h2 id="challenge-title">{% translate "Settings" %}</h2>
+                    </div>
+
+                    <dl class="overview-stats">
+                        <div>
+                            <dt>{% translate "Total wins" %}</dt>
+                            <dd data-total-wins>{{ challenge.total_wins }}</dd>
+                        </div>
+                        <div>
+                            <dt>{% translate "Games" %}</dt>
+                            <dd data-games-count>{{ challenge.games_count }}</dd>
+                        </div>
+                        <div>
+                            <dt>{% translate "Updated" %}</dt>
+                            <dd>{{ challenge.updated_at|date:"d.m.Y H:i" }}</dd>
+                        </div>
+                    </dl>
+
+                    <form method="post" class="stacked-form" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="challenge">
+
+                        {% if settings_form.non_field_errors %}
+                            <div class="form-errors">{{ settings_form.non_field_errors }}</div>
+                        {% endif %}
+
+                        <div class="field-grid field-grid--two">
+                            <div class="form-field form-field--wide">
+                                <label for="{{ settings_form.title.id_for_label }}">{{ settings_form.title.label }}</label>
+                                {{ settings_form.title }}
+                                {{ settings_form.title.errors }}
+                            </div>
+                        </div>
+
+                        <button class="btn action-button" type="submit">{% translate "Save settings" %}</button>
+                    </form>
+                </section>
+
+                <section id="games" class="glass-design card editor-panel" aria-labelledby="games-title">
+                    <div class="panel-heading">
+                        <p class="section-label">{% translate "Games" %}</p>
+                        <h2 id="games-title">{% translate "Manage games" %}</h2>
+                    </div>
+
+                    <form class="game-add-form" data-game-add-form action="{% url 'winchallenge_game_add' challenge.pk %}" method="post">
+                        {% csrf_token %}
+                        <div class="form-field game-add-form__name">
+                            <label for="{{ game_form.name.id_for_label }}">{{ game_form.name.label }}</label>
+                            {{ game_form.name }}
+                        </div>
+                        <div class="form-field game-add-form__number">
+                            <label for="{{ game_form.wins.id_for_label }}">{{ game_form.wins.label }}</label>
+                            {{ game_form.wins }}
+                        </div>
+                        <div class="form-field game-add-form__number">
+                            <label for="{{ game_form.target_wins.id_for_label }}">{{ game_form.target_wins.label }}</label>
+                            {{ game_form.target_wins }}
+                        </div>
+                        <button class="btn action-button game-add-form__button" type="submit">
+                            <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path d="M12 5v14"></path>
+                                <path d="M5 12h14"></path>
+                            </svg>
+                            <span>{% translate "Add game" %}</span>
+                        </button>
+                    </form>
+
+                    <div
+                        class="game-list"
+                        data-game-list
+                        data-empty-label="{% translate 'No games added yet.' %}"
+                        data-wins-url-template="{% url 'winchallenge_game_wins' challenge.pk 0 %}"
+                        data-rename-url-template="{% url 'winchallenge_game_rename' challenge.pk 0 %}"
+                        data-delete-url-template="{% url 'winchallenge_game_delete' challenge.pk 0 %}"
+                        data-increase-label="{% translate 'Increase wins' %}"
+                        data-decrease-label="{% translate 'Decrease wins' %}"
+                        data-edit-label="{% translate 'Edit game' %}"
+                        data-delete-label="{% translate 'Delete game' %}"
+                        data-rename-prompt="{% translate 'Rename game' %}"
+                        data-wins-prompt="{% translate 'Wins' %}"
+                        data-target-prompt="{% translate 'Target wins' %}"
+                        data-delete-confirm="{% translate 'Delete this game?' %}"
+                        data-wins-label="{% translate 'Wins' %}"
+                        data-of-label="{% translate 'of' %}"
+                    >
+                        {% for game in challenge.ordered_games %}
+                            <article class="game-row" data-game-row="{{ game.pk }}">
+                                <div class="game-row__body">
+                                    <strong class="game-row__title" data-game-name>{{ game.name }}</strong>
+                                    <span class="game-row__score">
+                                        <span data-game-wins>{{ game.wins }}</span>
+                                        <span aria-hidden="true">/</span>
+                                        <span data-game-target-wins>{{ game.target_wins }}</span>
+                                        <span>{% translate "Wins" %}</span>
+                                    </span>
+                                </div>
+                                <div class="game-row__actions">
+                                    <button
+                                        class="icon-button js-win-change"
+                                        type="button"
+                                        data-delta="-1"
+                                        data-url="{% url 'winchallenge_game_wins' challenge.pk game.pk %}"
+                                        aria-label="{% translate 'Decrease wins' %}"
+                                        title="{% translate 'Decrease wins' %}"
+                                    >
+                                        <svg class="icon-button__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                            <path d="M5 12h14"></path>
+                                        </svg>
+                                    </button>
+                                    <button
+                                        class="icon-button js-win-change"
+                                        type="button"
+                                        data-delta="1"
+                                        data-url="{% url 'winchallenge_game_wins' challenge.pk game.pk %}"
+                                        aria-label="{% translate 'Increase wins' %}"
+                                        title="{% translate 'Increase wins' %}"
+                                    >
+                                        <svg class="icon-button__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                            <path d="M12 5v14"></path>
+                                            <path d="M5 12h14"></path>
+                                        </svg>
+                                    </button>
+                                    <button
+                                        class="icon-button js-game-rename"
+                                        type="button"
+                                        data-url="{% url 'winchallenge_game_rename' challenge.pk game.pk %}"
+                                        aria-label="{% translate 'Edit game' %}"
+                                        title="{% translate 'Edit game' %}"
+                                    >
+                                        <svg class="icon-button__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                            <path d="M12 20h9"></path>
+                                            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+                                        </svg>
+                                    </button>
+                                    <button
+                                        class="icon-button danger-icon js-game-delete"
+                                        type="button"
+                                        data-url="{% url 'winchallenge_game_delete' challenge.pk game.pk %}"
+                                        aria-label="{% translate 'Delete game' %}"
+                                        title="{% translate 'Delete game' %}"
+                                    >
+                                        <svg class="icon-button__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                            <path d="M3 6h18"></path>
+                                            <path d="M8 6V4h8v2"></path>
+                                            <path d="M19 6l-1 14H6L5 6"></path>
+                                            <path d="M10 11v6"></path>
+                                            <path d="M14 11v6"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </article>
+                        {% empty %}
+                            <p class="empty-inline" data-empty-games>{% translate "No games added yet." %}</p>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section id="design" class="glass-design card editor-panel" aria-labelledby="design-title">
+                    <div class="panel-heading">
+                        <p class="section-label">{% translate "Design" %}</p>
+                        <h2 id="design-title">{% translate "Edit overlay design" %}</h2>
+                    </div>
+
+                    <form method="post" class="stacked-form" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="design">
+
+                        {% if design_form.non_field_errors %}
+                            <div class="form-errors">{{ design_form.non_field_errors }}</div>
+                        {% endif %}
+
+                        <div class="field-grid field-grid--two">
+                            <div class="form-field form-field--wide">
+                                <label for="{{ design_form.design_template.id_for_label }}">{{ design_form.design_template.label }}</label>
+                                {{ design_form.design_template }}
+                                {{ design_form.design_template.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.background_color.id_for_label }}">{{ design_form.background_color.label }}</label>
+                                {{ design_form.background_color }}
+                                {{ design_form.background_color.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.text_color.id_for_label }}">{{ design_form.text_color.label }}</label>
+                                {{ design_form.text_color }}
+                                {{ design_form.text_color.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.accent_color.id_for_label }}">{{ design_form.accent_color.label }}</label>
+                                {{ design_form.accent_color }}
+                                {{ design_form.accent_color.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.border_color.id_for_label }}">{{ design_form.border_color.label }}</label>
+                                {{ design_form.border_color }}
+                                {{ design_form.border_color.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.background_opacity.id_for_label }}">{{ design_form.background_opacity.label }}</label>
+                                {{ design_form.background_opacity }}
+                                {% if design_form.background_opacity.help_text %}
+                                    <small>{{ design_form.background_opacity.help_text }}</small>
+                                {% endif %}
+                                {{ design_form.background_opacity.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.border_width.id_for_label }}">{{ design_form.border_width.label }}</label>
+                                {{ design_form.border_width }}
+                                {{ design_form.border_width.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.corner_radius.id_for_label }}">{{ design_form.corner_radius.label }}</label>
+                                {{ design_form.corner_radius }}
+                                {{ design_form.corner_radius.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.padding.id_for_label }}">{{ design_form.padding.label }}</label>
+                                {{ design_form.padding }}
+                                {{ design_form.padding.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.overlay_width.id_for_label }}">{{ design_form.overlay_width.label }}</label>
+                                {{ design_form.overlay_width }}
+                                {{ design_form.overlay_width.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.overlay_height.id_for_label }}">{{ design_form.overlay_height.label }}</label>
+                                {{ design_form.overlay_height }}
+                                {% if design_form.overlay_height.help_text %}
+                                    <small>{{ design_form.overlay_height.help_text }}</small>
+                                {% endif %}
+                                {{ design_form.overlay_height.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.item_spacing.id_for_label }}">{{ design_form.item_spacing.label }}</label>
+                                {{ design_form.item_spacing }}
+                                {{ design_form.item_spacing.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.page_interval_seconds.id_for_label }}">{{ design_form.page_interval_seconds.label }}</label>
+                                {{ design_form.page_interval_seconds }}
+                                {% if design_form.page_interval_seconds.help_text %}
+                                    <small>{{ design_form.page_interval_seconds.help_text }}</small>
+                                {% endif %}
+                                {{ design_form.page_interval_seconds.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.label_text_size.id_for_label }}">{{ design_form.label_text_size.label }}</label>
+                                {{ design_form.label_text_size }}
+                                {{ design_form.label_text_size.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.title_text_size.id_for_label }}">{{ design_form.title_text_size.label }}</label>
+                                {{ design_form.title_text_size }}
+                                {{ design_form.title_text_size.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.total_text_size.id_for_label }}">{{ design_form.total_text_size.label }}</label>
+                                {{ design_form.total_text_size }}
+                                {{ design_form.total_text_size.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.game_text_size.id_for_label }}">{{ design_form.game_text_size.label }}</label>
+                                {{ design_form.game_text_size }}
+                                {{ design_form.game_text_size.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.game_score_text_size.id_for_label }}">{{ design_form.game_score_text_size.label }}</label>
+                                {{ design_form.game_score_text_size }}
+                                {{ design_form.game_score_text_size.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ design_form.pager_text_size.id_for_label }}">{{ design_form.pager_text_size.label }}</label>
+                                {{ design_form.pager_text_size }}
+                                {{ design_form.pager_text_size.errors }}
+                            </div>
+                        </div>
+
+                        <div class="toggle-grid">
+                            <label class="toggle-row" for="{{ design_form.shadow_enabled.id_for_label }}">
+                                {{ design_form.shadow_enabled }}
+                                <span>{{ design_form.shadow_enabled.label }}</span>
+                            </label>
+                            <label class="toggle-row" for="{{ design_form.show_games_list.id_for_label }}">
+                                {{ design_form.show_games_list }}
+                                <span>{{ design_form.show_games_list.label }}</span>
+                            </label>
+                        </div>
+
+                        <button class="btn action-button" type="submit">{% translate "Save design" %}</button>
+                    </form>
+                </section>
+
+                <section id="obs-link" class="glass-design card editor-panel" aria-labelledby="obs-title">
+                    <div class="panel-heading">
+                        <p class="section-label">{% translate "Browser source" %}</p>
+                        <h2 id="obs-title">{% translate "OBS Link" %}</h2>
+                    </div>
+
+                    <div class="obs-copy">
+                        <input class="form-control" type="text" value="{{ obs_url }}" readonly data-obs-url>
+                        <button class="btn action-button" type="button" data-copy-url="{{ obs_url }}">
+                            {% translate "Copy OBS Link" %}
+                        </button>
+                    </div>
+
+                    <ol class="obs-steps">
+                        <li>{% translate "Add a new browser source in OBS" %}</li>
+                        <li>{% translate "Paste the generated URL" %}</li>
+                        <li>{% translate "Set a suitable width and height" %}</li>
+                        <li>{% translate "Enable refresh when the scene becomes active if desired" %}</li>
+                    </ol>
+                </section>
+            </div>
+
+            <aside class="preview-panel preview-panel--sticky" aria-labelledby="preview-title" data-winchallenge-preview>
+                <div class="panel-heading">
+                    <p class="section-label">{% translate "Live preview" %}</p>
+                    <h2 id="preview-title">{% translate "Overlay preview" %}</h2>
+                </div>
+                {% include "app/partials/_winchallenge_overlay.html" with challenge=challenge %}
+            </aside>
+        </div>
+
+        <p class="copy-toast" data-copy-toast hidden>{% translate "OBS link copied" %}</p>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/winchallenge.js' %}"></script>
+{% endblock %}

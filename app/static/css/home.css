@@ -1,62 +1,346 @@
-/* Home page hero and feature cards. */
+/* Home page layout and content sections. */
 
-/* Hero intro */
 .main {
-    justify-content: center;
-    align-items: center;
+    width: min(1180px, calc(100% - 48px));
+    margin: 0 auto;
     text-align: center;
-    margin: 0 100px 0 100px;
 }
 
-.hero-text {
+.home-section {
+    margin-top: 96px;
+    scroll-margin-top: 24px;
+}
+
+.section-label {
+    margin: 0 0 12px;
+    color: var(--color-link-hover);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.section-heading {
+    max-width: 680px;
+    margin: 0 auto 36px;
+}
+
+.section-heading--left {
+    margin: 0;
+    text-align: left;
+}
+
+.section-heading h2,
+.final-cta h2 {
+    margin: 0;
+    font-size: 2rem;
+    line-height: 1.2;
+}
+
+.section-heading > p:last-child,
+.final-cta p,
+.step-card p,
+.overlay-card__content > p {
+    color: var(--color-text-muted);
+    line-height: 1.65;
+}
+
+/* Hero */
+.hero {
+    max-width: 840px;
+    margin: 50px auto 0;
+    padding: 48px 0 28px;
+}
+
+.hero h1 {
+    max-width: 780px;
     margin: 0 auto;
-    max-width: 600px;
-}
-
-.hero-text h1 {
     font-size: 4rem;
+    line-height: 1.05;
 }
 
-.hero-text p {
-    font-size: 1.5rem;
+.hero-description {
+    max-width: 700px;
+    margin: 24px auto 0;
     color: var(--color-text-muted);
+    font-size: 1.25rem;
+    line-height: 1.65;
 }
 
-/* Feature card grid */
-.cards {
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 32px;
+}
+
+.hero-actions .btn,
+.overlay-card__action,
+.final-cta .btn {
+    min-height: 44px;
+    padding: 0 24px;
+}
+
+.secondary-button {
+    color: var(--color-link-text);
+}
+
+/* Overlay cards */
+.overlay-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 50px;
-    margin-top: 50px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px;
 }
 
-.cards .card {
-    padding: 20px;
-    border-radius: 25px;
+.overlay-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    padding: 30px;
+    border-radius: 24px;
+    text-align: left;
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
 }
 
-.cards .card .card-image {
-    margin: 0 auto;
-    padding: 20px;
-    width: 100px;
-    height: 100px;
+.overlay-card:hover {
+    border-color: var(--color-focus-ring);
+    box-shadow: 0 14px 34px var(--color-glass-shadow);
+    transform: translateY(-4px);
+}
 
+.overlay-card__icon {
+    display: grid;
+    place-items: center;
+    width: 84px;
+    height: 84px;
+    padding: 12px;
     border: 1px solid var(--color-box-border);
-    border-radius: 25px;
-
-    background-color: var(--color-box-bg);
-    box-shadow: 0 10px 30px var(--color-glass-shadow);
+    border-radius: 20px;
+    background: var(--color-box-bg);
+    box-shadow: 0 10px 24px var(--color-glass-shadow);
+    box-sizing: border-box;
 }
 
-.cards .card .card-image img {
-    width: 100px;
-    height: 100px;
+.overlay-card__icon img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
-.cards .card p {
-    color: var(--color-text-muted);
+.overlay-card__content {
+    flex: 1;
+    width: 100%;
 }
 
-.cards .card a {
-    margin-top: 25px;
+.overlay-card h3 {
+    margin: 24px 0 8px;
+    font-size: 1.5rem;
+}
+
+.overlay-card__content > p {
+    margin: 0;
+}
+
+.feature-list,
+.benefit-list,
+.steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.feature-list {
+    display: grid;
+    gap: 11px;
+    margin: 24px 0 30px;
+}
+
+.feature-list li,
+.benefit-list li {
+    position: relative;
+    padding-left: 26px;
+    line-height: 1.45;
+}
+
+.feature-list li::before,
+.benefit-list li::before {
+    content: "";
+    position: absolute;
+    top: 0.42em;
+    left: 2px;
+    width: 8px;
+    height: 8px;
+    border: 3px solid var(--color-link-hover);
+    border-radius: 50%;
+}
+
+.overlay-card__action {
+    align-self: stretch;
+}
+
+/* Three-step overview */
+.steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.step-card {
+    min-width: 0;
+    padding: 26px 22px;
+    border-radius: 20px;
+}
+
+.step-card__number {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    margin: 0 auto 18px;
+    border: 1px solid var(--color-glass-border);
+    border-radius: 50%;
+    color: var(--color-button-text);
+    background: var(--color-button-bg);
+    font-weight: 800;
+}
+
+.step-card h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.step-card p {
+    margin: 10px 0 0;
+}
+
+/* Creator benefits */
+.benefits {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: center;
+    gap: 64px;
+    padding: 44px 0;
+}
+
+.benefit-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    text-align: left;
+}
+
+.benefit-list li {
+    padding: 18px 18px 18px 46px;
+    border: 1px solid var(--color-glass-border);
+    border-radius: 16px;
+    background: var(--color-glass-bg);
+    font-weight: 700;
+}
+
+.benefit-list li::before {
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+}
+
+/* Closing call to action */
+.final-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    margin-top: 52px;
+    padding: 34px 38px;
+    border-radius: 24px;
+    text-align: left;
+}
+
+.final-cta p:last-child {
+    margin: 10px 0 0;
+}
+
+.final-cta .btn {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 820px) {
+    .main {
+        width: min(100% - 32px, 680px);
+    }
+
+    .home-section {
+        margin-top: 72px;
+    }
+
+    .hero {
+        margin-top: 20px;
+        padding-top: 36px;
+    }
+
+    .hero h1 {
+        font-size: 3rem;
+    }
+
+    .overlay-grid,
+    .benefits {
+        grid-template-columns: 1fr;
+    }
+
+    .benefits {
+        gap: 30px;
+    }
+}
+
+@media (max-width: 620px) {
+    .main {
+        width: min(100% - 24px, 520px);
+    }
+
+    .hero h1 {
+        font-size: 2.35rem;
+    }
+
+    .hero-description {
+        font-size: 1.05rem;
+    }
+
+    .hero-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .steps,
+    .benefit-list {
+        grid-template-columns: 1fr;
+    }
+
+    .overlay-card {
+        padding: 24px;
+    }
+
+    .final-cta {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 28px 24px;
+    }
+
+    .final-cta .btn {
+        width: auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .overlay-card {
+        transition: none;
+    }
+
+    .overlay-card:hover {
+        transform: none;
+    }
 }

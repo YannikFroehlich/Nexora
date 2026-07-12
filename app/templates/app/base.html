@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
 
-    <title></title>
+    <title>{% block title %}Nexora{% endblock %}</title>
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -81,7 +81,7 @@
 
             <div class="footer-right">
                 <p>
-                    Version NONE
+                    Version 0.1.0
                 </p>
             </div>
         {% endblock %}

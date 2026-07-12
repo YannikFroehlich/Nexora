@@ -1,0 +1,710 @@
+/* Win Challenge page layouts and OBS overlay component. */
+
+.winchallenge-page {
+    width: min(1180px, calc(100% - 48px));
+    margin: 0 auto;
+}
+
+.winchallenge-page__hero {
+    max-width: 780px;
+    margin: 42px auto 36px;
+    text-align: center;
+}
+
+.winchallenge-page__hero h1 {
+    margin: 0;
+    font-size: 3rem;
+    line-height: 1.1;
+}
+
+.winchallenge-page__hero p:not(.section-label) {
+    max-width: 680px;
+    margin: 18px auto 28px;
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    line-height: 1.65;
+}
+
+.section-label {
+    margin: 0 0 10px;
+    color: var(--color-link-hover);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.message-stack {
+    display: grid;
+    gap: 10px;
+    margin: 0 0 22px;
+}
+
+.message-stack__item {
+    margin: 0;
+    padding: 12px 16px;
+    border: 1px solid var(--color-box-border);
+    border-radius: 14px;
+    background: var(--color-box-bg);
+    font-weight: 700;
+}
+
+.danger-button,
+.danger-icon {
+    border: 1px solid rgba(220, 38, 38, 0.35);
+    color: #ffffff;
+    background: #b91c1c;
+}
+
+.danger-button:hover,
+.danger-icon:hover {
+    background: #991b1b;
+}
+
+/* Overview cards */
+.challenge-grid {
+    display: grid;
+    gap: 24px;
+}
+
+.challenge-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+    gap: 28px;
+    padding: 28px;
+    border-radius: 24px;
+}
+
+.challenge-card h2,
+.editor-panel h2,
+.preview-panel h2,
+.empty-state h2 {
+    margin: 0;
+    font-size: 1.6rem;
+}
+
+.challenge-card__content {
+    display: grid;
+    gap: 22px;
+    min-width: 0;
+}
+
+.challenge-stats,
+.overview-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0;
+}
+
+.overview-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.challenge-stats div,
+.overview-stats div {
+    padding: 14px;
+    border: 1px solid var(--color-glass-border);
+    border-radius: 14px;
+    background: var(--color-glass-bg);
+}
+
+.challenge-stats dt,
+.overview-stats dt {
+    margin: 0 0 6px;
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.challenge-stats dd,
+.overview-stats dd {
+    margin: 0;
+    color: var(--color-heading);
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.challenge-progress {
+    height: 10px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--color-glass-bg);
+}
+
+.challenge-progress span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-button-bg);
+}
+
+.challenge-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.challenge-card__actions .btn,
+.editor-actions .btn,
+.obs-copy .btn {
+    min-height: 42px;
+}
+
+.inline-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.challenge-card__preview {
+    display: grid;
+    place-items: center;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid var(--color-glass-border);
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.16);
+}
+
+.empty-state {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 38px;
+    border-radius: 24px;
+    text-align: center;
+}
+
+.empty-state p:not(.section-label) {
+    color: var(--color-text-muted);
+    line-height: 1.6;
+}
+
+/* Editor and management pages */
+.winchallenge-editor-page {
+    padding-bottom: 20px;
+}
+
+.editor-layout,
+.manage-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.72fr);
+    gap: 28px;
+    align-items: start;
+}
+
+.editor-panels,
+.manage-main {
+    display: grid;
+    gap: 22px;
+    min-width: 0;
+}
+
+.editor-panel,
+.preview-panel {
+    min-width: 0;
+    padding: 28px;
+    border-radius: 24px;
+}
+
+.preview-panel {
+    border: 1px solid var(--color-glass-border);
+    background: rgba(0, 0, 0, 0.14);
+}
+
+.preview-panel--sticky {
+    position: sticky;
+    top: 24px;
+}
+
+.panel-heading {
+    margin-bottom: 22px;
+}
+
+.panel-heading h2 {
+    line-height: 1.2;
+}
+
+.field-grid {
+    display: grid;
+    gap: 18px;
+}
+
+.field-grid--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form-field,
+.stacked-form {
+    display: grid;
+    gap: 8px;
+}
+
+.form-field--wide {
+    grid-column: 1 / -1;
+}
+
+.form-field label,
+.toggle-row,
+.game-add-form label {
+    color: var(--color-heading);
+    font-weight: 800;
+}
+
+.form-control,
+.color-control {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    border: 1px solid var(--color-glass-border);
+    border-radius: 14px;
+    box-sizing: border-box;
+    color: var(--color-text);
+    background: var(--color-box-bg);
+    font: inherit;
+}
+
+.form-control {
+    padding: 10px 12px;
+}
+
+.color-control {
+    padding: 4px;
+}
+
+.form-field small {
+    color: var(--color-text-muted);
+    line-height: 1.4;
+}
+
+.form-field .errorlist,
+.form-errors .errorlist {
+    margin: 0;
+    padding: 0;
+    color: #b91c1c;
+    list-style: none;
+    font-weight: 700;
+}
+
+.toggle-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 12px;
+    border: 1px solid var(--color-glass-border);
+    border-radius: 14px;
+    background: var(--color-glass-bg);
+}
+
+.toggle-control {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-button-bg);
+}
+
+.editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.manage-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.game-add-form {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) minmax(74px, 92px) minmax(94px, 116px) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.game-add-form__name {
+    min-width: 0;
+}
+
+.game-add-form__number .form-control {
+    text-align: center;
+}
+
+.game-add-form__button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.button-icon,
+.icon-button__icon {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+}
+
+.game-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.game-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    padding: 14px;
+    border: 1px solid var(--color-glass-border);
+    border-radius: 16px;
+    background: var(--color-glass-bg);
+}
+
+.game-row__body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    min-width: 0;
+}
+
+.game-row__title {
+    min-width: min(240px, 100%);
+    color: var(--color-heading);
+    overflow-wrap: anywhere;
+}
+
+.game-row__score {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex: 0 0 auto;
+    padding: 5px 9px;
+    border: 1px solid var(--color-glass-border);
+    border-radius: 999px;
+    color: var(--color-text-muted);
+    background: var(--color-box-bg);
+    font-size: 0.88rem;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.game-row__score [data-game-wins] {
+    color: var(--color-heading);
+}
+
+.game-row__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.icon-button {
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--color-glass-border);
+    border-radius: 50%;
+    color: var(--color-link-text);
+    background: var(--color-box-bg);
+    font: inherit;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.icon-button:hover {
+    border-color: var(--color-focus-ring);
+}
+
+.icon-button:disabled {
+    cursor: wait;
+    opacity: 0.58;
+}
+
+.empty-inline {
+    margin: 0;
+    padding: 16px;
+    border: 1px dashed var(--color-glass-border);
+    border-radius: 16px;
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+.obs-copy {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+}
+
+.obs-steps {
+    margin: 22px 0 0;
+    padding-left: 22px;
+    color: var(--color-text-muted);
+    line-height: 1.7;
+}
+
+.copy-toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 5;
+    margin: 0;
+    padding: 12px 16px;
+    border: 1px solid var(--color-glass-border);
+    border-radius: 14px;
+    color: var(--color-button-text);
+    background: var(--color-button-bg);
+    box-shadow: 0 12px 28px var(--color-glass-shadow);
+}
+
+/* Shared overlay component used by previews and OBS. */
+.winchallenge-overlay {
+    width: min(100%, var(--wc-width, 460px));
+    height: var(--wc-height, auto);
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: var(--wc-padding);
+    border: var(--wc-border-width) solid var(--wc-border);
+    border-radius: var(--wc-radius);
+    color: var(--wc-text);
+    background: var(--wc-bg);
+    box-shadow: var(--wc-shadow);
+    font-family: Arial, sans-serif;
+    font-size: var(--wc-font-size, 16px);
+}
+
+.winchallenge-overlay__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: calc(var(--wc-item-spacing, 9px) + 5px);
+}
+
+.winchallenge-overlay__label {
+    margin: 0;
+    color: var(--wc-accent);
+    font-size: var(--wc-label-font-size, 10px);
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.winchallenge-overlay h2 {
+    margin: 3px 0 0;
+    color: inherit;
+    font-size: var(--wc-title-font-size, 20px);
+    line-height: 1.15;
+}
+
+.winchallenge-overlay__score {
+    display: flex;
+    align-items: baseline;
+    flex: 0 0 auto;
+    gap: 4px;
+    padding: 6px 10px;
+    border: 1px solid color-mix(in srgb, var(--wc-accent), transparent 40%);
+    border-radius: 999px;
+    color: var(--wc-accent);
+    background: rgba(0, 0, 0, 0.3);
+    font-size: var(--wc-total-font-size, 14px);
+    font-weight: 900;
+    line-height: 1;
+}
+
+.winchallenge-overlay__progress {
+    height: 10px;
+    margin-top: calc(var(--wc-item-spacing, 9px) + 9px);
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.winchallenge-overlay__progress-bar {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--wc-accent);
+    transition: width 0.25s ease;
+}
+
+.winchallenge-overlay__games {
+    display: grid;
+    align-content: start;
+    min-height: 0;
+    margin: calc(var(--wc-item-spacing, 9px) + 12px) 0 0;
+}
+
+.winchallenge-overlay__page {
+    display: grid;
+    align-content: start;
+    gap: calc(var(--wc-item-spacing, 9px) + 7px);
+}
+
+.winchallenge-overlay__page[hidden] {
+    display: none;
+}
+
+.winchallenge-overlay__game {
+    display: grid;
+    align-content: start;
+    gap: max(6px, calc(var(--wc-item-spacing, 9px) - 1px));
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+.winchallenge-overlay__game-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--wc-item-spacing, 9px) + 5px);
+}
+
+.winchallenge-overlay__game strong,
+.winchallenge-overlay__game span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.winchallenge-overlay__game strong {
+    color: var(--wc-text);
+    font-size: var(--wc-game-font-size, 15px);
+}
+
+.winchallenge-overlay__game-badge {
+    flex: 0 0 auto;
+    padding: 4px 9px;
+    border-radius: 999px;
+    color: var(--wc-accent);
+    background: rgba(0, 0, 0, 0.5);
+    font-size: var(--wc-game-score-font-size, 12px);
+    font-weight: 900;
+}
+
+.winchallenge-overlay__game-progress {
+    height: max(4px, calc(var(--wc-game-score-font-size, 12px) * 0.28));
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.winchallenge-overlay__game-progress span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--wc-accent);
+}
+
+.winchallenge-overlay__empty {
+    margin: 18px 0 0;
+    opacity: 0.78;
+}
+
+.winchallenge-overlay__pager {
+    display: inline-flex;
+    align-items: center;
+    justify-self: center;
+    gap: 4px;
+    margin-top: 12px;
+    padding: 5px 11px;
+    border: 1px solid color-mix(in srgb, var(--wc-accent), transparent 35%);
+    border-radius: 999px;
+    color: var(--wc-accent);
+    background: rgba(0, 0, 0, 0.34);
+    font-size: var(--wc-pager-font-size, 12px);
+    font-weight: 900;
+}
+
+/* Transparent OBS source surface. */
+body.overlay-source {
+    display: grid;
+    place-items: center;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    background: transparent;
+}
+
+.overlay-source__frame {
+    display: grid;
+    align-items: center;
+    justify-items: start;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 18px;
+}
+
+.overlay-source .winchallenge-overlay {
+    width: min(100%, var(--wc-width, 460px));
+}
+
+@media (max-width: 900px) {
+    .challenge-card,
+    .editor-layout,
+    .manage-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .preview-panel--sticky {
+        position: static;
+    }
+}
+
+@media (max-width: 680px) {
+    .winchallenge-page {
+        width: min(100% - 24px, 560px);
+    }
+
+    .winchallenge-page__hero h1 {
+        font-size: 2.35rem;
+    }
+
+    .challenge-stats,
+    .overview-stats,
+    .field-grid--two,
+    .toggle-grid,
+    .game-add-form,
+    .obs-copy {
+        grid-template-columns: 1fr;
+    }
+
+    .challenge-card,
+    .editor-panel,
+    .preview-panel,
+    .empty-state {
+        padding: 22px;
+    }
+
+    .game-row {
+        grid-template-columns: 1fr;
+    }
+
+    .game-row__actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .winchallenge-overlay__progress-bar {
+        transition: none;
+    }
+}

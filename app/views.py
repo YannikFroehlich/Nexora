@@ -1,11 +1,288 @@
-from django.shortcuts import render
+from django.contrib import messages
+from django.db import transaction
+from django.db.models import F, Max
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.translation import gettext as _
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
 
-# Create your views here.
+from app.forms import (
+    WinChallengeCreateForm,
+    WinChallengeDesignForm,
+    WinChallengeGameForm,
+    WinChallengeSettingsForm,
+)
+from app.models import WinChallenge, WinChallengeGame
+
 
 def home(request):
-    template_name = 'app/home.html'
+    template_name = "app/home.html"
     return render(request, template_name)
 
+
 def about(request):
-    template_name = 'app/about.html'
+    template_name = "app/about.html"
     return render(request, template_name)
+
+
+def spotify_create(request):
+    template_name = "app/spotify/create.html"
+    return render(request, template_name)
+
+
+def _manageable_winchallenges(request):
+    challenges = WinChallenge.objects.prefetch_related("games")
+
+    if request.user.is_authenticated:
+        return challenges.filter(owner=request.user)
+
+    return challenges.filter(owner__isnull=True)
+
+
+def _get_manageable_winchallenge(request, pk):
+    return get_object_or_404(_manageable_winchallenges(request), pk=pk)
+
+
+def _obs_url(request, challenge):
+    return request.build_absolute_uri(
+        reverse("winchallenge_overlay", args=[challenge.public_token])
+    )
+
+
+def _touch_challenge(challenge):
+    WinChallenge.objects.filter(pk=challenge.pk).update(updated_at=timezone.now())
+
+
+def _fresh_challenge(challenge):
+    return get_object_or_404(
+        WinChallenge.objects.prefetch_related("games"),
+        pk=challenge.pk,
+    )
+
+
+def _no_store(response):
+    response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response["Pragma"] = "no-cache"
+    response["Expires"] = "0"
+    return response
+
+
+def _state_response(challenge):
+    response = JsonResponse(_fresh_challenge(challenge).state_payload())
+    return _no_store(response)
+
+
+def winchallenge_list(request):
+    return render(
+        request,
+        "app/winchallenge/list.html",
+        {
+            "challenges": _manageable_winchallenges(request),
+        },
+    )
+
+
+def winchallenge_create(request):
+    if request.method == "POST":
+        form = WinChallengeCreateForm(request.POST)
+
+        if form.is_valid():
+            challenge = form.save(commit=False)
+
+            if request.user.is_authenticated:
+                challenge.owner = request.user
+
+            challenge.save()
+            messages.success(request, _("Win Challenge created."))
+            return redirect("winchallenge_manage", pk=challenge.pk)
+    else:
+        form = WinChallengeCreateForm()
+
+    return render(
+        request,
+        "app/winchallenge/create.html",
+        {
+            "form": form,
+            "preview_challenge": WinChallenge(title=_("Win Challenge")),
+        },
+    )
+
+
+def winchallenge_manage(request, pk):
+    challenge = _get_manageable_winchallenge(request, pk)
+
+    if request.method == "POST":
+        form_type = request.POST.get("form_type")
+
+        if form_type == "challenge":
+            settings_form = WinChallengeSettingsForm(request.POST, instance=challenge)
+            design_form = WinChallengeDesignForm(instance=challenge)
+
+            if settings_form.is_valid():
+                settings_form.save()
+                messages.success(request, _("Challenge settings saved."))
+                return redirect(f"{reverse('winchallenge_manage', args=[challenge.pk])}#challenge")
+        elif form_type == "design":
+            settings_form = WinChallengeSettingsForm(instance=challenge)
+            design_form = WinChallengeDesignForm(request.POST, instance=challenge)
+
+            if design_form.is_valid():
+                design_form.save()
+                messages.success(request, _("Overlay design saved."))
+                return redirect(f"{reverse('winchallenge_manage', args=[challenge.pk])}#design")
+        else:
+            settings_form = WinChallengeSettingsForm(instance=challenge)
+            design_form = WinChallengeDesignForm(instance=challenge)
+    else:
+        settings_form = WinChallengeSettingsForm(instance=challenge)
+        design_form = WinChallengeDesignForm(instance=challenge)
+
+    return render(
+        request,
+        "app/winchallenge/manage.html",
+        {
+            "challenge": challenge,
+            "settings_form": settings_form,
+            "design_form": design_form,
+            "game_form": WinChallengeGameForm(),
+            "obs_url": _obs_url(request, challenge),
+        },
+    )
+
+
+@require_POST
+def winchallenge_delete(request, pk):
+    challenge = _get_manageable_winchallenge(request, pk)
+    challenge_title = challenge.display_title
+    challenge.delete()
+    messages.success(request, _("Win Challenge deleted: %(name)s") % {"name": challenge_title})
+
+    return redirect("winchallenge_list")
+
+
+@require_POST
+def winchallenge_game_add(request, pk):
+    challenge = _get_manageable_winchallenge(request, pk)
+
+    if challenge.games.count() >= WinChallenge.MAX_GAMES:
+        return JsonResponse(
+            {"error": f"Max. {WinChallenge.MAX_GAMES} {_('Games')}."},
+            status=400,
+        )
+
+    form_data = request.POST.copy()
+
+    if not form_data.get("wins"):
+        form_data["wins"] = 0
+
+    form = WinChallengeGameForm(form_data)
+
+    if not form.is_valid():
+        return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
+
+    max_order = challenge.games.aggregate(max_order=Max("sort_order"))["max_order"]
+    game = form.save(commit=False)
+    game.challenge = challenge
+    game.sort_order = 0 if max_order is None else max_order + 1
+    game.save()
+    _touch_challenge(challenge)
+
+    return _state_response(challenge)
+
+
+@require_POST
+def winchallenge_game_wins(request, pk, game_pk):
+    challenge = _get_manageable_winchallenge(request, pk)
+
+    try:
+        delta = int(request.POST.get("delta", 0))
+    except ValueError:
+        return JsonResponse({"error": _("Invalid win change.")}, status=400)
+
+    if delta not in (-1, 1):
+        return JsonResponse({"error": _("Invalid win change.")}, status=400)
+
+    with transaction.atomic():
+        game = get_object_or_404(
+            WinChallengeGame.objects.select_for_update(),
+            pk=game_pk,
+            challenge=challenge,
+        )
+
+        if delta > 0:
+            WinChallengeGame.objects.filter(pk=game.pk).update(wins=F("wins") + 1)
+        elif game.wins > 0:
+            WinChallengeGame.objects.filter(pk=game.pk).update(wins=F("wins") - 1)
+
+        _touch_challenge(challenge)
+
+    return _state_response(challenge)
+
+
+@require_POST
+def winchallenge_game_rename(request, pk, game_pk):
+    challenge = _get_manageable_winchallenge(request, pk)
+    new_name = request.POST.get("name", "").strip()
+    wins = request.POST.get("wins", "").strip()
+    target_wins = request.POST.get("target_wins", "").strip()
+
+    if not new_name:
+        return JsonResponse({"error": _("Game name is required.")}, status=400)
+
+    game = get_object_or_404(WinChallengeGame, pk=game_pk, challenge=challenge)
+    form = WinChallengeGameForm(
+        {
+            "name": new_name,
+            "wins": wins or game.wins,
+            "target_wins": target_wins or game.target_wins,
+        },
+        instance=game,
+    )
+
+    if not form.is_valid():
+        return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
+
+    form.save()
+    _touch_challenge(challenge)
+
+    return _state_response(challenge)
+
+
+@require_POST
+def winchallenge_game_delete(request, pk, game_pk):
+    challenge = _get_manageable_winchallenge(request, pk)
+    game = get_object_or_404(WinChallengeGame, pk=game_pk, challenge=challenge)
+    game.delete()
+    _touch_challenge(challenge)
+
+    return _state_response(challenge)
+
+
+@never_cache
+def winchallenge_overlay(request, public_token):
+    challenge = get_object_or_404(
+        WinChallenge.objects.prefetch_related("games"),
+        public_token=public_token,
+    )
+    response = render(
+        request,
+        "app/winchallenge/public_overlay.html",
+        {
+            "challenge": challenge,
+        },
+    )
+
+    return _no_store(response)
+
+
+@never_cache
+def winchallenge_overlay_state(request, public_token):
+    challenge = get_object_or_404(
+        WinChallenge.objects.prefetch_related("games"),
+        public_token=public_token,
+    )
+
+    return _no_store(JsonResponse(challenge.state_payload()))
