@@ -5,16 +5,29 @@
     margin: 0 auto;
 }
 
+.winchallenge-page,
+.winchallenge-page *,
+.winchallenge-page *::before,
+.winchallenge-page *::after {
+    box-sizing: border-box;
+}
+
 .winchallenge-page__hero {
     max-width: 780px;
     margin: 42px auto 36px;
     text-align: center;
 }
 
+.winchallenge-page__hero--editor {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
 .winchallenge-page__hero h1 {
     margin: 0;
     font-size: 3rem;
     line-height: 1.1;
+    overflow-wrap: anywhere;
 }
 
 .winchallenge-page__hero p:not(.section-label) {
@@ -192,6 +205,10 @@
     align-items: start;
 }
 
+.editor-layout--create {
+    grid-template-columns: minmax(0, 1.04fr) minmax(340px, 0.78fr);
+}
+
 .editor-panels,
 .manage-main {
     display: grid;
@@ -204,6 +221,10 @@
     min-width: 0;
     padding: 28px;
     border-radius: 24px;
+}
+
+.editor-panel--intro {
+    padding-block: 24px;
 }
 
 .preview-panel {
@@ -224,6 +245,144 @@
     line-height: 1.2;
 }
 
+.settings-group {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-glass-border);
+}
+
+.settings-group:first-of-type {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+}
+
+.settings-group__heading {
+    margin-bottom: 15px;
+}
+
+.settings-group__heading h3 {
+    margin: 0;
+    color: var(--color-heading);
+    font-size: 1.05rem;
+    line-height: 1.25;
+}
+
+.preset-chooser {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.preset-card {
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    min-width: 0;
+    min-height: 78px;
+    padding: 12px;
+    border: 1px solid var(--color-glass-border);
+    border-radius: 16px;
+    color: var(--color-text);
+    background: var(--color-glass-bg);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.preset-card:hover,
+.preset-card.is-active {
+    border-color: var(--color-focus-ring);
+    background: var(--color-glass-bg-strong);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
+}
+
+.preset-card:active {
+    transform: translateY(1px);
+}
+
+.preset-card:focus-visible {
+    outline: 3px solid var(--color-focus-ring);
+    outline-offset: 3px;
+}
+
+.preset-card__preview {
+    display: grid;
+    align-items: end;
+    width: 54px;
+    height: 54px;
+    padding: 8px;
+    border-radius: 14px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.preset-card__preview span {
+    display: block;
+    width: 100%;
+    height: 12px;
+    border-radius: 999px;
+}
+
+.preset-card__preview--minimal {
+    border: 1px solid #334155;
+    background: #111827;
+}
+
+.preset-card__preview--minimal span {
+    background: #14b8a6;
+}
+
+.preset-card__preview--glass {
+    border: 1px solid rgba(45, 212, 191, 0.8);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.24), rgba(20, 184, 166, 0.2)),
+        #111827;
+}
+
+.preset-card__preview--glass span {
+    background: #2dd4bf;
+}
+
+.preset-card__preview--neon {
+    border: 1px solid #22d3ee;
+    background: #09090b;
+    box-shadow: inset 0 0 18px rgba(34, 211, 238, 0.25);
+}
+
+.preset-card__preview--neon span {
+    background: #facc15;
+}
+
+.preset-card__body {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.preset-card__body strong,
+.preset-card__body span {
+    overflow-wrap: anywhere;
+}
+
+.preset-card__body strong {
+    color: var(--color-heading);
+    font-size: 0.98rem;
+}
+
+.preset-card__body span {
+    color: var(--color-text-muted);
+    font-size: 0.84rem;
+    line-height: 1.3;
+}
+
 .field-grid {
     display: grid;
     gap: 18px;
@@ -231,6 +390,23 @@
 
 .field-grid--two {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field-grid--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.field-grid--layout {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+}
+
+.field-grid--colors {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field-grid--colors .form-field:last-child {
+    grid-column: span 2;
 }
 
 .form-field,
@@ -241,6 +417,14 @@
 
 .form-field--wide {
     grid-column: 1 / -1;
+}
+
+.form-field--compact-select {
+    max-width: 360px;
+}
+
+.form-field--compact-number {
+    max-width: 360px;
 }
 
 .form-field label,
@@ -267,8 +451,28 @@
     padding: 10px 12px;
 }
 
+.form-control[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.form-control[type="number"]::-webkit-inner-spin-button,
+.form-control[type="number"]::-webkit-outer-spin-button {
+    margin: 0;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
 .color-control {
-    padding: 4px;
+    height: 48px;
+    padding: 5px;
+}
+
+.form-control:focus,
+.color-control:focus {
+    border-color: var(--color-focus-ring);
+    outline: 3px solid var(--color-focus-ring);
+    outline-offset: 2px;
 }
 
 .form-field small {
@@ -313,6 +517,42 @@
     display: flex;
     justify-content: flex-end;
     gap: 12px;
+    padding: 4px 0;
+}
+
+.preview-panel--create {
+    overflow: hidden;
+}
+
+.preview-stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 360px;
+    padding: 34px 18px;
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    border-radius: 18px;
+    background:
+        linear-gradient(135deg, rgba(8, 13, 24, 0.94), rgba(13, 34, 45, 0.86)),
+        repeating-linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.06) 0,
+            rgba(255, 255, 255, 0.06) 1px,
+            transparent 1px,
+            transparent 28px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.05) 0,
+            rgba(255, 255, 255, 0.05) 1px,
+            transparent 1px,
+            transparent 28px
+        );
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.preview-stage .winchallenge-overlay {
+    max-width: 100%;
 }
 
 .manage-tabs {
@@ -667,23 +907,47 @@ body.overlay-source {
     .preview-panel--sticky {
         position: static;
     }
+
+    .field-grid--colors {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 680px) {
     .winchallenge-page {
-        width: min(100% - 24px, 560px);
+        width: calc(100vw - 24px);
+        max-width: calc(100vw - 24px);
     }
 
     .winchallenge-page__hero h1 {
-        font-size: 2.35rem;
+        font-size: 2rem;
+    }
+
+    .winchallenge-page__hero {
+        max-width: 100%;
+    }
+
+    .editor-layout--create {
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .challenge-stats,
     .overview-stats,
     .field-grid--two,
+    .field-grid--three,
+    .field-grid--layout,
+    .field-grid--colors,
     .toggle-grid,
     .game-add-form,
     .obs-copy {
+        grid-template-columns: 1fr;
+    }
+
+    .field-grid--colors .form-field:last-child {
+        grid-column: auto;
+    }
+
+    .preset-chooser {
         grid-template-columns: 1fr;
     }
 
@@ -692,6 +956,11 @@ body.overlay-source {
     .preview-panel,
     .empty-state {
         padding: 22px;
+    }
+
+    .preview-stage {
+        min-height: 300px;
+        padding: 24px 12px;
     }
 
     .game-row {
@@ -704,7 +973,12 @@ body.overlay-source {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .winchallenge-overlay__progress-bar {
+    .winchallenge-overlay__progress-bar,
+    .preset-card {
         transition: none;
+    }
+
+    .preset-card:active {
+        transform: none;
     }
 }

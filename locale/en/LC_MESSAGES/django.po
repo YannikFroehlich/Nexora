@@ -518,3 +518,27 @@ msgstr ""
 
 msgid "Enable refresh when the scene becomes active if desired"
 msgstr ""
+
+msgid "Quick presets"
+msgstr ""
+
+msgid "Clean and compact"
+msgstr ""
+
+msgid "Soft depth"
+msgstr ""
+
+msgid "Bright accents"
+msgstr ""
+
+msgid "Colors"
+msgstr ""
+
+msgid "Layout"
+msgstr ""
+
+msgid "Typography"
+msgstr ""
+
+msgid "Options"
+msgstr ""

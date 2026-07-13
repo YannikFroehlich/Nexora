@@ -12,13 +12,13 @@
 
 {% block content %}
     <div class="winchallenge-page winchallenge-editor-page" data-winchallenge-editor>
-        <section class="winchallenge-page__hero" aria-labelledby="create-title">
+        <section class="winchallenge-page__hero winchallenge-page__hero--editor" aria-labelledby="create-title">
             <p class="section-label">{% translate "New overlay" %}</p>
             <h1 id="create-title">{% translate "Create a Win Challenge" %}</h1>
-            <p>{% translate "Start with a design preset, add games later and copy the generated OBS browser-source link." %}</p>
+            <p>{% translate "Set a goal, choose a starter design and adjust the preview before saving." %}</p>
         </section>
 
-        <form class="editor-layout" method="post" novalidate>
+        <form class="editor-layout editor-layout--create" method="post" novalidate>
             {% csrf_token %}
 
             <div class="editor-panels">
@@ -26,18 +26,16 @@
                     <div class="form-errors">{{ form.non_field_errors }}</div>
                 {% endif %}
 
-                <section class="glass-design card editor-panel" aria-labelledby="general-title">
+                <section class="glass-design card editor-panel editor-panel--intro" aria-labelledby="general-title">
                     <div class="panel-heading">
                         <p class="section-label">{% translate "General settings" %}</p>
-                        <h2 id="general-title">{% translate "Overlay" %}</h2>
+                        <h2 id="general-title">{% translate "Challenge" %}</h2>
                     </div>
 
-                    <div class="field-grid field-grid--two">
-                        <div class="form-field form-field--wide">
-                            <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
-                            {{ form.title }}
-                            {{ form.title.errors }}
-                        </div>
+                    <div class="form-field form-field--wide">
+                        <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+                        {{ form.title }}
+                        {{ form.title.errors }}
                     </div>
                 </section>
 
@@ -47,123 +45,190 @@
                         <h2 id="design-title">{% translate "Customize the overlay" %}</h2>
                     </div>
 
-                    <div class="field-grid field-grid--two">
-                        <div class="form-field form-field--wide">
+                    <section class="settings-group" aria-labelledby="preset-title">
+                        <div class="settings-group__heading">
+                            <h3 id="preset-title">{% translate "Quick presets" %}</h3>
+                        </div>
+
+                        <div class="preset-chooser">
+                            <button class="preset-card" type="button" data-preset-button data-preset="minimal">
+                                <span class="preset-card__preview preset-card__preview--minimal" aria-hidden="true">
+                                    <span></span>
+                                </span>
+                                <span class="preset-card__body">
+                                    <strong>{% translate "Minimal" %}</strong>
+                                    <span>{% translate "Clean and compact" %}</span>
+                                </span>
+                            </button>
+                            <button class="preset-card" type="button" data-preset-button data-preset="glass">
+                                <span class="preset-card__preview preset-card__preview--glass" aria-hidden="true">
+                                    <span></span>
+                                </span>
+                                <span class="preset-card__body">
+                                    <strong>{% translate "Glass" %}</strong>
+                                    <span>{% translate "Soft depth" %}</span>
+                                </span>
+                            </button>
+                            <button class="preset-card" type="button" data-preset-button data-preset="neon">
+                                <span class="preset-card__preview preset-card__preview--neon" aria-hidden="true">
+                                    <span></span>
+                                </span>
+                                <span class="preset-card__body">
+                                    <strong>{% translate "Neon" %}</strong>
+                                    <span>{% translate "Bright accents" %}</span>
+                                </span>
+                            </button>
+                        </div>
+
+                        <div class="form-field form-field--compact-select">
                             <label for="{{ form.design_template.id_for_label }}">{{ form.design_template.label }}</label>
                             {{ form.design_template }}
                             {{ form.design_template.errors }}
                         </div>
-                        <div class="form-field">
-                            <label for="{{ form.background_color.id_for_label }}">{{ form.background_color.label }}</label>
-                            {{ form.background_color }}
-                            {{ form.background_color.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.text_color.id_for_label }}">{{ form.text_color.label }}</label>
-                            {{ form.text_color }}
-                            {{ form.text_color.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.accent_color.id_for_label }}">{{ form.accent_color.label }}</label>
-                            {{ form.accent_color }}
-                            {{ form.accent_color.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.border_color.id_for_label }}">{{ form.border_color.label }}</label>
-                            {{ form.border_color }}
-                            {{ form.border_color.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.background_opacity.id_for_label }}">{{ form.background_opacity.label }}</label>
-                            {{ form.background_opacity }}
-                            {% if form.background_opacity.help_text %}
-                                <small>{{ form.background_opacity.help_text }}</small>
-                            {% endif %}
-                            {{ form.background_opacity.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.border_width.id_for_label }}">{{ form.border_width.label }}</label>
-                            {{ form.border_width }}
-                            {{ form.border_width.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.corner_radius.id_for_label }}">{{ form.corner_radius.label }}</label>
-                            {{ form.corner_radius }}
-                            {{ form.corner_radius.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.padding.id_for_label }}">{{ form.padding.label }}</label>
-                            {{ form.padding }}
-                            {{ form.padding.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.overlay_width.id_for_label }}">{{ form.overlay_width.label }}</label>
-                            {{ form.overlay_width }}
-                            {{ form.overlay_width.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.overlay_height.id_for_label }}">{{ form.overlay_height.label }}</label>
-                            {{ form.overlay_height }}
-                            {% if form.overlay_height.help_text %}
-                                <small>{{ form.overlay_height.help_text }}</small>
-                            {% endif %}
-                            {{ form.overlay_height.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.item_spacing.id_for_label }}">{{ form.item_spacing.label }}</label>
-                            {{ form.item_spacing }}
-                            {{ form.item_spacing.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.page_interval_seconds.id_for_label }}">{{ form.page_interval_seconds.label }}</label>
-                            {{ form.page_interval_seconds }}
-                            {% if form.page_interval_seconds.help_text %}
-                                <small>{{ form.page_interval_seconds.help_text }}</small>
-                            {% endif %}
-                            {{ form.page_interval_seconds.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.label_text_size.id_for_label }}">{{ form.label_text_size.label }}</label>
-                            {{ form.label_text_size }}
-                            {{ form.label_text_size.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.title_text_size.id_for_label }}">{{ form.title_text_size.label }}</label>
-                            {{ form.title_text_size }}
-                            {{ form.title_text_size.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.total_text_size.id_for_label }}">{{ form.total_text_size.label }}</label>
-                            {{ form.total_text_size }}
-                            {{ form.total_text_size.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.game_text_size.id_for_label }}">{{ form.game_text_size.label }}</label>
-                            {{ form.game_text_size }}
-                            {{ form.game_text_size.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.game_score_text_size.id_for_label }}">{{ form.game_score_text_size.label }}</label>
-                            {{ form.game_score_text_size }}
-                            {{ form.game_score_text_size.errors }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.pager_text_size.id_for_label }}">{{ form.pager_text_size.label }}</label>
-                            {{ form.pager_text_size }}
-                            {{ form.pager_text_size.errors }}
-                        </div>
-                    </div>
+                    </section>
 
-                    <div class="toggle-grid">
-                        <label class="toggle-row" for="{{ form.shadow_enabled.id_for_label }}">
-                            {{ form.shadow_enabled }}
-                            <span>{{ form.shadow_enabled.label }}</span>
-                        </label>
-                        <label class="toggle-row" for="{{ form.show_games_list.id_for_label }}">
-                            {{ form.show_games_list }}
-                            <span>{{ form.show_games_list.label }}</span>
-                        </label>
-                    </div>
+                    <section class="settings-group" aria-labelledby="color-title">
+                        <div class="settings-group__heading">
+                            <h3 id="color-title">{% translate "Colors" %}</h3>
+                        </div>
+
+                        <div class="field-grid field-grid--colors">
+                            <div class="form-field">
+                                <label for="{{ form.background_color.id_for_label }}">{{ form.background_color.label }}</label>
+                                {{ form.background_color }}
+                                {{ form.background_color.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.text_color.id_for_label }}">{{ form.text_color.label }}</label>
+                                {{ form.text_color }}
+                                {{ form.text_color.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.accent_color.id_for_label }}">{{ form.accent_color.label }}</label>
+                                {{ form.accent_color }}
+                                {{ form.accent_color.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.border_color.id_for_label }}">{{ form.border_color.label }}</label>
+                                {{ form.border_color }}
+                                {{ form.border_color.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.background_opacity.id_for_label }}">{{ form.background_opacity.label }}</label>
+                                {{ form.background_opacity }}
+                                {% if form.background_opacity.help_text %}
+                                    <small>{{ form.background_opacity.help_text }}</small>
+                                {% endif %}
+                                {{ form.background_opacity.errors }}
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="settings-group" aria-labelledby="layout-title">
+                        <div class="settings-group__heading">
+                            <h3 id="layout-title">{% translate "Layout" %}</h3>
+                        </div>
+
+                        <div class="field-grid field-grid--layout">
+                            <div class="form-field">
+                                <label for="{{ form.overlay_width.id_for_label }}">{{ form.overlay_width.label }}</label>
+                                {{ form.overlay_width }}
+                                {{ form.overlay_width.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.overlay_height.id_for_label }}">{{ form.overlay_height.label }}</label>
+                                {{ form.overlay_height }}
+                                {% if form.overlay_height.help_text %}
+                                    <small>{{ form.overlay_height.help_text }}</small>
+                                {% endif %}
+                                {{ form.overlay_height.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.padding.id_for_label }}">{{ form.padding.label }}</label>
+                                {{ form.padding }}
+                                {{ form.padding.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.corner_radius.id_for_label }}">{{ form.corner_radius.label }}</label>
+                                {{ form.corner_radius }}
+                                {{ form.corner_radius.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.border_width.id_for_label }}">{{ form.border_width.label }}</label>
+                                {{ form.border_width }}
+                                {{ form.border_width.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.item_spacing.id_for_label }}">{{ form.item_spacing.label }}</label>
+                                {{ form.item_spacing }}
+                                {{ form.item_spacing.errors }}
+                            </div>
+                            <div class="form-field form-field--wide form-field--compact-number">
+                                <label for="{{ form.page_interval_seconds.id_for_label }}">{{ form.page_interval_seconds.label }}</label>
+                                {{ form.page_interval_seconds }}
+                                {% if form.page_interval_seconds.help_text %}
+                                    <small>{{ form.page_interval_seconds.help_text }}</small>
+                                {% endif %}
+                                {{ form.page_interval_seconds.errors }}
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="settings-group" aria-labelledby="type-title">
+                        <div class="settings-group__heading">
+                            <h3 id="type-title">{% translate "Typography" %}</h3>
+                        </div>
+
+                        <div class="field-grid field-grid--three">
+                            <div class="form-field">
+                                <label for="{{ form.label_text_size.id_for_label }}">{{ form.label_text_size.label }}</label>
+                                {{ form.label_text_size }}
+                                {{ form.label_text_size.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.title_text_size.id_for_label }}">{{ form.title_text_size.label }}</label>
+                                {{ form.title_text_size }}
+                                {{ form.title_text_size.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.total_text_size.id_for_label }}">{{ form.total_text_size.label }}</label>
+                                {{ form.total_text_size }}
+                                {{ form.total_text_size.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.game_text_size.id_for_label }}">{{ form.game_text_size.label }}</label>
+                                {{ form.game_text_size }}
+                                {{ form.game_text_size.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.game_score_text_size.id_for_label }}">{{ form.game_score_text_size.label }}</label>
+                                {{ form.game_score_text_size }}
+                                {{ form.game_score_text_size.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.pager_text_size.id_for_label }}">{{ form.pager_text_size.label }}</label>
+                                {{ form.pager_text_size }}
+                                {{ form.pager_text_size.errors }}
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="settings-group settings-group--last" aria-labelledby="options-title">
+                        <div class="settings-group__heading">
+                            <h3 id="options-title">{% translate "Options" %}</h3>
+                        </div>
+
+                        <div class="toggle-grid">
+                            <label class="toggle-row" for="{{ form.shadow_enabled.id_for_label }}">
+                                {{ form.shadow_enabled }}
+                                <span>{{ form.shadow_enabled.label }}</span>
+                            </label>
+                            <label class="toggle-row" for="{{ form.show_games_list.id_for_label }}">
+                                {{ form.show_games_list }}
+                                <span>{{ form.show_games_list.label }}</span>
+                            </label>
+                        </div>
+                    </section>
                 </section>
 
                 <div class="editor-actions">
@@ -172,12 +237,19 @@
                 </div>
             </div>
 
-            <aside class="preview-panel" aria-labelledby="preview-title" data-winchallenge-preview>
+            <aside
+                class="preview-panel preview-panel--sticky preview-panel--create"
+                aria-labelledby="preview-title"
+                data-winchallenge-preview
+                data-sample-games='[{"id":"sample-1","name":"Rocket League","wins":7,"target_wins":10,"progress_percent":70},{"id":"sample-2","name":"Valorant","wins":4,"target_wins":8,"progress_percent":50},{"id":"sample-3","name":"League Queue","wins":2,"target_wins":5,"progress_percent":40}]'
+            >
                 <div class="panel-heading">
                     <p class="section-label">{% translate "Live preview" %}</p>
                     <h2 id="preview-title">{% translate "Overlay preview" %}</h2>
                 </div>
-                {% include "app/partials/_winchallenge_overlay.html" with challenge=preview_challenge %}
+                <div class="preview-stage">
+                    {% include "app/partials/_winchallenge_overlay.html" with challenge=preview_challenge %}
+                </div>
             </aside>
         </form>
     </div>

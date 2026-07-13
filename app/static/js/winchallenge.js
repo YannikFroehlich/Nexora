@@ -347,6 +347,49 @@
         setupOverlayPager(overlay);
     };
 
+    const sampleGamesForPreview = (preview) => {
+        if (!preview?.dataset.sampleGames) {
+            return [];
+        }
+
+        try {
+            const games = JSON.parse(preview.dataset.sampleGames);
+
+            if (!Array.isArray(games)) {
+                return [];
+            }
+
+            return games.map((game, index) => {
+                const wins = Number.parseInt(game.wins, 10);
+                const targetWins = Number.parseInt(game.target_wins, 10);
+                const safeWins = Number.isNaN(wins) ? 0 : wins;
+                const safeTarget = Number.isNaN(targetWins) || targetWins < 1 ? 1 : targetWins;
+                const fallbackProgress = Math.min(Math.round((safeWins / safeTarget) * 100), 100);
+                const progress = Number.parseInt(game.progress_percent, 10);
+
+                return {
+                    id: game.id || `sample-${index + 1}`,
+                    name: game.name || "Game",
+                    wins: safeWins,
+                    target_wins: safeTarget,
+                    progress_percent: Number.isNaN(progress) ? fallbackProgress : clamp(progress, 0, 100),
+                };
+            });
+        } catch {
+            return [];
+        }
+    };
+
+    const syncPresetButtons = () => {
+        const selectedPreset = textValue("design_template", "glass");
+
+        document.querySelectorAll("[data-preset-button]").forEach((button) => {
+            const isActive = button.dataset.preset === selectedPreset;
+            button.classList.toggle("is-active", isActive);
+            button.setAttribute("aria-pressed", String(isActive));
+        });
+    };
+
     const applyState = (state) => {
         document.querySelectorAll("[data-winchallenge-overlay]").forEach((overlay) => {
             applyDesignToOverlay(overlay, state.design);
@@ -374,8 +417,23 @@
         document.querySelectorAll("[data-winchallenge-preview] [data-winchallenge-overlay]").forEach((overlay) => {
             applyDesignToOverlay(overlay, design);
             setText(overlay, "[data-overlay-title]", title);
-            setupOverlayPager(overlay);
+
+            const preview = overlay.closest("[data-winchallenge-preview]");
+            const sampleGames = sampleGamesForPreview(preview);
+
+            if (sampleGames.length) {
+                renderOverlayGames(overlay, sampleGames);
+                setText(
+                    overlay,
+                    "[data-total-wins]",
+                    String(sampleGames.reduce((total, game) => total + game.wins, 0))
+                );
+            } else {
+                setupOverlayPager(overlay);
+            }
         });
+
+        syncPresetButtons();
     };
 
     const applyPreset = (presetName) => {
@@ -605,6 +663,19 @@
         if (!editor) {
             return;
         }
+
+        editor.querySelectorAll("[data-preset-button]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const field = getField("design_template");
+
+                if (!field || !button.dataset.preset) {
+                    return;
+                }
+
+                field.value = button.dataset.preset;
+                field.dispatchEvent(new Event("change", { bubbles: true }));
+            });
+        });
 
         editor.querySelectorAll("input, select").forEach((control) => {
             control.addEventListener("input", updatePreviewFromInputs);
