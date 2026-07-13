@@ -11,7 +11,107 @@
 {% endblock %}
 
 {% block content %}
-    <section class="main">
-        <h1>{% translate 'Welcome' %}</h1>
-    </section>
+    <div class="main">
+        <section class="hero" aria-labelledby="hero-title">
+            <p class="section-label">{% translate "Browser-based overlays for creators" %}</p>
+            <h1 id="hero-title">{% translate "Custom OBS overlays made simple" %}</h1>
+            <p class="hero-description">
+                {% translate "Create and customize browser-based overlays for Spotify, win challenges and more — then add them directly to OBS as a browser source." %}
+            </p>
+            <div class="hero-actions">
+                <a href="#overlays" class="btn action-button">{% translate "Create your first overlay" %}</a>
+                <a href="#how-it-works" class="btn glass-design secondary-button">{% translate "Learn more" %}</a>
+            </div>
+        </section>
+
+        <section id="overlays" class="home-section" aria-labelledby="overlays-title">
+            <div class="section-heading">
+                <p class="section-label">{% translate "Overlay collection" %}</p>
+                <h2 id="overlays-title">{% translate "Choose what fits your stream" %}</h2>
+                <p>{% translate "Start with an overlay and make it feel like part of your channel." %}</p>
+            </div>
+
+            <div class="overlay-grid">
+                <article class="glass-design card overlay-card">
+                    <div class="overlay-card__icon">
+                        <img src="{% static 'imgs/icons/spotify.webp' %}" alt="{% translate 'Spotify logo' %}">
+                    </div>
+                    <div class="overlay-card__content">
+                        <h3>{% translate "Spotify Overlay" %}</h3>
+                        <p>{% translate "Show your currently playing Spotify song directly in your stream." %}</p>
+                        <ul class="feature-list">
+                            <li>{% translate "Song title and artist" %}</li>
+                            <li>{% translate "Album artwork and progress" %}</li>
+                            <li>{% translate "Custom colors and layouts" %}</li>
+                        </ul>
+                    </div>
+                    <a href="{% url 'spotify_create' %}" class="btn action-button overlay-card__action">{% translate "Create Spotify Overlay" %}</a>
+                </article>
+
+                <article class="glass-design card overlay-card">
+                    <div class="overlay-card__icon">
+                        <img src="{% static 'imgs/icons/winchallenge.png' %}" alt="{% translate 'Win challenge medal' %}">
+                    </div>
+                    <div class="overlay-card__content">
+                        <h3>{% translate "Win Challenge" %}</h3>
+                        <p>{% translate "Track your wins and display your current challenge live in your stream." %}</p>
+                        <ul class="feature-list">
+                            <li>{% translate "Wins and match counters" %}</li>
+                            <li>{% translate "Custom goals and titles" %}</li>
+                            <li>{% translate "Adjustable design and colors" %}</li>
+                        </ul>
+                    </div>
+                    <a href="{% url 'winchallenge_list' %}" class="btn action-button overlay-card__action">
+                        {% translate "Create Win Challenge" %}
+                    </a>
+                </article>
+            </div>
+        </section>
+
+        <section id="how-it-works" class="home-section" aria-labelledby="steps-title">
+            <div class="section-heading">
+                <p class="section-label">{% translate "How it works" %}</p>
+                <h2 id="steps-title">{% translate "From idea to stream in three steps" %}</h2>
+            </div>
+            <ol class="steps">
+                <li class="glass-design card step-card">
+                    <span class="step-card__number" aria-hidden="true">1</span>
+                    <h3>{% translate "Choose an overlay" %}</h3>
+                    <p>{% translate "Pick the overlay that matches what you want to show." %}</p>
+                </li>
+                <li class="glass-design card step-card">
+                    <span class="step-card__number" aria-hidden="true">2</span>
+                    <h3>{% translate "Customize its appearance" %}</h3>
+                    <p>{% translate "Adjust the content, colors and layout for your stream." %}</p>
+                </li>
+                <li class="glass-design card step-card">
+                    <span class="step-card__number" aria-hidden="true">3</span>
+                    <h3>{% translate "Add it to OBS" %}</h3>
+                    <p>{% translate "Use the generated URL as a browser source in OBS." %}</p>
+                </li>
+            </ol>
+        </section>
+
+        <section class="home-section benefits" aria-labelledby="benefits-title">
+            <div class="section-heading section-heading--left">
+                <p class="section-label">{% translate "Built for creators" %}</p>
+                <h2 id="benefits-title">{% translate "Everything your overlay workflow needs" %}</h2>
+            </div>
+            <ul class="benefit-list">
+                <li>{% translate "Easy to set up" %}</li>
+                <li>{% translate "Fully customizable" %}</li>
+                <li>{% translate "Made for OBS" %}</li>
+                <li>{% translate "Update values directly from the website" %}</li>
+            </ul>
+        </section>
+
+        <section class="glass-design card final-cta" aria-labelledby="cta-title">
+            <div>
+                <p class="section-label">{% translate "Your stream, your style" %}</p>
+                <h2 id="cta-title">{% translate "Ready to upgrade your stream?" %}</h2>
+                <p>{% translate "Create overlays that match your stream and manage them from one place." %}</p>
+            </div>
+            <a href="#overlays" class="btn action-button">{% translate "Get started" %}</a>
+        </section>
+    </div>
 {% endblock %}

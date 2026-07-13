@@ -1,0 +1,77 @@
+{% load i18n %}
+
+<div
+    class="winchallenge-overlay"
+    data-winchallenge-overlay
+    data-page-interval-seconds="{{ challenge.page_interval_seconds }}"
+    style="
+        --wc-bg: {{ challenge.background_rgba }};
+        --wc-text: {{ challenge.text_color }};
+        --wc-accent: {{ challenge.accent_color }};
+        --wc-border: {{ challenge.border_color }};
+        --wc-border-width: {{ challenge.border_width }}px;
+        --wc-radius: {{ challenge.corner_radius }}px;
+        --wc-padding: {{ challenge.padding }}px;
+        --wc-width: {{ challenge.overlay_width }}px;
+        --wc-height: {% if challenge.overlay_height %}{{ challenge.overlay_height }}px{% else %}auto{% endif %};
+        --wc-font-size: {{ challenge.text_size }}px;
+        --wc-label-font-size: {{ challenge.label_text_size }}px;
+        --wc-title-font-size: {{ challenge.title_text_size }}px;
+        --wc-total-font-size: {{ challenge.total_text_size }}px;
+        --wc-game-font-size: {{ challenge.game_text_size }}px;
+        --wc-game-score-font-size: {{ challenge.game_score_text_size }}px;
+        --wc-pager-font-size: {{ challenge.pager_text_size }}px;
+        --wc-item-spacing: {{ challenge.item_spacing }}px;
+        --wc-shadow: {{ challenge.shadow_css }};
+    "
+>
+    <div class="winchallenge-overlay__header">
+        <div>
+            <p class="winchallenge-overlay__label">{% translate "Win Challenge" %}</p>
+            <h2 data-overlay-title>{{ challenge.display_title }}</h2>
+        </div>
+
+        <div class="winchallenge-overlay__score" aria-live="polite">
+            <span data-total-wins>{{ challenge.total_wins }}</span>
+            <span>{% translate "Wins" %}</span>
+        </div>
+    </div>
+
+    <div
+        class="winchallenge-overlay__games"
+        data-games-list
+        data-empty-label="{% translate 'No games yet' %}"
+        data-games-per-page="3"
+        {% if not challenge.show_games_list %}hidden{% endif %}
+    >
+        {% for page in challenge.game_pages %}
+            <div
+                class="winchallenge-overlay__page{% if forloop.first %} is-active{% endif %}"
+                data-page-index="{{ forloop.counter0 }}"
+                {% if not forloop.first %}hidden{% endif %}
+            >
+                {% for game in page %}
+                    <article class="winchallenge-overlay__game" data-game-id="{{ game.pk }}">
+                        <div class="winchallenge-overlay__game-top">
+                            <strong data-game-name>{{ game.name }}</strong>
+                            <span class="winchallenge-overlay__game-badge">
+                                <span data-game-wins>{{ game.wins }}</span>/<span data-game-target-wins>{{ game.target_wins }}</span>
+                            </span>
+                        </div>
+                        <div class="winchallenge-overlay__game-progress" aria-hidden="true">
+                            <span style="width: {{ game.progress_percent }}%;" data-game-progress></span>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% empty %}
+            <p class="winchallenge-overlay__empty">{% translate "No games yet" %}</p>
+        {% endfor %}
+    </div>
+
+    <div class="winchallenge-overlay__pager" data-page-indicator {% if challenge.game_page_count <= 1 %}hidden{% endif %}>
+        <span data-current-page>1</span>
+        <span aria-hidden="true">/</span>
+        <span data-total-pages>{{ challenge.game_page_count }}</span>
+    </div>
+</div>

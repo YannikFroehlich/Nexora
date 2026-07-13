@@ -1,0 +1,529 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Nexora\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-09 15:59+0200\n"
+"PO-Revision-Date: 2026-07-11 00:00+0200\n"
+"Last-Translator: Nexora Team\n"
+"Language-Team: German\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\app\templates\app\about.html:6 .\app\templates\app\about.html:15
+#: .\app\templates\app\base.html:27
+msgid "About"
+msgstr "Über"
+
+#: .\app\templates\app\base.html:24 .\app\templates\app\home.html:6
+msgid "Home"
+msgstr "Start"
+
+#: .\app\templates\app\base.html:41
+msgid "Language"
+msgstr "Sprache"
+
+#: .\app\templates\app\base.html:57
+msgid "Switch theme"
+msgstr "Theme wechseln"
+
+#: .\app\templates\app\home.html:16
+msgid "Welcome to Nexora"
+msgstr ""
+
+#: .\app\templates\app\home.html:18
+msgid ""
+"Create browser-based stream overlays for Spotify, win challenges, counters, "
+"and more — all customizable to match your stream’s style"
+msgstr ""
+
+#: .\app\templates\app\home.html:26
+msgid "Spotify Overlay"
+msgstr ""
+
+#: .\app\templates\app\home.html:27
+msgid "Create an overlay to show your currently played spotify song"
+msgstr ""
+
+#: .\app\templates\app\home.html:28
+msgid "Create Spotify overlay"
+msgstr ""
+
+#: .\app\templates\app\home.html:34
+msgid "Win Challenges"
+msgstr "Win Challenges"
+
+#: .\app\templates\app\home.html:35
+msgid "Create an overlay to show your Winchallenge"
+msgstr ""
+
+#: .\app\templates\app\home.html:36
+msgid "Create Winchallenge"
+msgstr ""
+
+#~ msgid "Light"
+#~ msgstr "Hell"
+
+#~ msgid "Dark"
+#~ msgstr "Dunkel"
+
+#~ msgid "Welcome"
+#~ msgstr "Willkommen"
+
+#: .\app\templates\app\home.html
+msgid "Browser-based overlays for creators"
+msgstr "Browserbasierte Overlays für Creator"
+
+#: .\app\templates\app\home.html
+msgid "Custom OBS overlays made simple"
+msgstr "Individuelle OBS-Overlays, einfach erstellt"
+
+#: .\app\templates\app\home.html
+msgid "Create and customize browser-based overlays for Spotify, win challenges and more — then add them directly to OBS as a browser source."
+msgstr "Erstelle und gestalte browserbasierte Overlays für Spotify, Win Challenges und mehr – und füge sie anschließend direkt als Browser-Quelle in OBS ein."
+
+#: .\app\templates\app\home.html
+msgid "Create your first overlay"
+msgstr "Erstes Overlay erstellen"
+
+#: .\app\templates\app\home.html
+msgid "Learn more"
+msgstr "Mehr erfahren"
+
+#: .\app\templates\app\home.html
+msgid "Overlay collection"
+msgstr "Overlay-Auswahl"
+
+#: .\app\templates\app\home.html
+msgid "Choose what fits your stream"
+msgstr "Wähle, was zu deinem Stream passt"
+
+#: .\app\templates\app\home.html
+msgid "Start with an overlay and make it feel like part of your channel."
+msgstr "Starte mit einem Overlay und passe es an deinen Kanal an."
+
+#: .\app\templates\app\home.html
+msgid "Spotify logo"
+msgstr "Spotify-Logo"
+
+#: .\app\templates\app\home.html
+msgid "Show your currently playing Spotify song directly in your stream."
+msgstr "Zeige den aktuell auf Spotify abgespielten Song direkt in deinem Stream."
+
+#: .\app\templates\app\home.html
+msgid "Song title and artist"
+msgstr "Songtitel und Künstler"
+
+#: .\app\templates\app\home.html
+msgid "Album artwork and progress"
+msgstr "Albumcover und Fortschritt"
+
+#: .\app\templates\app\home.html
+msgid "Custom colors and layouts"
+msgstr "Individuelle Farben und Layouts"
+
+#: .\app\templates\app\home.html
+msgid "Create Spotify Overlay"
+msgstr "Spotify-Overlay erstellen"
+
+#: .\app\templates\app\home.html
+msgid "Win challenge medal"
+msgstr "Medaille der Win Challenge"
+
+#: .\app\templates\app\home.html
+msgid "Win Challenge"
+msgstr "Win Challenge"
+
+#: .\app\templates\app\home.html
+msgid "Track your wins and display your current challenge live in your stream."
+msgstr "Verfolge deine Siege und zeige deine aktuelle Challenge live im Stream."
+
+#: .\app\templates\app\home.html
+msgid "Wins and match counters"
+msgstr "Siege- und Match-Zähler"
+
+#: .\app\templates\app\home.html
+msgid "Custom goals and titles"
+msgstr "Individuelle Ziele und Titel"
+
+#: .\app\templates\app\home.html
+msgid "Adjustable design and colors"
+msgstr "Anpassbares Design und Farben"
+
+#: .\app\templates\app\home.html
+msgid "Create Win Challenge"
+msgstr "Win Challenge erstellen"
+
+#: .\app\templates\app\home.html
+msgid "How it works"
+msgstr "So funktioniert es"
+
+#: .\app\templates\app\home.html
+msgid "From idea to stream in three steps"
+msgstr "In drei Schritten von der Idee zum Stream"
+
+#: .\app\templates\app\home.html
+msgid "Choose an overlay"
+msgstr "Overlay auswählen"
+
+#: .\app\templates\app\home.html
+msgid "Pick the overlay that matches what you want to show."
+msgstr "Wähle das Overlay, das zu deinen gewünschten Inhalten passt."
+
+#: .\app\templates\app\home.html
+msgid "Customize its appearance"
+msgstr "Aussehen anpassen"
+
+#: .\app\templates\app\home.html
+msgid "Adjust the content, colors and layout for your stream."
+msgstr "Passe Inhalte, Farben und Layout an deinen Stream an."
+
+#: .\app\templates\app\home.html
+msgid "Add it to OBS"
+msgstr "In OBS einbinden"
+
+#: .\app\templates\app\home.html
+msgid "Use the generated URL as a browser source in OBS."
+msgstr "Nutze die erzeugte URL als Browser-Quelle in OBS."
+
+#: .\app\templates\app\home.html
+msgid "Built for creators"
+msgstr "Für Creator entwickelt"
+
+#: .\app\templates\app\home.html
+msgid "Everything your overlay workflow needs"
+msgstr "Alles für deinen Overlay-Workflow"
+
+#: .\app\templates\app\home.html
+msgid "Easy to set up"
+msgstr "Einfach einzurichten"
+
+#: .\app\templates\app\home.html
+msgid "Fully customizable"
+msgstr "Vollständig anpassbar"
+
+#: .\app\templates\app\home.html
+msgid "Made for OBS"
+msgstr "Für OBS gemacht"
+
+#: .\app\templates\app\home.html
+msgid "Update values directly from the website"
+msgstr "Werte direkt über die Website aktualisieren"
+
+#: .\app\templates\app\home.html
+msgid "Your stream, your style"
+msgstr "Dein Stream, dein Stil"
+
+#: .\app\templates\app\home.html
+msgid "Ready to upgrade your stream?"
+msgstr "Bereit, deinen Stream aufzuwerten?"
+
+#: .\app\templates\app\home.html
+msgid "Create overlays that match your stream and manage them from one place."
+msgstr "Erstelle Overlays passend zu deinem Stream und verwalte sie an einem Ort."
+
+#: .\app\templates\app\home.html
+msgid "Get started"
+msgstr "Jetzt starten"
+
+#: .\app\forms.py .\app\models.py .\app\templates\app\winchallenge\*.html
+msgid "Enter a valid hex color, for example #14b8a6."
+msgstr "Gib eine gültige Hex-Farbe ein, zum Beispiel #14b8a6."
+
+msgid "Minimal"
+msgstr "Minimal"
+
+msgid "Glass"
+msgstr "Glass"
+
+msgid "Neon"
+msgstr "Neon"
+
+msgid "Challenge name"
+msgstr "Name der Challenge"
+
+msgid "Overlay title"
+msgstr "Overlay-Titel"
+
+msgid "Target wins"
+msgstr "Ziel-Wins"
+
+msgid "Design template"
+msgstr "Design-Vorlage"
+
+msgid "Background color"
+msgstr "Hintergrundfarbe"
+
+msgid "Background opacity"
+msgstr "Hintergrundtransparenz"
+
+msgid "Text color"
+msgstr "Textfarbe"
+
+msgid "Accent color"
+msgstr "Akzentfarbe"
+
+msgid "Border color"
+msgstr "Rahmenfarbe"
+
+msgid "Border width"
+msgstr "Rahmenbreite"
+
+msgid "Corner radius"
+msgstr "Eckenradius"
+
+msgid "Padding"
+msgstr "Innenabstand"
+
+msgid "Width"
+msgstr "Breite"
+
+msgid "Height"
+msgstr "Höhe"
+
+msgid "Text size"
+msgstr "Textgröße"
+
+msgid "Label text size"
+msgstr "Schriftgröße Label"
+
+msgid "Title text size"
+msgstr "Schriftgröße Titel"
+
+msgid "Total wins text size"
+msgstr "Schriftgröße Gesamt-Wins"
+
+msgid "Game name text size"
+msgstr "Schriftgröße Spielname"
+
+msgid "Game score text size"
+msgstr "Schriftgröße Spielstand"
+
+msgid "Page indicator text size"
+msgstr "Schriftgröße Seitenanzeige"
+
+msgid "Page interval"
+msgstr "Seitenwechsel-Intervall"
+
+msgid "Seconds before switching to the next page."
+msgstr "Sekunden bis zur nächsten Seite."
+
+msgid "Element spacing"
+msgstr "Elementabstand"
+
+msgid "0 keeps automatic height."
+msgstr "0 behält die automatische Höhe bei."
+
+msgid "Show shadow"
+msgstr "Schatten anzeigen"
+
+msgid "Show games list"
+msgstr "Spieleliste anzeigen"
+
+msgid "Show progress bar"
+msgstr "Fortschrittsbalken anzeigen"
+
+msgid "Leave empty to use the challenge name."
+msgstr "Leer lassen, um den Namen der Challenge zu verwenden."
+
+msgid "0 is transparent, 100 is fully opaque."
+msgstr "0 ist transparent, 100 ist vollständig deckend."
+
+msgid "Road to Diamond"
+msgstr "Road to Diamond"
+
+msgid "Game name"
+msgstr "Name des Spiels"
+
+msgid "Rocket League"
+msgstr "Rocket League"
+
+msgid "Win Challenge created."
+msgstr "Win Challenge erstellt."
+
+msgid "Challenge settings saved."
+msgstr "Challenge-Einstellungen gespeichert."
+
+msgid "Overlay design saved."
+msgstr "Overlay-Design gespeichert."
+
+msgid "Win Challenge deleted: %(name)s"
+msgstr "Win Challenge gelöscht: %(name)s"
+
+msgid "Invalid win change."
+msgstr "Ungültige Win-Änderung."
+
+msgid "Game name is required."
+msgstr "Der Spielname ist erforderlich."
+
+msgid "Win Challenge overlays"
+msgstr "Win-Challenge-Overlays"
+
+msgid "Manage your win counters"
+msgstr "Verwalte deine Win-Zähler"
+
+msgid "Create browser-source overlays for OBS, track wins per game and keep the public overlay updated automatically."
+msgstr "Erstelle Browser-Source-Overlays für OBS, tracke Wins pro Spiel und halte das öffentliche Overlay automatisch aktuell."
+
+msgid "Saved Win Challenges"
+msgstr "Gespeicherte Win Challenges"
+
+msgid "Progress"
+msgstr "Fortschritt"
+
+msgid "Wins"
+msgstr "Wins"
+
+msgid "Games"
+msgstr "Spiele"
+
+msgid "Updated"
+msgstr "Aktualisiert"
+
+msgid "Manage"
+msgstr "Verwalten"
+
+msgid "Edit Design"
+msgstr "Design bearbeiten"
+
+msgid "Open Preview"
+msgstr "Vorschau öffnen"
+
+msgid "Copy OBS Link"
+msgstr "OBS-Link kopieren"
+
+msgid "Delete this Win Challenge?"
+msgstr "Diese Win Challenge löschen?"
+
+msgid "Delete"
+msgstr "Löschen"
+
+msgid "Live preview"
+msgstr "Live-Vorschau"
+
+msgid "No overlays yet"
+msgstr "Noch keine Overlays"
+
+msgid "Create your first Win Challenge"
+msgstr "Erstelle deine erste Win Challenge"
+
+msgid "Start with a design preset, add games later and copy the generated OBS browser-source link."
+msgstr "Starte mit einer Design-Vorlage, füge später Spiele hinzu und kopiere den generierten OBS-Browser-Source-Link."
+
+msgid "OBS link copied"
+msgstr "OBS-Link kopiert"
+
+msgid "No games yet"
+msgstr "Noch keine Spiele"
+
+msgid "New overlay"
+msgstr "Neues Overlay"
+
+msgid "Create a Win Challenge"
+msgstr "Win Challenge erstellen"
+
+msgid "Set a goal, choose a starter design and adjust the preview before saving."
+msgstr "Lege ein Ziel fest, wähle ein Startdesign und passe die Vorschau vor dem Speichern an."
+
+msgid "General settings"
+msgstr "Allgemeine Einstellungen"
+
+msgid "Challenge"
+msgstr "Challenge"
+
+msgid "Design"
+msgstr "Design"
+
+msgid "Customize the overlay"
+msgstr "Overlay anpassen"
+
+msgid "Cancel"
+msgstr "Abbrechen"
+
+msgid "Save Win Challenge"
+msgstr "Win Challenge speichern"
+
+msgid "Overlay preview"
+msgstr "Overlay-Vorschau"
+
+msgid "of"
+msgstr "von"
+
+msgid "wins remaining"
+msgstr "Wins verbleibend"
+
+msgid "Win Challenge sections"
+msgstr "Win-Challenge-Bereiche"
+
+msgid "Settings"
+msgstr "Einstellungen"
+
+msgid "Challenge settings"
+msgstr "Challenge-Einstellungen"
+
+msgid "Total wins"
+msgstr "Wins gesamt"
+
+msgid "Remaining"
+msgstr "Verbleibend"
+
+msgid "Save settings"
+msgstr "Einstellungen speichern"
+
+msgid "Manage games"
+msgstr "Spiele verwalten"
+
+msgid "Add game"
+msgstr "Spiel hinzufügen"
+
+msgid "No games added yet."
+msgstr "Noch keine Spiele hinzugefügt."
+
+msgid "Increase wins"
+msgstr "Wins erhöhen"
+
+msgid "Decrease wins"
+msgstr "Wins verringern"
+
+msgid "Edit game"
+msgstr "Spiel bearbeiten"
+
+msgid "Delete game"
+msgstr "Spiel löschen"
+
+msgid "Rename game"
+msgstr "Spiel umbenennen"
+
+msgid "Delete this game?"
+msgstr "Dieses Spiel löschen?"
+
+msgid "Edit overlay design"
+msgstr "Overlay-Design bearbeiten"
+
+msgid "Save design"
+msgstr "Design speichern"
+
+msgid "Browser source"
+msgstr "Browser-Quelle"
+
+msgid "OBS Link"
+msgstr "OBS-Link"
+
+msgid "Add a new browser source in OBS"
+msgstr "Füge in OBS eine neue Browser-Quelle hinzu"
+
+msgid "Paste the generated URL"
+msgstr "Füge die generierte URL ein"
+
+msgid "Set a suitable width and height"
+msgstr "Lege eine passende Breite und Höhe fest"
+
+msgid "Enable refresh when the scene becomes active if desired"
+msgstr "Aktiviere bei Bedarf das Aktualisieren, wenn die Szene aktiv wird"
