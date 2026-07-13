@@ -542,3 +542,19 @@ msgstr ""
 
 msgid "Options"
 msgstr ""
+
+#: .\app\templates\app\home.html
+msgid "Example overlay preview"
+msgstr ""
+
+#: .\app\templates\app\home.html
+msgid "Stream preview"
+msgstr ""
+
+#: .\app\templates\app\home.html
+msgid "Now playing"
+msgstr ""
+
+#: .\app\templates\app\base.html
+msgid "Version"
+msgstr ""

@@ -11,20 +11,63 @@
 {% endblock %}
 
 {% block content %}
-    <div class="main">
+    <div class="home-page">
         <section class="hero" aria-labelledby="hero-title">
-            <p class="section-label">{% translate "Browser-based overlays for creators" %}</p>
-            <h1 id="hero-title">{% translate "Custom OBS overlays made simple" %}</h1>
-            <p class="hero-description">
-                {% translate "Create and customize browser-based overlays for Spotify, win challenges and more — then add them directly to OBS as a browser source." %}
-            </p>
-            <div class="hero-actions">
-                <a href="#overlays" class="btn action-button">{% translate "Create your first overlay" %}</a>
-                <a href="#how-it-works" class="btn glass-design secondary-button">{% translate "Learn more" %}</a>
+            <div class="hero__copy">
+                <p class="section-label"><span>Nexora</span> {% translate "Browser-based overlays for creators" %}</p>
+                <h1 id="hero-title">{% translate "Custom OBS overlays made simple" %}</h1>
+                <p class="hero-description">
+                    {% translate "Create and customize browser-based overlays for Spotify, win challenges and more — then add them directly to OBS as a browser source." %}
+                </p>
+                <div class="hero-actions">
+                    <a href="#overlays" class="btn action-button">{% translate "Create your first overlay" %}</a>
+                    <a href="#how-it-works" class="btn glass-design secondary-button">{% translate "Learn more" %}</a>
+                </div>
+            </div>
+
+            <div class="stream-window" aria-label="{% translate 'Example overlay preview' %}">
+                <div class="stream-window__bar">
+                    <span class="window-controls" aria-hidden="true">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                    <span class="stream-window__status">
+                        <span class="live-dot" aria-hidden="true"></span>
+                        {% translate "Stream preview" %}
+                    </span>
+                    <span class="stream-window__quality">1920 × 1080</span>
+                </div>
+
+                <div class="stream-canvas">
+                    <div class="stream-canvas__brand" aria-hidden="true">NEXORA</div>
+
+                    <div class="demo-overlay demo-overlay--spotify">
+                        <img src="{% static 'imgs/icons/spotify.webp' %}" alt="">
+                        <div class="demo-overlay__main">
+                            <span class="demo-overlay__eyebrow">{% translate "Now playing" %}</span>
+                            <strong>Midnight Drive</strong>
+                            <small>Nova Waves</small>
+                            <span class="demo-progress" aria-hidden="true"><span></span></span>
+                        </div>
+                    </div>
+
+                    <div class="demo-overlay demo-overlay--challenge">
+                        <div class="challenge-preview__heading">
+                            <span class="demo-overlay__eyebrow">{% translate "Win Challenge" %}</span>
+                            <strong>{% translate "Road to Diamond" %}</strong>
+                        </div>
+                        <div class="challenge-preview__score">
+                            <span>Rocket League</span>
+                            <strong>7 / 10</strong>
+                        </div>
+                        <span class="demo-progress" aria-hidden="true"><span></span></span>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section id="overlays" class="home-section" aria-labelledby="overlays-title">
+        <section id="overlays" class="home-section overlay-collection" aria-labelledby="overlays-title">
             <div class="section-heading">
                 <p class="section-label">{% translate "Overlay collection" %}</p>
                 <h2 id="overlays-title">{% translate "Choose what fits your stream" %}</h2>
@@ -32,62 +75,94 @@
             </div>
 
             <div class="overlay-grid">
-                <article class="glass-design card overlay-card">
-                    <div class="overlay-card__icon">
-                        <img src="{% static 'imgs/icons/spotify.webp' %}" alt="{% translate 'Spotify logo' %}">
+                <article class="overlay-card overlay-card--spotify">
+                    <div class="overlay-card__preview" aria-hidden="true">
+                        <div class="spotify-widget">
+                            <img src="{% static 'imgs/icons/spotify.webp' %}" alt="">
+                            <div>
+                                <span>{% translate "Now playing" %}</span>
+                                <strong>Midnight Drive</strong>
+                                <small>Nova Waves</small>
+                            </div>
+                        </div>
                     </div>
                     <div class="overlay-card__content">
-                        <h3>{% translate "Spotify Overlay" %}</h3>
+                        <div class="overlay-card__title">
+                            <div class="overlay-card__icon">
+                                <img src="{% static 'imgs/icons/spotify.webp' %}" alt="{% translate 'Spotify logo' %}">
+                            </div>
+                            <h3>{% translate "Spotify Overlay" %}</h3>
+                        </div>
                         <p>{% translate "Show your currently playing Spotify song directly in your stream." %}</p>
                         <ul class="feature-list">
                             <li>{% translate "Song title and artist" %}</li>
                             <li>{% translate "Album artwork and progress" %}</li>
                             <li>{% translate "Custom colors and layouts" %}</li>
                         </ul>
+                        <a href="{% url 'spotify_create' %}" class="btn action-button overlay-card__action">
+                            {% translate "Create Spotify Overlay" %}
+                        </a>
                     </div>
-                    <a href="{% url 'spotify_create' %}" class="btn action-button overlay-card__action">{% translate "Create Spotify Overlay" %}</a>
                 </article>
 
-                <article class="glass-design card overlay-card">
-                    <div class="overlay-card__icon">
-                        <img src="{% static 'imgs/icons/winchallenge.png' %}" alt="{% translate 'Win challenge medal' %}">
+                <article class="overlay-card overlay-card--challenge">
+                    <div class="overlay-card__preview" aria-hidden="true">
+                        <div class="challenge-widget">
+                            <span>{% translate "Win Challenge" %}</span>
+                            <strong>{% translate "Road to Diamond" %}</strong>
+                            <div>
+                                <small>Rocket League</small>
+                                <b>7 / 10</b>
+                            </div>
+                        </div>
                     </div>
                     <div class="overlay-card__content">
-                        <h3>{% translate "Win Challenge" %}</h3>
+                        <div class="overlay-card__title">
+                            <div class="overlay-card__icon">
+                                <img src="{% static 'imgs/icons/winchallenge.png' %}" alt="{% translate 'Win challenge medal' %}">
+                            </div>
+                            <h3>{% translate "Win Challenge" %}</h3>
+                        </div>
                         <p>{% translate "Track your wins and display your current challenge live in your stream." %}</p>
                         <ul class="feature-list">
                             <li>{% translate "Wins and match counters" %}</li>
                             <li>{% translate "Custom goals and titles" %}</li>
                             <li>{% translate "Adjustable design and colors" %}</li>
                         </ul>
+                        <a href="{% url 'winchallenge_list' %}" class="btn action-button overlay-card__action">
+                            {% translate "Create Win Challenge" %}
+                        </a>
                     </div>
-                    <a href="{% url 'winchallenge_list' %}" class="btn action-button overlay-card__action">
-                        {% translate "Create Win Challenge" %}
-                    </a>
                 </article>
             </div>
         </section>
 
-        <section id="how-it-works" class="home-section" aria-labelledby="steps-title">
-            <div class="section-heading">
+        <section id="how-it-works" class="home-section workflow" aria-labelledby="steps-title">
+            <div class="section-heading section-heading--left">
                 <p class="section-label">{% translate "How it works" %}</p>
                 <h2 id="steps-title">{% translate "From idea to stream in three steps" %}</h2>
             </div>
             <ol class="steps">
-                <li class="glass-design card step-card">
-                    <span class="step-card__number" aria-hidden="true">1</span>
-                    <h3>{% translate "Choose an overlay" %}</h3>
-                    <p>{% translate "Pick the overlay that matches what you want to show." %}</p>
+                <li class="step-item">
+                    <span class="step-item__number" aria-hidden="true">01</span>
+                    <div>
+                        <h3>{% translate "Choose an overlay" %}</h3>
+                        <p>{% translate "Pick the overlay that matches what you want to show." %}</p>
+                    </div>
                 </li>
-                <li class="glass-design card step-card">
-                    <span class="step-card__number" aria-hidden="true">2</span>
-                    <h3>{% translate "Customize its appearance" %}</h3>
-                    <p>{% translate "Adjust the content, colors and layout for your stream." %}</p>
+                <li class="step-item">
+                    <span class="step-item__number" aria-hidden="true">02</span>
+                    <div>
+                        <h3>{% translate "Customize its appearance" %}</h3>
+                        <p>{% translate "Adjust the content, colors and layout for your stream." %}</p>
+                    </div>
                 </li>
-                <li class="glass-design card step-card">
-                    <span class="step-card__number" aria-hidden="true">3</span>
-                    <h3>{% translate "Add it to OBS" %}</h3>
-                    <p>{% translate "Use the generated URL as a browser source in OBS." %}</p>
+                <li class="step-item">
+                    <span class="step-item__number" aria-hidden="true">03</span>
+                    <div>
+                        <h3>{% translate "Add it to OBS" %}</h3>
+                        <p>{% translate "Use the generated URL as a browser source in OBS." %}</p>
+                    </div>
                 </li>
             </ol>
         </section>
@@ -98,20 +173,20 @@
                 <h2 id="benefits-title">{% translate "Everything your overlay workflow needs" %}</h2>
             </div>
             <ul class="benefit-list">
-                <li>{% translate "Easy to set up" %}</li>
-                <li>{% translate "Fully customizable" %}</li>
-                <li>{% translate "Made for OBS" %}</li>
-                <li>{% translate "Update values directly from the website" %}</li>
+                <li><span>01</span>{% translate "Easy to set up" %}</li>
+                <li><span>02</span>{% translate "Fully customizable" %}</li>
+                <li><span>03</span>{% translate "Made for OBS" %}</li>
+                <li><span>04</span>{% translate "Update values directly from the website" %}</li>
             </ul>
         </section>
 
-        <section class="glass-design card final-cta" aria-labelledby="cta-title">
+        <section class="final-cta" aria-labelledby="cta-title">
             <div>
                 <p class="section-label">{% translate "Your stream, your style" %}</p>
                 <h2 id="cta-title">{% translate "Ready to upgrade your stream?" %}</h2>
                 <p>{% translate "Create overlays that match your stream and manage them from one place." %}</p>
             </div>
-            <a href="#overlays" class="btn action-button">{% translate "Get started" %}</a>
+            <a href="#overlays" class="btn final-cta__button">{% translate "Get started" %}</a>
         </section>
     </div>
 {% endblock %}

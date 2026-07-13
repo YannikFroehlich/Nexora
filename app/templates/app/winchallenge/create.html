@@ -11,25 +11,43 @@
 {% endblock %}
 
 {% block content %}
-    <div class="winchallenge-page winchallenge-editor-page" data-winchallenge-editor>
-        <section class="winchallenge-page__hero winchallenge-page__hero--editor" aria-labelledby="create-title">
-            <p class="section-label">{% translate "New overlay" %}</p>
+    <div class="winchallenge-page winchallenge-editor-page winchallenge-editor-page--create" data-winchallenge-editor>
+        <section class="winchallenge-page__hero winchallenge-page__hero--editor create-hero" aria-labelledby="create-title">
+            <p class="section-label"><span>Nexora</span> {% translate "New overlay" %}</p>
             <h1 id="create-title">{% translate "Create a Win Challenge" %}</h1>
             <p>{% translate "Set a goal, choose a starter design and adjust the preview before saving." %}</p>
         </section>
 
-        <form class="editor-layout editor-layout--create" method="post" novalidate>
+        <form class="editor-layout editor-layout--create create-editor-layout" method="post" novalidate>
             {% csrf_token %}
+
+            <aside
+                class="preview-panel preview-panel--sticky preview-panel--create preview-panel--surface"
+                aria-labelledby="preview-title"
+                data-winchallenge-preview
+                data-sample-games='[{"id":"sample-1","name":"Rocket League","wins":7,"target_wins":10,"progress_percent":70},{"id":"sample-2","name":"Valorant","wins":4,"target_wins":8,"progress_percent":50},{"id":"sample-3","name":"League Queue","wins":2,"target_wins":5,"progress_percent":40}]'
+            >
+                <div class="panel-heading">
+                    <p class="section-label">{% translate "Live preview" %}</p>
+                    <h2 id="preview-title">{% translate "Overlay preview" %}</h2>
+                </div>
+                <div class="preview-stage">
+                    {% include "app/partials/_winchallenge_overlay.html" with challenge=preview_challenge %}
+                </div>
+            </aside>
 
             <div class="editor-panels">
                 {% if form.non_field_errors %}
                     <div class="form-errors">{{ form.non_field_errors }}</div>
                 {% endif %}
 
-                <section class="glass-design card editor-panel editor-panel--intro" aria-labelledby="general-title">
-                    <div class="panel-heading">
-                        <p class="section-label">{% translate "General settings" %}</p>
-                        <h2 id="general-title">{% translate "Challenge" %}</h2>
+                <section class="editor-panel editor-panel--intro editor-panel--surface" aria-labelledby="general-title">
+                    <div class="panel-heading panel-heading--numbered">
+                        <span class="panel-heading__number" aria-hidden="true">01</span>
+                        <div>
+                            <p class="section-label">{% translate "General settings" %}</p>
+                            <h2 id="general-title">{% translate "Challenge" %}</h2>
+                        </div>
                     </div>
 
                     <div class="form-field form-field--wide">
@@ -39,10 +57,13 @@
                     </div>
                 </section>
 
-                <section class="glass-design card editor-panel" aria-labelledby="design-title">
-                    <div class="panel-heading">
-                        <p class="section-label">{% translate "Design" %}</p>
-                        <h2 id="design-title">{% translate "Customize the overlay" %}</h2>
+                <section class="editor-panel editor-panel--surface" aria-labelledby="design-title">
+                    <div class="panel-heading panel-heading--numbered">
+                        <span class="panel-heading__number" aria-hidden="true">02</span>
+                        <div>
+                            <p class="section-label">{% translate "Design" %}</p>
+                            <h2 id="design-title">{% translate "Customize the overlay" %}</h2>
+                        </div>
                     </div>
 
                     <section class="settings-group" aria-labelledby="preset-title">
@@ -236,21 +257,6 @@
                     <button class="btn action-button" type="submit">{% translate "Save Win Challenge" %}</button>
                 </div>
             </div>
-
-            <aside
-                class="preview-panel preview-panel--sticky preview-panel--create"
-                aria-labelledby="preview-title"
-                data-winchallenge-preview
-                data-sample-games='[{"id":"sample-1","name":"Rocket League","wins":7,"target_wins":10,"progress_percent":70},{"id":"sample-2","name":"Valorant","wins":4,"target_wins":8,"progress_percent":50},{"id":"sample-3","name":"League Queue","wins":2,"target_wins":5,"progress_percent":40}]'
-            >
-                <div class="panel-heading">
-                    <p class="section-label">{% translate "Live preview" %}</p>
-                    <h2 id="preview-title">{% translate "Overlay preview" %}</h2>
-                </div>
-                <div class="preview-stage">
-                    {% include "app/partials/_winchallenge_overlay.html" with challenge=preview_challenge %}
-                </div>
-            </aside>
         </form>
     </div>
 {% endblock %}

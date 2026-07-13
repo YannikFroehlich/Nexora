@@ -10,10 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+APP_VERSION = os.environ.get('APP_VERSION', '').strip()
+
+if not APP_VERSION:
+    APP_VERSION = (BASE_DIR / 'VERSION').read_text(encoding='utf-8').strip()
 
 
 # Quick-start development settings - unsuitable for production
@@ -64,6 +70,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'app.context_processors.app_metadata',
             ],
         },
     },

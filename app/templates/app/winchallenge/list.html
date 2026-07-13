@@ -11,16 +11,13 @@
 {% endblock %}
 
 {% block content %}
-    <div class="winchallenge-page">
-        <section class="winchallenge-page__hero" aria-labelledby="winchallenge-title">
-            <p class="section-label">{% translate "Win Challenge overlays" %}</p>
+    <div class="winchallenge-page winchallenge-page--overview">
+        <section class="winchallenge-page__hero overview-hero" aria-labelledby="winchallenge-title">
+            <p class="section-label"><span>Nexora</span> {% translate "Win Challenge overlays" %}</p>
             <h1 id="winchallenge-title">{% translate "Manage your win counters" %}</h1>
             <p>
                 {% translate "Create browser-source overlays for OBS, track wins per game and keep the public overlay updated automatically." %}
             </p>
-            <a class="btn action-button" href="{% url 'winchallenge_create' %}">
-                {% translate "Create Win Challenge" %}
-            </a>
         </section>
 
         {% if messages %}
@@ -32,74 +29,120 @@
         {% endif %}
 
         {% if challenges %}
-            <section class="challenge-grid" aria-label="{% translate 'Saved Win Challenges' %}">
-                {% for challenge in challenges %}
-                    {% url 'winchallenge_overlay' challenge.public_token as overlay_path %}
-                    <article class="glass-design card challenge-card">
-                        <div class="challenge-card__content">
-                            <div>
-                                <p class="section-label">{% translate "Overlay" %}</p>
-                                <h2>{{ challenge.display_title }}</h2>
+            <section class="challenge-list-section" aria-labelledby="saved-challenges-title">
+                <div class="challenge-list-header">
+                    <h2 id="saved-challenges-title">{% translate "Saved Win Challenges" %}</h2>
+                    <a class="btn action-button" href="{% url 'winchallenge_create' %}">
+                        {% translate "Create Win Challenge" %}
+                    </a>
+                </div>
+
+                <div class="challenge-grid">
+                    {% for challenge in challenges %}
+                        {% url 'winchallenge_overlay' challenge.public_token as overlay_path %}
+                        <article class="challenge-card">
+                            <div class="challenge-card__content">
+                                <div class="challenge-card__header">
+                                    <div class="challenge-card__icon">
+                                        <img
+                                            src="{% static 'imgs/icons/winchallenge.png' %}"
+                                            alt="{% translate 'Win challenge medal' %}"
+                                        >
+                                    </div>
+                                    <div>
+                                        <p class="section-label">{% translate "Overlay" %}</p>
+                                        <h2>{{ challenge.display_title }}</h2>
+                                    </div>
+                                </div>
+
+                                <dl class="challenge-stats">
+                                    <div>
+                                        <dt>{% translate "Wins" %}</dt>
+                                        <dd>{{ challenge.total_wins }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>{% translate "Games" %}</dt>
+                                        <dd>{{ challenge.games_count }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>{% translate "Updated" %}</dt>
+                                        <dd>{{ challenge.updated_at|date:"d.m.Y H:i" }}</dd>
+                                    </div>
+                                </dl>
+
+                                <div class="challenge-card__actions">
+                                    <a class="btn action-button" href="{% url 'winchallenge_manage' challenge.pk %}">
+                                        {% translate "Manage" %}
+                                    </a>
+                                    <a class="btn glass-design" href="{% url 'winchallenge_manage' challenge.pk %}#design">
+                                        {% translate "Edit Design" %}
+                                    </a>
+                                    <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">
+                                        {% translate "Open Preview" %}
+                                    </a>
+                                    <button
+                                        class="btn glass-design"
+                                        type="button"
+                                        data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}"
+                                    >
+                                        {% translate "Copy OBS Link" %}
+                                    </button>
+                                    <form
+                                        class="inline-form js-confirm-delete"
+                                        action="{% url 'winchallenge_delete' challenge.pk %}"
+                                        method="post"
+                                        data-confirm-message="{% translate 'Delete this Win Challenge?' %}"
+                                    >
+                                        {% csrf_token %}
+                                        <button class="btn danger-button" type="submit">{% translate "Delete" %}</button>
+                                    </form>
+                                </div>
                             </div>
 
-                            <dl class="challenge-stats">
-                                <div>
-                                    <dt>{% translate "Wins" %}</dt>
-                                    <dd>{{ challenge.total_wins }}</dd>
+                            <div class="challenge-card__preview" aria-label="{% translate 'Live preview' %}">
+                                <span class="challenge-card__preview-label">{% translate "Live preview" %}</span>
+                                <div class="challenge-card__preview-canvas">
+                                    {% include "app/partials/_winchallenge_overlay.html" with challenge=challenge %}
                                 </div>
-                                <div>
-                                    <dt>{% translate "Games" %}</dt>
-                                    <dd>{{ challenge.games_count }}</dd>
-                                </div>
-                                <div>
-                                    <dt>{% translate "Updated" %}</dt>
-                                    <dd>{{ challenge.updated_at|date:"d.m.Y H:i" }}</dd>
-                                </div>
-                            </dl>
-
-                            <div class="challenge-card__actions">
-                                <a class="btn action-button" href="{% url 'winchallenge_manage' challenge.pk %}">
-                                    {% translate "Manage" %}
-                                </a>
-                                <a class="btn glass-design" href="{% url 'winchallenge_manage' challenge.pk %}#design">
-                                    {% translate "Edit Design" %}
-                                </a>
-                                <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">
-                                    {% translate "Open Preview" %}
-                                </a>
-                                <button
-                                    class="btn glass-design"
-                                    type="button"
-                                    data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}"
-                                >
-                                    {% translate "Copy OBS Link" %}
-                                </button>
-                                <form
-                                    class="inline-form js-confirm-delete"
-                                    action="{% url 'winchallenge_delete' challenge.pk %}"
-                                    method="post"
-                                    data-confirm-message="{% translate 'Delete this Win Challenge?' %}"
-                                >
-                                    {% csrf_token %}
-                                    <button class="btn danger-button" type="submit">{% translate "Delete" %}</button>
-                                </form>
                             </div>
-                        </div>
-
-                        <div class="challenge-card__preview" aria-label="{% translate 'Live preview' %}">
-                            {% include "app/partials/_winchallenge_overlay.html" with challenge=challenge %}
-                        </div>
-                    </article>
-                {% endfor %}
+                        </article>
+                    {% endfor %}
+                </div>
             </section>
         {% else %}
-            <section class="glass-design card empty-state" aria-labelledby="empty-title">
-                <p class="section-label">{% translate "No overlays yet" %}</p>
-                <h2 id="empty-title">{% translate "Create your first Win Challenge" %}</h2>
-                <p>{% translate "Start with a design preset, add games later and copy the generated OBS browser-source link." %}</p>
-                <a class="btn action-button" href="{% url 'winchallenge_create' %}">
-                    {% translate "Create your first Win Challenge" %}
-                </a>
+            <section class="empty-state" aria-labelledby="empty-title">
+                <div class="empty-state__preview" aria-label="{% translate 'Example overlay preview' %}">
+                    <div class="empty-preview-window">
+                        <div class="empty-preview-window__bar">
+                            <span class="empty-preview-window__dots" aria-hidden="true">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </span>
+                            <span>{% translate "Live preview" %}</span>
+                            <span>460 × auto</span>
+                        </div>
+                        <div class="empty-preview-window__canvas">
+                            <div class="empty-preview-overlay">
+                                <span>{% translate "Win Challenge" %}</span>
+                                <strong>{% translate "Road to Diamond" %}</strong>
+                                <div class="empty-preview-overlay__score">
+                                    <small>Rocket League</small>
+                                    <b>7 / 10</b>
+                                </div>
+                                <span class="empty-preview-overlay__progress" aria-hidden="true"><span></span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="empty-state__content">
+                    <p class="section-label">{% translate "No overlays yet" %}</p>
+                    <h2 id="empty-title">{% translate "Create your first Win Challenge" %}</h2>
+                    <p>{% translate "Start with a design preset, add games later and copy the generated OBS browser-source link." %}</p>
+                    <a class="btn action-button" href="{% url 'winchallenge_create' %}">
+                        {% translate "Create your first Win Challenge" %}
+                    </a>
+                </div>
             </section>
         {% endif %}
 

@@ -1,7 +1,47 @@
-from django.test import TestCase
+from django.conf import settings
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from app.models import WinChallenge, WinChallengeGame
+
+
+class HomeViewTests(TestCase):
+    def test_home_uses_selected_language_for_content_and_document(self):
+        self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = "en"
+
+        response = self.client.get(reverse("home"))
+        content = response.content.decode()
+
+        self.assertContains(response, "Custom OBS overlays made simple")
+        self.assertContains(response, "Now playing")
+        self.assertIn('<html lang="en">', content)
+
+    @override_settings(APP_VERSION="9.8.7-test")
+    def test_footer_uses_configured_app_version(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(response, "Version 9.8.7-test")
+
+
+class WinChallengeListTests(TestCase):
+    def test_empty_list_shows_one_create_link_and_example_preview(self):
+        response = self.client.get(reverse("winchallenge_list"))
+        create_url = reverse("winchallenge_create")
+        content = response.content.decode()
+
+        self.assertContains(response, "empty-preview-window")
+        self.assertEqual(content.count(f'href="{create_url}"'), 1)
+
+    def test_saved_list_shows_one_create_link_and_challenge_card(self):
+        challenge = WinChallenge.objects.create(title="Road to Diamond")
+
+        response = self.client.get(reverse("winchallenge_list"))
+        create_url = reverse("winchallenge_create")
+        content = response.content.decode()
+
+        self.assertContains(response, challenge.display_title)
+        self.assertContains(response, "challenge-card__preview-canvas")
+        self.assertEqual(content.count(f'href="{create_url}"'), 1)
 
 
 class WinChallengeModelTests(TestCase):
@@ -28,6 +68,8 @@ class WinChallengeEndpointTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "data-winchallenge-preview")
+        self.assertContains(response, "winchallenge-editor-page--create")
+        self.assertContains(response, "panel-heading__number", count=2)
 
     def test_spotify_create_page_is_placeholder(self):
         home_response = self.client.get(reverse("home"))

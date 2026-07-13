@@ -1,8 +1,9 @@
 {% load static %}
 {% load i18n %}
+{% get_current_language as CURRENT_LANGUAGE %}
 
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE|default:'de' }}">
+<html lang="{{ CURRENT_LANGUAGE }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,8 +30,6 @@
             </nav>
 
             <div class="right">
-                {% get_current_language as CURRENT_LANGUAGE %}
-
                 <form class="language-switcher btn glass-design" action="{% url 'set_language' %}" method="post">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
@@ -81,7 +80,7 @@
 
             <div class="footer-right">
                 <p>
-                    Version 0.1.0
+                    {% translate "Version" %} {{ APP_VERSION }}
                 </p>
             </div>
         {% endblock %}

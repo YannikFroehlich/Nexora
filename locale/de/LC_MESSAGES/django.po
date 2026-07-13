@@ -551,3 +551,19 @@ msgstr "Typografie"
 
 msgid "Options"
 msgstr "Optionen"
+
+#: .\app\templates\app\home.html
+msgid "Example overlay preview"
+msgstr "Beispielhafte Overlay-Vorschau"
+
+#: .\app\templates\app\home.html
+msgid "Stream preview"
+msgstr "Stream-Vorschau"
+
+#: .\app\templates\app\home.html
+msgid "Now playing"
+msgstr "Läuft gerade"
+
+#: .\app\templates\app\base.html
+msgid "Version"
+msgstr "Version"
