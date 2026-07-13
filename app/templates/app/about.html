@@ -2,16 +2,163 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}
-    {% trans "About" %} · Nexora
-{% endblock %}
+{% block title %}{% trans "About" %} | Nexora{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/about.css' %}">
 {% endblock %}
 
 {% block content %}
-    <section class="main">
-        <h1>{% translate 'About' %}</h1>
-    </section>
+    <div class="about-page">
+        <section class="about-hero" aria-labelledby="about-title">
+            <div class="about-hero__copy">
+                <p class="about-label">{% translate "About Nexora" %}</p>
+                <h1 id="about-title">{% translate "Tools for streams that feel like yours" %}</h1>
+                <p class="about-hero__description">
+                    {% translate "Nexora helps creators build, customize and manage browser-based overlays without turning every stream update into a technical project." %}
+                </p>
+                <div class="about-actions">
+                    <a class="btn action-button" href="{% url 'home' %}#overlays">
+                        {% translate "Explore overlays" %}
+                    </a>
+                    <a class="btn glass-design" href="#principles">
+                        {% translate "What matters to us" %}
+                    </a>
+                </div>
+            </div>
+
+            <aside class="about-hero__panel" aria-label="{% translate 'Nexora at a glance' %}">
+                <div class="about-brand">
+                    <span class="about-brand__icon">
+                        <img src="{% static 'imgs/icons/Nexora_Icon.png' %}" alt="">
+                    </span>
+                    <span>
+                        <strong>Nexora</strong>
+                        <small>{% translate "Creator overlay toolkit" %}</small>
+                    </span>
+                </div>
+                <p class="about-status">
+                    <span aria-hidden="true"></span>
+                    {% translate "Built for live workflows" %}
+                </p>
+                <dl class="about-facts">
+                    <div>
+                        <dt>{% translate "Create" %}</dt>
+                        <dd>{% translate "Directly in your browser" %}</dd>
+                    </div>
+                    <div>
+                        <dt>{% translate "Customize" %}</dt>
+                        <dd>{% translate "Content, colors and layout" %}</dd>
+                    </div>
+                    <div>
+                        <dt>{% translate "Use" %}</dt>
+                        <dd>{% translate "As an OBS browser source" %}</dd>
+                    </div>
+                </dl>
+            </aside>
+        </section>
+
+        <section class="about-intro" aria-labelledby="purpose-title">
+            <div>
+                <p class="about-label">{% translate "Why Nexora" %}</p>
+                <h2 id="purpose-title">{% translate "Less setup. More control on stream." %}</h2>
+            </div>
+            <div class="about-intro__copy">
+                <p>
+                    {% translate "Stream overlays should support your content, not slow it down. Nexora brings setup, design and live updates together in one clear workflow." %}
+                </p>
+                <p>
+                    {% translate "Start with a useful foundation, shape it around your channel and add the finished overlay to OBS with a generated browser-source link." %}
+                </p>
+            </div>
+        </section>
+
+        <section class="about-tools" aria-labelledby="tools-title">
+            <div class="about-section-heading">
+                <p class="about-label">{% translate "Available now" %}</p>
+                <h2 id="tools-title">{% translate "Two tools, one consistent workflow" %}</h2>
+            </div>
+
+            <div class="about-tools__grid">
+                <article class="about-tool about-tool--spotify">
+                    <div class="about-tool__icon">
+                        <img src="{% static 'imgs/icons/spotify.webp' %}" alt="">
+                    </div>
+                    <div class="about-tool__content">
+                        <p class="about-tool__type">{% translate "Playback" %}</p>
+                        <h3>{% translate "Spotify Overlay" %}</h3>
+                        <p>{% translate "Show the current track, artwork, progress and playback status in a layout you control." %}</p>
+                        <a href="{% url 'spotify_list' %}">
+                            {% translate "Open Spotify overlays" %}<span aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="about-tool about-tool--challenge">
+                    <div class="about-tool__icon">
+                        <img src="{% static 'imgs/icons/winchallenge.png' %}" alt="">
+                    </div>
+                    <div class="about-tool__content">
+                        <p class="about-tool__type">{% translate "Progress" %}</p>
+                        <h3>{% translate "Winchallenges" %}</h3>
+                        <p>{% translate "Track wins across games and keep your audience up to date with a live challenge overlay." %}</p>
+                        <a href="{% url 'winchallenge_list' %}">
+                            {% translate "Open Winchallenges" %}<span aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section id="principles" class="about-principles" aria-labelledby="principles-title">
+            <div class="about-section-heading about-section-heading--left">
+                <p class="about-label">{% translate "Our principles" %}</p>
+                <h2 id="principles-title">{% translate "Made to stay out of your way" %}</h2>
+            </div>
+
+            <ol class="principle-list">
+                <li>
+                    <span class="principle-list__number" aria-hidden="true">01</span>
+                    <h3>{% translate "Simple by default" %}</h3>
+                    <p>{% translate "Clear controls and useful presets make the first setup quick, even without design or coding experience." %}</p>
+                </li>
+                <li>
+                    <span class="principle-list__number" aria-hidden="true">02</span>
+                    <h3>{% translate "Yours by design" %}</h3>
+                    <p>{% translate "Colors, sizes, content and layouts remain adjustable so the result fits your channel instead of a generic template." %}</p>
+                </li>
+                <li>
+                    <span class="principle-list__number" aria-hidden="true">03</span>
+                    <h3>{% translate "Ready when you go live" %}</h3>
+                    <p>{% translate "Browser-source links and live updates keep the path from editing to streaming short and dependable." %}</p>
+                </li>
+            </ol>
+        </section>
+
+        <section class="about-workflow" aria-labelledby="workflow-title">
+            <div class="about-workflow__copy">
+                <p class="about-label">{% translate "One place to manage it" %}</p>
+                <h2 id="workflow-title">{% translate "Change the overlay, not your OBS scene" %}</h2>
+                <p>
+                    {% translate "Manage values and appearance from Nexora while the browser source in OBS keeps the same URL. Your scene stays organized and your overlay stays current." %}
+                </p>
+            </div>
+            <ol class="about-workflow__steps">
+                <li><span>1</span>{% translate "Create an overlay" %}</li>
+                <li><span>2</span>{% translate "Copy its browser-source link" %}</li>
+                <li><span>3</span>{% translate "Update it whenever you need" %}</li>
+            </ol>
+        </section>
+
+        <section class="about-cta" aria-labelledby="about-cta-title">
+            <div>
+                <p class="about-label">{% translate "Start creating" %}</p>
+                <h2 id="about-cta-title">{% translate "Build an overlay for your next stream" %}</h2>
+                <p>{% translate "Choose a tool, make it yours and bring it into OBS." %}</p>
+            </div>
+            <a class="btn about-cta__button" href="{% url 'home' %}#overlays">
+                {% translate "View all overlays" %}
+            </a>
+        </section>
+    </div>
 {% endblock %}

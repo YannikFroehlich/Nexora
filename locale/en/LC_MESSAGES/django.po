@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-13 14:33+0200\n"
+"POT-Creation-Date: 2026-07-13 16:47+0200\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: English\n"
@@ -205,8 +205,175 @@ msgstr ""
 msgid "About"
 msgstr ""
 
-msgid "Home"
+msgid "About Nexora"
 msgstr ""
+
+msgid "Tools for streams that feel like yours"
+msgstr ""
+
+msgid ""
+"Nexora helps creators build, customize and manage browser-based overlays "
+"without turning every stream update into a technical project."
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Explore overlays"
+msgstr "Spotify Overlay"
+
+msgid "What matters to us"
+msgstr ""
+
+msgid "Nexora at a glance"
+msgstr ""
+
+msgid "Creator overlay toolkit"
+msgstr ""
+
+msgid "Built for live workflows"
+msgstr ""
+
+msgid "Create"
+msgstr ""
+
+msgid "Directly in your browser"
+msgstr ""
+
+msgid "Customize"
+msgstr ""
+
+msgid "Content, colors and layout"
+msgstr ""
+
+msgid "Use"
+msgstr ""
+
+msgid "As an OBS browser source"
+msgstr ""
+
+msgid "Why Nexora"
+msgstr ""
+
+msgid "Less setup. More control on stream."
+msgstr ""
+
+msgid ""
+"Stream overlays should support your content, not slow it down. Nexora brings "
+"setup, design and live updates together in one clear workflow."
+msgstr ""
+
+msgid ""
+"Start with a useful foundation, shape it around your channel and add the "
+"finished overlay to OBS with a generated browser-source link."
+msgstr ""
+
+msgid "Available now"
+msgstr ""
+
+msgid "Two tools, one consistent workflow"
+msgstr ""
+
+msgid "Playback"
+msgstr ""
+
+msgid "Spotify Overlay"
+msgstr "Spotify Overlay"
+
+msgid ""
+"Show the current track, artwork, progress and playback status in a layout "
+"you control."
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Open Spotify overlays"
+msgstr "Spotify Overlay"
+
+msgid "Progress"
+msgstr ""
+
+msgid "Winchallenges"
+msgstr ""
+
+msgid ""
+"Track wins across games and keep your audience up to date with a live "
+"challenge overlay."
+msgstr ""
+
+msgid "Open Winchallenges"
+msgstr ""
+
+msgid "Our principles"
+msgstr ""
+
+msgid "Made to stay out of your way"
+msgstr ""
+
+msgid "Simple by default"
+msgstr ""
+
+msgid ""
+"Clear controls and useful presets make the first setup quick, even without "
+"design or coding experience."
+msgstr ""
+
+msgid "Yours by design"
+msgstr ""
+
+msgid ""
+"Colors, sizes, content and layouts remain adjustable so the result fits your "
+"channel instead of a generic template."
+msgstr ""
+
+msgid "Ready when you go live"
+msgstr ""
+
+msgid ""
+"Browser-source links and live updates keep the path from editing to "
+"streaming short and dependable."
+msgstr ""
+
+msgid "One place to manage it"
+msgstr ""
+
+msgid "Change the overlay, not your OBS scene"
+msgstr ""
+
+msgid ""
+"Manage values and appearance from Nexora while the browser source in OBS "
+"keeps the same URL. Your scene stays organized and your overlay stays "
+"current."
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Create an overlay"
+msgstr "Spotify Overlay"
+
+msgid "Copy its browser-source link"
+msgstr ""
+
+msgid "Update it whenever you need"
+msgstr ""
+
+msgid "Start creating"
+msgstr ""
+
+msgid "Build an overlay for your next stream"
+msgstr ""
+
+msgid "Choose a tool, make it yours and bring it into OBS."
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "View all overlays"
+msgstr "Spotify Overlay"
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Spotify"
+msgstr "Spotify Overlay"
 
 msgid "Language"
 msgstr ""
@@ -215,6 +382,9 @@ msgid "Switch theme"
 msgstr ""
 
 msgid "Version"
+msgstr ""
+
+msgid "Home"
 msgstr ""
 
 msgid "Browser-based overlays for creators"
@@ -257,9 +427,6 @@ msgstr ""
 
 msgid "Spotify logo"
 msgstr ""
-
-msgid "Spotify Overlay"
-msgstr "Spotify Overlay"
 
 msgid "Show your currently playing Spotify song directly in your stream."
 msgstr ""
@@ -494,9 +661,7 @@ msgstr ""
 msgid "Copy link"
 msgstr ""
 
-msgid ""
-"Use the overlay width and height above as the browser-source dimensions in "
-"OBS."
+msgid "Recommended size so the shadow remains fully visible:"
 msgstr ""
 
 msgid "Create overlay"
@@ -517,6 +682,22 @@ msgstr ""
 msgid ""
 "Click and drag elements. Arrow keys move the selected element one pixel; "
 "hold Shift for ten pixels."
+msgstr ""
+
+msgid ""
+"Press Delete to remove the selection. Drag the green handles to resize it."
+msgstr ""
+
+msgid "Alignment tools"
+msgstr ""
+
+msgid "Snap to grid"
+msgstr ""
+
+msgid "Show a grid and align movements to it."
+msgstr ""
+
+msgid "Grid size"
 msgstr ""
 
 msgid "OBS browser source"
@@ -560,11 +741,6 @@ msgstr ""
 
 msgid "Elements"
 msgstr ""
-
-#, fuzzy
-#| msgid "Spotify Overlay"
-msgid "Spotify"
-msgstr "Spotify Overlay"
 
 msgid "Open"
 msgstr ""
