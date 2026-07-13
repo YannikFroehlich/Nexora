@@ -2,6 +2,7 @@ from django.conf import settings
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from app.forms import WinChallengeCreateForm
 from app.models import WinChallenge, WinChallengeGame
 
 
@@ -54,6 +55,43 @@ class WinChallengeModelTests(TestCase):
         self.assertEqual(game.progress_percent, 50)
 
 
+class WinChallengeCreateFormTests(TestCase):
+    def test_title_is_optional_and_uses_default_display_title(self):
+        challenge = WinChallenge()
+        form = WinChallengeCreateForm(
+            data={
+                "title": "",
+                "design_template": WinChallenge.TEMPLATE_GLASS,
+                "background_color": challenge.background_color,
+                "background_opacity": challenge.background_opacity,
+                "text_color": challenge.text_color,
+                "accent_color": challenge.accent_color,
+                "border_color": challenge.border_color,
+                "border_width": challenge.border_width,
+                "corner_radius": challenge.corner_radius,
+                "padding": challenge.padding,
+                "overlay_width": challenge.overlay_width,
+                "overlay_height": challenge.overlay_height,
+                "label_text_size": challenge.label_text_size,
+                "title_text_size": challenge.title_text_size,
+                "total_text_size": challenge.total_text_size,
+                "game_text_size": challenge.game_text_size,
+                "game_score_text_size": challenge.game_score_text_size,
+                "pager_text_size": challenge.pager_text_size,
+                "page_interval_seconds": challenge.page_interval_seconds,
+                "item_spacing": challenge.item_spacing,
+                "shadow_enabled": "on",
+                "show_games_list": "on",
+            }
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+
+        saved_challenge = form.save()
+        self.assertEqual(saved_challenge.title, "")
+        self.assertEqual(saved_challenge.display_title, "Winchallenge")
+
+
 class WinChallengeEndpointTests(TestCase):
     def setUp(self):
         self.challenge = WinChallenge.objects.create(title="Road to Diamond")
@@ -70,6 +108,17 @@ class WinChallengeEndpointTests(TestCase):
         self.assertContains(response, "data-winchallenge-preview")
         self.assertContains(response, "winchallenge-editor-page--create")
         self.assertContains(response, "panel-heading__number", count=2)
+        self.assertContains(response, 'placeholder="Winchallenge"')
+        self.assertContains(response, "Optional: Standard Winchallenge")
+
+    def test_manage_page_uses_the_shared_editor_design(self):
+        response = self.client.get(reverse("winchallenge_manage", args=[self.challenge.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "winchallenge-editor-page--manage")
+        self.assertContains(response, "editor-panel--surface", count=4)
+        self.assertContains(response, "preview-panel--surface")
+        self.assertContains(response, '<div class="preview-stage">')
 
     def test_spotify_create_page_is_placeholder(self):
         home_response = self.client.get(reverse("home"))

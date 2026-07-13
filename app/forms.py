@@ -138,7 +138,8 @@ class WinChallengeCreateForm(WinChallengeBaseForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["title"].required = True
+        self.fields["title"].required = False
+        self.fields["title"].widget.attrs["placeholder"] = _("Winchallenge")
 
 
 class WinChallengeSettingsForm(forms.ModelForm):
