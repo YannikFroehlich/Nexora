@@ -518,3 +518,43 @@ msgstr ""
 
 msgid "Enable refresh when the scene becomes active if desired"
 msgstr ""
+
+msgid "Quick presets"
+msgstr ""
+
+msgid "Clean and compact"
+msgstr ""
+
+msgid "Soft depth"
+msgstr ""
+
+msgid "Bright accents"
+msgstr ""
+
+msgid "Colors"
+msgstr ""
+
+msgid "Layout"
+msgstr ""
+
+msgid "Typography"
+msgstr ""
+
+msgid "Options"
+msgstr ""
+
+#: .\app\templates\app\home.html
+msgid "Example overlay preview"
+msgstr ""
+
+#: .\app\templates\app\home.html
+msgid "Stream preview"
+msgstr ""
+
+#: .\app\templates\app\home.html
+msgid "Now playing"
+msgstr ""
+
+#: .\app\templates\app\base.html
+msgid "Version"
+msgstr ""

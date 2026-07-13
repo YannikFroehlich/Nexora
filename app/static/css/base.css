@@ -359,3 +359,41 @@ footer a:hover {
 footer p {
     margin: 0;
 }
+
+@media (max-width: 680px) {
+    header {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        justify-items: center;
+        margin-bottom: 12px;
+        padding: 12px;
+    }
+
+    header .title,
+    nav,
+    header .right {
+        justify-self: center;
+    }
+
+    nav,
+    header .right {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    nav {
+        gap: 10px;
+    }
+
+    footer {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        text-align: center;
+    }
+
+    footer .footer-left,
+    footer .footer-center,
+    footer .footer-right {
+        justify-self: center;
+    }
+}

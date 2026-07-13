@@ -527,3 +527,43 @@ msgstr "Lege eine passende Breite und Höhe fest"
 
 msgid "Enable refresh when the scene becomes active if desired"
 msgstr "Aktiviere bei Bedarf das Aktualisieren, wenn die Szene aktiv wird"
+
+msgid "Quick presets"
+msgstr "Schnellvorlagen"
+
+msgid "Clean and compact"
+msgstr "Kompakt und klar"
+
+msgid "Soft depth"
+msgstr "Sanfte Tiefe"
+
+msgid "Bright accents"
+msgstr "Leuchtende Akzente"
+
+msgid "Colors"
+msgstr "Farben"
+
+msgid "Layout"
+msgstr "Layout"
+
+msgid "Typography"
+msgstr "Typografie"
+
+msgid "Options"
+msgstr "Optionen"
+
+#: .\app\templates\app\home.html
+msgid "Example overlay preview"
+msgstr "Beispielhafte Overlay-Vorschau"
+
+#: .\app\templates\app\home.html
+msgid "Stream preview"
+msgstr "Stream-Vorschau"
+
+#: .\app\templates\app\home.html
+msgid "Now playing"
+msgstr "Läuft gerade"
+
+#: .\app\templates\app\base.html
+msgid "Version"
+msgstr "Version"
