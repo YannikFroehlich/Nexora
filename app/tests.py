@@ -12,6 +12,25 @@ from app.models import SpotifyOverlay, WinChallenge, WinChallengeGame
 
 
 class HomeViewTests(TestCase):
+    def test_header_links_to_overlay_tools_instead_of_repeating_home(self):
+        response = self.client.get(reverse("home"))
+        content = response.content.decode()
+
+        self.assertContains(response, f'href="{reverse("spotify_list")}"')
+        self.assertContains(response, f'href="{reverse("winchallenge_list")}"')
+        self.assertContains(response, f'href="{reverse("about")}"')
+        self.assertContains(response, 'class="header-logo__image"')
+        self.assertContains(response, "imgs/icons/nexora_logo.png")
+        self.assertEqual(content.count(f'href="{reverse("home")}"'), 1)
+
+    def test_header_marks_current_tool_area_as_active(self):
+        response = self.client.get(reverse("spotify_create"))
+
+        self.assertContains(
+            response,
+            f'href="{reverse("spotify_list")}"\n                        aria-current="page"',
+        )
+
     def test_home_uses_selected_language_for_content_and_document(self):
         self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = "en"
 
@@ -27,6 +46,26 @@ class HomeViewTests(TestCase):
         response = self.client.get(reverse("home"))
 
         self.assertContains(response, "Version 9.8.7-test")
+
+
+class AboutViewTests(TestCase):
+    def test_about_page_describes_products_and_links_to_tools(self):
+        response = self.client.get(reverse("about"))
+
+        self.assertContains(response, "Tools für Streams mit deiner Handschrift")
+        self.assertContains(response, "Zwei Tools, ein einheitlicher Workflow")
+        self.assertContains(response, f'href="{reverse("spotify_list")}"')
+        self.assertContains(response, f'href="{reverse("winchallenge_list")}"')
+
+    def test_about_page_is_available_in_english(self):
+        self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = "en"
+
+        response = self.client.get(reverse("about"))
+        content = response.content.decode()
+
+        self.assertContains(response, "Tools for streams that feel like yours")
+        self.assertContains(response, "Made to stay out of your way")
+        self.assertIn('<html lang="en">', content)
 
 
 class WinChallengeListTests(TestCase):

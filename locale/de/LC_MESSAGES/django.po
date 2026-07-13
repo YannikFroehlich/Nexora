@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-13 14:33+0200\n"
+"POT-Creation-Date: 2026-07-13 16:47+0200\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: German\n"
@@ -167,7 +167,9 @@ msgid "Spotify credentials are not configured."
 msgstr "Die Spotify-Zugangsdaten sind nicht konfiguriert."
 
 msgid "Spotify is currently unavailable. Please reconnect if this continues."
-msgstr "Spotify ist momentan nicht verfügbar. Verbinde es erneut, falls das Problem anhält."
+msgstr ""
+"Spotify ist momentan nicht verfügbar. Verbinde es erneut, falls das Problem "
+"anhält."
 
 msgid "Podcast"
 msgstr "Podcast"
@@ -205,8 +207,184 @@ msgstr "Spotify hat eine ungültige Antwort zurückgegeben."
 msgid "About"
 msgstr "Über"
 
-msgid "Home"
-msgstr "Start"
+msgid "About Nexora"
+msgstr "Über Nexora"
+
+msgid "Tools for streams that feel like yours"
+msgstr "Tools für Streams mit deiner Handschrift"
+
+msgid ""
+"Nexora helps creators build, customize and manage browser-based overlays "
+"without turning every stream update into a technical project."
+msgstr ""
+"Nexora hilft Creatorn, browserbasierte Overlays zu erstellen, anzupassen "
+"und zu verwalten, ohne dass jedes Stream-Update zu einem technischen "
+"Projekt wird."
+
+msgid "Explore overlays"
+msgstr "Overlays entdecken"
+
+msgid "What matters to us"
+msgstr "Was uns wichtig ist"
+
+msgid "Nexora at a glance"
+msgstr "Nexora auf einen Blick"
+
+msgid "Creator overlay toolkit"
+msgstr "Overlay-Toolkit für Creator"
+
+msgid "Built for live workflows"
+msgstr "Für Live-Workflows entwickelt"
+
+msgid "Create"
+msgstr "Erstellen"
+
+msgid "Directly in your browser"
+msgstr "Direkt in deinem Browser"
+
+msgid "Customize"
+msgstr "Anpassen"
+
+msgid "Content, colors and layout"
+msgstr "Inhalte, Farben und Layout"
+
+msgid "Use"
+msgstr "Nutzen"
+
+msgid "As an OBS browser source"
+msgstr "Als OBS-Browser-Quelle"
+
+msgid "Why Nexora"
+msgstr "Warum Nexora"
+
+msgid "Less setup. More control on stream."
+msgstr "Weniger Setup. Mehr Kontrolle im Stream."
+
+msgid ""
+"Stream overlays should support your content, not slow it down. Nexora brings "
+"setup, design and live updates together in one clear workflow."
+msgstr ""
+"Stream-Overlays sollen deine Inhalte unterstützen, nicht ausbremsen. Nexora "
+"vereint Einrichtung, Design und Live-Updates in einem klaren Workflow."
+
+msgid ""
+"Start with a useful foundation, shape it around your channel and add the "
+"finished overlay to OBS with a generated browser-source link."
+msgstr ""
+"Starte mit einer sinnvollen Basis, passe sie an deinen Kanal an und füge das "
+"fertige Overlay mit einem generierten Browser-Source-Link zu OBS hinzu."
+
+msgid "Available now"
+msgstr "Jetzt verfügbar"
+
+msgid "Two tools, one consistent workflow"
+msgstr "Zwei Tools, ein einheitlicher Workflow"
+
+msgid "Playback"
+msgstr "Wiedergabe"
+
+msgid "Spotify Overlay"
+msgstr "Spotify-Overlay"
+
+msgid ""
+"Show the current track, artwork, progress and playback status in a layout "
+"you control."
+msgstr ""
+"Zeige den aktuellen Titel, das Cover, den Fortschritt und den "
+"Wiedergabestatus in einem Layout, das du bestimmst."
+
+msgid "Open Spotify overlays"
+msgstr "Spotify-Overlays öffnen"
+
+msgid "Progress"
+msgstr "Fortschritt"
+
+msgid "Winchallenges"
+msgstr "Winchallenges"
+
+msgid ""
+"Track wins across games and keep your audience up to date with a live "
+"challenge overlay."
+msgstr ""
+"Verfolge Wins über mehrere Spiele hinweg und halte dein Publikum mit einem "
+"Live-Challenge-Overlay auf dem Laufenden."
+
+msgid "Open Winchallenges"
+msgstr "Winchallenges öffnen"
+
+msgid "Our principles"
+msgstr "Unsere Prinzipien"
+
+msgid "Made to stay out of your way"
+msgstr "Damit du dich auf deinen Stream konzentrieren kannst"
+
+msgid "Simple by default"
+msgstr "Von Anfang an einfach"
+
+msgid ""
+"Clear controls and useful presets make the first setup quick, even without "
+"design or coding experience."
+msgstr ""
+"Klare Bedienelemente und sinnvolle Vorlagen machen die erste Einrichtung "
+"schnell – auch ohne Design- oder Programmiererfahrung."
+
+msgid "Yours by design"
+msgstr "Dein Design, deine Entscheidung"
+
+msgid ""
+"Colors, sizes, content and layouts remain adjustable so the result fits your "
+"channel instead of a generic template."
+msgstr ""
+"Farben, Größen, Inhalte und Layouts bleiben anpassbar, damit das Ergebnis zu "
+"deinem Kanal passt statt zu einer beliebigen Vorlage."
+
+msgid "Ready when you go live"
+msgstr "Bereit, wenn du live gehst"
+
+msgid ""
+"Browser-source links and live updates keep the path from editing to "
+"streaming short and dependable."
+msgstr ""
+"Browser-Source-Links und Live-Updates halten den Weg vom Bearbeiten bis zum "
+"Streamen kurz und zuverlässig."
+
+msgid "One place to manage it"
+msgstr "Alles an einem Ort verwalten"
+
+msgid "Change the overlay, not your OBS scene"
+msgstr "Ändere das Overlay, nicht deine OBS-Szene"
+
+msgid ""
+"Manage values and appearance from Nexora while the browser source in OBS "
+"keeps the same URL. Your scene stays organized and your overlay stays "
+"current."
+msgstr ""
+"Verwalte Werte und Aussehen in Nexora, während die Browser-Quelle in OBS "
+"dieselbe URL behält. Deine Szene bleibt aufgeräumt und dein Overlay aktuell."
+
+msgid "Create an overlay"
+msgstr "Overlay erstellen"
+
+msgid "Copy its browser-source link"
+msgstr "Browser-Source-Link kopieren"
+
+msgid "Update it whenever you need"
+msgstr "Bei Bedarf jederzeit aktualisieren"
+
+msgid "Start creating"
+msgstr "Jetzt loslegen"
+
+msgid "Build an overlay for your next stream"
+msgstr "Erstelle ein Overlay für deinen nächsten Stream"
+
+msgid "Choose a tool, make it yours and bring it into OBS."
+msgstr "Wähle ein Tool, passe es an und bringe es in OBS."
+
+msgid "View all overlays"
+msgstr "Alle Overlays ansehen"
+
+msgid "Spotify"
+msgstr "Spotify"
 
 msgid "Language"
 msgstr "Sprache"
@@ -216,6 +394,9 @@ msgstr "Theme wechseln"
 
 msgid "Version"
 msgstr "Version"
+
+msgid "Home"
+msgstr "Start"
 
 msgid "Browser-based overlays for creators"
 msgstr "Browserbasierte Overlays für Creator"
@@ -259,9 +440,6 @@ msgstr "Starte mit einem Overlay und passe es an deinen Kanal an."
 
 msgid "Spotify logo"
 msgstr "Spotify-Logo"
-
-msgid "Spotify Overlay"
-msgstr ""
 
 msgid "Show your currently playing Spotify song directly in your stream."
 msgstr ""
@@ -374,7 +552,9 @@ msgstr "Spotify-Overlay bearbeiten"
 msgid ""
 "Add playback elements, style them and drag them to the exact position you "
 "want."
-msgstr "Füge Wiedergabe-Elemente hinzu, gestalte sie und ziehe sie an die gewünschte Position."
+msgstr ""
+"Füge Wiedergabe-Elemente hinzu, gestalte sie und ziehe sie an die gewünschte "
+"Position."
 
 msgid "All Spotify overlays"
 msgstr "Alle Spotify-Overlays"
@@ -478,7 +658,9 @@ msgstr "Spotify-Zugangsdaten fehlen"
 msgid ""
 "Copy .env.example to .env, add your Spotify app credentials and expose those "
 "variables to Django."
-msgstr "Kopiere .env.example nach .env und trage dort die Zugangsdaten deiner Spotify-App ein."
+msgstr ""
+"Kopiere .env.example nach .env und trage dort die Zugangsdaten deiner "
+"Spotify-App ein."
 
 msgid "Browser source"
 msgstr "Browser-Quelle"
@@ -489,10 +671,8 @@ msgstr "OBS-Link"
 msgid "Copy link"
 msgstr "Link kopieren"
 
-msgid ""
-"Use the overlay width and height above as the browser-source dimensions in "
-"OBS."
-msgstr "Nutze die oben eingestellte Overlay-Breite und -Höhe als Abmessungen der Browser-Quelle in OBS."
+msgid "Recommended size so the shadow remains fully visible:"
+msgstr "Empfohlene Größe, damit der Schatten vollständig sichtbar bleibt:"
 
 msgid "Create overlay"
 msgstr "Overlay erstellen"
@@ -512,7 +692,27 @@ msgstr "Elemente an die richtige Position ziehen"
 msgid ""
 "Click and drag elements. Arrow keys move the selected element one pixel; "
 "hold Shift for ten pixels."
-msgstr "Klicke und ziehe Elemente. Die Pfeiltasten verschieben das ausgewählte Element um einen Pixel, mit Umschalt um zehn Pixel."
+msgstr ""
+"Klicke und ziehe Elemente. Die Pfeiltasten verschieben das ausgewählte "
+"Element um einen Pixel, mit Umschalt um zehn Pixel."
+
+msgid ""
+"Press Delete to remove the selection. Drag the green handles to resize it."
+msgstr ""
+"Drücke Entf, um die Auswahl zu löschen. Ziehe an den grünen Punkten, um ihre "
+"Größe zu ändern."
+
+msgid "Alignment tools"
+msgstr "Ausrichtungswerkzeuge"
+
+msgid "Snap to grid"
+msgstr "Am Raster ausrichten"
+
+msgid "Show a grid and align movements to it."
+msgstr "Raster anzeigen und Bewegungen daran ausrichten."
+
+msgid "Grid size"
+msgstr "Rastergröße"
 
 msgid "OBS browser source"
 msgstr "OBS-Browser-Quelle"
@@ -531,7 +731,9 @@ msgstr "Deine Wiedergabe, in deinem Stil"
 
 msgid ""
 "Build movable Spotify layouts and use each one as an OBS browser source."
-msgstr "Erstelle frei verschiebbare Spotify-Layouts und nutze jedes davon als OBS-Browser-Quelle."
+msgstr ""
+"Erstelle frei verschiebbare Spotify-Layouts und nutze jedes davon als OBS-"
+"Browser-Quelle."
 
 msgid "Your collection"
 msgstr "Deine Sammlung"
@@ -547,9 +749,6 @@ msgstr "Größe"
 
 msgid "Elements"
 msgstr "Elemente"
-
-msgid "Spotify"
-msgstr "Spotify"
 
 msgid "Open"
 msgstr "Offen"
@@ -574,7 +773,9 @@ msgstr "Erstelle dein erstes Spotify-Overlay"
 
 msgid ""
 "Start with a polished layout, then move, resize or remove every element."
-msgstr "Starte mit einem fertigen Layout und verschiebe, skaliere oder entferne anschließend jedes Element."
+msgstr ""
+"Starte mit einem fertigen Layout und verschiebe, skaliere oder entferne "
+"anschließend jedes Element."
 
 msgid "New overlay"
 msgstr "Neues Overlay"
@@ -766,7 +967,9 @@ msgstr "Spotify-Overlay gelöscht: %(name)s"
 
 msgid ""
 "Add your Spotify client credentials to the environment before connecting."
-msgstr "Trage vor dem Verbinden deine Spotify-Client-Zugangsdaten in der Umgebung ein."
+msgstr ""
+"Trage vor dem Verbinden deine Spotify-Client-Zugangsdaten in der Umgebung "
+"ein."
 
 msgid "The Spotify connection could not be verified."
 msgstr "Die Spotify-Verbindung konnte nicht verifiziert werden."
@@ -804,48 +1007,3 @@ msgstr "Ungültige Win-Änderung."
 
 msgid "Game name is required."
 msgstr "Der Spielname ist erforderlich."
-
-msgid "Alignment tools"
-msgstr "Ausrichtungswerkzeuge"
-
-msgid "Snap to grid"
-msgstr "Am Raster ausrichten"
-
-msgid "Show a grid and align movements to it."
-msgstr "Raster anzeigen und Bewegungen daran ausrichten."
-
-msgid "Grid size"
-msgstr "Rastergröße"
-
-msgid "Press Delete to remove the selection. Drag the green handles to resize it."
-msgstr "Drücke Entf, um die Auswahl zu löschen. Ziehe an den grünen Punkten, um ihre Größe zu ändern."
-
-msgid "Recommended size so the shadow remains fully visible:"
-msgstr "Empfohlene Größe, damit der Schatten vollständig sichtbar bleibt:"
-
-#~ msgid "Light"
-#~ msgstr "Hell"
-
-#~ msgid "Dark"
-#~ msgstr "Dunkel"
-
-#~ msgid "Welcome"
-#~ msgstr "Willkommen"
-
-#~ msgid "Challenge name"
-#~ msgstr "Name der Challenge"
-
-#~ msgid "Show progress bar"
-#~ msgstr "Fortschrittsbalken anzeigen"
-
-#~ msgid "Leave empty to use the challenge name."
-#~ msgstr "Leer lassen, um den Namen der Challenge zu verwenden."
-
-#~ msgid "wins remaining"
-#~ msgstr "Wins verbleibend"
-
-#~ msgid "Challenge settings"
-#~ msgstr "Challenge-Einstellungen"
-
-#~ msgid "Remaining"
-#~ msgstr "Verbleibend"
