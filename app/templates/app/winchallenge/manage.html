@@ -11,9 +11,9 @@
 {% endblock %}
 
 {% block content %}
-    <div class="winchallenge-page winchallenge-editor-page" data-winchallenge-editor>
-        <section class="winchallenge-page__hero" aria-labelledby="manage-title">
-            <p class="section-label">{% translate "Win Challenge" %}</p>
+    <div class="winchallenge-page winchallenge-editor-page winchallenge-editor-page--manage" data-winchallenge-editor>
+        <section class="winchallenge-page__hero winchallenge-page__hero--editor manage-hero" aria-labelledby="manage-title">
+            <p class="section-label"><span>Nexora</span> {% translate "Win Challenge" %}</p>
             <h1 id="manage-title">{{ challenge.display_title }}</h1>
             <p>
                 <span data-total-wins>{{ challenge.total_wins }}</span>
@@ -41,7 +41,7 @@
 
         <div class="manage-layout">
             <div class="manage-main">
-                <section id="challenge" class="glass-design card editor-panel" aria-labelledby="challenge-title">
+                <section id="challenge" class="card editor-panel editor-panel--surface" aria-labelledby="challenge-title">
                     <div class="panel-heading">
                         <p class="section-label">{% translate "Settings" %}</p>
                         <h2 id="challenge-title">{% translate "Settings" %}</h2>
@@ -82,7 +82,7 @@
                     </form>
                 </section>
 
-                <section id="games" class="glass-design card editor-panel" aria-labelledby="games-title">
+                <section id="games" class="card editor-panel editor-panel--surface" aria-labelledby="games-title">
                     <div class="panel-heading">
                         <p class="section-label">{% translate "Games" %}</p>
                         <h2 id="games-title">{% translate "Manage games" %}</h2>
@@ -201,7 +201,7 @@
                     </div>
                 </section>
 
-                <section id="design" class="glass-design card editor-panel" aria-labelledby="design-title">
+                <section id="design" class="card editor-panel editor-panel--surface" aria-labelledby="design-title">
                     <div class="panel-heading">
                         <p class="section-label">{% translate "Design" %}</p>
                         <h2 id="design-title">{% translate "Edit overlay design" %}</h2>
@@ -337,7 +337,7 @@
                     </form>
                 </section>
 
-                <section id="obs-link" class="glass-design card editor-panel" aria-labelledby="obs-title">
+                <section id="obs-link" class="card editor-panel editor-panel--surface" aria-labelledby="obs-title">
                     <div class="panel-heading">
                         <p class="section-label">{% translate "Browser source" %}</p>
                         <h2 id="obs-title">{% translate "OBS Link" %}</h2>
@@ -359,12 +359,18 @@
                 </section>
             </div>
 
-            <aside class="preview-panel preview-panel--sticky" aria-labelledby="preview-title" data-winchallenge-preview>
+            <aside
+                class="preview-panel preview-panel--sticky preview-panel--surface"
+                aria-labelledby="preview-title"
+                data-winchallenge-preview
+            >
                 <div class="panel-heading">
                     <p class="section-label">{% translate "Live preview" %}</p>
                     <h2 id="preview-title">{% translate "Overlay preview" %}</h2>
                 </div>
-                {% include "app/partials/_winchallenge_overlay.html" with challenge=challenge %}
+                <div class="preview-stage">
+                    {% include "app/partials/_winchallenge_overlay.html" with challenge=challenge %}
+                </div>
             </aside>
         </div>
 

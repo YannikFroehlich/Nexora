@@ -262,7 +262,7 @@ header .right {
 
 .theme-light .theme-toggle__indicator::before {
     inset: 1px;
-    background: #ffffff;
+    background: #334155;
     mask-image: radial-gradient(circle at 68% 35%, transparent 0 7px, #000 7.5px);
     -webkit-mask-image: radial-gradient(circle at 68% 35%, transparent 0 7px, #000 7.5px);
 }

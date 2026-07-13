@@ -252,6 +252,9 @@ msgstr "Name der Challenge"
 msgid "Overlay title"
 msgstr "Overlay-Titel"
 
+msgid "Optional: default Winchallenge"
+msgstr "Optional: Standard Winchallenge"
+
 msgid "Target wins"
 msgstr "Ziel-Wins"
 

@@ -243,6 +243,9 @@ msgstr ""
 msgid "Overlay title"
 msgstr ""
 
+msgid "Optional: default Winchallenge"
+msgstr ""
+
 msgid "Target wins"
 msgstr ""
 

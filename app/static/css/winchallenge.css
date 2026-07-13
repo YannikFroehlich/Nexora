@@ -725,6 +725,19 @@
     font-weight: 800;
 }
 
+.label-with-note {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.label-with-note small {
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
 .form-control,
 .color-control {
     width: 100%;
@@ -1043,12 +1056,177 @@
     min-height: 46px;
 }
 
+/* Management page aligned with the overview and create flows. */
+.winchallenge-editor-page--manage {
+    padding-bottom: 32px;
+}
+
+.winchallenge-editor-page--manage .manage-hero {
+    max-width: 850px;
+    margin: 50px auto 40px;
+}
+
+.winchallenge-editor-page--manage .manage-hero h1 {
+    font-size: 3.4rem;
+}
+
+.winchallenge-editor-page--manage .manage-hero .section-label span {
+    display: inline-block;
+    margin-right: 9px;
+    padding-right: 10px;
+    border-right: 1px solid currentColor;
+}
+
+.winchallenge-editor-page--manage .message-stack {
+    margin-bottom: 18px;
+}
+
+.winchallenge-editor-page--manage .message-stack__item {
+    border-color: var(--wc-overview-border);
+    border-radius: 8px;
+    background: var(--wc-overview-surface-solid);
+    box-shadow: 0 10px 28px var(--wc-overview-shadow);
+}
+
+.winchallenge-editor-page--manage .manage-layout {
+    grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.72fr);
+    gap: 22px;
+}
+
+.winchallenge-editor-page--manage .manage-main {
+    gap: 18px;
+}
+
+.winchallenge-editor-page--manage .editor-panel--surface,
+.winchallenge-editor-page--manage .preview-panel--surface {
+    border: 1px solid var(--wc-overview-border);
+    border-radius: 8px;
+    background: var(--wc-overview-surface);
+    box-shadow: 0 16px 42px var(--wc-overview-shadow);
+}
+
+.winchallenge-editor-page--manage .editor-panel {
+    padding: 28px;
+    scroll-margin-top: 18px;
+}
+
+.winchallenge-editor-page--manage .panel-heading {
+    margin-bottom: 24px;
+}
+
+.winchallenge-editor-page--manage .overview-stats {
+    gap: 1px;
+    overflow: hidden;
+    margin-bottom: 22px;
+    border: 1px solid var(--wc-overview-rule);
+    border-radius: 8px;
+    background: var(--wc-overview-rule);
+}
+
+.winchallenge-editor-page--manage .overview-stats div {
+    border: 0;
+    border-radius: 0;
+    background: var(--wc-overview-surface-solid);
+}
+
+.winchallenge-editor-page--manage .form-control,
+.winchallenge-editor-page--manage .color-control,
+.winchallenge-editor-page--manage .toggle-row,
+.winchallenge-editor-page--manage .game-row,
+.winchallenge-editor-page--manage .icon-button,
+.winchallenge-editor-page--manage .empty-inline {
+    border-color: var(--wc-overview-border);
+    background: var(--wc-overview-surface-solid);
+}
+
+.winchallenge-editor-page--manage .form-control,
+.winchallenge-editor-page--manage .color-control,
+.winchallenge-editor-page--manage .toggle-row,
+.winchallenge-editor-page--manage .game-row,
+.winchallenge-editor-page--manage .empty-inline {
+    border-radius: 8px;
+}
+
+.winchallenge-editor-page--manage .form-control {
+    min-height: 44px;
+}
+
+.winchallenge-editor-page--manage .preview-panel--surface {
+    overflow: hidden;
+    padding: 0;
+}
+
+.winchallenge-editor-page--manage .preview-panel--sticky {
+    top: 18px;
+}
+
+.winchallenge-editor-page--manage .preview-panel .panel-heading {
+    margin: 0;
+    padding: 24px;
+    border-bottom: 1px solid var(--wc-overview-border);
+    background: var(--wc-overview-surface-solid);
+}
+
+.winchallenge-editor-page--manage .preview-stage {
+    min-height: 450px;
+    overflow: hidden;
+    isolation: isolate;
+    padding: 34px 18px;
+    border: 0;
+    border-radius: 0;
+    background-color: #132231;
+    background-image: url("../imgs/background/background1.jpg");
+    background-position: center;
+    background-size: cover;
+    box-shadow: none;
+}
+
+.winchallenge-editor-page--manage .preview-stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--wc-overview-stage-scrim);
+}
+
+.winchallenge-editor-page--manage .preview-stage .winchallenge-overlay {
+    position: relative;
+    z-index: 1;
+}
+
 .manage-tabs {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 12px;
     margin-bottom: 28px;
+}
+
+.winchallenge-editor-page--manage .manage-tabs {
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto 22px;
+    padding: 6px;
+    border: 1px solid var(--wc-overview-border);
+    border-radius: 10px;
+    background: var(--wc-overview-surface);
+    box-shadow: 0 12px 32px var(--wc-overview-shadow);
+}
+
+.winchallenge-editor-page--manage .manage-tabs .btn {
+    min-height: 40px;
+    padding: 8px 18px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    box-shadow: none;
+}
+
+.winchallenge-editor-page--manage .manage-tabs .btn:hover,
+.winchallenge-editor-page--manage .manage-tabs .btn:focus-visible {
+    color: var(--color-link-hover);
+    background: var(--wc-overview-surface-solid);
+    box-shadow: none;
 }
 
 .game-add-form {
@@ -1407,6 +1585,14 @@ body.overlay-source {
         position: static;
     }
 
+    .winchallenge-editor-page--manage .manage-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .winchallenge-editor-page--manage .preview-panel {
+        order: -1;
+    }
+
     .create-editor-layout {
         grid-template-areas:
             "preview"
@@ -1454,6 +1640,15 @@ body.overlay-source {
         font-size: 2.35rem;
     }
 
+    .winchallenge-editor-page--manage .manage-hero {
+        margin-top: 34px;
+        margin-bottom: 34px;
+    }
+
+    .winchallenge-editor-page--manage .manage-hero h1 {
+        font-size: 2.35rem;
+    }
+
     .challenge-list-header {
         align-items: stretch;
         flex-direction: column;
@@ -1497,6 +1692,10 @@ body.overlay-source {
         padding: 22px;
     }
 
+    .winchallenge-editor-page--manage .editor-panel {
+        padding: 22px;
+    }
+
     .winchallenge-editor-page--create .editor-panel--intro {
         grid-template-columns: 1fr;
         gap: 18px;
@@ -1513,6 +1712,19 @@ body.overlay-source {
     .winchallenge-editor-page--create .preview-stage {
         min-height: 330px;
         padding: 26px 12px;
+    }
+
+    .winchallenge-editor-page--manage .preview-stage {
+        min-height: 330px;
+        padding: 26px 12px;
+    }
+
+    .winchallenge-editor-page--manage .manage-tabs {
+        width: 100%;
+    }
+
+    .winchallenge-editor-page--manage .manage-tabs .btn {
+        flex: 1 1 calc(50% - 6px);
     }
 
     .winchallenge-editor-page--create .editor-actions {

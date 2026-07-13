@@ -51,7 +51,10 @@
                     </div>
 
                     <div class="form-field form-field--wide">
-                        <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+                        <label class="label-with-note" for="{{ form.title.id_for_label }}">
+                            <span>{{ form.title.label }}</span>
+                            <small>{% translate "Optional: default Winchallenge" %}</small>
+                        </label>
                         {{ form.title }}
                         {{ form.title.errors }}
                     </div>
