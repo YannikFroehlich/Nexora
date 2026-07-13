@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from app.models import WinChallenge, WinChallengeGame
+from app.models import SpotifyOverlay, WinChallenge, WinChallengeGame
 
 
 class WinChallengeGameInline(admin.TabularInline):
@@ -29,3 +29,24 @@ class WinChallengeGameAdmin(admin.ModelAdmin):
     list_filter = ("challenge",)
     search_fields = ("name", "challenge__title")
     readonly_fields = ("created_at",)
+
+
+@admin.register(SpotifyOverlay)
+class SpotifyOverlayAdmin(admin.ModelAdmin):
+    list_display = ("display_name", "canvas_size", "spotify_connected", "updated_at")
+    list_filter = ("background_opacity", "spotify_connected_at")
+    search_fields = ("name", "public_token")
+    readonly_fields = (
+        "public_token",
+        "spotify_connected_at",
+        "created_at",
+        "updated_at",
+    )
+
+    @admin.display(description="Size")
+    def canvas_size(self, obj):
+        return f"{obj.canvas_width} × {obj.canvas_height}"
+
+    @admin.display(boolean=True, description="Spotify connected")
+    def spotify_connected(self, obj):
+        return obj.is_spotify_connected

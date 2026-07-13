@@ -292,3 +292,192 @@ class WinChallengeGame(models.Model):
             return 0
 
         return min(round((self.wins / self.target_wins) * 100), 100)
+
+
+def default_spotify_elements():
+    """Starter layout used by new Spotify overlays."""
+
+    return [
+        {
+            "id": "artwork",
+            "type": "artwork",
+            "x": 24,
+            "y": 24,
+            "width": 172,
+            "height": 172,
+            "font_size": 16,
+            "color": "#1db954",
+            "background_color": "#282828",
+            "border_radius": 18,
+        },
+        {
+            "id": "title",
+            "type": "title",
+            "x": 220,
+            "y": 38,
+            "width": 460,
+            "height": 52,
+            "font_size": 30,
+            "color": "#ffffff",
+            "background_color": "#535353",
+            "border_radius": 8,
+        },
+        {
+            "id": "artist",
+            "type": "artist",
+            "x": 220,
+            "y": 93,
+            "width": 460,
+            "height": 34,
+            "font_size": 18,
+            "color": "#b3b3b3",
+            "background_color": "#535353",
+            "border_radius": 8,
+        },
+        {
+            "id": "progress",
+            "type": "progress",
+            "x": 220,
+            "y": 154,
+            "width": 460,
+            "height": 12,
+            "font_size": 14,
+            "color": "#1ed760",
+            "background_color": "#535353",
+            "border_radius": 8,
+        },
+        {
+            "id": "elapsed",
+            "type": "elapsed",
+            "x": 220,
+            "y": 176,
+            "width": 70,
+            "height": 24,
+            "font_size": 13,
+            "color": "#b3b3b3",
+            "background_color": "#535353",
+            "border_radius": 6,
+        },
+        {
+            "id": "duration",
+            "type": "duration",
+            "x": 610,
+            "y": 176,
+            "width": 70,
+            "height": 24,
+            "font_size": 13,
+            "color": "#b3b3b3",
+            "background_color": "#535353",
+            "border_radius": 6,
+        },
+    ]
+
+
+class SpotifyOverlay(models.Model):
+    """A freely composed browser-source overlay for Spotify playback."""
+
+    DEFAULT_NAME = _("Spotify-Overlay")
+    SOURCE_EXTRA_WIDTH = 80
+    SOURCE_EXTRA_HEIGHT = 96
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="spotify_overlays",
+        blank=True,
+        null=True,
+    )
+    public_token = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        db_index=True,
+    )
+    name = models.CharField(max_length=120, default="Spotify-Overlay", blank=True)
+    canvas_width = models.PositiveSmallIntegerField(
+        default=720,
+        validators=[MinValueValidator(240), MaxValueValidator(1920)],
+    )
+    canvas_height = models.PositiveSmallIntegerField(
+        default=220,
+        validators=[MinValueValidator(120), MaxValueValidator(1080)],
+    )
+    background_color = models.CharField(
+        max_length=7,
+        default="#121212",
+        validators=[hex_color_validator],
+    )
+    background_opacity = models.PositiveSmallIntegerField(
+        default=94,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+    border_color = models.CharField(
+        max_length=7,
+        default="#1ed760",
+        validators=[hex_color_validator],
+    )
+    border_width = models.PositiveSmallIntegerField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(24)],
+    )
+    corner_radius = models.PositiveSmallIntegerField(
+        default=26,
+        validators=[MinValueValidator(0), MaxValueValidator(80)],
+    )
+    elements = models.JSONField(default=default_spotify_elements)
+
+    spotify_access_token = models.TextField(blank=True)
+    spotify_refresh_token = models.TextField(blank=True)
+    spotify_token_expires_at = models.DateTimeField(blank=True, null=True)
+    spotify_connected_at = models.DateTimeField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-updated_at", "-created_at")
+
+    def __str__(self):
+        return str(self.display_name)
+
+    @property
+    def display_name(self):
+        return self.name or self.DEFAULT_NAME
+
+    @property
+    def is_spotify_connected(self):
+        return bool(self.spotify_access_token or self.spotify_refresh_token)
+
+    @property
+    def background_rgba(self):
+        red = int(self.background_color[1:3], 16)
+        green = int(self.background_color[3:5], 16)
+        blue = int(self.background_color[5:7], 16)
+        alpha = self.background_opacity / 100
+
+        return f"rgba({red}, {green}, {blue}, {alpha:.2f})"
+
+    @property
+    def browser_source_width(self):
+        return self.canvas_width + self.SOURCE_EXTRA_WIDTH
+
+    @property
+    def browser_source_height(self):
+        return self.canvas_height + self.SOURCE_EXTRA_HEIGHT
+
+    def design_payload(self):
+        return {
+            "name": self.display_name,
+            "canvas_width": self.canvas_width,
+            "canvas_height": self.canvas_height,
+            "browser_source_width": self.browser_source_width,
+            "browser_source_height": self.browser_source_height,
+            "background_color": self.background_color,
+            "background_opacity": self.background_opacity,
+            "background_rgba": self.background_rgba,
+            "border_color": self.border_color,
+            "border_width": self.border_width,
+            "corner_radius": self.corner_radius,
+            "elements": self.elements,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else "",
+        }

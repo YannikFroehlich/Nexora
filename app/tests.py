@@ -1,9 +1,14 @@
+import json
+from datetime import timedelta
+from unittest.mock import patch
+
 from django.conf import settings
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 
-from app.forms import WinChallengeCreateForm
-from app.models import WinChallenge, WinChallengeGame
+from app.forms import SpotifyOverlayForm, WinChallengeCreateForm
+from app.models import SpotifyOverlay, WinChallenge, WinChallengeGame
 
 
 class HomeViewTests(TestCase):
@@ -120,13 +125,18 @@ class WinChallengeEndpointTests(TestCase):
         self.assertContains(response, "preview-panel--surface")
         self.assertContains(response, '<div class="preview-stage">')
 
-    def test_spotify_create_page_is_placeholder(self):
+    def test_spotify_create_page_renders_visual_editor(self):
         home_response = self.client.get(reverse("home"))
         response = self.client.get(reverse("spotify_create"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Coming soon")
-        self.assertContains(home_response, reverse("spotify_create"))
+        self.assertContains(response, "data-spotify-editor")
+        self.assertContains(response, 'data-add-element="title"')
+        self.assertContains(response, 'data-add-element="progress"')
+        self.assertContains(response, "data-grid-toggle")
+        self.assertContains(response, "data-grid-size")
+        self.assertContains(response, 'value="Spotify-Overlay"')
+        self.assertContains(home_response, reverse("spotify_list"))
 
     def test_public_state_exposes_overlay_data_only(self):
         self.challenge.text_size = 20
@@ -219,3 +229,171 @@ class WinChallengeEndpointTests(TestCase):
         response = self.client.post(url, {"name": "Too much", "wins": 0, "target_wins": 1})
 
         self.assertEqual(response.status_code, 400)
+
+
+class SpotifyOverlayModelTests(TestCase):
+    def test_default_overlay_has_starter_elements_and_display_name(self):
+        overlay = SpotifyOverlay.objects.create()
+
+        self.assertEqual(overlay.display_name, "Spotify-Overlay")
+        self.assertEqual(overlay.canvas_width, 720)
+        self.assertEqual(overlay.canvas_height, 220)
+        self.assertEqual(overlay.browser_source_width, 800)
+        self.assertEqual(overlay.browser_source_height, 316)
+        self.assertEqual(overlay.border_color, "#1ed760")
+        self.assertEqual(overlay.border_width, 0)
+        self.assertEqual(
+            {element["type"] for element in overlay.elements},
+            {"artwork", "title", "artist", "progress", "elapsed", "duration"},
+        )
+
+
+class SpotifyOverlayFormTests(TestCase):
+    def valid_data(self, **overrides):
+        overlay = SpotifyOverlay()
+        data = {
+            "name": "My Spotify",
+            "canvas_width": overlay.canvas_width,
+            "canvas_height": overlay.canvas_height,
+            "background_color": overlay.background_color,
+            "background_opacity": overlay.background_opacity,
+            "border_color": overlay.border_color,
+            "border_width": overlay.border_width,
+            "corner_radius": overlay.corner_radius,
+            "elements": json.dumps(overlay.elements),
+        }
+        data.update(overrides)
+        return data
+
+    def test_layout_and_element_styles_are_saved(self):
+        data = self.valid_data(border_color="#FF8800", border_width=7)
+        elements = json.loads(data["elements"])
+        elements[1]["font_size"] = 42
+        elements[1]["color"] = "#ABCDEF"
+        elements[1]["x"] = 310
+        data["elements"] = json.dumps(elements)
+        form = SpotifyOverlayForm(data=data)
+
+        self.assertTrue(form.is_valid(), form.errors)
+        overlay = form.save()
+        title = next(element for element in overlay.elements if element["type"] == "title")
+        self.assertEqual(title["font_size"], 42)
+        self.assertEqual(title["color"], "#abcdef")
+        self.assertEqual(title["x"], 310)
+        self.assertEqual(overlay.border_color, "#FF8800")
+        self.assertEqual(overlay.border_width, 7)
+
+    def test_unknown_elements_are_rejected(self):
+        data = self.valid_data()
+        elements = json.loads(data["elements"])
+        elements[0]["type"] = "unsafe-html"
+        data["elements"] = json.dumps(elements)
+        form = SpotifyOverlayForm(data=data)
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("elements", form.errors)
+
+
+class SpotifyOverlayEndpointTests(TestCase):
+    def setUp(self):
+        self.overlay = SpotifyOverlay.objects.create(name="Desk Setup")
+
+    @override_settings(SPOTIFY_CLIENT_ID="client-id", SPOTIFY_CLIENT_SECRET="client-secret")
+    def test_list_and_manage_pages_show_saved_overlay(self):
+        list_response = self.client.get(reverse("spotify_list"))
+        manage_response = self.client.get(reverse("spotify_manage", args=[self.overlay.pk]))
+
+        self.assertContains(list_response, "Desk Setup")
+        self.assertContains(manage_response, "data-spotify-editor")
+        self.assertContains(manage_response, reverse("spotify_connect", args=[self.overlay.pk]))
+        self.assertContains(manage_response, reverse("spotify_overlay", args=[self.overlay.public_token]))
+
+    def test_create_saves_overlay_and_redirects_to_manage(self):
+        candidate = SpotifyOverlay()
+        response = self.client.post(
+            reverse("spotify_create"),
+            {
+                "name": "Stream Music",
+                "canvas_width": 800,
+                "canvas_height": 260,
+                "background_color": candidate.background_color,
+                "background_opacity": candidate.background_opacity,
+                "border_color": "#ff8800",
+                "border_width": 6,
+                "corner_radius": candidate.corner_radius,
+                "elements": json.dumps(candidate.elements),
+            },
+        )
+
+        created = SpotifyOverlay.objects.get(name="Stream Music")
+        self.assertRedirects(response, reverse("spotify_manage", args=[created.pk]))
+        self.assertEqual(created.canvas_width, 800)
+        self.assertEqual(created.border_color, "#ff8800")
+        self.assertEqual(created.border_width, 6)
+
+    def test_public_state_does_not_expose_spotify_tokens(self):
+        self.overlay.spotify_access_token = "secret-access-token"
+        self.overlay.spotify_refresh_token = "secret-refresh-token"
+        self.overlay.spotify_token_expires_at = timezone.now() + timedelta(hours=1)
+        self.overlay.save()
+
+        with patch(
+            "app.spotify_api._api_request",
+            return_value={
+                "is_playing": True,
+                "progress_ms": 1000,
+                "item": {
+                    "type": "track",
+                    "name": "Night Drive",
+                    "duration_ms": 200000,
+                    "artists": [{"name": "Nova"}],
+                    "album": {"name": "Lights", "images": [{"url": "https://example.com/cover.jpg"}]},
+                },
+            },
+        ):
+            response = self.client.get(
+                reverse("spotify_overlay_state", args=[self.overlay.public_token])
+            )
+
+        payload = response.json()
+        self.assertEqual(payload["playback"]["title"], "Night Drive")
+        self.assertEqual(payload["playback"]["artist"], "Nova")
+        self.assertEqual(payload["elements"], self.overlay.elements)
+        self.assertEqual(payload["browser_source_width"], 800)
+        self.assertEqual(payload["browser_source_height"], 316)
+        self.assertEqual(payload["border_color"], self.overlay.border_color)
+        self.assertEqual(payload["border_width"], self.overlay.border_width)
+        self.assertNotIn("spotify_access_token", payload)
+        self.assertNotIn("spotify_refresh_token", payload)
+
+    @override_settings(
+        SPOTIFY_CLIENT_ID="client-id",
+        SPOTIFY_CLIENT_SECRET="client-secret",
+        SPOTIFY_REDIRECT_URI="http://testserver/spotify/callback/",
+    )
+    def test_connect_starts_authorization_code_flow_with_state(self):
+        response = self.client.get(reverse("spotify_connect", args=[self.overlay.pk]))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith("https://accounts.spotify.com/authorize?"))
+        self.assertIn("user-read-currently-playing", response.url)
+        self.assertEqual(self.client.session["spotify_oauth"]["overlay_id"], self.overlay.pk)
+
+    @override_settings(
+        SPOTIFY_CLIENT_ID="client-id",
+        SPOTIFY_CLIENT_SECRET="client-secret",
+        SPOTIFY_REDIRECT_URI="http://testserver/spotify/callback/",
+    )
+    @patch("app.views.spotify_api.exchange_authorization_code")
+    def test_callback_connects_the_overlay_after_state_validation(self, exchange):
+        session = self.client.session
+        session["spotify_oauth"] = {"state": "secure-state", "overlay_id": self.overlay.pk}
+        session.save()
+
+        response = self.client.get(
+            reverse("spotify_callback"),
+            {"state": "secure-state", "code": "authorization-code"},
+        )
+
+        self.assertRedirects(response, reverse("spotify_manage", args=[self.overlay.pk]))
+        exchange.assert_called_once()

@@ -3,18 +3,337 @@
 {% load i18n %}
 
 {% block title %}
-    {% translate "Spotify Overlay" %}
+    {% if is_create %}{% translate "Create Spotify Overlay" %}{% else %}{{ overlay.display_name }}{% endif %}
 {% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <link rel="stylesheet" href="{% static 'css/spotify.css' %}?v={{ APP_VERSION }}">
 {% endblock %}
 
 {% block content %}
-    <div class="main">
-        <section class="hero" aria-labelledby="spotify-title">
-            <p class="section-label">{% translate "Spotify Overlay" %}</p>
-            <h1 id="spotify-title">Coming soon</h1>
+    <div class="spotify-page spotify-editor-page" data-spotify-editor>
+        <section class="spotify-hero" aria-labelledby="spotify-editor-title">
+            <div>
+                <p class="section-label"><span>Nexora</span> {% translate "Spotify overlays" %}</p>
+                <h1 id="spotify-editor-title">
+                    {% if is_create %}
+                        {% translate "Create a Spotify overlay" %}
+                    {% else %}
+                        {% translate "Edit Spotify overlay" %}
+                    {% endif %}
+                </h1>
+                <p>{% translate "Add playback elements, style them and drag them to the exact position you want." %}</p>
+            </div>
+            <a class="btn glass-design" href="{% url 'spotify_list' %}">{% translate "All Spotify overlays" %}</a>
         </section>
+
+        {% if messages %}
+            <div class="message-stack" aria-live="polite">
+                {% for message in messages %}
+                    <p class="message-stack__item{% if message.tags %} message-stack__item--{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form class="spotify-editor-layout" method="post" novalidate data-spotify-form>
+            {% csrf_token %}
+            {{ form.elements }}
+
+            <div class="spotify-editor-sidebar">
+                {% if form.non_field_errors %}
+                    <div class="form-errors">{{ form.non_field_errors }}</div>
+                {% endif %}
+                {{ form.elements.errors }}
+
+                <section class="spotify-panel" aria-labelledby="spotify-general-title">
+                    <div class="panel-heading panel-heading--numbered">
+                        <span class="panel-heading__number" aria-hidden="true">01</span>
+                        <div>
+                            <p class="section-label">{% translate "General" %}</p>
+                            <h2 id="spotify-general-title">{% translate "Overlay settings" %}</h2>
+                        </div>
+                    </div>
+
+                    <div class="form-field form-field--wide">
+                        <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                        {{ form.name }}
+                        {{ form.name.errors }}
+                        <small>{% translate "Default: Spotify-Overlay" %}</small>
+                    </div>
+
+                    <div class="spotify-field-grid">
+                        <div class="form-field">
+                            <label for="{{ form.canvas_width.id_for_label }}">{{ form.canvas_width.label }}</label>
+                            {{ form.canvas_width }}
+                            {{ form.canvas_width.errors }}
+                        </div>
+                        <div class="form-field">
+                            <label for="{{ form.canvas_height.id_for_label }}">{{ form.canvas_height.label }}</label>
+                            {{ form.canvas_height }}
+                            {{ form.canvas_height.errors }}
+                        </div>
+                        <div class="form-field">
+                            <label for="{{ form.background_color.id_for_label }}">{{ form.background_color.label }}</label>
+                            {{ form.background_color }}
+                            {{ form.background_color.errors }}
+                        </div>
+                        <div class="form-field">
+                            <label for="{{ form.background_opacity.id_for_label }}">{{ form.background_opacity.label }}</label>
+                            {{ form.background_opacity }}
+                            {{ form.background_opacity.errors }}
+                        </div>
+                        <div class="form-field">
+                            <label for="{{ form.border_color.id_for_label }}">{{ form.border_color.label }}</label>
+                            {{ form.border_color }}
+                            {{ form.border_color.errors }}
+                        </div>
+                        <div class="form-field">
+                            <label for="{{ form.border_width.id_for_label }}">{{ form.border_width.label }}</label>
+                            {{ form.border_width }}
+                            {{ form.border_width.errors }}
+                        </div>
+                        <div class="form-field">
+                            <label for="{{ form.corner_radius.id_for_label }}">{{ form.corner_radius.label }}</label>
+                            {{ form.corner_radius }}
+                            {{ form.corner_radius.errors }}
+                        </div>
+                    </div>
+                </section>
+
+                <section class="spotify-panel" aria-labelledby="spotify-elements-title">
+                    <div class="panel-heading panel-heading--numbered">
+                        <span class="panel-heading__number" aria-hidden="true">02</span>
+                        <div>
+                            <p class="section-label">{% translate "Content" %}</p>
+                            <h2 id="spotify-elements-title">{% translate "Add elements" %}</h2>
+                        </div>
+                    </div>
+
+                    <div class="element-palette">
+                        <button type="button" data-add-element="title" data-element-label="{% translate 'Title' %}">
+                            <span aria-hidden="true">T</span>{% translate "Title" %}
+                        </button>
+                        <button type="button" data-add-element="artist" data-element-label="{% translate 'Artist' %}">
+                            <span aria-hidden="true">A</span>{% translate "Artist" %}
+                        </button>
+                        <button type="button" data-add-element="album" data-element-label="{% translate 'Album' %}">
+                            <span aria-hidden="true">AL</span>{% translate "Album" %}
+                        </button>
+                        <button type="button" data-add-element="artwork" data-element-label="{% translate 'Cover' %}">
+                            <span aria-hidden="true">▣</span>{% translate "Cover" %}
+                        </button>
+                        <button type="button" data-add-element="progress" data-element-label="{% translate 'Progress bar' %}">
+                            <span aria-hidden="true">━</span>{% translate "Progress bar" %}
+                        </button>
+                        <button type="button" data-add-element="elapsed" data-element-label="{% translate 'Elapsed time' %}">
+                            <span aria-hidden="true">0:00</span>{% translate "Elapsed" %}
+                        </button>
+                        <button type="button" data-add-element="duration" data-element-label="{% translate 'Duration' %}">
+                            <span aria-hidden="true">3:48</span>{% translate "Duration" %}
+                        </button>
+                        <button type="button" data-add-element="status" data-element-label="{% translate 'Playback status' %}">
+                            <span aria-hidden="true">●</span>{% translate "Status" %}
+                        </button>
+                    </div>
+
+                    <div class="element-list-heading">
+                        <h3>{% translate "Elements in the overlay" %}</h3>
+                        <span data-element-count>0</span>
+                    </div>
+                    <div class="element-list" data-element-list></div>
+                </section>
+
+                <section class="spotify-panel selected-element-panel" aria-labelledby="selected-element-title">
+                    <div class="panel-heading">
+                        <p class="section-label">{% translate "Selected element" %}</p>
+                        <h2 id="selected-element-title" data-selected-element-title>{% translate "Select an element" %}</h2>
+                    </div>
+                    <p class="selected-element-empty" data-selected-empty>
+                        {% translate "Click an element in the preview or in the list to edit it." %}
+                    </p>
+
+                    <div data-selected-controls hidden>
+                        <div class="spotify-field-grid spotify-field-grid--four">
+                            <div class="form-field">
+                                <label for="spotify-element-x">X</label>
+                                <input class="form-control" id="spotify-element-x" type="number" min="0" max="1920" data-element-property="x">
+                            </div>
+                            <div class="form-field">
+                                <label for="spotify-element-y">Y</label>
+                                <input class="form-control" id="spotify-element-y" type="number" min="0" max="1080" data-element-property="y">
+                            </div>
+                            <div class="form-field">
+                                <label for="spotify-element-width">{% translate "Width" %}</label>
+                                <input class="form-control" id="spotify-element-width" type="number" min="24" max="1920" data-element-property="width">
+                            </div>
+                            <div class="form-field">
+                                <label for="spotify-element-height">{% translate "Height" %}</label>
+                                <input class="form-control" id="spotify-element-height" type="number" min="8" max="1080" data-element-property="height">
+                            </div>
+                        </div>
+
+                        <div class="spotify-field-grid">
+                            <div class="form-field" data-text-setting>
+                                <label for="spotify-element-font-size">{% translate "Text size" %}</label>
+                                <input class="form-control" id="spotify-element-font-size" type="number" min="8" max="120" data-element-property="font_size">
+                            </div>
+                            <div class="form-field">
+                                <label for="spotify-element-color" data-color-label>{% translate "Color" %}</label>
+                                <input class="color-control" id="spotify-element-color" type="color" data-element-property="color">
+                            </div>
+                            <div class="form-field" data-progress-setting hidden>
+                                <label for="spotify-element-background">{% translate "Track color" %}</label>
+                                <input class="color-control" id="spotify-element-background" type="color" data-element-property="background_color">
+                            </div>
+                            <div class="form-field">
+                                <label for="spotify-element-radius">{% translate "Corner radius" %}</label>
+                                <input class="form-control" id="spotify-element-radius" type="number" min="0" max="200" data-element-property="border_radius">
+                            </div>
+                        </div>
+
+                        <button class="btn danger-button" type="button" data-delete-element>
+                            {% translate "Remove element" %}
+                        </button>
+                    </div>
+                </section>
+
+                {% if not is_create %}
+                    <section class="spotify-panel" aria-labelledby="spotify-connection-title">
+                        <div class="panel-heading">
+                            <p class="section-label">{% translate "Live data" %}</p>
+                            <h2 id="spotify-connection-title">{% translate "Spotify connection" %}</h2>
+                        </div>
+
+                        {% if overlay.is_spotify_connected %}
+                            <div class="connection-status connection-status--connected">
+                                <span aria-hidden="true"></span>
+                                <div>
+                                    <strong>{% translate "Connected" %}</strong>
+                                    <small>{% translate "Playback data is available to the overlay." %}</small>
+                                </div>
+                            </div>
+                            <button class="btn glass-design" type="submit" form="spotify-disconnect-form">
+                                {% translate "Disconnect Spotify" %}
+                            </button>
+                        {% elif spotify_configured %}
+                            <div class="connection-status">
+                                <span aria-hidden="true"></span>
+                                <div>
+                                    <strong>{% translate "Not connected" %}</strong>
+                                    <small>{% translate "Connect the Spotify account whose playback should be shown." %}</small>
+                                </div>
+                            </div>
+                            <a class="btn spotify-connect-button" href="{% url 'spotify_connect' overlay.pk %}">
+                                {% translate "Connect with Spotify" %}
+                            </a>
+                        {% else %}
+                            <div class="config-hint">
+                                <strong>{% translate "Spotify credentials are missing" %}</strong>
+                                <p>
+                                    {% translate "Copy .env.example to .env, add your Spotify app credentials and expose those variables to Django." %}
+                                </p>
+                                <code>SPOTIFY_CLIENT_ID · SPOTIFY_CLIENT_SECRET · SPOTIFY_REDIRECT_URI</code>
+                            </div>
+                        {% endif %}
+                    </section>
+
+                    <section class="spotify-panel" aria-labelledby="spotify-obs-title">
+                        <div class="panel-heading">
+                            <p class="section-label">{% translate "Browser source" %}</p>
+                            <h2 id="spotify-obs-title">{% translate "OBS link" %}</h2>
+                        </div>
+                        <div class="obs-copy">
+                            <input class="form-control" type="text" value="{{ obs_url }}" readonly data-obs-url>
+                            <button class="btn action-button" type="button" data-copy-url="{{ obs_url }}">
+                                {% translate "Copy link" %}
+                            </button>
+                        </div>
+                        <p class="spotify-panel-note spotify-source-dimensions">
+                            <span>{% translate "Recommended size so the shadow remains fully visible:" %}</span>
+                            <strong>
+                                <b data-source-width>{{ overlay.browser_source_width }}</b>
+                                ×
+                                <b data-source-height>{{ overlay.browser_source_height }}</b> px
+                            </strong>
+                        </p>
+                    </section>
+                {% endif %}
+
+                <div class="spotify-save-row">
+                    <button class="btn action-button" type="submit">
+                        {% if is_create %}{% translate "Create overlay" %}{% else %}{% translate "Save changes" %}{% endif %}
+                    </button>
+                    {% if not is_create %}
+                        <button class="btn danger-button" type="submit" form="spotify-delete-form">
+                            {% translate "Delete overlay" %}
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <aside class="spotify-preview-panel" aria-labelledby="spotify-preview-title">
+                <div class="panel-heading">
+                    <p class="section-label">{% translate "Live preview" %}</p>
+                    <h2 id="spotify-preview-title">{% translate "Drag elements into position" %}</h2>
+                </div>
+                <p class="spotify-preview-help">
+                    {% translate "Click and drag elements. Arrow keys move the selected element one pixel; hold Shift for ten pixels." %}
+                    <span>{% translate "Press Delete to remove the selection. Drag the green handles to resize it." %}</span>
+                </p>
+                <div class="spotify-preview-tools" aria-label="{% translate 'Alignment tools' %}">
+                    <label class="spotify-grid-toggle">
+                        <input type="checkbox" data-grid-toggle>
+                        <span class="spotify-grid-toggle__control" aria-hidden="true"><i></i></span>
+                        <span>
+                            <strong>{% translate "Snap to grid" %}</strong>
+                            <small>{% translate "Show a grid and align movements to it." %}</small>
+                        </span>
+                    </label>
+                    <label class="spotify-grid-size">
+                        <span>{% translate "Grid size" %}</span>
+                        <select class="form-control" data-grid-size disabled>
+                            <option value="5">5 px</option>
+                            <option value="10" selected>10 px</option>
+                            <option value="20">20 px</option>
+                            <option value="40">40 px</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="spotify-preview-stage" data-spotify-scale-shell>
+                    {% include "app/spotify/_overlay.html" with playback=sample_playback is_editor=True %}
+                </div>
+                <div class="spotify-preview-meta">
+                    <span><b data-preview-width>{{ overlay.canvas_width }}</b> × <b data-preview-height>{{ overlay.canvas_height }}</b> px</span>
+                    <span>
+                        {% translate "OBS browser source" %}:
+                        <b data-source-width>{{ overlay.browser_source_width }}</b>
+                        ×
+                        <b data-source-height>{{ overlay.browser_source_height }}</b> px
+                    </span>
+                </div>
+            </aside>
+        </form>
+
+        {% if not is_create %}
+            <form id="spotify-disconnect-form" action="{% url 'spotify_disconnect' overlay.pk %}" method="post">
+                {% csrf_token %}
+            </form>
+            <form
+                id="spotify-delete-form"
+                action="{% url 'spotify_delete' overlay.pk %}"
+                method="post"
+                data-confirm-message="{% translate 'Delete this Spotify overlay?' %}"
+            >
+                {% csrf_token %}
+            </form>
+        {% endif %}
+
+        <p class="copy-toast" data-copy-toast hidden>{% translate "OBS link copied" %}</p>
     </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/spotify.js' %}?v={{ APP_VERSION }}"></script>
 {% endblock %}

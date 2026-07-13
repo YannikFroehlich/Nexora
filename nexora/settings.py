@@ -16,6 +16,32 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+def _load_local_environment(path):
+    """Load the project's simple KEY=VALUE .env file without another dependency."""
+
+    if not path.exists():
+        return
+
+    for raw_line in path.read_text(encoding='utf-8').splitlines():
+        line = raw_line.strip()
+
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+
+        key, value = line.split('=', 1)
+        key = key.strip()
+        value = value.strip()
+
+        if value[:1] == value[-1:] and value.startswith(('"', "'")):
+            value = value[1:-1]
+
+        if key:
+            os.environ.setdefault(key, value)
+
+
+_load_local_environment(BASE_DIR / '.env')
+
 APP_VERSION = os.environ.get('APP_VERSION', '').strip()
 
 if not APP_VERSION:
@@ -26,12 +52,19 @@ if not APP_VERSION:
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-7+vf=5_l!9cw-9n(kqd*1!)jsk(eni-88x3dpks4cxm8t#__e%'
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-7+vf=5_l!9cw-9n(kqd*1!)jsk(eni-88x3dpks4cxm8t#__e%',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'true').lower() in {'1', 'true', 'yes', 'on'}
 
 ALLOWED_HOSTS = []
+
+SPOTIFY_CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID', '').strip()
+SPOTIFY_CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET', '').strip()
+SPOTIFY_REDIRECT_URI = os.environ.get('SPOTIFY_REDIRECT_URI', '').strip()
 
 
 # Application definition

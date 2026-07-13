@@ -1,0 +1,66 @@
+{% load static %}
+{% load i18n %}
+
+<div
+    class="spotify-overlay-canvas{% if is_editor %} spotify-overlay-canvas--editor{% endif %}"
+    data-spotify-canvas
+    data-fallback-image="{% static 'imgs/icons/spotify.webp' %}"
+    data-playing-label="{% translate 'Now playing' %}"
+    data-paused-label="{% translate 'Paused' %}"
+    style="
+        --spotify-canvas-width: {{ overlay.canvas_width }}px;
+        --spotify-canvas-height: {{ overlay.canvas_height }}px;
+        --spotify-canvas-background: {{ overlay.background_rgba }};
+        --spotify-canvas-border-color: {{ overlay.border_color }};
+        --spotify-canvas-border-width: {{ overlay.border_width }}px;
+        --spotify-canvas-radius: {{ overlay.corner_radius }}px;
+    "
+>
+    {% for element in overlay.elements %}
+        <div
+            class="spotify-overlay-element spotify-overlay-element--{{ element.type }}"
+            data-spotify-element
+            data-element-id="{{ element.id }}"
+            data-element-type="{{ element.type }}"
+            {% if is_editor %}tabindex="0" role="button" aria-label="{% translate 'Move overlay element' %}"{% endif %}
+            style="
+                left: {{ element.x }}px;
+                top: {{ element.y }}px;
+                width: {{ element.width }}px;
+                height: {{ element.height }}px;
+                color: {{ element.color }};
+                font-size: {{ element.font_size }}px;
+                border-radius: {{ element.border_radius }}px;
+                --spotify-element-color: {{ element.color }};
+                --spotify-element-background: {{ element.background_color }};
+            "
+        >
+            {% if element.type == "artwork" %}
+                <img
+                    src="{% if playback.image_url %}{{ playback.image_url }}{% else %}{% static 'imgs/icons/spotify.webp' %}{% endif %}"
+                    alt=""
+                    data-playback-image
+                >
+            {% elif element.type == "title" %}
+                <span data-playback-title>{{ playback.title }}</span>
+            {% elif element.type == "artist" %}
+                <span data-playback-artist>{{ playback.artist }}</span>
+            {% elif element.type == "album" %}
+                <span data-playback-album>{{ playback.album }}</span>
+            {% elif element.type == "progress" %}
+                <span class="spotify-progress-track" aria-hidden="true">
+                    <span data-playback-progress style="width: 45%;"></span>
+                </span>
+            {% elif element.type == "elapsed" %}
+                <span data-playback-elapsed>1:42</span>
+            {% elif element.type == "duration" %}
+                <span data-playback-duration>3:48</span>
+            {% elif element.type == "status" %}
+                <span class="spotify-playback-status{% if playback.is_playing %} is-playing{% endif %}" data-playback-status>
+                    <i aria-hidden="true"></i>
+                    <span>{% if playback.is_playing %}{% translate "Now playing" %}{% else %}{% translate "Paused" %}{% endif %}</span>
+                </span>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>

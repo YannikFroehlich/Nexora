@@ -1,0 +1,104 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% translate "Spotify Overlays" %}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/spotify.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block content %}
+    <div class="spotify-page spotify-list-page">
+        <section class="spotify-hero" aria-labelledby="spotify-list-title">
+            <div>
+                <p class="section-label"><span>Nexora</span> {% translate "Spotify overlays" %}</p>
+                <h1 id="spotify-list-title">{% translate "Now playing, in your own style" %}</h1>
+                <p>{% translate "Build movable Spotify layouts and use each one as an OBS browser source." %}</p>
+            </div>
+        </section>
+
+        {% if messages %}
+            <div class="message-stack" aria-live="polite">
+                {% for message in messages %}<p class="message-stack__item">{{ message }}</p>{% endfor %}
+            </div>
+        {% endif %}
+
+        {% if overlays %}
+            <section class="spotify-saved-section" aria-labelledby="spotify-saved-title">
+                <div class="spotify-list-header">
+                    <div>
+                        <p class="section-label">{% translate "Your collection" %}</p>
+                        <h2 id="spotify-saved-title">{% translate "Saved Spotify overlays" %}</h2>
+                    </div>
+                    <a class="btn action-button" href="{% url 'spotify_create' %}">{% translate "Create Spotify Overlay" %}</a>
+                </div>
+
+                <div class="spotify-card-grid">
+                    {% for overlay in overlays %}
+                        {% url 'spotify_overlay' overlay.public_token as overlay_path %}
+                        <article class="spotify-card">
+                            <div class="spotify-card__preview" data-spotify-scale-shell>
+                                {% include "app/spotify/_overlay.html" with playback=sample_playback %}
+                            </div>
+                            <div class="spotify-card__content">
+                                <div class="spotify-card__title">
+                                    <img src="{% static 'imgs/icons/spotify.webp' %}" alt="">
+                                    <div>
+                                        <p class="section-label">{% translate "Spotify overlay" %}</p>
+                                        <h2>{{ overlay.display_name }}</h2>
+                                    </div>
+                                </div>
+                                <dl class="spotify-card__stats">
+                                    <div><dt>{% translate "Size" %}</dt><dd>{{ overlay.canvas_width }} × {{ overlay.canvas_height }}</dd></div>
+                                    <div><dt>{% translate "Elements" %}</dt><dd>{{ overlay.elements|length }}</dd></div>
+                                    <div>
+                                        <dt>{% translate "Spotify" %}</dt>
+                                        <dd>{% if overlay.is_spotify_connected %}{% translate "Connected" %}{% else %}{% translate "Open" %}{% endif %}</dd>
+                                    </div>
+                                </dl>
+                                <div class="spotify-card__actions">
+                                    <a class="btn action-button" href="{% url 'spotify_manage' overlay.pk %}">{% translate "Edit" %}</a>
+                                    <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">{% translate "Open preview" %}</a>
+                                    <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
+                                        {% translate "Copy OBS link" %}
+                                    </button>
+                                    <form class="inline-form" action="{% url 'spotify_delete' overlay.pk %}" method="post" data-confirm-message="{% translate 'Delete this Spotify overlay?' %}">
+                                        {% csrf_token %}
+                                        <button class="btn danger-button" type="submit">{% translate "Delete" %}</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% else %}
+            <section class="spotify-empty-state" aria-labelledby="spotify-empty-title">
+                <div class="spotify-empty-preview">
+                    <div class="spotify-empty-widget">
+                        <img src="{% static 'imgs/icons/spotify.webp' %}" alt="">
+                        <div>
+                            <span>{% translate "Now playing" %}</span>
+                            <strong>Midnight Drive</strong>
+                            <small>Nova Waves</small>
+                            <i><b></b></i>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <p class="section-label">{% translate "No overlays yet" %}</p>
+                    <h2 id="spotify-empty-title">{% translate "Create your first Spotify overlay" %}</h2>
+                    <p>{% translate "Start with a polished layout, then move, resize or remove every element." %}</p>
+                    <a class="btn action-button" href="{% url 'spotify_create' %}">{% translate "Create Spotify Overlay" %}</a>
+                </div>
+            </section>
+        {% endif %}
+
+        <p class="copy-toast" data-copy-toast hidden>{% translate "OBS link copied" %}</p>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/spotify.js' %}?v={{ APP_VERSION }}"></script>
+{% endblock %}
