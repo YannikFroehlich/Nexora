@@ -1,7 +1,10 @@
+import json
+import re
+
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from app.models import WinChallenge, WinChallengeGame
+from app.models import SpotifyOverlay, WinChallenge, WinChallengeGame
 
 
 BASE_INPUT_CLASS = "form-control"
@@ -236,3 +239,161 @@ class WinChallengeGameForm(forms.ModelForm):
 
     def clean_name(self):
         return self.cleaned_data["name"].strip()
+
+
+class SpotifyOverlayForm(forms.ModelForm):
+    """Overlay settings plus the JSON layout maintained by the visual editor."""
+
+    ALLOWED_ELEMENT_TYPES = {
+        "title",
+        "artist",
+        "album",
+        "artwork",
+        "progress",
+        "elapsed",
+        "duration",
+        "status",
+    }
+    ELEMENT_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+    elements = forms.CharField(widget=forms.HiddenInput(attrs={"data-elements-input": ""}))
+
+    class Meta:
+        model = SpotifyOverlay
+        fields = (
+            "name",
+            "canvas_width",
+            "canvas_height",
+            "background_color",
+            "background_opacity",
+            "border_color",
+            "border_width",
+            "corner_radius",
+            "elements",
+        )
+        labels = {
+            "name": _("Overlay name"),
+            "canvas_width": _("Overlay width"),
+            "canvas_height": _("Overlay height"),
+            "background_color": _("Background color"),
+            "background_opacity": _("Background opacity"),
+            "border_color": _("Border color"),
+            "border_width": _("Border width"),
+            "corner_radius": _("Corner radius"),
+        }
+        widgets = {
+            "name": forms.TextInput(
+                attrs={"class": BASE_INPUT_CLASS, "placeholder": _("Spotify-Overlay")}
+            ),
+            "canvas_width": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 240, "max": 1920, "step": 1}
+            ),
+            "canvas_height": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 120, "max": 1080, "step": 1}
+            ),
+            "background_color": ColorInput(attrs={"class": "color-control"}),
+            "background_opacity": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 100, "step": 1}
+            ),
+            "border_color": ColorInput(attrs={"class": "color-control"}),
+            "border_width": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 24, "step": 1}
+            ),
+            "corner_radius": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 80, "step": 1}
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["name"].required = False
+
+        limits = {
+            "canvas_width": (240, 1920),
+            "canvas_height": (120, 1080),
+            "background_opacity": (0, 100),
+            "border_width": (0, 24),
+            "corner_radius": (0, 80),
+        }
+        for field_name, (minimum, maximum) in limits.items():
+            self.fields[field_name].min_value = minimum
+            self.fields[field_name].max_value = maximum
+            self.fields[field_name].widget.attrs["min"] = minimum
+            self.fields[field_name].widget.attrs["max"] = maximum
+
+        if not self.is_bound:
+            self.initial["elements"] = json.dumps(
+                self.instance.elements,
+                ensure_ascii=False,
+                separators=(",", ":"),
+            )
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip() or "Spotify-Overlay"
+
+    def clean_elements(self):
+        try:
+            raw_elements = json.loads(self.cleaned_data["elements"])
+        except (TypeError, ValueError, json.JSONDecodeError) as error:
+            raise forms.ValidationError(_("The element layout is invalid.")) from error
+
+        if not isinstance(raw_elements, list):
+            raise forms.ValidationError(_("The element layout must be a list."))
+
+        if len(raw_elements) > 30:
+            raise forms.ValidationError(_("A maximum of 30 elements is allowed."))
+
+        normalized = []
+        used_ids = set()
+
+        for raw_element in raw_elements:
+            if not isinstance(raw_element, dict):
+                raise forms.ValidationError(_("Every overlay element must be an object."))
+
+            element_id = str(raw_element.get("id", ""))
+            element_type = str(raw_element.get("type", ""))
+
+            if not self.ELEMENT_ID_PATTERN.fullmatch(element_id) or element_id in used_ids:
+                raise forms.ValidationError(_("Every overlay element needs a unique valid ID."))
+
+            if element_type not in self.ALLOWED_ELEMENT_TYPES:
+                raise forms.ValidationError(_("An unknown Spotify element was submitted."))
+
+            used_ids.add(element_id)
+            element = {
+                "id": element_id,
+                "type": element_type,
+                "x": self._integer_value(raw_element, "x", 0, 1920),
+                "y": self._integer_value(raw_element, "y", 0, 1080),
+                "width": self._integer_value(raw_element, "width", 24, 1920),
+                "height": self._integer_value(raw_element, "height", 8, 1080),
+                "font_size": self._integer_value(raw_element, "font_size", 8, 120),
+                "border_radius": self._integer_value(raw_element, "border_radius", 0, 200),
+                "color": self._color_value(raw_element, "color"),
+                "background_color": self._color_value(raw_element, "background_color"),
+            }
+            normalized.append(element)
+
+        return normalized
+
+    @staticmethod
+    def _integer_value(element, key, minimum, maximum):
+        try:
+            value = int(element.get(key))
+        except (TypeError, ValueError) as error:
+            raise forms.ValidationError(_("Element values must be whole numbers.")) from error
+
+        if not minimum <= value <= maximum:
+            raise forms.ValidationError(
+                _("An element value is outside the allowed range."),
+            )
+
+        return value
+
+    @staticmethod
+    def _color_value(element, key):
+        value = str(element.get(key, ""))
+
+        if not re.fullmatch(r"#[0-9A-Fa-f]{6}", value):
+            raise forms.ValidationError(_("Every element color must be a valid hex color."))
+
+        return value.lower()

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-09 15:59+0200\n"
+"POT-Creation-Date: 2026-07-13 14:33+0200\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: English\n"
@@ -17,236 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: .\app\templates\app\about.html:6 .\app\templates\app\about.html:15
-#: .\app\templates\app\base.html:27
-msgid "About"
-msgstr ""
-
-#: .\app\templates\app\base.html:24 .\app\templates\app\home.html:6
-msgid "Home"
-msgstr ""
-
-#: .\app\templates\app\base.html:41
-msgid "Language"
-msgstr ""
-
-#: .\app\templates\app\base.html:57
-msgid "Switch theme"
-msgstr ""
-
-#: .\app\templates\app\home.html:16
-msgid "Welcome to Nexora"
-msgstr ""
-
-#: .\app\templates\app\home.html:18
-msgid ""
-"Create browser-based stream overlays for Spotify, win challenges, counters, "
-"and more — all customizable to match your stream’s style"
-msgstr ""
-
-#: .\app\templates\app\home.html:26
-msgid "Spotify Overlay"
-msgstr "Spotify Overlay"
-
-#: .\app\templates\app\home.html:27
-msgid "Create an overlay to show your currently played spotify song"
-msgstr ""
-
-#: .\app\templates\app\home.html:28
-msgid "Create Spotify overlay"
-msgstr ""
-
-#: .\app\templates\app\home.html:34
-msgid "Win Challenges"
-msgstr ""
-
-#: .\app\templates\app\home.html:35
-msgid "Create an overlay to show your Winchallenge"
-msgstr ""
-
-#: .\app\templates\app\home.html:36
-msgid "Create Winchallenge"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Browser-based overlays for creators"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Custom OBS overlays made simple"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Create and customize browser-based overlays for Spotify, win challenges and more — then add them directly to OBS as a browser source."
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Create your first overlay"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Learn more"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Overlay collection"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Choose what fits your stream"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Start with an overlay and make it feel like part of your channel."
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Spotify logo"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Show your currently playing Spotify song directly in your stream."
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Song title and artist"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Album artwork and progress"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Custom colors and layouts"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Create Spotify Overlay"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Win challenge medal"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Win Challenge"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Track your wins and display your current challenge live in your stream."
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Wins and match counters"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Custom goals and titles"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Adjustable design and colors"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Create Win Challenge"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "How it works"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "From idea to stream in three steps"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Choose an overlay"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Pick the overlay that matches what you want to show."
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Customize its appearance"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Adjust the content, colors and layout for your stream."
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Add it to OBS"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Use the generated URL as a browser source in OBS."
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Built for creators"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Everything your overlay workflow needs"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Easy to set up"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Fully customizable"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Made for OBS"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Update values directly from the website"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Your stream, your style"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Ready to upgrade your stream?"
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Create overlays that match your stream and manage them from one place."
-msgstr ""
-
-#: .\app\templates\app\home.html
-msgid "Get started"
-msgstr ""
-
-#: .\app\forms.py .\app\models.py .\app\templates\app\winchallenge\*.html
-msgid "Enter a valid hex color, for example #14b8a6."
-msgstr ""
-
-msgid "Minimal"
-msgstr ""
-
-msgid "Glass"
-msgstr ""
-
-msgid "Neon"
-msgstr ""
-
-msgid "Challenge name"
-msgstr ""
-
 msgid "Overlay title"
-msgstr ""
-
-msgid "Optional: default Winchallenge"
-msgstr ""
-
-msgid "Target wins"
 msgstr ""
 
 msgid "Design template"
@@ -282,9 +53,6 @@ msgstr ""
 msgid "Height"
 msgstr ""
 
-msgid "Text size"
-msgstr ""
-
 msgid "Label text size"
 msgstr ""
 
@@ -306,13 +74,7 @@ msgstr ""
 msgid "Page interval"
 msgstr ""
 
-msgid "Seconds before switching to the next page."
-msgstr ""
-
 msgid "Element spacing"
-msgstr ""
-
-msgid "0 keeps automatic height."
 msgstr ""
 
 msgid "Show shadow"
@@ -321,40 +83,573 @@ msgstr ""
 msgid "Show games list"
 msgstr ""
 
-msgid "Show progress bar"
-msgstr ""
-
-msgid "Leave empty to use the challenge name."
-msgstr ""
-
 msgid "0 is transparent, 100 is fully opaque."
+msgstr ""
+
+msgid "0 keeps automatic height."
+msgstr ""
+
+msgid "Seconds before switching to the next page."
 msgstr ""
 
 msgid "Road to Diamond"
 msgstr ""
 
+msgid "Winchallenge"
+msgstr ""
+
 msgid "Game name"
+msgstr ""
+
+msgid "Wins"
+msgstr ""
+
+msgid "Target wins"
 msgstr ""
 
 msgid "Rocket League"
 msgstr ""
 
-msgid "Win Challenge created."
+msgid "Overlay name"
 msgstr ""
 
-msgid "Challenge settings saved."
+msgid "Overlay width"
 msgstr ""
 
-msgid "Overlay design saved."
+msgid "Overlay height"
 msgstr ""
 
-msgid "Win Challenge deleted: %(name)s"
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Spotify-Overlay"
+msgstr "Spotify Overlay"
+
+msgid "The element layout is invalid."
 msgstr ""
 
-msgid "Invalid win change."
+msgid "The element layout must be a list."
 msgstr ""
 
-msgid "Game name is required."
+msgid "A maximum of 30 elements is allowed."
+msgstr ""
+
+msgid "Every overlay element must be an object."
+msgstr ""
+
+msgid "Every overlay element needs a unique valid ID."
+msgstr ""
+
+msgid "An unknown Spotify element was submitted."
+msgstr ""
+
+msgid "Element values must be whole numbers."
+msgstr ""
+
+msgid "An element value is outside the allowed range."
+msgstr ""
+
+msgid "Every element color must be a valid hex color."
+msgstr ""
+
+msgid "Enter a valid hex color, for example #14b8a6."
+msgstr ""
+
+msgid "Minimal"
+msgstr ""
+
+msgid "Glass"
+msgstr ""
+
+msgid "Neon"
+msgstr ""
+
+msgid "Spotify credentials are not configured."
+msgstr ""
+
+msgid "Spotify is currently unavailable. Please reconnect if this continues."
+msgstr ""
+
+msgid "Podcast"
+msgstr ""
+
+msgid "Unknown title"
+msgstr ""
+
+msgid "Unknown artist"
+msgstr ""
+
+msgid "Nothing playing"
+msgstr ""
+
+msgid "Start playback in Spotify"
+msgstr ""
+
+msgid "Spotify is not connected."
+msgstr ""
+
+msgid "Spotify returned no access token."
+msgstr ""
+
+msgid "Spotify request failed."
+msgstr ""
+
+msgid "Spotify could not be reached."
+msgstr ""
+
+msgid "Spotify returned an empty response."
+msgstr ""
+
+msgid "Spotify returned an invalid response."
+msgstr ""
+
+msgid "About"
+msgstr ""
+
+msgid "Home"
+msgstr ""
+
+msgid "Language"
+msgstr ""
+
+msgid "Switch theme"
+msgstr ""
+
+msgid "Version"
+msgstr ""
+
+msgid "Browser-based overlays for creators"
+msgstr ""
+
+msgid "Custom OBS overlays made simple"
+msgstr ""
+
+msgid ""
+"Create and customize browser-based overlays for Spotify, win challenges and "
+"more — then add them directly to OBS as a browser source."
+msgstr ""
+
+msgid "Create your first overlay"
+msgstr ""
+
+msgid "Learn more"
+msgstr ""
+
+msgid "Example overlay preview"
+msgstr ""
+
+msgid "Stream preview"
+msgstr ""
+
+msgid "Now playing"
+msgstr ""
+
+msgid "Win Challenge"
+msgstr ""
+
+msgid "Overlay collection"
+msgstr ""
+
+msgid "Choose what fits your stream"
+msgstr ""
+
+msgid "Start with an overlay and make it feel like part of your channel."
+msgstr ""
+
+msgid "Spotify logo"
+msgstr ""
+
+msgid "Spotify Overlay"
+msgstr "Spotify Overlay"
+
+msgid "Show your currently playing Spotify song directly in your stream."
+msgstr ""
+
+msgid "Song title and artist"
+msgstr ""
+
+msgid "Album artwork and progress"
+msgstr ""
+
+msgid "Custom colors and layouts"
+msgstr ""
+
+msgid "Create Spotify Overlay"
+msgstr ""
+
+msgid "Win challenge medal"
+msgstr ""
+
+msgid "Track your wins and display your current challenge live in your stream."
+msgstr ""
+
+msgid "Wins and match counters"
+msgstr ""
+
+msgid "Custom goals and titles"
+msgstr ""
+
+msgid "Adjustable design and colors"
+msgstr ""
+
+msgid "Create Win Challenge"
+msgstr ""
+
+msgid "How it works"
+msgstr ""
+
+msgid "From idea to stream in three steps"
+msgstr ""
+
+msgid "Choose an overlay"
+msgstr ""
+
+msgid "Pick the overlay that matches what you want to show."
+msgstr ""
+
+msgid "Customize its appearance"
+msgstr ""
+
+msgid "Adjust the content, colors and layout for your stream."
+msgstr ""
+
+msgid "Add it to OBS"
+msgstr ""
+
+msgid "Use the generated URL as a browser source in OBS."
+msgstr ""
+
+msgid "Built for creators"
+msgstr ""
+
+msgid "Everything your overlay workflow needs"
+msgstr ""
+
+msgid "Easy to set up"
+msgstr ""
+
+msgid "Fully customizable"
+msgstr ""
+
+msgid "Made for OBS"
+msgstr ""
+
+msgid "Update values directly from the website"
+msgstr ""
+
+msgid "Your stream, your style"
+msgstr ""
+
+msgid "Ready to upgrade your stream?"
+msgstr ""
+
+msgid "Create overlays that match your stream and manage them from one place."
+msgstr ""
+
+msgid "Get started"
+msgstr ""
+
+msgid "No games yet"
+msgstr ""
+
+msgid "Paused"
+msgstr ""
+
+msgid "Move overlay element"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Spotify overlays"
+msgstr "Spotify Overlay"
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Create a Spotify overlay"
+msgstr "Spotify Overlay"
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Edit Spotify overlay"
+msgstr "Spotify Overlay"
+
+msgid ""
+"Add playback elements, style them and drag them to the exact position you "
+"want."
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "All Spotify overlays"
+msgstr "Spotify Overlay"
+
+msgid "General"
+msgstr ""
+
+msgid "Overlay settings"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Default: Spotify-Overlay"
+msgstr "Spotify Overlay"
+
+msgid "Content"
+msgstr ""
+
+msgid "Add elements"
+msgstr ""
+
+msgid "Title"
+msgstr ""
+
+msgid "Artist"
+msgstr ""
+
+msgid "Album"
+msgstr ""
+
+msgid "Cover"
+msgstr ""
+
+msgid "Progress bar"
+msgstr ""
+
+msgid "Elapsed time"
+msgstr ""
+
+msgid "Elapsed"
+msgstr ""
+
+msgid "Duration"
+msgstr ""
+
+msgid "Playback status"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Elements in the overlay"
+msgstr ""
+
+msgid "Selected element"
+msgstr ""
+
+msgid "Select an element"
+msgstr ""
+
+msgid "Click an element in the preview or in the list to edit it."
+msgstr ""
+
+msgid "Text size"
+msgstr ""
+
+msgid "Color"
+msgstr ""
+
+msgid "Track color"
+msgstr ""
+
+msgid "Remove element"
+msgstr ""
+
+msgid "Live data"
+msgstr ""
+
+msgid "Spotify connection"
+msgstr ""
+
+msgid "Connected"
+msgstr ""
+
+msgid "Playback data is available to the overlay."
+msgstr ""
+
+msgid "Disconnect Spotify"
+msgstr ""
+
+msgid "Not connected"
+msgstr ""
+
+msgid "Connect the Spotify account whose playback should be shown."
+msgstr ""
+
+msgid "Connect with Spotify"
+msgstr ""
+
+msgid "Spotify credentials are missing"
+msgstr ""
+
+msgid ""
+"Copy .env.example to .env, add your Spotify app credentials and expose those "
+"variables to Django."
+msgstr ""
+
+msgid "Browser source"
+msgstr ""
+
+msgid "OBS link"
+msgstr ""
+
+msgid "Copy link"
+msgstr ""
+
+msgid ""
+"Use the overlay width and height above as the browser-source dimensions in "
+"OBS."
+msgstr ""
+
+msgid "Create overlay"
+msgstr ""
+
+msgid "Save changes"
+msgstr ""
+
+msgid "Delete overlay"
+msgstr ""
+
+msgid "Live preview"
+msgstr ""
+
+msgid "Drag elements into position"
+msgstr ""
+
+msgid ""
+"Click and drag elements. Arrow keys move the selected element one pixel; "
+"hold Shift for ten pixels."
+msgstr ""
+
+msgid "OBS browser source"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Delete this Spotify overlay?"
+msgstr "Spotify Overlay"
+
+msgid "OBS link copied"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Spotify Overlays"
+msgstr "Spotify Overlay"
+
+msgid "Now playing, in your own style"
+msgstr ""
+
+msgid ""
+"Build movable Spotify layouts and use each one as an OBS browser source."
+msgstr ""
+
+msgid "Your collection"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Saved Spotify overlays"
+msgstr "Spotify Overlay"
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Spotify overlay"
+msgstr "Spotify Overlay"
+
+msgid "Size"
+msgstr ""
+
+msgid "Elements"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Spotify"
+msgstr "Spotify Overlay"
+
+msgid "Open"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Open preview"
+msgstr ""
+
+msgid "Copy OBS link"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "No overlays yet"
+msgstr ""
+
+msgid "Create your first Spotify overlay"
+msgstr ""
+
+msgid ""
+"Start with a polished layout, then move, resize or remove every element."
+msgstr ""
+
+msgid "New overlay"
+msgstr ""
+
+msgid "Create a Win Challenge"
+msgstr ""
+
+msgid ""
+"Set a goal, choose a starter design and adjust the preview before saving."
+msgstr ""
+
+msgid "Overlay preview"
+msgstr ""
+
+msgid "General settings"
+msgstr ""
+
+msgid "Challenge"
+msgstr ""
+
+msgid "Optional: default Winchallenge"
+msgstr ""
+
+msgid "Design"
+msgstr ""
+
+msgid "Customize the overlay"
+msgstr ""
+
+msgid "Quick presets"
+msgstr ""
+
+msgid "Clean and compact"
+msgstr ""
+
+msgid "Soft depth"
+msgstr ""
+
+msgid "Bright accents"
+msgstr ""
+
+msgid "Colors"
+msgstr ""
+
+msgid "Layout"
+msgstr ""
+
+msgid "Typography"
+msgstr ""
+
+msgid "Options"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Save Win Challenge"
+msgstr ""
+
+msgid "Win Challenges"
 msgstr ""
 
 msgid "Win Challenge overlays"
@@ -363,17 +658,18 @@ msgstr ""
 msgid "Manage your win counters"
 msgstr ""
 
-msgid "Create browser-source overlays for OBS, track wins per game and keep the public overlay updated automatically."
+msgid ""
+"Create browser-source overlays for OBS, track wins per game and keep the "
+"public overlay updated automatically."
 msgstr ""
 
 msgid "Saved Win Challenges"
 msgstr ""
 
-msgid "Progress"
-msgstr ""
-
-msgid "Wins"
-msgstr ""
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Overlay"
+msgstr "Spotify Overlay"
 
 msgid "Games"
 msgstr ""
@@ -396,76 +692,24 @@ msgstr ""
 msgid "Delete this Win Challenge?"
 msgstr ""
 
-msgid "Delete"
-msgstr ""
-
-msgid "Live preview"
-msgstr ""
-
-msgid "No overlays yet"
-msgstr ""
-
 msgid "Create your first Win Challenge"
 msgstr ""
 
-msgid "Start with a design preset, add games later and copy the generated OBS browser-source link."
-msgstr ""
-
-msgid "OBS link copied"
-msgstr ""
-
-msgid "No games yet"
-msgstr ""
-
-msgid "New overlay"
-msgstr ""
-
-msgid "Create a Win Challenge"
-msgstr ""
-
-msgid "Set a goal, choose a starter design and adjust the preview before saving."
-msgstr ""
-
-msgid "General settings"
-msgstr ""
-
-msgid "Challenge"
-msgstr ""
-
-msgid "Design"
-msgstr ""
-
-msgid "Customize the overlay"
-msgstr ""
-
-msgid "Cancel"
-msgstr ""
-
-msgid "Save Win Challenge"
-msgstr ""
-
-msgid "Overlay preview"
-msgstr ""
-
-msgid "of"
-msgstr ""
-
-msgid "wins remaining"
+msgid ""
+"Start with a design preset, add games later and copy the generated OBS "
+"browser-source link."
 msgstr ""
 
 msgid "Win Challenge sections"
 msgstr ""
 
+msgid "OBS Link"
+msgstr ""
+
 msgid "Settings"
 msgstr ""
 
-msgid "Challenge settings"
-msgstr ""
-
 msgid "Total wins"
-msgstr ""
-
-msgid "Remaining"
 msgstr ""
 
 msgid "Save settings"
@@ -498,16 +742,13 @@ msgstr ""
 msgid "Delete this game?"
 msgstr ""
 
+msgid "of"
+msgstr ""
+
 msgid "Edit overlay design"
 msgstr ""
 
 msgid "Save design"
-msgstr ""
-
-msgid "Browser source"
-msgstr ""
-
-msgid "OBS Link"
 msgstr ""
 
 msgid "Add a new browser source in OBS"
@@ -522,42 +763,57 @@ msgstr ""
 msgid "Enable refresh when the scene becomes active if desired"
 msgstr ""
 
-msgid "Quick presets"
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Spotify overlay created."
+msgstr "Spotify Overlay"
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Spotify overlay saved."
+msgstr "Spotify Overlay"
+
+#, python-format
+msgid "Spotify overlay deleted: %(name)s"
 msgstr ""
 
-msgid "Clean and compact"
+msgid ""
+"Add your Spotify client credentials to the environment before connecting."
 msgstr ""
 
-msgid "Soft depth"
+msgid "The Spotify connection could not be verified."
 msgstr ""
 
-msgid "Bright accents"
+msgid "Spotify access was not granted."
 msgstr ""
 
-msgid "Colors"
+msgid "Spotify returned no authorization code."
 msgstr ""
 
-msgid "Layout"
+msgid "Spotify could not be connected. Check your app settings."
 msgstr ""
 
-msgid "Typography"
+msgid "Spotify connected successfully."
 msgstr ""
 
-msgid "Options"
+msgid "Spotify disconnected."
 msgstr ""
 
-#: .\app\templates\app\home.html
-msgid "Example overlay preview"
+msgid "Win Challenge created."
 msgstr ""
 
-#: .\app\templates\app\home.html
-msgid "Stream preview"
+msgid "Challenge settings saved."
 msgstr ""
 
-#: .\app\templates\app\home.html
-msgid "Now playing"
+msgid "Overlay design saved."
 msgstr ""
 
-#: .\app\templates\app\base.html
-msgid "Version"
+#, python-format
+msgid "Win Challenge deleted: %(name)s"
+msgstr ""
+
+msgid "Invalid win change."
+msgstr ""
+
+msgid "Game name is required."
 msgstr ""

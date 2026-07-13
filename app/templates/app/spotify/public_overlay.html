@@ -1,0 +1,25 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'de' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="{% static 'css/spotify.css' %}?v={{ APP_VERSION }}">
+    <title>{{ overlay.display_name }}</title>
+</head>
+<body
+    class="spotify-overlay-source"
+    data-spotify-overlay-source
+    data-state-url="{% url 'spotify_overlay_state' overlay.public_token %}"
+    data-source-width="{{ overlay.browser_source_width }}"
+    data-source-height="{{ overlay.browser_source_height }}"
+>
+    <main class="spotify-overlay-source__frame">
+        {% include "app/spotify/_overlay.html" with playback=sample_playback %}
+    </main>
+    <script src="{% static 'js/spotify.js' %}?v={{ APP_VERSION }}"></script>
+</body>
+</html>
