@@ -11,7 +11,12 @@
 {% endblock %}
 
 {% block content %}
-    <div class="winchallenge-page winchallenge-editor-page winchallenge-editor-page--create" data-winchallenge-editor>
+    <div
+        class="winchallenge-page winchallenge-editor-page winchallenge-editor-page--create"
+        data-winchallenge-editor
+        data-number-increase-label="{% translate 'Increase value' %}"
+        data-number-decrease-label="{% translate 'Decrease value' %}"
+    >
         <section class="winchallenge-page__hero winchallenge-page__hero--editor create-hero" aria-labelledby="create-title">
             <p class="section-label"><span>Nexora</span> {% translate "New overlay" %}</p>
             <h1 id="create-title">{% translate "Create a Win Challenge" %}</h1>

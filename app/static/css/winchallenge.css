@@ -767,6 +767,86 @@
     -webkit-appearance: none;
 }
 
+.number-stepper {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px;
+    min-width: 0;
+    min-height: 44px;
+    overflow: hidden;
+    border: 1px solid var(--wc-overview-border);
+    border-radius: 8px;
+    background: var(--wc-overview-surface-solid);
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.number-stepper:focus-within {
+    border-color: var(--color-focus-ring);
+    outline: 3px solid var(--color-focus-ring);
+    outline-offset: 2px;
+}
+
+.number-stepper > .form-control[type="number"] {
+    min-height: 100%;
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.number-stepper > .form-control[type="number"]:focus {
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+}
+
+.number-stepper__controls {
+    display: grid;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    border-left: 1px solid var(--wc-overview-border);
+}
+
+.number-stepper__button {
+    display: grid;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    place-items: center;
+    border: 0;
+    color: var(--color-text-muted);
+    background: transparent;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: color 140ms ease, background-color 140ms ease;
+}
+
+.number-stepper__button:first-child {
+    border-bottom: 1px solid var(--wc-overview-border);
+}
+
+.number-stepper__button:hover,
+.number-stepper__button:focus-visible {
+    color: var(--color-link-hover);
+    background: var(--color-glass-bg);
+}
+
+.number-stepper__button:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: -3px;
+}
+
+.number-stepper__button:disabled {
+    color: var(--color-text-muted);
+    background: transparent;
+    cursor: not-allowed;
+    opacity: 0.38;
+}
+
+.number-stepper__icon {
+    width: 15px;
+    height: 15px;
+}
+
 .color-control {
     height: 48px;
     padding: 5px;
@@ -1279,6 +1359,18 @@
     background: var(--color-glass-bg);
 }
 
+.game-row.is-complete {
+    border-color: color-mix(in srgb, var(--color-button-bg), transparent 28%);
+    background:
+        linear-gradient(90deg, color-mix(in srgb, var(--color-button-bg), transparent 86%), transparent 52%),
+        var(--wc-overview-surface-solid);
+    box-shadow: inset 3px 0 var(--color-button-bg);
+}
+
+.game-row.is-completing {
+    animation: game-row-complete 900ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
 .game-row__body {
     display: flex;
     flex-wrap: wrap;
@@ -1291,6 +1383,39 @@
     min-width: min(240px, 100%);
     color: var(--color-heading);
     overflow-wrap: anywhere;
+}
+
+.game-row__complete-badge {
+    display: none;
+    align-items: center;
+    gap: 5px;
+    flex: 0 0 auto;
+    padding: 5px 9px;
+    border-radius: 999px;
+    color: var(--color-button-text);
+    background: var(--color-button-bg);
+    font-size: 0.76rem;
+    font-weight: 900;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.game-row.is-complete .game-row__complete-badge {
+    display: inline-flex;
+}
+
+.game-row.is-completing .game-row__complete-badge {
+    animation: game-complete-badge-pop 650ms 100ms cubic-bezier(0.2, 0.85, 0.25, 1.25) both;
+}
+
+.game-complete-icon {
+    width: 13px;
+    height: 13px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.5;
 }
 
 .game-row__score {
@@ -1476,6 +1601,11 @@
     background: transparent;
 }
 
+.winchallenge-overlay__game.is-completing {
+    transform-origin: center;
+    animation: winchallenge-overlay-game-complete 850ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
 .winchallenge-overlay__game-top {
     display: flex;
     align-items: center;
@@ -1504,6 +1634,40 @@
     font-weight: 900;
 }
 
+.winchallenge-overlay__complete-mark {
+    display: none;
+    width: 1.25em;
+    height: 1.25em;
+    margin-right: 4px;
+    place-items: center;
+    border-radius: 50%;
+    color: rgba(0, 0, 0, 0.78);
+    background: var(--wc-accent);
+    vertical-align: -0.22em;
+}
+
+.winchallenge-overlay__complete-mark svg {
+    width: 0.9em;
+    height: 0.9em;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 3;
+}
+
+.winchallenge-overlay__game.is-complete .winchallenge-overlay__complete-mark {
+    display: inline-grid;
+}
+
+.winchallenge-overlay__game.is-complete .winchallenge-overlay__game-progress span {
+    background: linear-gradient(90deg, var(--wc-accent), color-mix(in srgb, var(--wc-accent), white 42%));
+}
+
+.winchallenge-overlay__game.is-completing .winchallenge-overlay__complete-mark {
+    animation: game-complete-badge-pop 650ms 100ms cubic-bezier(0.2, 0.85, 0.25, 1.25) both;
+}
+
 .winchallenge-overlay__game-progress {
     height: max(4px, calc(var(--wc-game-score-font-size, 12px) * 0.28));
     overflow: hidden;
@@ -1516,6 +1680,59 @@
     height: 100%;
     border-radius: inherit;
     background: var(--wc-accent);
+}
+
+@keyframes game-row-complete {
+    0% {
+        transform: scale(0.985);
+        box-shadow: inset 0 0 var(--color-button-bg), 0 0 0 0 var(--color-focus-ring);
+    }
+
+    42% {
+        transform: scale(1.012);
+        box-shadow: inset 3px 0 var(--color-button-bg), 0 0 0 8px transparent;
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: inset 3px 0 var(--color-button-bg), 0 0 0 0 transparent;
+    }
+}
+
+@keyframes winchallenge-overlay-game-complete {
+    0% {
+        opacity: 0.76;
+        transform: scale(0.97);
+        filter: drop-shadow(0 0 0 transparent);
+    }
+
+    42% {
+        opacity: 1;
+        transform: scale(1.025);
+        filter: drop-shadow(0 0 8px color-mix(in srgb, var(--wc-accent), transparent 24%));
+    }
+
+    100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 0 transparent);
+    }
+}
+
+@keyframes game-complete-badge-pop {
+    0% {
+        opacity: 0;
+        transform: scale(0.35) rotate(-18deg);
+    }
+
+    70% {
+        opacity: 1;
+        transform: scale(1.14) rotate(3deg);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0);
+    }
 }
 
 .winchallenge-overlay__empty {
@@ -1785,7 +2002,12 @@ body.overlay-source {
 
 @media (prefers-reduced-motion: reduce) {
     .winchallenge-overlay__progress-bar,
-    .preset-card {
+    .preset-card,
+    .game-row.is-completing,
+    .game-row.is-completing .game-row__complete-badge,
+    .winchallenge-overlay__game.is-completing,
+    .winchallenge-overlay__game.is-completing .winchallenge-overlay__complete-mark {
+        animation: none;
         transition: none;
     }
 

@@ -97,6 +97,11 @@ class WinChallengeModelTests(TestCase):
 
         self.assertEqual(challenge.total_wins, 6)
         self.assertEqual(game.progress_percent, 50)
+        self.assertFalse(game.is_complete)
+
+        game.wins = game.target_wins
+
+        self.assertTrue(game.is_complete)
 
 
 class WinChallengeCreateFormTests(TestCase):
@@ -154,6 +159,8 @@ class WinChallengeEndpointTests(TestCase):
         self.assertContains(response, "panel-heading__number", count=2)
         self.assertContains(response, 'placeholder="Winchallenge"')
         self.assertContains(response, "Optional: Standard Winchallenge")
+        self.assertContains(response, "data-number-increase-label")
+        self.assertContains(response, "data-number-decrease-label")
 
     def test_manage_page_uses_the_shared_editor_design(self):
         response = self.client.get(reverse("winchallenge_manage", args=[self.challenge.pk]))
@@ -163,6 +170,8 @@ class WinChallengeEndpointTests(TestCase):
         self.assertContains(response, "editor-panel--surface", count=4)
         self.assertContains(response, "preview-panel--surface")
         self.assertContains(response, '<div class="preview-stage">')
+        self.assertContains(response, "data-number-increase-label")
+        self.assertContains(response, "data-number-decrease-label")
 
     def test_spotify_create_page_renders_visual_editor(self):
         home_response = self.client.get(reverse("home"))
@@ -200,6 +209,7 @@ class WinChallengeEndpointTests(TestCase):
         self.assertEqual(payload["title"], "Road to Diamond")
         self.assertEqual(payload["games"][0]["name"], "Rocket League")
         self.assertEqual(payload["games"][0]["target_wins"], 3)
+        self.assertFalse(payload["games"][0]["is_complete"])
         self.assertEqual(payload["design"]["overlay_width"], 640)
         self.assertEqual(payload["design"]["overlay_height"], 360)
         self.assertEqual(payload["design"]["text_size"], 20)
@@ -228,6 +238,20 @@ class WinChallengeEndpointTests(TestCase):
 
         self.assertEqual(increment_response.status_code, 200)
         self.assertEqual(self.game.wins, 1)
+
+    def test_reaching_target_marks_game_as_complete(self):
+        self.game.wins = self.game.target_wins - 1
+        self.game.save(update_fields=["wins"])
+        url = reverse("winchallenge_game_wins", args=[self.challenge.pk, self.game.pk])
+
+        response = self.client.post(url, {"delta": 1})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["games"][0]["is_complete"])
+
+        manage_response = self.client.get(reverse("winchallenge_manage", args=[self.challenge.pk]))
+        self.assertContains(manage_response, 'class="game-row is-complete"')
+        self.assertContains(manage_response, 'data-game-complete="true"', count=2)
 
     def test_game_add_accepts_current_and_target_wins(self):
         url = reverse("winchallenge_game_add", args=[self.challenge.pk])
@@ -305,7 +329,12 @@ class SpotifyOverlayFormTests(TestCase):
         return data
 
     def test_layout_and_element_styles_are_saved(self):
-        data = self.valid_data(border_color="#FF8800", border_width=7)
+        data = self.valid_data(
+            background_color="#336699",
+            background_opacity=42,
+            border_color="#FF8800",
+            border_width=7,
+        )
         elements = json.loads(data["elements"])
         elements[1]["font_size"] = 42
         elements[1]["color"] = "#ABCDEF"
@@ -319,6 +348,8 @@ class SpotifyOverlayFormTests(TestCase):
         self.assertEqual(title["font_size"], 42)
         self.assertEqual(title["color"], "#abcdef")
         self.assertEqual(title["x"], 310)
+        self.assertEqual(overlay.background_color, "#336699")
+        self.assertEqual(overlay.background_opacity, 42)
         self.assertEqual(overlay.border_color, "#FF8800")
         self.assertEqual(overlay.border_width, 7)
 
@@ -344,6 +375,9 @@ class SpotifyOverlayEndpointTests(TestCase):
 
         self.assertContains(list_response, "Desk Setup")
         self.assertContains(manage_response, "data-spotify-editor")
+        self.assertContains(manage_response, "spotify-background-settings")
+        self.assertContains(manage_response, "data-background-opacity-range")
+        self.assertContains(manage_response, "data-background-opacity-value")
         self.assertContains(manage_response, reverse("spotify_connect", args=[self.overlay.pk]))
         self.assertContains(manage_response, reverse("spotify_overlay", args=[self.overlay.public_token]))
 
@@ -400,6 +434,8 @@ class SpotifyOverlayEndpointTests(TestCase):
         self.assertEqual(payload["elements"], self.overlay.elements)
         self.assertEqual(payload["browser_source_width"], 800)
         self.assertEqual(payload["browser_source_height"], 316)
+        self.assertEqual(payload["background_color"], self.overlay.background_color)
+        self.assertEqual(payload["background_opacity"], self.overlay.background_opacity)
         self.assertEqual(payload["border_color"], self.overlay.border_color)
         self.assertEqual(payload["border_width"], self.overlay.border_width)
         self.assertNotIn("spotify_access_token", payload)

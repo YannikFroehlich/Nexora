@@ -223,6 +223,9 @@
         const heightInput = editor.querySelector("#id_canvas_height");
         const backgroundInput = editor.querySelector("#id_background_color");
         const opacityInput = editor.querySelector("#id_background_opacity");
+        const backgroundColorValue = editor.querySelector("[data-background-color-value]");
+        const opacityRange = editor.querySelector("[data-background-opacity-range]");
+        const opacityValue = editor.querySelector("[data-background-opacity-value]");
         const borderColorInput = editor.querySelector("#id_border_color");
         const borderWidthInput = editor.querySelector("#id_border_width");
         const radiusInput = editor.querySelector("#id_corner_radius");
@@ -386,6 +389,19 @@
             renderList();
             updateSelectedControls();
             syncElements();
+            if (backgroundColorValue) {
+                backgroundColorValue.textContent = currentDesign.background_color.toUpperCase();
+            }
+            if (opacityRange) {
+                opacityRange.value = String(currentDesign.background_opacity);
+                opacityRange.style.setProperty(
+                    "--spotify-opacity-value",
+                    `${currentDesign.background_opacity}%`,
+                );
+            }
+            if (opacityValue) {
+                opacityValue.textContent = `${currentDesign.background_opacity}%`;
+            }
             previewWidth.textContent = currentDesign.canvas_width;
             previewHeight.textContent = currentDesign.canvas_height;
             sourceWidths.forEach((node) => {
@@ -494,6 +510,11 @@
             radiusInput,
         ].forEach((input) => {
             input.addEventListener("input", render);
+        });
+
+        opacityRange?.addEventListener("input", () => {
+            opacityInput.value = opacityRange.value;
+            render();
         });
 
         gridToggle.addEventListener("change", () => {

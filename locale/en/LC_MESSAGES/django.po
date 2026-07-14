@@ -29,6 +29,18 @@ msgstr ""
 msgid "Background opacity"
 msgstr ""
 
+msgid "Overlay background"
+msgstr ""
+
+msgid "Choose the background color and how strongly it should be visible."
+msgstr ""
+
+msgid "Transparent"
+msgstr ""
+
+msgid "Opaque"
+msgstr ""
+
 msgid "Text color"
 msgstr ""
 
@@ -904,6 +916,15 @@ msgid "Increase wins"
 msgstr ""
 
 msgid "Decrease wins"
+msgstr ""
+
+msgid "Increase value"
+msgstr ""
+
+msgid "Decrease value"
+msgstr ""
+
+msgid "Completed"
 msgstr ""
 
 msgid "Edit game"

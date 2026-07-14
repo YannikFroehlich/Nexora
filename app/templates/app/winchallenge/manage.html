@@ -11,7 +11,12 @@
 {% endblock %}
 
 {% block content %}
-    <div class="winchallenge-page winchallenge-editor-page winchallenge-editor-page--manage" data-winchallenge-editor>
+    <div
+        class="winchallenge-page winchallenge-editor-page winchallenge-editor-page--manage"
+        data-winchallenge-editor
+        data-number-increase-label="{% translate 'Increase value' %}"
+        data-number-decrease-label="{% translate 'Decrease value' %}"
+    >
         <section class="winchallenge-page__hero winchallenge-page__hero--editor manage-hero" aria-labelledby="manage-title">
             <p class="section-label"><span>Nexora</span> {% translate "Win Challenge" %}</p>
             <h1 id="manage-title">{{ challenge.display_title }}</h1>
@@ -128,11 +133,26 @@
                         data-delete-confirm="{% translate 'Delete this game?' %}"
                         data-wins-label="{% translate 'Wins' %}"
                         data-of-label="{% translate 'of' %}"
+                        data-complete-label="{% translate 'Completed' %}"
                     >
                         {% for game in challenge.ordered_games %}
-                            <article class="game-row" data-game-row="{{ game.pk }}">
+                            <article
+                                class="game-row{% if game.is_complete %} is-complete{% endif %}"
+                                data-game-row="{{ game.pk }}"
+                                data-game-complete="{{ game.is_complete|yesno:'true,false' }}"
+                            >
                                 <div class="game-row__body">
                                     <strong class="game-row__title" data-game-name>{{ game.name }}</strong>
+                                    <span
+                                        class="game-row__complete-badge"
+                                        aria-label="{% translate 'Completed' %}"
+                                        title="{% translate 'Completed' %}"
+                                    >
+                                        <svg class="game-complete-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                            <path d="m5 12 4 4L19 6"></path>
+                                        </svg>
+                                        <span>{% translate "Completed" %}</span>
+                                    </span>
                                     <span class="game-row__score">
                                         <span data-game-wins>{{ game.wins }}</span>
                                         <span aria-hidden="true">/</span>

@@ -74,16 +74,57 @@
                             {{ form.canvas_height }}
                             {{ form.canvas_height.errors }}
                         </div>
-                        <div class="form-field">
-                            <label for="{{ form.background_color.id_for_label }}">{{ form.background_color.label }}</label>
-                            {{ form.background_color }}
-                            {{ form.background_color.errors }}
+                    </div>
+
+                    <section class="spotify-background-settings" aria-labelledby="spotify-background-title">
+                        <div class="spotify-background-settings__heading">
+                            <span class="spotify-background-settings__icon" aria-hidden="true"></span>
+                            <div>
+                                <h3 id="spotify-background-title">{% translate "Overlay background" %}</h3>
+                                <p>{% translate "Choose the background color and how strongly it should be visible." %}</p>
+                            </div>
                         </div>
-                        <div class="form-field">
-                            <label for="{{ form.background_opacity.id_for_label }}">{{ form.background_opacity.label }}</label>
-                            {{ form.background_opacity }}
-                            {{ form.background_opacity.errors }}
+
+                        <div class="spotify-background-settings__grid">
+                            <div class="form-field">
+                                <label for="{{ form.background_color.id_for_label }}">{{ form.background_color.label }}</label>
+                                <div class="spotify-background-color-control">
+                                    {{ form.background_color }}
+                                    <code data-background-color-value>{{ form.background_color.value|default:"#121212"|upper }}</code>
+                                </div>
+                                {{ form.background_color.errors }}
+                            </div>
+
+                            <div class="form-field">
+                                <label for="{{ form.background_opacity.id_for_label }}">{{ form.background_opacity.label }}</label>
+                                <div class="spotify-opacity-control">
+                                    <input
+                                        class="spotify-opacity-range"
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        step="1"
+                                        value="{{ form.background_opacity.value|default:94 }}"
+                                        aria-label="{{ form.background_opacity.label }}"
+                                        data-background-opacity-range
+                                    >
+                                    <div class="spotify-opacity-number">
+                                        {{ form.background_opacity }}
+                                        <span aria-hidden="true">%</span>
+                                    </div>
+                                </div>
+                                <div class="spotify-opacity-scale" aria-hidden="true">
+                                    <span>{% translate "Transparent" %}</span>
+                                    <output data-background-opacity-value>{{ form.background_opacity.value|default:94 }}%</output>
+                                    <span>{% translate "Opaque" %}</span>
+                                </div>
+                                <small>{% translate "0 is transparent, 100 is fully opaque." %}</small>
+                                {{ form.background_opacity.errors }}
+                            </div>
                         </div>
+                    </section>
+
+                    <div class="spotify-field-grid">
                         <div class="form-field">
                             <label for="{{ form.border_color.id_for_label }}">{{ form.border_color.label }}</label>
                             {{ form.border_color }}

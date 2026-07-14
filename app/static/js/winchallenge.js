@@ -100,6 +100,9 @@
     const iconPaths = {
         decrease: ["M5 12h14"],
         increase: ["M12 5v14", "M5 12h14"],
+        complete: ["m5 12 4 4L19 6"],
+        chevronUp: ["m7 14 5-5 5 5"],
+        chevronDown: ["m7 10 5 5 5-5"],
         edit: [
             "M12 20h9",
             "M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z",
@@ -284,6 +287,24 @@
         }
     };
 
+    const isGameComplete = (game) => {
+        if (typeof game.is_complete === "boolean") {
+            return game.is_complete;
+        }
+
+        const wins = Number.parseInt(game.wins, 10);
+        const targetWins = Number.parseInt(game.target_wins, 10);
+
+        return Number.isFinite(wins) && Number.isFinite(targetWins) && targetWins > 0 && wins >= targetWins;
+    };
+
+    const completionStateById = (root, selector) => new Map(
+        Array.from(root.querySelectorAll(selector)).map((item) => [
+            String(item.dataset.gameId || item.dataset.gameRow),
+            item.classList.contains("is-complete"),
+        ])
+    );
+
     const renderOverlayGames = (overlay, games) => {
         const list = overlay.querySelector("[data-games-list]");
 
@@ -291,6 +312,7 @@
             return;
         }
 
+        const previousCompletion = completionStateById(list, "[data-game-id]");
         list.replaceChildren();
 
         if (!games.length) {
@@ -314,8 +336,15 @@
 
             gamesPage.forEach((game) => {
                 const item = document.createElement("article");
+                const gameId = String(game.id);
+                const isComplete = isGameComplete(game);
+                const wasComplete = previousCompletion.get(gameId);
+
                 item.className = "winchallenge-overlay__game";
-                item.dataset.gameId = game.id;
+                item.classList.toggle("is-complete", isComplete);
+                item.classList.toggle("is-completing", isComplete && wasComplete === false);
+                item.dataset.gameId = gameId;
+                item.dataset.gameComplete = String(isComplete);
 
                 const top = document.createElement("div");
                 top.className = "winchallenge-overlay__game-top";
@@ -327,6 +356,16 @@
                 const badge = document.createElement("span");
                 badge.className = "winchallenge-overlay__game-badge";
                 badge.innerHTML = `<span data-game-wins>${game.wins}</span>/<span data-game-target-wins>${game.target_wins}</span>`;
+
+                const completeMark = document.createElement("span");
+                const completeLabel = list.dataset.completeLabel || "Completed";
+                const completeIcon = createIcon("complete");
+                completeMark.className = "winchallenge-overlay__complete-mark";
+                completeMark.setAttribute("aria-label", completeLabel);
+                completeMark.title = completeLabel;
+                completeIcon.classList.add("winchallenge-overlay__complete-icon");
+                completeMark.append(completeIcon);
+                badge.prepend(completeMark);
 
                 top.append(name, badge);
 
@@ -373,6 +412,7 @@
                     wins: safeWins,
                     target_wins: safeTarget,
                     progress_percent: Number.isNaN(progress) ? fallbackProgress : clamp(progress, 0, 100),
+                    is_complete: safeWins >= safeTarget,
                 };
             });
         } catch {
@@ -454,6 +494,10 @@
                 field.checked = Boolean(value);
             } else {
                 field.value = value;
+
+                if (field.type === "number") {
+                    syncNumberStepper(field);
+                }
             }
         });
 
@@ -522,6 +566,7 @@
             return;
         }
 
+        const previousCompletion = completionStateById(list, "[data-game-row]");
         list.replaceChildren();
 
         if (!state.games.length) {
@@ -535,8 +580,15 @@
 
         state.games.forEach((game) => {
             const row = document.createElement("article");
+            const gameId = String(game.id);
+            const isComplete = isGameComplete(game);
+            const wasComplete = previousCompletion.get(gameId);
+
             row.className = "game-row";
-            row.dataset.gameRow = game.id;
+            row.classList.toggle("is-complete", isComplete);
+            row.classList.toggle("is-completing", isComplete && wasComplete === false);
+            row.dataset.gameRow = gameId;
+            row.dataset.gameComplete = String(isComplete);
 
             const info = document.createElement("div");
             info.className = "game-row__body";
@@ -545,6 +597,15 @@
             name.className = "game-row__title";
             name.dataset.gameName = "";
             name.textContent = game.name;
+
+            const completeBadge = document.createElement("span");
+            const completeLabel = list.dataset.completeLabel || "Completed";
+            const completeIcon = createIcon("complete");
+            completeBadge.className = "game-row__complete-badge";
+            completeBadge.setAttribute("aria-label", completeLabel);
+            completeBadge.title = completeLabel;
+            completeIcon.classList.add("game-complete-icon");
+            completeBadge.append(completeIcon, document.createTextNode(completeLabel));
 
             const wins = document.createElement("span");
             wins.className = "game-row__score";
@@ -565,7 +626,7 @@
                 targetValue,
                 winsLabel
             );
-            info.append(name, wins);
+            info.append(name, completeBadge, wins);
 
             const actions = document.createElement("div");
             actions.className = "game-row__actions";
@@ -622,6 +683,89 @@
         return svg;
     };
 
+    const syncNumberStepper = (input) => {
+        const stepper = input.closest("[data-number-stepper]");
+
+        if (!stepper) {
+            return;
+        }
+
+        const value = input.valueAsNumber;
+        const minimum = Number.parseFloat(input.min);
+        const maximum = Number.parseFloat(input.max);
+        const hasValue = Number.isFinite(value);
+        const decreaseButton = stepper.querySelector('[data-number-step="down"]');
+        const increaseButton = stepper.querySelector('[data-number-step="up"]');
+
+        if (decreaseButton) {
+            decreaseButton.disabled = hasValue && Number.isFinite(minimum) && value <= minimum;
+        }
+
+        if (increaseButton) {
+            increaseButton.disabled = hasValue && Number.isFinite(maximum) && value >= maximum;
+        }
+    };
+
+    const createNumberStepperButton = (input, direction, actionLabel, fieldLabel) => {
+        const button = document.createElement("button");
+        const accessibleLabel = `${actionLabel}: ${fieldLabel}`;
+        const icon = createIcon(direction === "up" ? "chevronUp" : "chevronDown");
+
+        button.className = `number-stepper__button number-stepper__button--${direction}`;
+        button.type = "button";
+        button.dataset.numberStep = direction;
+        button.setAttribute("aria-controls", input.id);
+        button.setAttribute("aria-label", accessibleLabel);
+        button.title = accessibleLabel;
+        icon.classList.add("number-stepper__icon");
+        button.append(icon);
+
+        button.addEventListener("click", () => {
+            try {
+                if (direction === "up") {
+                    input.stepUp();
+                } else {
+                    input.stepDown();
+                }
+            } catch {
+                return;
+            }
+
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+
+        return button;
+    };
+
+    const initNumberSteppers = (editor) => {
+        const increaseLabel = editor.dataset.numberIncreaseLabel || "Increase value";
+        const decreaseLabel = editor.dataset.numberDecreaseLabel || "Decrease value";
+
+        editor.querySelectorAll('input[type="number"]').forEach((input) => {
+            if (input.closest("[data-number-stepper]")) {
+                return;
+            }
+
+            const fieldLabel = input.labels?.[0]?.textContent.trim().replace(/\s+/g, " ") || input.name;
+            const stepper = document.createElement("div");
+            const controls = document.createElement("span");
+
+            stepper.className = "number-stepper";
+            stepper.dataset.numberStepper = "";
+            controls.className = "number-stepper__controls";
+            controls.append(
+                createNumberStepperButton(input, "up", increaseLabel, fieldLabel),
+                createNumberStepperButton(input, "down", decreaseLabel, fieldLabel)
+            );
+
+            input.before(stepper);
+            stepper.append(input, controls);
+            input.addEventListener("input", () => syncNumberStepper(input));
+            input.addEventListener("change", () => syncNumberStepper(input));
+            syncNumberStepper(input);
+        });
+    };
+
     const showToast = () => {
         const toast = document.querySelector("[data-copy-toast]");
 
@@ -663,6 +807,8 @@
         if (!editor) {
             return;
         }
+
+        initNumberSteppers(editor);
 
         editor.querySelectorAll("[data-preset-button]").forEach((button) => {
             button.addEventListener("click", () => {
@@ -832,6 +978,7 @@
         try {
             applyState(await postForm(addForm.action, { name, wins: wins || "0", target_wins: targetWins }));
             addForm.reset();
+            addForm.querySelectorAll('input[type="number"]').forEach(syncNumberStepper);
         } catch (error) {
             handleAjaxError(error);
         }
