@@ -224,6 +224,7 @@ class WinChallenge(models.Model):
                     "wins": game.wins,
                     "target_wins": game.target_wins,
                     "progress_percent": game.progress_percent,
+                    "is_complete": game.is_complete,
                 }
                 for game in self.ordered_games
             ],
@@ -285,6 +286,10 @@ class WinChallengeGame(models.Model):
     @property
     def remaining_wins(self):
         return max(self.target_wins - self.wins, 0)
+
+    @property
+    def is_complete(self):
+        return self.target_wins > 0 and self.wins >= self.target_wins
 
     @property
     def progress_percent(self):

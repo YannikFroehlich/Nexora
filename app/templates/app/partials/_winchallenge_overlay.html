@@ -41,6 +41,7 @@
         class="winchallenge-overlay__games"
         data-games-list
         data-empty-label="{% translate 'No games yet' %}"
+        data-complete-label="{% translate 'Completed' %}"
         data-games-per-page="3"
         {% if not challenge.show_games_list %}hidden{% endif %}
     >
@@ -51,10 +52,23 @@
                 {% if not forloop.first %}hidden{% endif %}
             >
                 {% for game in page %}
-                    <article class="winchallenge-overlay__game" data-game-id="{{ game.pk }}">
+                    <article
+                        class="winchallenge-overlay__game{% if game.is_complete %} is-complete{% endif %}"
+                        data-game-id="{{ game.pk }}"
+                        data-game-complete="{{ game.is_complete|yesno:'true,false' }}"
+                    >
                         <div class="winchallenge-overlay__game-top">
                             <strong data-game-name>{{ game.name }}</strong>
                             <span class="winchallenge-overlay__game-badge">
+                                <span
+                                    class="winchallenge-overlay__complete-mark"
+                                    aria-label="{% translate 'Completed' %}"
+                                    title="{% translate 'Completed' %}"
+                                >
+                                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                        <path d="m5 12 4 4L19 6"></path>
+                                    </svg>
+                                </span>
                                 <span data-game-wins>{{ game.wins }}</span>/<span data-game-target-wins>{{ game.target_wins }}</span>
                             </span>
                         </div>

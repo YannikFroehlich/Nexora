@@ -1,9 +1,3 @@
-<!--
-  LOGO-PLATZHALTER
-  Ersetze den Pfad im <img>-Tag durch dein finales Logo, falls du später ein anderes
-  Bild verwenden möchtest, zum Beispiel: docs/assets/nexora-logo.png
--->
-
 <p align="center">
   <img src="app/static/imgs/icons/nexora_logo.png" alt="Nexora Logo" width="420">
 </p>
