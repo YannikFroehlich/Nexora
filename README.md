@@ -1,16 +1,16 @@
 <p align="center">
-  <img src="app/static/imgs/icons/nexora_logo.png" alt="Nexora Logo" width="420">
+  <img src="app/static/imgs/icons/nexora_logo.png" alt="Nexora logo" width="420">
 </p>
 
 <h1 align="center">Nexora</h1>
 
 <p align="center">
   <strong>Build it. Style it. Stream it.</strong><br>
-  Eine Django-Plattform zum Erstellen, Anpassen und Verwalten von Browser-Overlays für OBS.
+  A Django platform for creating, customizing, and managing browser overlays for OBS.
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-0.4.0-7c3aed?style=for-the-badge">
+  <img alt="Version" src="https://img.shields.io/badge/version-0.5.0-7c3aed?style=for-the-badge">
   <img alt="Python" src="https://img.shields.io/badge/Python-3.12%2B-3776AB?style=for-the-badge&logo=python&logoColor=white">
   <img alt="Django" src="https://img.shields.io/badge/Django-6.0.7-092E20?style=for-the-badge&logo=django&logoColor=white">
   <img alt="OBS" src="https://img.shields.io/badge/OBS-Browser_Source-302E31?style=for-the-badge&logo=obsstudio&logoColor=white">
@@ -18,98 +18,105 @@
 
 ---
 
-## ✨ Was ist Nexora?
+## ✨ What is Nexora?
 
-**Nexora** macht aus konfigurierbaren Web-Elementen fertige Stream-Overlays. Du gestaltest dein Overlay im Browser, kopierst die erzeugte URL und fügst sie in OBS als **Browserquelle** ein.
+**Nexora** turns configurable web components into stream-ready overlays. Design an overlay in the browser, copy its generated URL, and add it to OBS as a **browser source**.
 
-Änderungen an Inhalt oder Design werden direkt über Nexora verwaltet. Die URL in deiner OBS-Szene bleibt dabei gleich.
+Content and design changes are managed directly in Nexora. The browser-source URL in your OBS scene remains unchanged.
 
-> **Eine Plattform. Ein Link. Dein Stream-Design.**
+> **One platform. One link. Your stream design.**
 
-## 🚀 Aktuelle Features
+## 🚀 Features
 
-### 🎵 Spotify Overlay
+### 🎵 Spotify overlay
 
-Erstelle ein frei positionierbares Now-Playing-Overlay für deine Spotify-Wiedergabe.
+Create a freely positioned now-playing overlay for your Spotify playback.
 
-- Drag-and-drop-basierter Overlay-Editor
-- Frei definierbare Canvas-Größe
-- Individuelle Farben, Transparenz, Rahmen und Rundungen
-- Beliebig kombinierbare Elemente:
-  - Cover
-  - Songtitel
-  - Interpret
+- Drag-and-drop visual editor
+- Configurable canvas dimensions
+- Custom colors, opacity, borders, and corner radii
+- Freely combinable elements:
+  - Artwork
+  - Track title
+  - Artist
   - Album
-  - Fortschrittsbalken
-  - Vergangene Zeit
-  - Gesamtdauer
-  - Wiedergabestatus
-- Spotify-Verbindung über OAuth
-- Öffentliche Browserquellen-URL für OBS
-- Live-Abfrage des aktuellen Wiedergabestatus
+  - Progress bar
+  - Elapsed time
+  - Total duration
+  - Playback status
+- Spotify connection through OAuth
+- Public OBS browser-source URL
+- Live playback updates
 
-### 🏆 Winchallenge Overlay
+### 🏆 Win Challenge overlay
 
-Verwalte Challenges für einzelne oder mehrere Spiele und zeige den Fortschritt live im Stream.
+Manage challenges for one or more games and display their progress live on stream.
 
-- Eigene Challenge-Namen
-- Bis zu **20 Spiele** pro Challenge
-- Separate Wins und Ziel-Wins pro Spiel
-- Wins direkt erhöhen oder verringern
-- Spiele umbenennen und löschen
-- Automatische Gesamt-Win-Anzeige
-- Fortschrittsanzeige pro Spiel
-- Automatischer Seitenwechsel bei mehreren Spielen
-- Drei Designvorlagen:
+- Custom challenge titles
+- Up to **20 games** per challenge
+- Separate current wins and target wins for each game
+- Direct win increment and decrement controls
+- Rename and delete games
+- Automatic total-win calculation
+- Per-game progress indicators
+- Automatic pagination for larger game lists
+- Three design presets:
   - Minimal
   - Glass
   - Neon
-- Anpassbare Farben, Abstände, Schriftgrößen, Rahmen und Schatten
-- Flexible Overlay-Breite und optionale feste Höhe
-- Öffentliche Browserquellen-URL mit Live-Aktualisierung
+- Configurable colors, spacing, font sizes, borders, and shadows
+- Flexible overlay width and optional fixed height
+- Public browser-source URL with live updates
 
-### 🌍 Allgemein
+### 🌍 Platform
 
-- Deutsche und englische Benutzeroberfläche
-- Responsive, modernes Glass-Design
-- Light- und Dark-Theme
-- Öffentliche Overlay-URLs mit schwer erratbaren UUID-Tokens
-- SQLite-Datenbank für die lokale Entwicklung
-- Versionsanzeige über die Datei `VERSION`
+- German and English user interface
+- Responsive glass-style design
+- Light and dark themes
+- User accounts with private overlay libraries
+- Owner-based access control for all management pages and actions
+- Public OBS overlay URLs protected by hard-to-guess UUID tokens
+- Automatic adoption of existing ownerless overlays by the first registered account
+- SQLite database for local development
+- Version display based on the `VERSION` file
 
-## 🧭 So funktioniert es
+## 🧭 How it works
 
 ```text
-Overlay erstellen
+Create an account
       ↓
-Design und Inhalte anpassen
+Create an overlay
       ↓
-Browserquellen-URL kopieren
+Customize its design and content
       ↓
-URL in OBS einfügen
+Copy the browser-source URL
       ↓
-Werte jederzeit über Nexora aktualisieren
+Add the URL to OBS
+      ↓
+Update values in Nexora whenever needed
 ```
 
-## 🛠️ Lokale Installation
+Management pages require an authenticated account. Public UUID-based overlay URLs remain accessible to OBS without a login.
 
-### Voraussetzungen
+## 🛠️ Local installation
 
-- Python 3.12 oder neuer
+### Requirements
+
+- Python 3.12 or newer
 - `pip`
-- Git, sofern du das Repository klonst
-- Ein Spotify-Developer-Projekt für das Spotify-Overlay
+- Git when cloning the repository
+- A Spotify Developer app when using the Spotify overlay
 
-### 1. Projekt vorbereiten
+### 1. Prepare the project
 
 ```bash
-git clone <DEINE-REPOSITORY-URL>
+git clone <YOUR-REPOSITORY-URL>
 cd Nexora
 ```
 
-Alternativ kannst du das Projekt als ZIP herunterladen und entpacken.
+You can also download and extract the project as a ZIP archive.
 
-### 2. Virtuelle Umgebung erstellen
+### 2. Create a virtual environment
 
 **Windows PowerShell**
 
@@ -125,18 +132,18 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-### 3. Abhängigkeiten installieren
+### 3. Install dependencies
 
 ```bash
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 4. Umgebungsvariablen anlegen
+### 4. Configure environment variables
 
-Kopiere die Beispieldatei:
+Copy the example environment file:
 
-**Windows**
+**Windows PowerShell**
 
 ```powershell
 Copy-Item .env.example .env
@@ -148,7 +155,7 @@ Copy-Item .env.example .env
 cp .env.example .env
 ```
 
-Passe anschließend die Werte in `.env` an:
+Update the values in `.env`:
 
 ```env
 DJANGO_SECRET_KEY=replace-with-a-long-random-secret
@@ -159,161 +166,181 @@ SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
 SPOTIFY_REDIRECT_URI=http://127.0.0.1:8000/spotify/callback/
 ```
 
-> Die Datei `.env` enthält sensible Zugangsdaten und darf nicht in Git eingecheckt werden.
+> `.env` contains sensitive credentials and must never be committed to Git.
 
-### 5. Datenbank vorbereiten
+### 5. Prepare the database
 
 ```bash
 python manage.py migrate
 ```
 
-Optional kannst du einen Admin-Benutzer erstellen:
+You can optionally create an administrator account for the Django admin:
 
 ```bash
 python manage.py createsuperuser
 ```
 
-### 6. Entwicklungsserver starten
+### 6. Start the development server
 
 ```bash
 python manage.py runserver
 ```
 
-Nexora ist danach unter folgender Adresse erreichbar:
+Nexora is now available at:
 
 ```text
 http://127.0.0.1:8000/
 ```
 
-## 🎧 Spotify einrichten
+Create a regular Nexora account at:
 
-1. Erstelle im Spotify Developer Dashboard eine App.
-2. Öffne die Einstellungen der Spotify-App.
-3. Trage exakt folgende Redirect-URI ein:
+```text
+http://127.0.0.1:8000/accounts/signup/
+```
+
+The first registered account automatically becomes the owner of existing overlays that do not yet have an owner.
+
+## 🎧 Spotify setup
+
+1. Create an app in the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard).
+2. Open the Spotify app settings.
+3. Add this exact redirect URI:
 
 ```text
 http://127.0.0.1:8000/spotify/callback/
 ```
 
-4. Übernimm `Client ID` und `Client Secret` in deine `.env`.
-5. Starte den Django-Server neu.
-6. Öffne ein Spotify-Overlay in Nexora und wähle **Mit Spotify verbinden**.
+4. Add the Spotify `Client ID` and `Client Secret` to `.env`.
+5. Restart the Django server.
+6. Open a Spotify overlay in Nexora and select **Connect with Spotify**.
 
-Für eine produktive Domain muss `SPOTIFY_REDIRECT_URI` sowohl in der `.env` als auch im Spotify Developer Dashboard auf dieselbe öffentliche HTTPS-Adresse geändert werden.
+For a production domain, `SPOTIFY_REDIRECT_URI` must use the same public HTTPS URL in both `.env` and the Spotify Developer Dashboard.
 
-## 🎥 Overlay in OBS einfügen
+## 🎥 Add an overlay to OBS
 
-1. Erstelle oder öffne ein Overlay in Nexora.
-2. Kopiere die angezeigte Browserquellen-URL.
-3. Öffne deine Szene in OBS.
-4. Klicke unter **Quellen** auf `+`.
-5. Wähle **Browser**.
-6. Füge die Nexora-URL in das Feld **URL** ein.
-7. Übernimm die für das Overlay empfohlene Breite und Höhe.
-8. Aktiviere bei Bedarf **Browser aktualisieren, wenn Szene aktiv wird**.
+1. Create or open an overlay in Nexora.
+2. Copy its browser-source URL.
+3. Open your OBS scene.
+4. Select `+` in the **Sources** panel.
+5. Choose **Browser**.
+6. Paste the Nexora URL into the **URL** field.
+7. Apply the recommended width and height shown in Nexora.
+8. Optionally enable **Refresh browser when scene becomes active**.
 
-Änderungen in Nexora werden anschließend vom Overlay übernommen, ohne dass die Quelle in OBS neu angelegt werden muss.
+Future changes made in Nexora are picked up by the overlay without recreating the source in OBS.
 
-## 📁 Projektstruktur
+## 📁 Project structure
 
 ```text
 Nexora/
 ├── app/
-│   ├── migrations/          # Datenbankmigrationen
-│   ├── static/              # CSS, JavaScript, Bilder und Icons
-│   ├── templates/           # Django-Templates und Overlay-Ansichten
-│   ├── forms.py             # Formulare und Eingabevalidierung
-│   ├── models.py            # Spotify- und Winchallenge-Modelle
-│   ├── spotify_api.py       # Spotify OAuth und Playback API
-│   ├── urls.py              # App-Routen
-│   └── views.py             # Editor-, Verwaltungs- und Overlay-Views
-├── locale/                  # Deutsche und englische Übersetzungen
-├── nexora/                  # Django-Projektkonfiguration
-├── .env.example             # Vorlage für Umgebungsvariablen
+│   ├── migrations/          # Database migrations
+│   ├── static/              # CSS, JavaScript, images, and icons
+│   ├── templates/           # Pages, editors, authentication, and overlays
+│   ├── forms.py             # Forms and input validation
+│   ├── models.py            # Spotify and Win Challenge models
+│   ├── spotify_api.py       # Spotify OAuth and playback API client
+│   ├── urls.py              # Application routes
+│   └── views.py             # Authentication, management, and overlay views
+├── locale/                  # German and English translations
+├── nexora/                  # Django project configuration
+├── .env.example             # Environment variable template
 ├── manage.py
 ├── requirements.txt
 └── VERSION
 ```
 
-## 🔗 Wichtige Routen
+## 🔗 Important routes
 
-| Bereich | Route |
-|---|---|
-| Startseite | `/` |
-| Über Nexora | `/about/` |
-| Spotify-Overlays | `/spotify/` |
-| Neues Spotify-Overlay | `/spotify/new/` |
-| Winchallenges | `/winchallenges/` |
-| Neue Winchallenge | `/winchallenges/new/` |
-| Django-Admin | `/admin/` |
+| Area | Route | Access |
+|---|---|---|
+| Home | `/` | Public |
+| About | `/about/` | Public |
+| Sign in | `/accounts/login/` | Public |
+| Create account | `/accounts/signup/` | Public |
+| Spotify overlays | `/spotify/` | Authenticated |
+| New Spotify overlay | `/spotify/new/` | Authenticated |
+| Win Challenges | `/winchallenges/` | Authenticated |
+| New Win Challenge | `/winchallenges/new/` | Authenticated |
+| Django admin | `/admin/` | Staff |
 
-Die öffentlichen OBS-URLs werden pro Overlay über einen individuellen UUID-Token erzeugt.
+Public OBS routes are generated individually for each overlay and use UUID tokens.
 
-## 🌐 Übersetzungen aktualisieren
+## 🌐 Update translations
 
-Nach Änderungen an übersetzbaren Texten:
+Extract translatable strings after changing Python or template text:
 
 ```bash
 python manage.py makemessages -l de
 python manage.py makemessages -l en
 ```
 
-Anschließend die Übersetzungen in den jeweiligen `django.po`-Dateien bearbeiten und kompilieren:
+Edit the generated `django.po` files and compile them:
 
 ```bash
 python manage.py compilemessages
 ```
 
-## ✅ Projekt prüfen
+## ✅ Project checks
 
-Django-Systemcheck ausführen:
+Run the Django system check:
 
 ```bash
 python manage.py check
 ```
 
-Tests starten:
+Run the automated test suite:
 
 ```bash
 python manage.py test
 ```
 
-## 🔐 Hinweise für den Produktivbetrieb
+Check for missing model migrations:
 
-Die aktuelle Konfiguration ist primär für die lokale Entwicklung ausgelegt. Vor einem öffentlichen Deployment solltest du mindestens:
+```bash
+python manage.py makemigrations --check --dry-run
+```
 
-- `DJANGO_DEBUG=false` setzen
-- einen sicheren und einzigartigen `DJANGO_SECRET_KEY` verwenden
-- `ALLOWED_HOSTS` konfigurieren
-- ausschließlich HTTPS verwenden
-- eine produktive Datenbank und ein Backup-Konzept einrichten
-- statische Dateien über einen geeigneten Webserver ausliefern
-- Spotify-Zugangsdaten ausschließlich als Umgebungsvariablen speichern
-- Zugriffs- und Berechtigungskonzepte für private Verwaltungsseiten ergänzen
+## 🔐 Production notes
 
-## 🗺️ Mögliche nächste Schritte
+The current configuration primarily targets local development. Before deploying Nexora publicly, at minimum:
 
-- Weitere Overlay-Typen wie Counter, Timer und Social Alerts
-- Benutzerkonten mit persönlicher Overlay-Bibliothek
-- Vorlagen-Galerie und teilbare Designs
-- Overlay-Duplikation und Export/Import
-- WebSocket-basierte Echtzeitupdates
-- Docker-Setup für Deployment und Entwicklung
-- Umfangreichere automatisierte Tests
+- Set `DJANGO_DEBUG=false`
+- Use a long, unique `DJANGO_SECRET_KEY`
+- Configure `ALLOWED_HOSTS`
+- Serve the application exclusively over HTTPS
+- Enable secure session and CSRF cookies
+- Configure HSTS and HTTPS redirects carefully
+- Use a production-ready database and backup strategy
+- Configure `STATIC_ROOT` and serve static files through an appropriate web server
+- Keep Spotify credentials outside the repository
+- Encrypt stored Spotify access and refresh tokens
+- Protect open registration with invitations, email verification, or rate limiting when required
 
-## 🤝 Mitwirken
+## 🗺️ Possible next steps
 
-Ideen, Bugreports und Verbesserungsvorschläge sind willkommen.
+- Additional overlay types such as counters, timers, goals, and social alerts
+- Account recovery and profile management
+- Template gallery and reusable personal presets
+- Overlay duplication and import/export
+- Regeneratable public OBS tokens
+- WebSocket- or Server-Sent Events-based live updates
+- Docker setup for development and deployment
+- CI checks and broader browser-level test coverage
 
-1. Repository forken
-2. Feature-Branch erstellen
-3. Änderungen implementieren und testen
-4. Aussagekräftigen Commit erstellen
-5. Pull Request öffnen
+## 🤝 Contributing
 
-## 📄 Lizenz
+Ideas, bug reports, and improvements are welcome.
 
-Für dieses Projekt ist aktuell keine Lizenzdatei hinterlegt. Ergänze vor einer öffentlichen Veröffentlichung eine passende `LICENSE`-Datei und passe diesen Abschnitt entsprechend an.
+1. Fork the repository.
+2. Create a focused feature branch.
+3. Implement and test your changes.
+4. Create a concise, meaningful commit.
+5. Open a pull request with a description and relevant screenshots.
+
+## 📄 License
+
+This repository does not currently include a license file. Add an appropriate `LICENSE` before publicly distributing the project, then update this section accordingly.
 
 ---
 

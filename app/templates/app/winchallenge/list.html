@@ -13,11 +13,13 @@
 {% block content %}
     <div class="winchallenge-page winchallenge-page--overview">
         <section class="winchallenge-page__hero overview-hero" aria-labelledby="winchallenge-title">
-            <p class="section-label"><span>Nexora</span> {% translate "Win Challenge overlays" %}</p>
-            <h1 id="winchallenge-title">{% translate "Manage your win counters" %}</h1>
-            <p>
-                {% translate "Create browser-source overlays for OBS, track wins per game and keep the public overlay updated automatically." %}
-            </p>
+            <div>
+                <p class="section-label"><span>Nexora</span> {% translate "Win Challenge overlays" %}</p>
+                <h1 id="winchallenge-title">{% translate "Manage your win counters" %}</h1>
+                <p>
+                    {% translate "Create browser-source overlays for OBS, track wins per game and keep the public overlay updated automatically." %}
+                </p>
+            </div>
         </section>
 
         {% if messages %}
@@ -31,7 +33,10 @@
         {% if challenges %}
             <section class="challenge-list-section" aria-labelledby="saved-challenges-title">
                 <div class="challenge-list-header">
-                    <h2 id="saved-challenges-title">{% translate "Saved Win Challenges" %}</h2>
+                    <div>
+                        <p class="section-label">{% translate "Your collection" %}</p>
+                        <h2 id="saved-challenges-title">{% translate "Saved Win Challenges" %}</h2>
+                    </div>
                     <a class="btn action-button" href="{% url 'winchallenge_create' %}">
                         {% translate "Create Win Challenge" %}
                     </a>

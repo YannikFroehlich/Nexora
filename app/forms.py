@@ -2,12 +2,69 @@ import json
 import re
 
 from django import forms
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.utils.translation import gettext_lazy as _
 
 from app.models import SpotifyOverlay, WinChallenge, WinChallengeGame
 
 
 BASE_INPUT_CLASS = "form-control"
+
+
+class LoginForm(AuthenticationForm):
+    """Styled login form used by the public authentication page."""
+
+    username = forms.CharField(
+        label=_("Username"),
+        widget=forms.TextInput(
+            attrs={
+                "class": BASE_INPUT_CLASS,
+                "autocomplete": "username",
+                "autofocus": True,
+            }
+        ),
+    )
+    password = forms.CharField(
+        label=_("Password"),
+        strip=False,
+        widget=forms.PasswordInput(
+            attrs={
+                "class": BASE_INPUT_CLASS,
+                "autocomplete": "current-password",
+            }
+        ),
+    )
+
+
+class SignUpForm(UserCreationForm):
+    """Create a standard Django user for a private overlay library."""
+
+    class Meta(UserCreationForm.Meta):
+        model = get_user_model()
+        fields = ("username",)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].widget.attrs.update(
+            {
+                "class": BASE_INPUT_CLASS,
+                "autocomplete": "username",
+                "autofocus": True,
+            }
+        )
+        self.fields["password1"].widget.attrs.update(
+            {
+                "class": BASE_INPUT_CLASS,
+                "autocomplete": "new-password",
+            }
+        )
+        self.fields["password2"].widget.attrs.update(
+            {
+                "class": BASE_INPUT_CLASS,
+                "autocomplete": "new-password",
+            }
+        )
 
 
 class ColorInput(forms.TextInput):

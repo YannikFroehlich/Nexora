@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-13 16:47+0200\n"
+"POT-Creation-Date: 2026-07-14 11:08+0200\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: English\n"
@@ -16,6 +16,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Username"
+msgstr ""
+
+msgid "Password"
+msgstr ""
 
 msgid "Overlay title"
 msgstr ""
@@ -27,18 +33,6 @@ msgid "Background color"
 msgstr ""
 
 msgid "Background opacity"
-msgstr ""
-
-msgid "Overlay background"
-msgstr ""
-
-msgid "Choose the background color and how strongly it should be visible."
-msgstr ""
-
-msgid "Transparent"
-msgstr ""
-
-msgid "Opaque"
 msgstr ""
 
 msgid "Text color"
@@ -387,6 +381,15 @@ msgstr "Spotify Overlay"
 msgid "Spotify"
 msgstr "Spotify Overlay"
 
+msgid "Signed in as"
+msgstr ""
+
+msgid "Sign out"
+msgstr ""
+
+msgid "Sign in"
+msgstr ""
+
 msgid "Language"
 msgstr ""
 
@@ -530,6 +533,29 @@ msgstr ""
 msgid "No games yet"
 msgstr ""
 
+msgid "Completed"
+msgstr ""
+
+msgid "Nexora account"
+msgstr ""
+
+msgid "Sign in to manage your private overlay library."
+msgstr ""
+
+msgid "No account yet?"
+msgstr ""
+
+msgid "Create account"
+msgstr ""
+
+msgid ""
+"Create an account to keep your overlays private and manage them from any "
+"signed-in session."
+msgstr ""
+
+msgid "Already have an account?"
+msgstr ""
+
 msgid "Paused"
 msgstr ""
 
@@ -571,6 +597,18 @@ msgstr ""
 #| msgid "Spotify Overlay"
 msgid "Default: Spotify-Overlay"
 msgstr "Spotify Overlay"
+
+msgid "Overlay background"
+msgstr ""
+
+msgid "Choose the background color and how strongly it should be visible."
+msgstr ""
+
+msgid "Transparent"
+msgstr ""
+
+msgid "Opaque"
+msgstr ""
 
 msgid "Content"
 msgstr ""
@@ -779,6 +817,12 @@ msgid ""
 "Start with a polished layout, then move, resize or remove every element."
 msgstr ""
 
+msgid "Increase value"
+msgstr ""
+
+msgid "Decrease value"
+msgstr ""
+
 msgid "New overlay"
 msgstr ""
 
@@ -916,15 +960,6 @@ msgid "Increase wins"
 msgstr ""
 
 msgid "Decrease wins"
-msgstr ""
-
-msgid "Increase value"
-msgstr ""
-
-msgid "Decrease value"
-msgstr ""
-
-msgid "Completed"
 msgstr ""
 
 msgid "Edit game"
