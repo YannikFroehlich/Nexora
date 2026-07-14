@@ -61,6 +61,25 @@
             {% endwith %}
 
             <div class="right">
+                {% if user.is_authenticated %}
+                    <span class="account-user" title="{% translate 'Signed in as' %} {{ user.get_username }}">
+                        {{ user.get_username }}
+                    </span>
+                    <form class="account-logout" action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button class="btn glass-design account-button" type="submit">
+                            {% translate "Sign out" %}
+                        </button>
+                    </form>
+                {% else %}
+                    <a
+                        class="btn glass-design account-button"
+                        href="{% url 'login' %}{% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'signup' %}?next={{ request.get_full_path|urlencode }}{% endif %}"
+                    >
+                        {% translate "Sign in" %}
+                    </a>
+                {% endif %}
+
                 <form class="language-switcher btn glass-design" action="{% url 'set_language' %}" method="post">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.get_full_path }}">

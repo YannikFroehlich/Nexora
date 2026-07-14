@@ -13,9 +13,9 @@ class WinChallengeGameInline(admin.TabularInline):
 @admin.register(WinChallenge)
 class WinChallengeAdmin(admin.ModelAdmin):
     inlines = (WinChallengeGameInline,)
-    list_display = ("overlay_title", "total_wins", "games_count", "updated_at")
-    list_filter = ("design_template", "shadow_enabled", "show_games_list")
-    search_fields = ("title", "public_token")
+    list_display = ("overlay_title", "owner", "total_wins", "games_count", "updated_at")
+    list_filter = ("design_template", "shadow_enabled", "show_games_list", "owner")
+    search_fields = ("title", "public_token", "owner__username")
     readonly_fields = ("public_token", "created_at", "updated_at")
 
     @admin.display(description="Overlay title")
@@ -33,9 +33,9 @@ class WinChallengeGameAdmin(admin.ModelAdmin):
 
 @admin.register(SpotifyOverlay)
 class SpotifyOverlayAdmin(admin.ModelAdmin):
-    list_display = ("display_name", "canvas_size", "spotify_connected", "updated_at")
-    list_filter = ("background_opacity", "spotify_connected_at")
-    search_fields = ("name", "public_token")
+    list_display = ("display_name", "owner", "canvas_size", "spotify_connected", "updated_at")
+    list_filter = ("background_opacity", "spotify_connected_at", "owner")
+    search_fields = ("name", "public_token", "owner__username")
     readonly_fields = (
         "public_token",
         "spotify_connected_at",

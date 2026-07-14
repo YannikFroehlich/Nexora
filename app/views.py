@@ -1,16 +1,21 @@
 import secrets
+
+from django.contrib.auth import get_user_model, login
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import F, Max
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
 from app.forms import (
+    SignUpForm,
     SpotifyOverlayForm,
     WinChallengeCreateForm,
     WinChallengeDesignForm,
@@ -31,13 +36,54 @@ def about(request):
     return render(request, template_name)
 
 
-def _manageable_spotify_overlays(request):
-    overlays = SpotifyOverlay.objects.all()
+def _safe_next_url(request, fallback="home"):
+    next_url = request.POST.get("next") or request.GET.get("next") or ""
 
+    if url_has_allowed_host_and_scheme(
+        url=next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return next_url
+
+    return reverse(fallback)
+
+
+def signup(request):
     if request.user.is_authenticated:
-        return overlays.filter(owner=request.user)
+        return redirect(_safe_next_url(request))
 
-    return overlays.filter(owner__isnull=True)
+    if request.method == "POST":
+        form = SignUpForm(request.POST)
+
+        if form.is_valid():
+            with transaction.atomic():
+                user = form.save()
+                is_first_user = not (
+                    get_user_model().objects.exclude(pk=user.pk).exists()
+                )
+
+                if is_first_user:
+                    SpotifyOverlay.objects.filter(owner__isnull=True).update(owner=user)
+                    WinChallenge.objects.filter(owner__isnull=True).update(owner=user)
+
+            login(request, user)
+            return redirect(_safe_next_url(request))
+    else:
+        form = SignUpForm()
+
+    return render(
+        request,
+        "app/registration/signup.html",
+        {
+            "form": form,
+            "next": request.POST.get("next") or request.GET.get("next") or "",
+        },
+    )
+
+
+def _manageable_spotify_overlays(request):
+    return SpotifyOverlay.objects.filter(owner=request.user)
 
 
 def _get_manageable_spotify_overlay(request, pk):
@@ -69,6 +115,7 @@ def _spotify_editor_context(request, form, overlay, is_create):
     }
 
 
+@login_required
 def spotify_list(request):
     return render(
         request,
@@ -88,6 +135,7 @@ def spotify_list(request):
     )
 
 
+@login_required
 def spotify_create(request):
     overlay = SpotifyOverlay()
 
@@ -97,9 +145,7 @@ def spotify_create(request):
         if form.is_valid():
             overlay = form.save(commit=False)
 
-            if request.user.is_authenticated:
-                overlay.owner = request.user
-
+            overlay.owner = request.user
             overlay.save()
             messages.success(request, _("Spotify overlay created."))
             return redirect("spotify_manage", pk=overlay.pk)
@@ -113,6 +159,7 @@ def spotify_create(request):
     )
 
 
+@login_required
 def spotify_manage(request, pk):
     overlay = _get_manageable_spotify_overlay(request, pk)
 
@@ -133,6 +180,7 @@ def spotify_manage(request, pk):
     )
 
 
+@login_required
 @require_POST
 def spotify_delete(request, pk):
     overlay = _get_manageable_spotify_overlay(request, pk)
@@ -142,6 +190,7 @@ def spotify_delete(request, pk):
     return redirect("spotify_list")
 
 
+@login_required
 def spotify_connect(request, pk):
     overlay = _get_manageable_spotify_overlay(request, pk)
 
@@ -160,6 +209,7 @@ def spotify_connect(request, pk):
     return redirect(spotify_api.authorization_url(request, state))
 
 
+@login_required
 def spotify_callback(request):
     oauth_session = request.session.pop("spotify_oauth", None)
     received_state = request.GET.get("state", "")
@@ -196,6 +246,7 @@ def spotify_callback(request):
     return redirect("spotify_manage", pk=overlay.pk)
 
 
+@login_required
 @require_POST
 def spotify_disconnect(request, pk):
     overlay = _get_manageable_spotify_overlay(request, pk)
@@ -225,12 +276,7 @@ def spotify_overlay_state(request, public_token):
 
 
 def _manageable_winchallenges(request):
-    challenges = WinChallenge.objects.prefetch_related("games")
-
-    if request.user.is_authenticated:
-        return challenges.filter(owner=request.user)
-
-    return challenges.filter(owner__isnull=True)
+    return WinChallenge.objects.prefetch_related("games").filter(owner=request.user)
 
 
 def _get_manageable_winchallenge(request, pk):
@@ -266,6 +312,7 @@ def _state_response(challenge):
     return _no_store(response)
 
 
+@login_required
 def winchallenge_list(request):
     return render(
         request,
@@ -276,6 +323,7 @@ def winchallenge_list(request):
     )
 
 
+@login_required
 def winchallenge_create(request):
     if request.method == "POST":
         form = WinChallengeCreateForm(request.POST)
@@ -283,9 +331,7 @@ def winchallenge_create(request):
         if form.is_valid():
             challenge = form.save(commit=False)
 
-            if request.user.is_authenticated:
-                challenge.owner = request.user
-
+            challenge.owner = request.user
             challenge.save()
             messages.success(request, _("Win Challenge created."))
             return redirect("winchallenge_manage", pk=challenge.pk)
@@ -302,6 +348,7 @@ def winchallenge_create(request):
     )
 
 
+@login_required
 def winchallenge_manage(request, pk):
     challenge = _get_manageable_winchallenge(request, pk)
 
@@ -344,6 +391,7 @@ def winchallenge_manage(request, pk):
     )
 
 
+@login_required
 @require_POST
 def winchallenge_delete(request, pk):
     challenge = _get_manageable_winchallenge(request, pk)
@@ -354,6 +402,7 @@ def winchallenge_delete(request, pk):
     return redirect("winchallenge_list")
 
 
+@login_required
 @require_POST
 def winchallenge_game_add(request, pk):
     challenge = _get_manageable_winchallenge(request, pk)
@@ -384,6 +433,7 @@ def winchallenge_game_add(request, pk):
     return _state_response(challenge)
 
 
+@login_required
 @require_POST
 def winchallenge_game_wins(request, pk, game_pk):
     challenge = _get_manageable_winchallenge(request, pk)
@@ -413,6 +463,7 @@ def winchallenge_game_wins(request, pk, game_pk):
     return _state_response(challenge)
 
 
+@login_required
 @require_POST
 def winchallenge_game_rename(request, pk, game_pk):
     challenge = _get_manageable_winchallenge(request, pk)
@@ -442,6 +493,7 @@ def winchallenge_game_rename(request, pk, game_pk):
     return _state_response(challenge)
 
 
+@login_required
 @require_POST
 def winchallenge_game_delete(request, pk, game_pk):
     challenge = _get_manageable_winchallenge(request, pk)

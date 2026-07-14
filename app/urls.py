@@ -1,10 +1,26 @@
+from django.contrib.auth import views as auth_views
 from django.urls import path
 
 from app import views
+from app.forms import LoginForm
 
 urlpatterns = [
     path('', views.home, name='home'),
     path('about/', views.about, name='about'),
+    path(
+        'accounts/login/',
+        auth_views.LoginView.as_view(
+            template_name='app/registration/login.html',
+            authentication_form=LoginForm,
+        ),
+        name='login',
+    ),
+    path(
+        'accounts/logout/',
+        auth_views.LogoutView.as_view(),
+        name='logout',
+    ),
+    path('accounts/signup/', views.signup, name='signup'),
     path('spotify/', views.spotify_list, name='spotify_list'),
     path('spotify/new/', views.spotify_create, name='spotify_create'),
     path('spotify/callback/', views.spotify_callback, name='spotify_callback'),

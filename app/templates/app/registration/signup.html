@@ -1,0 +1,59 @@
+{% extends "app/base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% translate "Create account" %} · Nexora{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block content %}
+    <section class="auth-page" aria-labelledby="signup-title">
+        <div class="auth-intro">
+            <p class="auth-kicker">{% translate "Nexora account" %}</p>
+            <h1 id="signup-title">{% translate "Create account" %}</h1>
+            <p>{% translate "Create an account to keep your overlays private and manage them from any signed-in session." %}</p>
+        </div>
+
+        <div class="auth-card glass-design card">
+            <form class="auth-form" method="post" action="{% url 'signup' %}">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="auth-errors" role="alert">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                {% for field in form %}
+                    <div class="auth-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="auth-help" id="{{ field.auto_id }}_helptext">{{ field.help_text|safe }}</div>
+                        {% endif %}
+                        {% if field.errors %}
+                            <div class="auth-field__errors" role="alert">{{ field.errors }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
+
+                <button class="btn action-button auth-submit" type="submit">
+                    {% translate "Create account" %}
+                </button>
+            </form>
+
+            <p class="auth-switch">
+                {% translate "Already have an account?" %}
+                <a href="{% url 'login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">
+                    {% translate "Sign in" %}
+                </a>
+            </p>
+        </div>
+    </section>
+{% endblock %}

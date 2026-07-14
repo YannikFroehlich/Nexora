@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-13 16:47+0200\n"
+"POT-Creation-Date: 2026-07-14 11:08+0200\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: German\n"
@@ -16,6 +16,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Username"
+msgstr "Benutzername"
+
+msgid "Password"
+msgstr "Passwort"
 
 msgid "Overlay title"
 msgstr "Overlay-Titel"
@@ -28,18 +34,6 @@ msgstr "Hintergrundfarbe"
 
 msgid "Background opacity"
 msgstr "Hintergrundtransparenz"
-
-msgid "Overlay background"
-msgstr "Overlay-Hintergrund"
-
-msgid "Choose the background color and how strongly it should be visible."
-msgstr "Wähle die Hintergrundfarbe und wie stark sie sichtbar sein soll."
-
-msgid "Transparent"
-msgstr "Transparent"
-
-msgid "Opaque"
-msgstr "Deckend"
 
 msgid "Text color"
 msgstr "Textfarbe"
@@ -107,10 +101,8 @@ msgstr "Sekunden bis zur nächsten Seite."
 msgid "Road to Diamond"
 msgstr "Road to Diamond"
 
-#, fuzzy
-#| msgid "Win Challenge"
 msgid "Winchallenge"
-msgstr "Win Challenge"
+msgstr "Winchallenge"
 
 msgid "Game name"
 msgstr "Name des Spiels"
@@ -229,9 +221,9 @@ msgid ""
 "Nexora helps creators build, customize and manage browser-based overlays "
 "without turning every stream update into a technical project."
 msgstr ""
-"Nexora hilft Creatorn, browserbasierte Overlays zu erstellen, anzupassen "
-"und zu verwalten, ohne dass jedes Stream-Update zu einem technischen "
-"Projekt wird."
+"Nexora hilft Creatorn, browserbasierte Overlays zu erstellen, anzupassen und "
+"zu verwalten, ohne dass jedes Stream-Update zu einem technischen Projekt "
+"wird."
 
 msgid "Explore overlays"
 msgstr "Overlays entdecken"
@@ -398,6 +390,15 @@ msgstr "Alle Overlays ansehen"
 msgid "Spotify"
 msgstr "Spotify"
 
+msgid "Signed in as"
+msgstr "Angemeldet als"
+
+msgid "Sign out"
+msgstr "Abmelden"
+
+msgid "Sign in"
+msgstr "Anmelden"
+
 msgid "Language"
 msgstr "Sprache"
 
@@ -546,6 +547,31 @@ msgstr "Jetzt starten"
 msgid "No games yet"
 msgstr "Noch keine Spiele"
 
+msgid "Completed"
+msgstr "Fertig"
+
+msgid "Nexora account"
+msgstr "Nexora-Konto"
+
+msgid "Sign in to manage your private overlay library."
+msgstr "Melde dich an, um deine private Overlay-Bibliothek zu verwalten."
+
+msgid "No account yet?"
+msgstr "Noch kein Konto?"
+
+msgid "Create account"
+msgstr "Konto erstellen"
+
+msgid ""
+"Create an account to keep your overlays private and manage them from any "
+"signed-in session."
+msgstr ""
+"Erstelle ein Konto, um deine Overlays privat zu halten und sie in jeder "
+"angemeldeten Sitzung zu verwalten."
+
+msgid "Already have an account?"
+msgstr "Du hast bereits ein Konto?"
+
 msgid "Paused"
 msgstr "Pausiert"
 
@@ -579,6 +605,18 @@ msgstr "Overlay-Einstellungen"
 
 msgid "Default: Spotify-Overlay"
 msgstr "Standard: Spotify-Overlay"
+
+msgid "Overlay background"
+msgstr "Overlay-Hintergrund"
+
+msgid "Choose the background color and how strongly it should be visible."
+msgstr "Wähle die Hintergrundfarbe und wie stark sie sichtbar sein soll."
+
+msgid "Transparent"
+msgstr "Transparent"
+
+msgid "Opaque"
+msgstr "Deckend"
 
 msgid "Content"
 msgstr "Inhalt"
@@ -789,6 +827,12 @@ msgstr ""
 "Starte mit einem fertigen Layout und verschiebe, skaliere oder entferne "
 "anschließend jedes Element."
 
+msgid "Increase value"
+msgstr "Wert erhöhen"
+
+msgid "Decrease value"
+msgstr "Wert verringern"
+
 msgid "New overlay"
 msgstr "Neues Overlay"
 
@@ -868,10 +912,8 @@ msgstr ""
 msgid "Saved Win Challenges"
 msgstr "Gespeicherte Win Challenges"
 
-#, fuzzy
-#| msgid "Overlay title"
 msgid "Overlay"
-msgstr "Overlay-Titel"
+msgstr "Overlay"
 
 msgid "Games"
 msgstr "Spiele"
@@ -933,15 +975,6 @@ msgstr "Wins erhöhen"
 
 msgid "Decrease wins"
 msgstr "Wins verringern"
-
-msgid "Increase value"
-msgstr "Wert erhöhen"
-
-msgid "Decrease value"
-msgstr "Wert verringern"
-
-msgid "Completed"
-msgstr "Fertig"
 
 msgid "Edit game"
 msgstr "Spiel bearbeiten"
