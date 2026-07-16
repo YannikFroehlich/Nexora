@@ -1,0 +1,233 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% if is_create %}{% translate "Create Stream Timer" %}{% else %}{{ timer.display_name }}{% endif %} · Nexora{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/timer.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li><a href="{% url 'overlay_dashboard' %}#timer-overlays">{% translate "My overlays" %}</a></li>
+            <li aria-current="page">{% if is_create %}{% translate "Create" %}{% else %}{% translate "Edit" %}{% endif %}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <div
+        class="timer-page"
+        data-timer-editor
+        data-editor-state
+        data-editor-create="{{ is_create|yesno:'true,false' }}"
+        data-editor-draft-key="nexora:draft:timer:{{ user.pk }}:{% if is_create %}new{% else %}{{ timer.pk }}{% endif %}"
+        data-status-saved="{% if is_create %}{% translate 'No unsaved changes' %}{% else %}{% translate 'All changes saved' %}{% endif %}"
+        data-status-unsaved="{% translate 'Unsaved changes' %}"
+        data-status-saving="{% translate 'Saving changes...' %}"
+        data-status-failed="{% translate 'Autosave failed. Use the save button to try again.' %}"
+        data-status-draft-saved="{% translate 'Draft saved locally' %}"
+        data-status-draft-restored="{% translate 'Local draft restored' %}"
+        data-label-countdown="{% translate 'Countdown' %}"
+        data-label-stopwatch="{% translate 'Stopwatch' %}"
+        data-label-running="{% translate 'Running' %}"
+        data-label-paused="{% translate 'Paused' %}"
+        data-label-complete="{% translate 'Complete' %}"
+    >
+        <section class="timer-hero" aria-labelledby="timer-editor-title">
+            <div>
+                <p class="timer-kicker"><span>Nexora</span> {% translate "Stream timers" %}</p>
+                <h1 id="timer-editor-title">
+                    {% if is_create %}{% translate "Create a stream timer" %}{% else %}{% translate "Edit stream timer" %}{% endif %}
+                </h1>
+                <p>{% translate "Build a countdown or stopwatch and control it live while OBS keeps the same browser-source URL." %}</p>
+            </div>
+            <a class="btn glass-design" href="{% url 'overlay_dashboard' %}#timer-overlays">{% translate "Back to my overlays" %}</a>
+        </section>
+
+        {% include "app/partials/_editor_state_toolbar.html" %}
+
+        {% if messages %}
+            <div class="timer-messages" role="status" aria-live="polite" aria-atomic="true">
+                {% for message in messages %}<p>{{ message }}</p>{% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="timer-editor-layout">
+            <div class="timer-editor-sidebar">
+                {% if not is_create %}
+                    <section class="timer-panel timer-control-panel" aria-labelledby="timer-controls-title">
+                        <div class="timer-panel__heading">
+                            <span aria-hidden="true">01</span>
+                            <div>
+                                <p class="timer-kicker">{% translate "Live control" %}</p>
+                                <h2 id="timer-controls-title">{% translate "Timer controls" %}</h2>
+                            </div>
+                        </div>
+                        <form
+                            class="timer-controls"
+                            method="post"
+                            action="{% url 'timer_control' timer.pk %}"
+                            data-timer-controls
+                            data-control-url="{% url 'timer_control' timer.pk %}"
+                        >
+                            {% csrf_token %}
+                            <button class="btn action-button" type="button" data-timer-action="start">{% translate "Start" %}</button>
+                            <button class="btn glass-design" type="button" data-timer-action="pause">{% translate "Pause" %}</button>
+                            <button class="btn glass-design" type="button" data-timer-action="reset">{% translate "Reset" %}</button>
+                        </form>
+                        <p class="timer-control-status" data-control-status role="status" aria-live="polite"></p>
+                    </section>
+                {% endif %}
+
+                <form
+                    class="timer-form"
+                    method="post"
+                    novalidate
+                    data-timer-form
+                    data-editor-state-form
+                    data-editor-form-key="timer"
+                    {% if not is_create %}data-autosave-url="{% url 'timer_autosave' timer.pk %}"{% endif %}
+                >
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}<div class="timer-form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+
+                    <section class="timer-panel" aria-labelledby="timer-content-title">
+                        <div class="timer-panel__heading">
+                            <span aria-hidden="true">{% if is_create %}01{% else %}02{% endif %}</span>
+                            <div>
+                                <p class="timer-kicker">{% translate "Content" %}</p>
+                                <h2 id="timer-content-title">{% translate "Timer settings" %}</h2>
+                            </div>
+                        </div>
+
+                        <div class="timer-field">
+                            <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                            {{ form.name }}{{ form.name.errors }}
+                        </div>
+                        <div class="timer-field">
+                            <label for="{{ form.label.id_for_label }}">{{ form.label.label }}</label>
+                            {{ form.label }}{{ form.label.errors }}
+                            {% if form.label.help_text %}<small>{{ form.label.help_text }}</small>{% endif %}
+                        </div>
+                        <div class="timer-field">
+                            <label for="{{ form.mode.id_for_label }}">{{ form.mode.label }}</label>
+                            {{ form.mode }}{{ form.mode.errors }}
+                        </div>
+
+                        <fieldset class="timer-duration">
+                            <legend>{% translate "Duration" %}</legend>
+                            <div>
+                                <label for="{{ form.duration_hours.id_for_label }}">{{ form.duration_hours.label }}</label>
+                                {{ form.duration_hours }}{{ form.duration_hours.errors }}
+                            </div>
+                            <div>
+                                <label for="{{ form.duration_minutes.id_for_label }}">{{ form.duration_minutes.label }}</label>
+                                {{ form.duration_minutes }}{{ form.duration_minutes.errors }}
+                            </div>
+                            <div>
+                                <label for="{{ form.duration_seconds_part.id_for_label }}">{{ form.duration_seconds_part.label }}</label>
+                                {{ form.duration_seconds_part }}{{ form.duration_seconds_part.errors }}
+                            </div>
+                        </fieldset>
+                    </section>
+
+                    <section class="timer-panel" aria-labelledby="timer-design-title">
+                        <div class="timer-panel__heading">
+                            <span aria-hidden="true">{% if is_create %}02{% else %}03{% endif %}</span>
+                            <div>
+                                <p class="timer-kicker">{% translate "Appearance" %}</p>
+                                <h2 id="timer-design-title">{% translate "Overlay design" %}</h2>
+                            </div>
+                        </div>
+
+                        <div class="timer-field">
+                            <label for="{{ form.design_template.id_for_label }}">{{ form.design_template.label }}</label>
+                            {{ form.design_template }}{{ form.design_template.errors }}
+                        </div>
+
+                        <div class="timer-field-grid timer-field-grid--colors">
+                            {% for field in form %}
+                                {% if field.name == "background_color" or field.name == "text_color" or field.name == "accent_color" or field.name == "border_color" %}
+                                    <div class="timer-field">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {{ field }}{{ field.errors }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="timer-field-grid">
+                            {% for field in form %}
+                                {% if field.name == "background_opacity" or field.name == "border_width" or field.name == "corner_radius" or field.name == "overlay_width" or field.name == "overlay_height" or field.name == "label_text_size" or field.name == "timer_text_size" %}
+                                    <div class="timer-field">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {{ field }}{{ field.errors }}
+                                        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="timer-toggles">
+                            <label for="{{ form.show_progress.id_for_label }}">{{ form.show_progress }}<span>{{ form.show_progress.label }}</span></label>
+                            <label for="{{ form.shadow_enabled.id_for_label }}">{{ form.shadow_enabled }}<span>{{ form.shadow_enabled.label }}</span></label>
+                        </div>
+
+                        <button class="btn action-button timer-save" type="submit">
+                            {% if is_create %}{% translate "Create timer" %}{% else %}{% translate "Save timer" %}{% endif %}
+                        </button>
+                    </section>
+                </form>
+
+                {% if not is_create %}
+                    <section class="timer-panel" aria-labelledby="timer-obs-title">
+                        <div class="timer-panel__heading">
+                            <span aria-hidden="true">04</span>
+                            <div>
+                                <p class="timer-kicker">{% translate "Browser source" %}</p>
+                                <h2 id="timer-obs-title">{% translate "OBS Link" %}</h2>
+                            </div>
+                        </div>
+                        <div class="timer-obs-copy">
+                            <input class="form-control" type="text" value="{{ obs_url }}" readonly data-obs-url>
+                            <button class="btn action-button" type="button" data-copy-url="{{ obs_url }}">{% translate "Copy OBS Link" %}</button>
+                        </div>
+                        <p>{% blocktranslate with width=timer.overlay_width height=timer.overlay_height %}Recommended browser-source size: {{ width }} × {{ height }} pixels.{% endblocktranslate %}</p>
+                        <div class="timer-danger-zone">
+                            <a class="btn glass-design" href="{% url 'timer_overlay' timer.public_token %}" target="_blank" rel="noopener">{% translate "Open preview" %}</a>
+                            <form action="{% url 'timer_delete' timer.pk %}" method="post" data-confirm-delete="{% translate 'Delete this timer overlay?' %}">
+                                {% csrf_token %}
+                                <button class="btn timer-danger-button" type="submit">{% translate "Delete" %}</button>
+                            </form>
+                        </div>
+                    </section>
+                {% endif %}
+            </div>
+
+            <aside class="timer-preview-panel" aria-labelledby="timer-preview-title">
+                <div class="timer-preview-panel__heading">
+                    <div>
+                        <p class="timer-kicker">{% translate "Live preview" %}</p>
+                        <h2 id="timer-preview-title">{% translate "Overlay preview" %}</h2>
+                    </div>
+                    <span>{% translate "Transparent OBS canvas" %}</span>
+                </div>
+                <div class="timer-preview-stage">
+                    {% include "app/partials/_timer_overlay.html" with timer=timer %}
+                </div>
+            </aside>
+        </div>
+
+        <p class="timer-toast" data-copy-toast role="status" aria-live="polite" aria-atomic="true" hidden>{% translate "OBS link copied" %}</p>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/timer.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
+{% endblock %}

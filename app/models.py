@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models import Sum
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -485,4 +486,210 @@ class SpotifyOverlay(models.Model):
             "corner_radius": self.corner_radius,
             "elements": self.elements,
             "updated_at": self.updated_at.isoformat() if self.updated_at else "",
+        }
+
+
+class TimerOverlay(models.Model):
+    """Persistent countdown or stopwatch browser-source overlay."""
+
+    DEFAULT_NAME = _("Stream Timer")
+    MAX_SECONDS = (100 * 60 * 60) - 1
+
+    MODE_COUNTDOWN = "countdown"
+    MODE_STOPWATCH = "stopwatch"
+    MODE_CHOICES = (
+        (MODE_COUNTDOWN, _("Countdown")),
+        (MODE_STOPWATCH, _("Stopwatch")),
+    )
+
+    TEMPLATE_MINIMAL = "minimal"
+    TEMPLATE_GLASS = "glass"
+    TEMPLATE_NEON = "neon"
+    DESIGN_TEMPLATE_CHOICES = (
+        (TEMPLATE_MINIMAL, _("Minimal")),
+        (TEMPLATE_GLASS, _("Glass")),
+        (TEMPLATE_NEON, _("Neon")),
+    )
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="timer_overlays",
+        blank=True,
+        null=True,
+    )
+    public_token = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        db_index=True,
+    )
+    name = models.CharField(max_length=120, default="Stream Timer", blank=True)
+    label = models.CharField(max_length=120, default="Starting soon", blank=True)
+    mode = models.CharField(max_length=20, choices=MODE_CHOICES, default=MODE_COUNTDOWN)
+    duration_seconds = models.PositiveIntegerField(
+        default=300,
+        validators=[MinValueValidator(1), MaxValueValidator(MAX_SECONDS)],
+    )
+    accumulated_seconds = models.PositiveIntegerField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(MAX_SECONDS)],
+    )
+    is_running = models.BooleanField(default=False)
+    started_at = models.DateTimeField(blank=True, null=True)
+
+    design_template = models.CharField(
+        max_length=20,
+        choices=DESIGN_TEMPLATE_CHOICES,
+        default=TEMPLATE_GLASS,
+    )
+    background_color = models.CharField(
+        max_length=7,
+        default="#111827",
+        validators=[hex_color_validator],
+    )
+    background_opacity = models.PositiveSmallIntegerField(
+        default=86,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+    text_color = models.CharField(
+        max_length=7,
+        default="#f8fafc",
+        validators=[hex_color_validator],
+    )
+    accent_color = models.CharField(
+        max_length=7,
+        default="#8b5cf6",
+        validators=[hex_color_validator],
+    )
+    border_color = models.CharField(
+        max_length=7,
+        default="#a78bfa",
+        validators=[hex_color_validator],
+    )
+    border_width = models.PositiveSmallIntegerField(
+        default=1,
+        validators=[MinValueValidator(0), MaxValueValidator(12)],
+    )
+    corner_radius = models.PositiveSmallIntegerField(
+        default=24,
+        validators=[MinValueValidator(0), MaxValueValidator(64)],
+    )
+    overlay_width = models.PositiveSmallIntegerField(
+        default=520,
+        validators=[MinValueValidator(260), MaxValueValidator(1200)],
+    )
+    overlay_height = models.PositiveSmallIntegerField(
+        default=230,
+        validators=[MinValueValidator(140), MaxValueValidator(600)],
+    )
+    label_text_size = models.PositiveSmallIntegerField(
+        default=16,
+        validators=[MinValueValidator(10), MaxValueValidator(40)],
+    )
+    timer_text_size = models.PositiveSmallIntegerField(
+        default=76,
+        validators=[MinValueValidator(36), MaxValueValidator(160)],
+    )
+    show_progress = models.BooleanField(default=True)
+    shadow_enabled = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-updated_at", "-created_at")
+
+    def __str__(self):
+        return str(self.display_name)
+
+    @property
+    def display_name(self):
+        return self.name or self.DEFAULT_NAME
+
+    @property
+    def display_label(self):
+        return self.label.strip()
+
+    @property
+    def background_rgba(self):
+        red = int(self.background_color[1:3], 16)
+        green = int(self.background_color[3:5], 16)
+        blue = int(self.background_color[5:7], 16)
+        alpha = self.background_opacity / 100
+        return f"rgba({red}, {green}, {blue}, {alpha:.2f})"
+
+    @property
+    def shadow_css(self):
+        if not self.shadow_enabled:
+            return "none"
+        return "0 20px 52px rgba(0, 0, 0, 0.38)"
+
+    def elapsed_seconds(self, now=None):
+        elapsed = self.accumulated_seconds
+        if self.is_running and self.started_at:
+            now = now or timezone.now()
+            elapsed += max(0, int((now - self.started_at).total_seconds()))
+
+        limit = self.duration_seconds if self.mode == self.MODE_COUNTDOWN else self.MAX_SECONDS
+        return min(elapsed, limit)
+
+    def display_seconds(self, now=None):
+        elapsed = self.elapsed_seconds(now)
+        if self.mode == self.MODE_COUNTDOWN:
+            return max(self.duration_seconds - elapsed, 0)
+        return elapsed
+
+    def effective_is_running(self, now=None):
+        if not self.is_running or not self.started_at:
+            return False
+        limit = self.duration_seconds if self.mode == self.MODE_COUNTDOWN else self.MAX_SECONDS
+        return self.elapsed_seconds(now) < limit
+
+    def progress_percent(self, now=None):
+        if self.mode != self.MODE_COUNTDOWN or self.duration_seconds <= 0:
+            return 0
+        return min(round((self.elapsed_seconds(now) / self.duration_seconds) * 100), 100)
+
+    def formatted_time(self, now=None):
+        seconds = self.display_seconds(now)
+        hours, remainder = divmod(seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        if hours or self.duration_seconds >= 3600:
+            return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+        return f"{minutes:02d}:{seconds:02d}"
+
+    def state_payload(self):
+        now = timezone.now()
+        return {
+            "name": self.display_name,
+            "label": self.display_label,
+            "mode": self.mode,
+            "duration_seconds": self.duration_seconds,
+            "display_seconds": self.display_seconds(now),
+            "is_running": self.effective_is_running(now),
+            "is_complete": (
+                self.mode == self.MODE_COUNTDOWN and self.display_seconds(now) == 0
+            ),
+            "progress_percent": self.progress_percent(now),
+            "server_time": now.isoformat(),
+            "updated_at": self.updated_at.isoformat() if self.updated_at else "",
+            "design": {
+                "template": self.design_template,
+                "background_color": self.background_color,
+                "background_opacity": self.background_opacity,
+                "background_rgba": self.background_rgba,
+                "text_color": self.text_color,
+                "accent_color": self.accent_color,
+                "border_color": self.border_color,
+                "border_width": self.border_width,
+                "corner_radius": self.corner_radius,
+                "overlay_width": self.overlay_width,
+                "overlay_height": self.overlay_height,
+                "label_text_size": self.label_text_size,
+                "timer_text_size": self.timer_text_size,
+                "show_progress": self.show_progress,
+                "shadow_enabled": self.shadow_enabled,
+                "shadow_css": self.shadow_css,
+            },
         }

@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.utils.translation import gettext_lazy as _
 
-from app.models import SpotifyOverlay, WinChallenge, WinChallengeGame
+from app.models import SpotifyOverlay, TimerOverlay, WinChallenge, WinChallengeGame
 
 
 BASE_INPUT_CLASS = "form-control"
@@ -518,3 +518,194 @@ class SpotifyOverlayForm(forms.ModelForm):
             raise forms.ValidationError(_("Every element color must be a valid hex color."))
 
         return value.lower()
+
+
+class TimerOverlayForm(forms.ModelForm):
+    """Settings and design form for countdown and stopwatch overlays."""
+
+    duration_hours = forms.IntegerField(
+        label=_("Hours"),
+        min_value=0,
+        max_value=99,
+        widget=forms.NumberInput(
+            attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 99, "step": 1}
+        ),
+    )
+    duration_minutes = forms.IntegerField(
+        label=_("Minutes"),
+        min_value=0,
+        max_value=59,
+        widget=forms.NumberInput(
+            attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 59, "step": 1}
+        ),
+    )
+    duration_seconds_part = forms.IntegerField(
+        label=_("Seconds"),
+        min_value=0,
+        max_value=59,
+        widget=forms.NumberInput(
+            attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 59, "step": 1}
+        ),
+    )
+
+    class Meta:
+        model = TimerOverlay
+        fields = (
+            "name",
+            "label",
+            "mode",
+            "duration_hours",
+            "duration_minutes",
+            "duration_seconds_part",
+            "design_template",
+            "background_color",
+            "background_opacity",
+            "text_color",
+            "accent_color",
+            "border_color",
+            "border_width",
+            "corner_radius",
+            "overlay_width",
+            "overlay_height",
+            "label_text_size",
+            "timer_text_size",
+            "show_progress",
+            "shadow_enabled",
+        )
+        labels = {
+            "name": _("Overlay name"),
+            "label": _("Label"),
+            "mode": _("Timer type"),
+            "design_template": _("Design template"),
+            "background_color": _("Background color"),
+            "background_opacity": _("Background opacity"),
+            "text_color": _("Text color"),
+            "accent_color": _("Accent color"),
+            "border_color": _("Border color"),
+            "border_width": _("Border width"),
+            "corner_radius": _("Corner radius"),
+            "overlay_width": _("Width"),
+            "overlay_height": _("Height"),
+            "label_text_size": _("Label text size"),
+            "timer_text_size": _("Timer text size"),
+            "show_progress": _("Show progress bar"),
+            "shadow_enabled": _("Show shadow"),
+        }
+        help_texts = {
+            "background_opacity": _("0 is transparent, 100 is fully opaque."),
+            "label": _("Optional text displayed above the time."),
+        }
+        widgets = {
+            "name": forms.TextInput(
+                attrs={"class": BASE_INPUT_CLASS, "placeholder": _("Stream Timer")}
+            ),
+            "label": forms.TextInput(
+                attrs={"class": BASE_INPUT_CLASS, "placeholder": _("Starting soon")}
+            ),
+            "mode": forms.Select(attrs={"class": BASE_INPUT_CLASS}),
+            "design_template": forms.Select(attrs={"class": BASE_INPUT_CLASS}),
+            "background_color": ColorInput(attrs={"class": "color-control"}),
+            "background_opacity": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 100, "step": 1}
+            ),
+            "text_color": ColorInput(attrs={"class": "color-control"}),
+            "accent_color": ColorInput(attrs={"class": "color-control"}),
+            "border_color": ColorInput(attrs={"class": "color-control"}),
+            "border_width": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 12, "step": 1}
+            ),
+            "corner_radius": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 64, "step": 1}
+            ),
+            "overlay_width": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 260, "max": 1200, "step": 1}
+            ),
+            "overlay_height": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 140, "max": 600, "step": 1}
+            ),
+            "label_text_size": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 10, "max": 40, "step": 1}
+            ),
+            "timer_text_size": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 36, "max": 160, "step": 1}
+            ),
+            "show_progress": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "shadow_enabled": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["name"].required = False
+        self.fields["label"].required = False
+
+        if not self.is_bound:
+            hours, remainder = divmod(self.instance.duration_seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            self.initial.update(
+                {
+                    "duration_hours": hours,
+                    "duration_minutes": minutes,
+                    "duration_seconds_part": seconds,
+                }
+            )
+            if self.instance.pk is None:
+                self.initial["name"] = _("Stream Timer")
+                self.initial["label"] = _("Starting soon")
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip() or "Stream Timer"
+
+    def clean_label(self):
+        return self.cleaned_data["label"].strip()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        duration_parts = (
+            cleaned_data.get("duration_hours"),
+            cleaned_data.get("duration_minutes"),
+            cleaned_data.get("duration_seconds_part"),
+        )
+
+        if any(value is None for value in duration_parts):
+            return cleaned_data
+
+        hours, minutes, seconds = duration_parts
+        duration_seconds = (hours * 3600) + (minutes * 60) + seconds
+
+        if duration_seconds < 1:
+            self.add_error(
+                "duration_seconds_part",
+                _("The timer duration must be at least one second."),
+            )
+        elif duration_seconds > TimerOverlay.MAX_SECONDS:
+            self.add_error(
+                "duration_hours",
+                _("The timer duration must be shorter than 100 hours."),
+            )
+        else:
+            cleaned_data["duration_total_seconds"] = duration_seconds
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.duration_seconds = self.cleaned_data["duration_total_seconds"]
+        limit = (
+            instance.duration_seconds
+            if instance.mode == TimerOverlay.MODE_COUNTDOWN
+            else TimerOverlay.MAX_SECONDS
+        )
+        elapsed = instance.elapsed_seconds()
+
+        if elapsed >= limit:
+            instance.accumulated_seconds = limit
+            instance.is_running = False
+            instance.started_at = None
+        elif instance.accumulated_seconds > limit:
+            instance.accumulated_seconds = limit
+
+        if commit:
+            instance.save()
+            self._save_m2m()
+
+        return instance

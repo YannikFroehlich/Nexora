@@ -10,7 +10,7 @@
     <meta name="color-scheme" content="light dark">
     <meta
         name="description"
-        content="{% block meta_description %}{% translate 'Create customizable Spotify and Win Challenge overlays for OBS directly in your browser.' %}{% endblock %}"
+        content="{% block meta_description %}{% translate 'Create customizable Spotify, timer and Win Challenge overlays for OBS directly in your browser.' %}{% endblock %}"
     >
     {% if IS_PUBLIC_INDEXABLE %}
         <meta name="robots" content="index, follow">
@@ -20,7 +20,7 @@
     {% endif %}
     <link rel="icon"
           type="image/png"
-          href="{% static 'imgs/icons/Nexora_Icon.png' %}">
+          href="{% static 'imgs/icons/nexora_icon.png' %}">
 
 
     <link rel="stylesheet" href="{% static 'css/theme.css' %}?v={{ APP_VERSION }}">
@@ -65,9 +65,9 @@
                 <div class="header-menu" id="header-menu">
                     <nav aria-label="{% translate 'Main navigation' %}">
                         <a
-                            class="btn glass-design header-nav__link{% if current_url == 'overlay_dashboard' or current_url == 'spotify_list' or current_url == 'spotify_create' or current_url == 'spotify_manage' or current_url == 'spotify_connect' or current_url == 'spotify_callback' or current_url == 'winchallenge_list' or current_url == 'winchallenge_create' or current_url == 'winchallenge_manage' %} is-active{% endif %}"
+                            class="btn glass-design header-nav__link{% if current_url == 'overlay_dashboard' or current_url == 'spotify_list' or current_url == 'spotify_create' or current_url == 'spotify_manage' or current_url == 'spotify_connect' or current_url == 'spotify_callback' or current_url == 'timer_list' or current_url == 'timer_create' or current_url == 'timer_manage' or current_url == 'winchallenge_list' or current_url == 'winchallenge_create' or current_url == 'winchallenge_manage' %} is-active{% endif %}"
                             href="{% url 'overlay_dashboard' %}"
-                            {% if current_url == 'overlay_dashboard' or current_url == 'spotify_list' or current_url == 'spotify_create' or current_url == 'spotify_manage' or current_url == 'spotify_connect' or current_url == 'spotify_callback' or current_url == 'winchallenge_list' or current_url == 'winchallenge_create' or current_url == 'winchallenge_manage' %}aria-current="page"{% endif %}
+                            {% if current_url == 'overlay_dashboard' or current_url == 'spotify_list' or current_url == 'spotify_create' or current_url == 'spotify_manage' or current_url == 'spotify_connect' or current_url == 'spotify_callback' or current_url == 'timer_list' or current_url == 'timer_create' or current_url == 'timer_manage' or current_url == 'winchallenge_list' or current_url == 'winchallenge_create' or current_url == 'winchallenge_manage' %}aria-current="page"{% endif %}
                         >
                             {% trans "My overlays" %}
                         </a>

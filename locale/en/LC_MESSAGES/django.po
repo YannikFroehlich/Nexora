@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-16 13:12+0200\n"
+"POT-Creation-Date: 2026-07-17 00:26+0200\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: English\n"
@@ -171,6 +171,42 @@ msgstr ""
 msgid "Every element color must be a valid hex color."
 msgstr ""
 
+msgid "Hours"
+msgstr ""
+
+msgid "Minutes"
+msgstr ""
+
+msgid "Seconds"
+msgstr ""
+
+msgid "Label"
+msgstr ""
+
+msgid "Timer type"
+msgstr ""
+
+msgid "Timer text size"
+msgstr ""
+
+msgid "Show progress bar"
+msgstr ""
+
+msgid "Optional text displayed above the time."
+msgstr ""
+
+msgid "Stream Timer"
+msgstr ""
+
+msgid "Starting soon"
+msgstr ""
+
+msgid "The timer duration must be at least one second."
+msgstr ""
+
+msgid "The timer duration must be shorter than 100 hours."
+msgstr ""
+
 msgid "Enter a valid hex color, for example #14b8a6."
 msgstr ""
 
@@ -181,6 +217,12 @@ msgid "Glass"
 msgstr ""
 
 msgid "Neon"
+msgstr ""
+
+msgid "Countdown"
+msgstr ""
+
+msgid "Stopwatch"
 msgstr ""
 
 msgid "The selected file is not valid JSON."
@@ -205,6 +247,11 @@ msgstr "Spotify Overlay"
 
 msgid "The Win Challenge game data is invalid."
 msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "The timer overlay data is invalid."
+msgstr "Spotify Overlay"
 
 msgid "The Win Challenge game list is invalid."
 msgstr ""
@@ -330,7 +377,7 @@ msgstr ""
 msgid "Available now"
 msgstr ""
 
-msgid "Two tools, one consistent workflow"
+msgid "Three tools, one consistent workflow"
 msgstr ""
 
 msgid "Playback"
@@ -361,6 +408,17 @@ msgid ""
 msgstr ""
 
 msgid "Open Winchallenges"
+msgstr ""
+
+msgid "Time"
+msgstr ""
+
+msgid ""
+"Control a synchronized countdown or stopwatch without replacing the browser "
+"source in OBS."
+msgstr ""
+
+msgid "Open stream timers"
 msgstr ""
 
 msgid "Our principles"
@@ -431,8 +489,8 @@ msgid "View all overlays"
 msgstr "Spotify Overlay"
 
 msgid ""
-"Create customizable Spotify and Win Challenge overlays for OBS directly in "
-"your browser."
+"Create customizable Spotify, timer and Win Challenge overlays for OBS "
+"directly in your browser."
 msgstr ""
 
 msgid "Skip to main content"
@@ -567,8 +625,8 @@ msgid "Create and save Win Challenge"
 msgstr ""
 
 msgid ""
-"Design Spotify and Win Challenge overlays for OBS, test them live and manage "
-"them from one browser-based workspace."
+"Design Spotify, timer and Win Challenge overlays for OBS and manage them "
+"from one browser-based workspace."
 msgstr ""
 
 msgid "Browser-based overlays for creators"
@@ -647,6 +705,26 @@ msgstr ""
 msgid "Create Win Challenge"
 msgstr ""
 
+msgid "Ready"
+msgstr ""
+
+msgid "Run a countdown or stopwatch that stays synchronized in your OBS scene."
+msgstr ""
+
+msgid "Countdown and stopwatch modes"
+msgstr ""
+
+msgid "Live start, pause and reset controls"
+msgstr ""
+
+msgid "Minimal, glass and neon designs"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Create Stream Timer"
+msgstr "Spotify Overlay"
+
 msgid "How it works"
 msgstr ""
 
@@ -701,15 +779,15 @@ msgstr ""
 msgid "Get started"
 msgstr ""
 
-msgid "Manage your Spotify and Win Challenge overlays in one place."
+msgid "Manage your Spotify, timer and Win Challenge overlays in one place."
 msgstr ""
 
 msgid "Overlay dashboard"
 msgstr ""
 
 msgid ""
-"Manage Spotify and Win Challenge overlays together, open previews and copy "
-"OBS links without switching pages."
+"Manage Spotify, timer and Win Challenge overlays together, open previews and "
+"copy OBS links without switching pages."
 msgstr ""
 
 msgid "Overlay categories"
@@ -727,6 +805,9 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "Win Challenges"
+msgstr ""
+
+msgid "Timers"
 msgstr ""
 
 #, fuzzy
@@ -847,6 +928,47 @@ msgstr ""
 msgid "Create a counter, add games and keep your stream audience up to date."
 msgstr ""
 
+msgid "Time and pacing"
+msgstr ""
+
+msgid "Stream timers"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Create stream timer"
+msgstr "Spotify Overlay"
+
+msgid "Running"
+msgstr ""
+
+msgid "Paused"
+msgstr ""
+
+msgid "Stream timer"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Duration"
+msgstr ""
+
+msgid "Control"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Delete this timer overlay?"
+msgstr "Spotify Overlay"
+
+msgid "No stream timers yet"
+msgstr ""
+
+msgid ""
+"Create a countdown or stopwatch that you can control live during your stream."
+msgstr ""
+
 msgid "OBS link copied"
 msgstr ""
 
@@ -860,6 +982,12 @@ msgid "Redo"
 msgstr ""
 
 msgid "All changes saved"
+msgstr ""
+
+msgid "Complete"
+msgstr ""
+
+msgid "Timer progress"
 msgstr ""
 
 msgid "No games yet"
@@ -889,9 +1017,6 @@ msgid ""
 msgstr ""
 
 msgid "Already have an account?"
-msgstr ""
-
-msgid "Paused"
 msgstr ""
 
 msgid "Move overlay element"
@@ -977,9 +1102,6 @@ msgid "Elapsed time"
 msgstr ""
 
 msgid "Elapsed"
-msgstr ""
-
-msgid "Duration"
 msgstr ""
 
 msgid "Playback status"
@@ -1125,6 +1247,67 @@ msgid ""
 "Start with a polished layout, then move, resize or remove every element."
 msgstr ""
 
+msgid "Create a stream timer"
+msgstr ""
+
+msgid "Edit stream timer"
+msgstr ""
+
+msgid ""
+"Build a countdown or stopwatch and control it live while OBS keeps the same "
+"browser-source URL."
+msgstr ""
+
+msgid "Live control"
+msgstr ""
+
+msgid "Timer controls"
+msgstr ""
+
+msgid "Start"
+msgstr ""
+
+msgid "Pause"
+msgstr ""
+
+msgid "Reset"
+msgstr ""
+
+msgid "Timer settings"
+msgstr ""
+
+msgid "Appearance"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Overlay design"
+msgstr "Spotify Overlay"
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Create timer"
+msgstr "Spotify Overlay"
+
+msgid "Save timer"
+msgstr ""
+
+msgid "OBS Link"
+msgstr ""
+
+msgid "Copy OBS Link"
+msgstr ""
+
+#, python-format
+msgid "Recommended browser-source size: %(width)s × %(height)s pixels."
+msgstr ""
+
+msgid "Overlay preview"
+msgstr ""
+
+msgid "Transparent OBS canvas"
+msgstr ""
+
 msgid "Increase value"
 msgstr ""
 
@@ -1139,9 +1322,6 @@ msgstr ""
 
 msgid ""
 "Set a goal, choose a starter design and adjust the preview before saving."
-msgstr ""
-
-msgid "Overlay preview"
 msgstr ""
 
 msgid "General settings"
@@ -1211,9 +1391,6 @@ msgstr ""
 msgid "Open Preview"
 msgstr ""
 
-msgid "Copy OBS Link"
-msgstr ""
-
 msgid "Create your first Win Challenge"
 msgstr ""
 
@@ -1223,9 +1400,6 @@ msgid ""
 msgstr ""
 
 msgid "Win Challenge sections"
-msgstr ""
-
-msgid "OBS Link"
 msgstr ""
 
 msgid "Settings"
@@ -1332,6 +1506,29 @@ msgstr ""
 #, python-format
 msgid "Overlay imported: %(name)s"
 msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Timer overlay created."
+msgstr "Spotify Overlay"
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Timer overlay saved."
+msgstr "Spotify Overlay"
+
+msgid "Unknown timer action."
+msgstr ""
+
+#, fuzzy, python-format
+#| msgid "Spotify Overlay"
+msgid "Timer overlay deleted: %(name)s"
+msgstr "Spotify Overlay"
+
+#, fuzzy, python-format
+#| msgid "Spotify Overlay"
+msgid "Timer overlay duplicated: %(name)s"
+msgstr "Spotify Overlay"
 
 msgid "Win Challenge created."
 msgstr ""

@@ -9,8 +9,13 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from app.forms import SpotifyOverlayForm, WinChallengeCreateForm, WinChallengeDesignForm
-from app.models import SpotifyOverlay, WinChallenge, WinChallengeGame
+from app.forms import (
+    SpotifyOverlayForm,
+    TimerOverlayForm,
+    WinChallengeCreateForm,
+    WinChallengeDesignForm,
+)
+from app.models import SpotifyOverlay, TimerOverlay, WinChallenge, WinChallengeGame
 
 
 User = get_user_model()
@@ -49,7 +54,7 @@ class HomeViewTests(TestCase):
         self.assertContains(response, 'aria-label="Footer-Navigation"')
         self.assertContains(response, '<meta name="robots" content="index, follow">')
         self.assertContains(response, '<link rel="canonical" href="http://testserver/">')
-        self.assertContains(response, "imgs/icons/Nexora_Icon.png")
+        self.assertContains(response, "imgs/icons/nexora_icon.png")
 
     def test_anonymous_header_surfaces_signup_without_losing_destination(self):
         response = self.client.get(reverse("demo"))
@@ -93,6 +98,10 @@ class HomeViewTests(TestCase):
             response,
             f'href="{reverse("signup")}?next={reverse("winchallenge_create")}"',
         )
+        self.assertContains(
+            response,
+            f'href="{reverse("signup")}?next={reverse("timer_create")}"',
+        )
         self.assertContains(response, "Kostenloses Konto zum Speichern und f\u00fcr OBS erforderlich.")
 
     def test_authenticated_overlay_actions_open_the_selected_editor(self):
@@ -103,6 +112,7 @@ class HomeViewTests(TestCase):
 
         self.assertContains(response, f'href="{reverse("spotify_create")}"')
         self.assertContains(response, f'href="{reverse("winchallenge_create")}"')
+        self.assertContains(response, f'href="{reverse("timer_create")}"')
 
     @override_settings(APP_VERSION="9.8.7-test")
     def test_footer_uses_configured_app_version(self):
@@ -159,6 +169,7 @@ class DiscoverabilityTests(TestCase):
         self.assertIn("Disallow: /accounts/", content)
         self.assertIn("Disallow: /overlays/", content)
         self.assertIn("Disallow: /spotify/", content)
+        self.assertIn("Disallow: /timers/", content)
         self.assertIn("Disallow: /winchallenges/", content)
         self.assertIn("Sitemap: http://testserver/sitemap.xml", content)
 
@@ -203,10 +214,11 @@ class AboutViewTests(TestCase):
         response = self.client.get(reverse("about"))
 
         self.assertContains(response, "Tools für Streams mit deiner Handschrift")
-        self.assertContains(response, "Zwei Tools, ein einheitlicher Workflow")
+        self.assertContains(response, "Drei Tools, ein einheitlicher Workflow")
         dashboard_url = reverse("overlay_dashboard")
         self.assertContains(response, f'href="{dashboard_url}#spotify-overlays"')
         self.assertContains(response, f'href="{dashboard_url}#winchallenge-overlays"')
+        self.assertContains(response, f'href="{dashboard_url}#timer-overlays"')
 
     def test_about_page_is_available_in_english(self):
         self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = "en"
@@ -224,34 +236,41 @@ class OverlayDashboardTests(TestCase):
         self.user = User.objects.create_user(username="list-owner")
         self.client.force_login(self.user)
 
-    def test_empty_dashboard_shows_both_overlay_categories(self):
+    def test_empty_dashboard_shows_all_overlay_categories(self):
         response = self.client.get(reverse("overlay_dashboard"))
         content = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'id="spotify-overlays"')
         self.assertContains(response, 'id="winchallenge-overlays"')
-        self.assertContains(response, 'class="dashboard-empty"', count=2)
+        self.assertContains(response, 'id="timer-overlays"')
+        self.assertContains(response, 'class="dashboard-empty"', count=3)
         self.assertEqual(content.count(f'href="{reverse("spotify_create")}"'), 1)
         self.assertEqual(content.count(f'href="{reverse("winchallenge_create")}"'), 1)
+        self.assertEqual(content.count(f'href="{reverse("timer_create")}"'), 1)
 
-    def test_dashboard_shows_saved_overlays_from_both_tools(self):
+    def test_dashboard_shows_saved_overlays_from_all_tools(self):
         spotify_overlay = SpotifyOverlay.objects.create(owner=self.user, name="Stream Music")
         challenge = WinChallenge.objects.create(owner=self.user, title="Road to Diamond")
+        timer = TimerOverlay.objects.create(owner=self.user, name="Starting Soon")
 
         response = self.client.get(reverse("overlay_dashboard"))
 
         self.assertContains(response, spotify_overlay.display_name)
         self.assertContains(response, challenge.display_title)
+        self.assertContains(response, timer.display_name)
         self.assertContains(response, "spotify-dashboard-preview")
         self.assertContains(response, "challenge-dashboard-preview")
+        self.assertContains(response, "timer-dashboard-preview")
         self.assertContains(response, reverse("spotify_duplicate", args=[spotify_overlay.pk]))
         self.assertContains(response, reverse("spotify_export", args=[spotify_overlay.pk]))
         self.assertContains(response, reverse("winchallenge_duplicate", args=[challenge.pk]))
         self.assertContains(response, reverse("winchallenge_export", args=[challenge.pk]))
+        self.assertContains(response, reverse("timer_duplicate", args=[timer.pk]))
+        self.assertContains(response, reverse("timer_export", args=[timer.pk]))
         self.assertContains(response, reverse("overlay_import"))
         self.assertContains(response, 'enctype="multipart/form-data"')
-        self.assertEqual(response.context["overlay_count"], 2)
+        self.assertEqual(response.context["overlay_count"], 3)
 
     def test_legacy_overview_urls_redirect_to_dashboard_sections(self):
         self.assertRedirects(
@@ -262,6 +281,11 @@ class OverlayDashboardTests(TestCase):
         self.assertRedirects(
             self.client.get(reverse("winchallenge_list")),
             f'{reverse("overlay_dashboard")}#winchallenge-overlays',
+            fetch_redirect_response=False,
+        )
+        self.assertRedirects(
+            self.client.get(reverse("timer_list")),
+            f'{reverse("overlay_dashboard")}#timer-overlays',
             fetch_redirect_response=False,
         )
 
@@ -986,6 +1010,260 @@ class SpotifyOverlayEndpointTests(TestCase):
         exchange.assert_called_once()
 
 
+class TimerOverlayModelAndFormTests(TestCase):
+    def test_countdown_uses_persisted_elapsed_time(self):
+        started_at = timezone.now() - timedelta(seconds=12)
+        timer = TimerOverlay(
+            duration_seconds=60,
+            accumulated_seconds=8,
+            is_running=True,
+            started_at=started_at,
+        )
+
+        self.assertEqual(timer.elapsed_seconds(), 20)
+        self.assertEqual(timer.display_seconds(), 40)
+        self.assertEqual(timer.formatted_time(), "00:40")
+
+    def test_stopwatch_counts_up(self):
+        timer = TimerOverlay(
+            mode=TimerOverlay.MODE_STOPWATCH,
+            accumulated_seconds=65,
+        )
+
+        self.assertEqual(timer.display_seconds(), 65)
+        self.assertEqual(timer.formatted_time(), "01:05")
+
+    def test_form_combines_duration_fields(self):
+        timer = TimerOverlay()
+        data = {
+            "name": "Break Timer",
+            "label": "Back in",
+            "mode": TimerOverlay.MODE_COUNTDOWN,
+            "duration_hours": 1,
+            "duration_minutes": 2,
+            "duration_seconds_part": 3,
+            "design_template": timer.design_template,
+            "background_color": timer.background_color,
+            "background_opacity": timer.background_opacity,
+            "text_color": timer.text_color,
+            "accent_color": timer.accent_color,
+            "border_color": timer.border_color,
+            "border_width": timer.border_width,
+            "corner_radius": timer.corner_radius,
+            "overlay_width": timer.overlay_width,
+            "overlay_height": timer.overlay_height,
+            "label_text_size": timer.label_text_size,
+            "timer_text_size": timer.timer_text_size,
+            "show_progress": True,
+            "shadow_enabled": True,
+        }
+        form = TimerOverlayForm(data=data, instance=timer)
+
+        self.assertTrue(form.is_valid(), form.errors)
+        saved_timer = form.save()
+        self.assertEqual(saved_timer.duration_seconds, 3723)
+
+    def test_form_rejects_zero_duration(self):
+        timer = TimerOverlay()
+        data = {
+            "name": "Timer",
+            "label": "",
+            "mode": TimerOverlay.MODE_COUNTDOWN,
+            "duration_hours": 0,
+            "duration_minutes": 0,
+            "duration_seconds_part": 0,
+            "design_template": timer.design_template,
+            "background_color": timer.background_color,
+            "background_opacity": timer.background_opacity,
+            "text_color": timer.text_color,
+            "accent_color": timer.accent_color,
+            "border_color": timer.border_color,
+            "border_width": timer.border_width,
+            "corner_radius": timer.corner_radius,
+            "overlay_width": timer.overlay_width,
+            "overlay_height": timer.overlay_height,
+            "label_text_size": timer.label_text_size,
+            "timer_text_size": timer.timer_text_size,
+        }
+        form = TimerOverlayForm(data=data, instance=timer)
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("duration_seconds_part", form.errors)
+
+
+class TimerOverlayEndpointTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="timer-owner")
+        self.client.force_login(self.user)
+        self.timer = TimerOverlay.objects.create(
+            owner=self.user,
+            name="Starting Soon",
+            label="Live in",
+            duration_seconds=300,
+        )
+
+    def timer_form_data(self, **updates):
+        hours, remainder = divmod(self.timer.duration_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        data = {
+            "name": self.timer.name,
+            "label": self.timer.label,
+            "mode": self.timer.mode,
+            "duration_hours": hours,
+            "duration_minutes": minutes,
+            "duration_seconds_part": seconds,
+            "design_template": self.timer.design_template,
+            "background_color": self.timer.background_color,
+            "background_opacity": self.timer.background_opacity,
+            "text_color": self.timer.text_color,
+            "accent_color": self.timer.accent_color,
+            "border_color": self.timer.border_color,
+            "border_width": self.timer.border_width,
+            "corner_radius": self.timer.corner_radius,
+            "overlay_width": self.timer.overlay_width,
+            "overlay_height": self.timer.overlay_height,
+            "label_text_size": self.timer.label_text_size,
+            "timer_text_size": self.timer.timer_text_size,
+            "show_progress": self.timer.show_progress,
+            "shadow_enabled": self.timer.shadow_enabled,
+        }
+        data.update(updates)
+        return data
+
+    def test_manage_page_contains_editor_controls_and_obs_url(self):
+        response = self.client.get(reverse("timer_manage", args=[self.timer.pk]))
+
+        self.assertContains(response, "data-timer-editor")
+        self.assertContains(response, "data-timer-controls")
+        self.assertContains(response, "data-timer-action=\"start\"")
+        self.assertContains(response, reverse("timer_overlay", args=[self.timer.public_token]))
+        self.assertContains(response, "data-editor-state")
+        self.assertContains(response, reverse("timer_autosave", args=[self.timer.pk]))
+
+    def test_autosave_updates_timer_design_and_duration(self):
+        response = self.client.post(
+            reverse("timer_autosave", args=[self.timer.pk]),
+            self.timer_form_data(
+                duration_minutes=10,
+                accent_color="#ff8800",
+                timer_text_size=92,
+            ),
+        )
+
+        self.timer.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.timer.duration_seconds, 600)
+        self.assertEqual(self.timer.accent_color, "#ff8800")
+        self.assertEqual(self.timer.timer_text_size, 92)
+
+    def test_start_pause_and_reset_persist_timer_state(self):
+        start_time = timezone.now()
+        with patch("app.views.timezone.now", return_value=start_time), patch(
+            "app.models.timezone.now", return_value=start_time
+        ):
+            start_response = self.client.post(
+                reverse("timer_control", args=[self.timer.pk]),
+                {"action": "start"},
+            )
+
+        self.timer.refresh_from_db()
+        self.assertEqual(start_response.status_code, 200)
+        self.assertTrue(self.timer.is_running)
+        self.assertEqual(self.timer.started_at, start_time)
+
+        pause_time = start_time + timedelta(seconds=9)
+        with patch("app.views.timezone.now", return_value=pause_time), patch(
+            "app.models.timezone.now", return_value=pause_time
+        ):
+            pause_response = self.client.post(
+                reverse("timer_control", args=[self.timer.pk]),
+                {"action": "pause"},
+            )
+
+        self.timer.refresh_from_db()
+        self.assertEqual(pause_response.status_code, 200)
+        self.assertFalse(self.timer.is_running)
+        self.assertEqual(self.timer.accumulated_seconds, 9)
+
+        reset_response = self.client.post(
+            reverse("timer_control", args=[self.timer.pk]),
+            {"action": "reset"},
+        )
+        self.timer.refresh_from_db()
+        self.assertEqual(reset_response.status_code, 200)
+        self.assertEqual(self.timer.accumulated_seconds, 0)
+        self.assertIsNone(self.timer.started_at)
+
+    def test_public_state_does_not_expose_owner_or_public_token(self):
+        self.client.logout()
+        response = self.client.get(
+            reverse("timer_overlay_state", args=[self.timer.public_token])
+        )
+        payload = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(payload["mode"], TimerOverlay.MODE_COUNTDOWN)
+        self.assertEqual(payload["display_seconds"], 300)
+        self.assertIn("design", payload)
+        self.assertNotIn("owner", payload)
+        self.assertNotIn("public_token", payload)
+
+    def test_duplicate_and_transfer_reset_runtime_state(self):
+        self.timer.accumulated_seconds = 42
+        self.timer.started_at = timezone.now()
+        self.timer.is_running = True
+        self.timer.save()
+
+        duplicate_response = self.client.post(
+            reverse("timer_duplicate", args=[self.timer.pk])
+        )
+        duplicate = TimerOverlay.objects.exclude(pk=self.timer.pk).get()
+
+        self.assertRedirects(
+            duplicate_response,
+            f'{reverse("overlay_dashboard")}#timer-overlays',
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(duplicate.duration_seconds, self.timer.duration_seconds)
+        self.assertEqual(duplicate.accumulated_seconds, 0)
+        self.assertFalse(duplicate.is_running)
+        self.assertNotEqual(duplicate.public_token, self.timer.public_token)
+
+        export_response = self.client.get(reverse("timer_export", args=[self.timer.pk]))
+        payload = json.loads(export_response.content)
+        self.assertEqual(payload["type"], "timer")
+        self.assertNotIn("started_at", payload["overlay"])
+        self.assertNotIn("is_running", payload["overlay"])
+
+        upload = SimpleUploadedFile(
+            "timer.json",
+            json.dumps(payload).encode("utf-8"),
+            content_type="application/json",
+        )
+        import_response = self.client.post(reverse("overlay_import"), {"overlay_file": upload})
+        imported = TimerOverlay.objects.filter(name=self.timer.name).exclude(pk=self.timer.pk).get()
+        self.assertRedirects(
+            import_response,
+            f'{reverse("overlay_dashboard")}#timer-overlays',
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(imported.duration_seconds, self.timer.duration_seconds)
+        self.assertFalse(imported.is_running)
+        self.assertEqual(imported.accumulated_seconds, 0)
+
+    def test_create_assigns_signed_in_owner(self):
+        self.timer.delete()
+        candidate = TimerOverlay()
+        data = self.timer_form_data(name="Break", duration_minutes=2)
+        response = self.client.post(reverse("timer_create"), data)
+
+        created = TimerOverlay.objects.get(name="Break")
+        self.assertRedirects(response, reverse("timer_manage", args=[created.pk]))
+        self.assertEqual(created.owner, self.user)
+        self.assertEqual(created.duration_seconds, 120)
+        self.assertEqual(created.accent_color, candidate.accent_color)
+
+
 class AccessControlTests(TestCase):
     def setUp(self):
         self.owner = User.objects.create_user(username="owner")
@@ -998,6 +1276,8 @@ class AccessControlTests(TestCase):
         )
         self.owner_spotify = SpotifyOverlay.objects.create(owner=self.owner, name="Owner Spotify")
         self.foreign_spotify = SpotifyOverlay.objects.create(owner=self.other_user, name="Foreign Spotify")
+        self.owner_timer = TimerOverlay.objects.create(owner=self.owner, name="Owner Timer")
+        self.foreign_timer = TimerOverlay.objects.create(owner=self.other_user, name="Foreign Timer")
 
     def test_management_pages_redirect_anonymous_users_to_login(self):
         protected_urls = (
@@ -1008,6 +1288,12 @@ class AccessControlTests(TestCase):
             reverse("spotify_autosave", args=[self.owner_spotify.pk]),
             reverse("spotify_duplicate", args=[self.owner_spotify.pk]),
             reverse("spotify_export", args=[self.owner_spotify.pk]),
+            reverse("timer_list"),
+            reverse("timer_create"),
+            reverse("timer_autosave", args=[self.owner_timer.pk]),
+            reverse("timer_control", args=[self.owner_timer.pk]),
+            reverse("timer_duplicate", args=[self.owner_timer.pk]),
+            reverse("timer_export", args=[self.owner_timer.pk]),
             reverse("winchallenge_list"),
             reverse("winchallenge_create"),
             reverse("winchallenge_autosave", args=[self.owner_challenge.pk]),
@@ -1029,12 +1315,18 @@ class AccessControlTests(TestCase):
         self.assertNotContains(dashboard, self.foreign_spotify.name)
         self.assertContains(dashboard, self.owner_challenge.title)
         self.assertNotContains(dashboard, self.foreign_challenge.title)
+        self.assertContains(dashboard, self.owner_timer.name)
+        self.assertNotContains(dashboard, self.foreign_timer.name)
         self.assertEqual(
             self.client.get(reverse("spotify_manage", args=[self.foreign_spotify.pk])).status_code,
             404,
         )
         self.assertEqual(
             self.client.get(reverse("winchallenge_manage", args=[self.foreign_challenge.pk])).status_code,
+            404,
+        )
+        self.assertEqual(
+            self.client.get(reverse("timer_manage", args=[self.foreign_timer.pk])).status_code,
             404,
         )
         self.assertEqual(
@@ -1048,6 +1340,13 @@ class AccessControlTests(TestCase):
             self.client.post(
                 reverse("winchallenge_autosave", args=[self.foreign_challenge.pk]),
                 {"form_type": "challenge", "title": "No access"},
+            ).status_code,
+            404,
+        )
+        self.assertEqual(
+            self.client.post(
+                reverse("timer_control", args=[self.foreign_timer.pk]),
+                {"action": "start"},
             ).status_code,
             404,
         )
@@ -1085,9 +1384,13 @@ class AccessControlTests(TestCase):
         challenge_response = self.client.get(
             reverse("winchallenge_overlay", args=[self.owner_challenge.public_token])
         )
+        timer_response = self.client.get(
+            reverse("timer_overlay", args=[self.owner_timer.public_token])
+        )
 
         self.assertEqual(spotify_response.status_code, 200)
         self.assertEqual(challenge_response.status_code, 200)
+        self.assertEqual(timer_response.status_code, 200)
 
 
 class SignUpTests(TestCase):
@@ -1112,6 +1415,7 @@ class SignUpTests(TestCase):
     def test_first_account_claims_existing_unowned_overlays(self):
         challenge = WinChallenge.objects.create(title="Existing Challenge")
         spotify = SpotifyOverlay.objects.create(name="Existing Spotify")
+        timer = TimerOverlay.objects.create(name="Existing Timer")
 
         response = self.client.post(
             reverse("signup"),
@@ -1125,9 +1429,11 @@ class SignUpTests(TestCase):
         user = User.objects.get(username="first-owner")
         challenge.refresh_from_db()
         spotify.refresh_from_db()
+        timer.refresh_from_db()
         self.assertRedirects(response, reverse("home"))
         self.assertEqual(challenge.owner, user)
         self.assertEqual(spotify.owner, user)
+        self.assertEqual(timer.owner, user)
         self.assertEqual(int(self.client.session["_auth_user_id"]), user.pk)
 
     def test_signup_rejects_an_external_next_url(self):

@@ -4,7 +4,7 @@
 
 {% block title %}{% translate "My overlays" %} &middot; Nexora{% endblock %}
 
-{% block meta_description %}{% translate "Manage your Spotify and Win Challenge overlays in one place." %}{% endblock %}
+{% block meta_description %}{% translate "Manage your Spotify, timer and Win Challenge overlays in one place." %}{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v={{ APP_VERSION }}">
@@ -25,7 +25,7 @@
             <div class="dashboard-hero__copy">
                 <p class="dashboard-label"><span>Nexora</span> {% translate "Overlay dashboard" %}</p>
                 <h1 id="dashboard-title">{% translate "My overlays" %}</h1>
-                <p>{% translate "Manage Spotify and Win Challenge overlays together, open previews and copy OBS links without switching pages." %}</p>
+                <p>{% translate "Manage Spotify, timer and Win Challenge overlays together, open previews and copy OBS links without switching pages." %}</p>
                 <nav class="dashboard-jumps" aria-label="{% translate 'Overlay categories' %}">
                     <a href="#spotify-overlays">
                         {% translate "Spotify" %}
@@ -34,6 +34,10 @@
                     <a href="#winchallenge-overlays">
                         {% translate "Win Challenges" %}
                         <span aria-label="{% blocktranslate count counter=winchallenge_count %}{{ counter }} overlay{% plural %}{{ counter }} overlays{% endblocktranslate %}">{{ winchallenge_count }}</span>
+                    </a>
+                    <a href="#timer-overlays">
+                        {% translate "Timers" %}
+                        <span aria-label="{% blocktranslate count counter=timer_count %}{{ counter }} overlay{% plural %}{{ counter }} overlays{% endblocktranslate %}">{{ timer_count }}</span>
                     </a>
                 </nav>
             </div>
@@ -50,6 +54,10 @@
                 <div>
                     <dt>{% translate "Win Challenges" %}</dt>
                     <dd>{{ winchallenge_count }}</dd>
+                </div>
+                <div>
+                    <dt>{% translate "Timers" %}</dt>
+                    <dd>{{ timer_count }}</dd>
                 </div>
             </dl>
         </section>
@@ -271,6 +279,90 @@
                     <div>
                         <h3>{% translate "No Win Challenges yet" %}</h3>
                         <p>{% translate "Create a counter, add games and keep your stream audience up to date." %}</p>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="dashboard-collection" id="timer-overlays" aria-labelledby="timer-overlays-title">
+            <div class="dashboard-collection__header">
+                <div class="dashboard-collection__title">
+                    <span class="dashboard-collection__icon dashboard-collection__icon--timer" aria-hidden="true">&#9719;</span>
+                    <div>
+                        <p class="dashboard-label">{% translate "Time and pacing" %}</p>
+                        <h2 id="timer-overlays-title">{% translate "Stream timers" %}</h2>
+                    </div>
+                </div>
+                <a class="btn action-button" href="{% url 'timer_create' %}">{% translate "Create stream timer" %}</a>
+            </div>
+
+            {% if timer_overlays %}
+                <div class="dashboard-grid">
+                    {% for timer in timer_overlays %}
+                        {% url 'timer_overlay' timer.public_token as overlay_path %}
+                        <article class="dashboard-card">
+                            <div class="dashboard-card__preview dashboard-card__preview--timer" aria-label="{% translate 'Preview' %}">
+                                <div
+                                    class="timer-dashboard-preview timer-dashboard-preview--{{ timer.design_template }}"
+                                    style="--preview-background: {{ timer.background_rgba }}; --preview-accent: {{ timer.accent_color }}; --preview-text: {{ timer.text_color }}; --preview-border: {{ timer.border_color }}; --preview-radius: {{ timer.corner_radius }}px;"
+                                >
+                                    <div>
+                                        <small>{{ timer.get_mode_display }}</small>
+                                        <span>{% if timer.effective_is_running %}{% translate "Running" %}{% else %}{% translate "Paused" %}{% endif %}</span>
+                                    </div>
+                                    {% if timer.display_label %}<strong>{{ timer.display_label }}</strong>{% endif %}
+                                    <time>{{ timer.formatted_time }}</time>
+                                    {% if timer.show_progress and timer.mode == "countdown" %}
+                                        <i aria-hidden="true"><b style="width: {{ timer.progress_percent }}%"></b></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="dashboard-card__content">
+                                <div class="dashboard-card__heading">
+                                    <div>
+                                        <p class="dashboard-card__type">{% translate "Stream timer" %}</p>
+                                        <h3>{{ timer.display_name }}</h3>
+                                    </div>
+                                    <span class="status-badge{% if timer.effective_is_running %} status-badge--connected{% endif %}">
+                                        {% if timer.effective_is_running %}{% translate "Running" %}{% else %}{% translate "Ready" %}{% endif %}
+                                    </span>
+                                </div>
+
+                                <dl class="dashboard-card__stats">
+                                    <div><dt>{% translate "Type" %}</dt><dd>{{ timer.get_mode_display }}</dd></div>
+                                    <div><dt>{% translate "Duration" %}</dt><dd>{{ timer.formatted_time }}</dd></div>
+                                    <div><dt>{% translate "Updated" %}</dt><dd>{{ timer.updated_at|date:"d.m.Y H:i" }}</dd></div>
+                                </dl>
+
+                                <div class="dashboard-card__actions">
+                                    <a class="btn action-button" href="{% url 'timer_manage' timer.pk %}">{% translate "Control" %}</a>
+                                    <form class="dashboard-card__action-form" action="{% url 'timer_duplicate' timer.pk %}" method="post">
+                                        {% csrf_token %}
+                                        <button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button>
+                                    </form>
+                                    <a class="btn glass-design" href="{% url 'timer_export' timer.pk %}">{% translate "Export" %}</a>
+                                    <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">
+                                        {% translate "Preview" %}<span class="sr-only"> ({% translate "opens in a new tab" %})</span>
+                                    </a>
+                                    <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
+                                        {% translate "Copy OBS link" %}
+                                    </button>
+                                    <form class="dashboard-card__delete" action="{% url 'timer_delete' timer.pk %}" method="post" data-confirm-delete="{% translate 'Delete this timer overlay?' %}">
+                                        {% csrf_token %}
+                                        <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="dashboard-empty">
+                    <span class="dashboard-empty__icon" aria-hidden="true">&#9719;</span>
+                    <div>
+                        <h3>{% translate "No stream timers yet" %}</h3>
+                        <p>{% translate "Create a countdown or stopwatch that you can control live during your stream." %}</p>
                     </div>
                 </div>
             {% endif %}

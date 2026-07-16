@@ -5,8 +5,8 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.translation import gettext as _
 
-from app.forms import SpotifyOverlayForm
-from app.models import SpotifyOverlay, WinChallenge, WinChallengeGame
+from app.forms import SpotifyOverlayForm, TimerOverlayForm
+from app.models import SpotifyOverlay, TimerOverlay, WinChallenge, WinChallengeGame
 
 
 FORMAT_NAME = "nexora-overlay"
@@ -14,6 +14,7 @@ FORMAT_VERSION = 1
 MAX_IMPORT_BYTES = 256 * 1024
 
 SPOTIFY_TYPE = "spotify"
+TIMER_TYPE = "timer"
 WINCHALLENGE_TYPE = "winchallenge"
 
 SPOTIFY_FIELDS = (
@@ -56,6 +57,27 @@ WINCHALLENGE_FIELDS = (
 
 GAME_FIELDS = ("name", "wins", "target_wins")
 
+TIMER_FIELDS = (
+    "name",
+    "label",
+    "mode",
+    "duration_seconds",
+    "design_template",
+    "background_color",
+    "background_opacity",
+    "text_color",
+    "accent_color",
+    "border_color",
+    "border_width",
+    "corner_radius",
+    "overlay_width",
+    "overlay_height",
+    "label_text_size",
+    "timer_text_size",
+    "show_progress",
+    "shadow_enabled",
+)
+
 
 class OverlayTransferError(ValueError):
     """Safe, user-facing error for invalid import files."""
@@ -90,12 +112,24 @@ def winchallenge_export_payload(challenge):
     }
 
 
+def timer_export_payload(timer):
+    return {
+        "format": FORMAT_NAME,
+        "version": FORMAT_VERSION,
+        "type": TIMER_TYPE,
+        "overlay": _model_fields(timer, TIMER_FIELDS),
+    }
+
+
 def export_payload(overlay):
     if isinstance(overlay, SpotifyOverlay):
         return spotify_export_payload(overlay)
 
     if isinstance(overlay, WinChallenge):
         return winchallenge_export_payload(overlay)
+
+    if isinstance(overlay, TimerOverlay):
+        return timer_export_payload(overlay)
 
     raise TypeError("Unsupported overlay model")
 
@@ -137,7 +171,7 @@ def _validate_envelope(payload):
     if payload["version"] != FORMAT_VERSION:
         raise OverlayTransferError(_("This overlay export version is not supported."))
 
-    if overlay_type not in {SPOTIFY_TYPE, WINCHALLENGE_TYPE}:
+    if overlay_type not in {SPOTIFY_TYPE, TIMER_TYPE, WINCHALLENGE_TYPE}:
         raise OverlayTransferError(_("The overlay type is not supported."))
 
     return overlay_type
@@ -179,6 +213,35 @@ def _validated_game(game_data, challenge, sort_order):
     return game
 
 
+def _import_timer(payload, owner):
+    overlay_data = payload["overlay"]
+    _require_exact_keys(overlay_data, TIMER_FIELDS)
+    form_data = copy.deepcopy(overlay_data)
+    duration_seconds = form_data.pop("duration_seconds")
+
+    if not isinstance(duration_seconds, int):
+        raise OverlayTransferError(_("The timer overlay data is invalid."))
+
+    hours, remainder = divmod(duration_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    form_data.update(
+        {
+            "duration_hours": hours,
+            "duration_minutes": minutes,
+            "duration_seconds_part": seconds,
+        }
+    )
+    form = TimerOverlayForm(data=form_data)
+
+    if not form.is_valid():
+        raise OverlayTransferError(_("The timer overlay data is invalid."))
+
+    timer = form.save(commit=False)
+    timer.owner = owner
+    timer.save()
+    return timer
+
+
 def _import_winchallenge(payload, owner):
     overlay_data = payload["overlay"]
     games_data = payload["games"]
@@ -210,6 +273,9 @@ def import_payload(payload, owner):
     if overlay_type == SPOTIFY_TYPE:
         return _import_spotify(payload, owner)
 
+    if overlay_type == TIMER_TYPE:
+        return _import_timer(payload, owner)
+
     return _import_winchallenge(payload, owner)
 
 
@@ -227,9 +293,14 @@ def duplicate_overlay(overlay, owner, copy_suffix):
             overlay.display_name,
             copy_suffix,
         )
-    else:
+    elif isinstance(overlay, WinChallenge):
         payload["overlay"]["title"] = _copy_label(
             overlay.display_title,
+            copy_suffix,
+        )
+    else:
+        payload["overlay"]["name"] = _copy_label(
+            overlay.display_name,
             copy_suffix,
         )
 

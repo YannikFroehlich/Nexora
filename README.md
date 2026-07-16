@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="app/static/imgs/icons/nexora_logo.png" alt="Nexora logo" width="420">
+  <img src="app/static/imgs/icons/nexora_logo.webp" alt="Nexora logo" width="420">
 </p>
 
 <h1 align="center">Nexora</h1>
@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-0.5.0-7c3aed?style=for-the-badge">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.2.1-7c3aed?style=for-the-badge">
   <img alt="Python" src="https://img.shields.io/badge/Python-3.12%2B-3776AB?style=for-the-badge&logo=python&logoColor=white">
   <img alt="Django" src="https://img.shields.io/badge/Django-6.0.7-092E20?style=for-the-badge&logo=django&logoColor=white">
   <img alt="OBS" src="https://img.shields.io/badge/OBS-Browser_Source-302E31?style=for-the-badge&logo=obsstudio&logoColor=white">
@@ -67,6 +67,23 @@ Manage challenges for one or more games and display their progress live on strea
 - Configurable colors, spacing, font sizes, borders, and shadows
 - Flexible overlay width and optional fixed height
 - Public browser-source URL with live updates
+
+### ⏱️ Stream Timer overlay
+
+Create a persistent countdown or stopwatch and control it live without replacing the OBS browser source.
+
+- Countdown and stopwatch modes
+- Start, pause, and reset controls
+- Server-persisted runtime that survives browser reloads
+- Hours, minutes, and seconds configuration
+- Optional label and progress bar
+- Three design presets:
+  - Minimal
+  - Glass
+  - Neon
+- Configurable colors, opacity, borders, sizes, and shadows
+- Public OBS browser-source URL with smooth local time updates
+- Duplicate and JSON import/export support
 
 ### 🌍 Platform
 
@@ -238,7 +255,7 @@ Nexora/
 │   ├── static/              # CSS, JavaScript, images, and icons
 │   ├── templates/           # Pages, editors, authentication, and overlays
 │   ├── forms.py             # Forms and input validation
-│   ├── models.py            # Spotify and Win Challenge models
+│   ├── models.py            # Spotify, timer, and Win Challenge models
 │   ├── spotify_api.py       # Spotify OAuth and playback API client
 │   ├── urls.py              # Application routes
 │   └── views.py             # Authentication, management, and overlay views
@@ -260,6 +277,8 @@ Nexora/
 | Create account | `/accounts/signup/` | Public |
 | Spotify overlays | `/spotify/` | Authenticated |
 | New Spotify overlay | `/spotify/new/` | Authenticated |
+| Stream timers | `/timers/` | Authenticated |
+| New stream timer | `/timers/new/` | Authenticated |
 | Win Challenges | `/winchallenges/` | Authenticated |
 | New Win Challenge | `/winchallenges/new/` | Authenticated |
 | Django admin | `/admin/` | Staff |
@@ -319,7 +338,7 @@ The current configuration primarily targets local development. Before deploying 
 
 ## 🗺️ Possible next steps
 
-- Additional overlay types such as counters, timers, goals, and social alerts
+- Additional overlay types such as counters, goals, lower thirds, and social alerts
 - Account recovery and profile management
 - Template gallery and reusable personal presets
 - Overlay duplication and import/export

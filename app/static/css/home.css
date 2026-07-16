@@ -9,6 +9,7 @@
     --home-shadow: rgba(15, 23, 42, 0.2);
     --home-preview-spotify: #dcefe7;
     --home-preview-challenge: #f2e2d3;
+    --home-preview-timer: #e8e0f6;
     --home-stage-scrim: rgba(5, 12, 20, 0.32);
     --home-cta: #103e47;
     --home-cta-text: #f7ffff;
@@ -26,6 +27,7 @@
     --home-shadow: rgba(0, 0, 0, 0.48);
     --home-preview-spotify: #112b25;
     --home-preview-challenge: #30231d;
+    --home-preview-timer: #221934;
     --home-stage-scrim: rgba(0, 0, 0, 0.52);
     --home-cta: #08343b;
     --home-cta-text: #f2ffff;
@@ -354,7 +356,7 @@
 /* Overlay products */
 .overlay-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 24px;
 }
 
@@ -390,6 +392,10 @@
 
 .overlay-card--challenge .overlay-card__preview {
     background: var(--home-preview-challenge);
+}
+
+.overlay-card--timer .overlay-card__preview {
+    background: var(--home-preview-timer);
 }
 
 .spotify-widget,
@@ -470,6 +476,69 @@
 .challenge-widget b {
     color: #fbbf24;
     font-size: 0.86rem;
+}
+
+.timer-widget {
+    width: min(380px, 100%);
+    padding: 18px;
+    border: 1px solid #a78bfa;
+    border-radius: 16px;
+    color: #f8fafc;
+    background: rgba(17, 24, 39, 0.94);
+    box-shadow: 0 14px 34px rgba(76, 29, 149, 0.3);
+}
+
+.timer-widget > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.timer-widget span,
+.timer-widget small {
+    color: #c4b5fd;
+    font-size: 0.62rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.timer-widget strong {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.78rem;
+}
+
+.timer-widget time {
+    display: block;
+    font-size: clamp(2.3rem, 5vw, 3.5rem);
+    font-variant-numeric: tabular-nums;
+    font-weight: 850;
+    letter-spacing: -0.06em;
+    line-height: 1;
+}
+
+.timer-widget i {
+    display: block;
+    height: 4px;
+    margin-top: 14px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.timer-widget i b {
+    display: block;
+    width: 54%;
+    height: 100%;
+    border-radius: inherit;
+    background: #8b5cf6;
+}
+
+.overlay-card__icon--timer {
+    color: #7c3aed;
+    background: rgba(139, 92, 246, 0.14);
+    font-size: 1.55rem;
+    font-weight: 850;
 }
 
 .overlay-card__content {
