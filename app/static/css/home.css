@@ -139,6 +139,14 @@
     color: var(--color-link-text);
 }
 
+.hero-account-note {
+    max-width: 650px;
+    margin: 14px auto 0;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
 .stream-window {
     width: min(1040px, 100%);
     margin: 54px auto 0;
@@ -538,9 +546,30 @@
     border-radius: 50%;
 }
 
+.overlay-card__actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    margin-top: auto;
+}
+
 .overlay-card__action {
     align-self: stretch;
-    margin-top: auto;
+    margin-top: 0;
+}
+
+.overlay-card__action--secondary {
+    padding-right: 20px;
+    padding-left: 20px;
+}
+
+.overlay-card__account-note {
+    display: block;
+    margin-top: 10px;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+    line-height: 1.45;
+    text-align: center;
 }
 
 /* Workflow */
@@ -791,6 +820,10 @@
 
     .overlay-card__content > p {
         min-height: 0;
+    }
+
+    .overlay-card__actions {
+        grid-template-columns: 1fr;
     }
 
     .spotify-widget {

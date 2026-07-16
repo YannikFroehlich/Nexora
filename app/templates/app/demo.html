@@ -1,0 +1,183 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% translate "Interactive demo" %} · Nexora{% endblock %}
+
+{% block meta_description %}{% translate "Try Nexora's interactive Spotify and Win Challenge overlay demo without creating an account." %}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/demo.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li aria-current="page">{% translate "Interactive demo" %}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    {% url 'spotify_create' as spotify_create_url %}
+    {% url 'winchallenge_create' as winchallenge_create_url %}
+
+    <div class="demo-page" data-demo-page>
+        <section class="demo-hero" aria-labelledby="demo-title">
+            <p class="demo-label">{% translate "Try Nexora before you sign up" %}</p>
+            <h1 id="demo-title">{% translate "Build a sample overlay in seconds" %}</h1>
+            <p class="demo-hero__description">
+                {% translate "Change the content, color and style below. Nothing is saved until you create an account." %}
+            </p>
+            <div class="demo-hero__actions">
+                <a class="btn action-button" href="#demo-studio">{% translate "Try the live demo" %}</a>
+                {% if user.is_authenticated %}
+                    <a class="btn glass-design" href="{% url 'home' %}#overlays">{% translate "Create your first overlay" %}</a>
+                {% else %}
+                    <a class="btn glass-design" href="{% url 'signup' %}">{% translate "Create free account" %}</a>
+                {% endif %}
+            </div>
+            <p class="demo-hero__note">
+                {% translate "An account is only required when you want to save an overlay, connect Spotify or use its OBS link." %}
+            </p>
+        </section>
+
+        <section class="demo-studio" id="demo-studio" aria-labelledby="demo-studio-title">
+            <div class="demo-section-heading">
+                <p class="demo-label">{% translate "Overlay playground" %}</p>
+                <h2 id="demo-studio-title">{% translate "Make it yours" %}</h2>
+                <p>{% translate "Every change updates the preview immediately." %}</p>
+            </div>
+
+            <div class="demo-grid">
+                <article class="demo-card" id="spotify-demo" data-demo-card="spotify">
+                    <header class="demo-card__header">
+                        <div class="demo-card__icon demo-card__icon--spotify">
+                            <img src="{% static 'imgs/icons/spotify.webp' %}" alt="">
+                        </div>
+                        <div>
+                            <p class="demo-label">{% translate "Now-playing demo" %}</p>
+                            <h2>{% translate "Spotify Overlay" %}</h2>
+                        </div>
+                    </header>
+
+                    <div class="demo-stage demo-stage--spotify">
+                        <div class="demo-overlay demo-overlay--spotify" data-demo-preview data-style="glass">
+                            <img src="{% static 'imgs/icons/spotify.webp' %}" alt="">
+                            <div class="demo-spotify-copy">
+                                <span>{% translate "Now playing" %}</span>
+                                <strong data-demo-output="title">Midnight Drive</strong>
+                                <small data-demo-output="artist">Nova Waves</small>
+                                <i aria-hidden="true"><b></b></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-controls" aria-label="{% translate 'Spotify demo controls' %}">
+                        <label class="demo-field">
+                            <span>{% translate "Title" %}</span>
+                            <input type="text" value="Midnight Drive" maxlength="80" data-demo-field="title">
+                        </label>
+                        <label class="demo-field">
+                            <span>{% translate "Artist" %}</span>
+                            <input type="text" value="Nova Waves" maxlength="80" data-demo-field="artist">
+                        </label>
+                        <label class="demo-field demo-field--color">
+                            <span>{% translate "Accent color" %}</span>
+                            <input type="color" value="#1ed760" data-demo-field="accent">
+                        </label>
+                        <fieldset class="demo-style-picker">
+                            <legend>{% translate "Style" %}</legend>
+                            <button type="button" data-demo-style="minimal" aria-pressed="false">{% translate "Minimal" %}</button>
+                            <button type="button" data-demo-style="glass" aria-pressed="true">{% translate "Glass" %}</button>
+                            <button type="button" data-demo-style="neon" aria-pressed="false">{% translate "Neon" %}</button>
+                        </fieldset>
+                    </div>
+
+                    <div class="demo-card__actions">
+                        <a
+                            class="btn action-button"
+                            href="{% if user.is_authenticated %}{{ spotify_create_url }}{% else %}{% url 'signup' %}?next={{ spotify_create_url|urlencode }}{% endif %}"
+                        >
+                            {% translate "Create and save Spotify overlay" %}
+                        </a>
+                    </div>
+                </article>
+
+                <article class="demo-card" id="winchallenge-demo" data-demo-card="winchallenge">
+                    <header class="demo-card__header">
+                        <div class="demo-card__icon demo-card__icon--challenge">
+                            <img src="{% static 'imgs/icons/winchallenge.png' %}" alt="">
+                        </div>
+                        <div>
+                            <p class="demo-label">{% translate "Progress demo" %}</p>
+                            <h2>{% translate "Win Challenge" %}</h2>
+                        </div>
+                    </header>
+
+                    <div class="demo-stage demo-stage--challenge">
+                        <div class="demo-overlay demo-overlay--challenge" data-demo-preview data-style="glass">
+                            <span>{% translate "Win Challenge" %}</span>
+                            <strong data-demo-output="title">{% translate "Road to Diamond" %}</strong>
+                            <div class="demo-challenge-score">
+                                <small data-demo-output="game">Rocket League</small>
+                                <b data-demo-output="score">7 / 10</b>
+                            </div>
+                            <i
+                                class="demo-challenge-progress"
+                                role="progressbar"
+                                aria-label="{% translate 'Challenge progress' %}"
+                                aria-valuemin="0"
+                                aria-valuemax="10"
+                                aria-valuenow="7"
+                            ><b data-demo-progress></b></i>
+                        </div>
+                    </div>
+
+                    <div class="demo-controls" aria-label="{% translate 'Win Challenge demo controls' %}">
+                        <label class="demo-field demo-field--wide">
+                            <span>{% translate "Title" %}</span>
+                            <input type="text" value="{% translate 'Road to Diamond' %}" maxlength="80" data-demo-field="title">
+                        </label>
+                        <label class="demo-field demo-field--wide">
+                            <span>{% translate "Game name" %}</span>
+                            <input type="text" value="Rocket League" maxlength="80" data-demo-field="game">
+                        </label>
+                        <label class="demo-field">
+                            <span>{% translate "Wins" %}</span>
+                            <input type="number" value="7" min="0" max="10" data-demo-field="wins">
+                        </label>
+                        <label class="demo-field">
+                            <span>{% translate "Target wins" %}</span>
+                            <input type="number" value="10" min="1" max="999" data-demo-field="target">
+                        </label>
+                        <label class="demo-field demo-field--color">
+                            <span>{% translate "Accent color" %}</span>
+                            <input type="color" value="#f59e0b" data-demo-field="accent">
+                        </label>
+                        <fieldset class="demo-style-picker">
+                            <legend>{% translate "Style" %}</legend>
+                            <button type="button" data-demo-style="minimal" aria-pressed="false">{% translate "Minimal" %}</button>
+                            <button type="button" data-demo-style="glass" aria-pressed="true">{% translate "Glass" %}</button>
+                            <button type="button" data-demo-style="neon" aria-pressed="false">{% translate "Neon" %}</button>
+                        </fieldset>
+                    </div>
+
+                    <div class="demo-card__actions">
+                        <a
+                            class="btn action-button"
+                            href="{% if user.is_authenticated %}{{ winchallenge_create_url }}{% else %}{% url 'signup' %}?next={{ winchallenge_create_url|urlencode }}{% endif %}"
+                        >
+                            {% translate "Create and save Win Challenge" %}
+                        </a>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/demo.js' %}?v={{ APP_VERSION }}"></script>
+{% endblock %}

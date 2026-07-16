@@ -832,6 +832,15 @@
             applyPreset(event.target.value);
         });
 
+        editor.addEventListener("nexora:editor-restore", (event) => {
+            if (!event.target.matches("[data-editor-state-form]")) {
+                return;
+            }
+
+            event.target.querySelectorAll('input[type="number"]').forEach(syncNumberStepper);
+            updatePreviewFromInputs();
+        });
+
         updatePreviewFromInputs();
     };
 

@@ -7,112 +7,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta
+        name="description"
+        content="{% block meta_description %}{% translate 'Create customizable Spotify and Win Challenge overlays for OBS directly in your browser.' %}{% endblock %}"
+    >
+    {% if IS_PUBLIC_INDEXABLE %}
+        <meta name="robots" content="index, follow">
+        <link rel="canonical" href="{{ CANONICAL_URL }}">
+    {% else %}
+        <meta name="robots" content="noindex, nofollow">
+    {% endif %}
     <link rel="icon"
           type="image/png"
-          href="{% static 'imgs/icons/nexora_icon.png' %}">
+          href="{% static 'imgs/icons/Nexora_Icon.png' %}">
 
 
-    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}?v={{ APP_VERSION }}">
 
     <title>{% block title %}Nexora{% endblock %}</title>
 
     {% block extra_css %}{% endblock %}
 </head>
 <body class="theme-light">
-    <header>
+    <a class="skip-link" href="#main-content">{% translate "Skip to main content" %}</a>
+
+    <header class="site-header">
         {% block header %}
             {% with current_url=request.resolver_match.url_name %}
                 <a
                     href="{% url 'home' %}"
                     class="title btn glass-design header-logo"
+                    aria-label="{% translate 'Nexora home' %}"
                     {% if current_url == 'home' %}aria-current="page"{% endif %}
                 >
                     <img
                         class="header-logo__image"
-                        src="{% static 'imgs/icons/nexora_logo.png' %}"
+                        src="{% static 'imgs/icons/nexora_logo.webp' %}"
                         alt="Nexora"
                     >
                 </a>
 
-                <nav>
-                    <a
-                        class="btn glass-design header-nav__link{% if current_url == 'spotify_list' or current_url == 'spotify_create' or current_url == 'spotify_manage' or current_url == 'spotify_connect' or current_url == 'spotify_callback' %} is-active{% endif %}"
-                        href="{% url 'spotify_list' %}"
-                        {% if current_url == 'spotify_list' or current_url == 'spotify_create' or current_url == 'spotify_manage' or current_url == 'spotify_connect' or current_url == 'spotify_callback' %}aria-current="page"{% endif %}
-                    >
-                        {% trans "Spotify" %}
-                    </a>
-                    <a
-                        class="btn glass-design header-nav__link{% if current_url == 'winchallenge_list' or current_url == 'winchallenge_create' or current_url == 'winchallenge_manage' %} is-active{% endif %}"
-                        href="{% url 'winchallenge_list' %}"
-                        {% if current_url == 'winchallenge_list' or current_url == 'winchallenge_create' or current_url == 'winchallenge_manage' %}aria-current="page"{% endif %}
-                    >
-                        {% trans "Winchallenges" %}
-                    </a>
-                    <a
-                        class="btn glass-design header-nav__link{% if current_url == 'about' %} is-active{% endif %}"
-                        href="{% url 'about' %}"
-                        {% if current_url == 'about' %}aria-current="page"{% endif %}
-                    >
-                        {% trans "About" %}
-                    </a>
-                </nav>
-            {% endwith %}
-
-            <div class="right">
-                {% if user.is_authenticated %}
-                    <span class="account-user" title="{% translate 'Signed in as' %} {{ user.get_username }}">
-                        {{ user.get_username }}
-                    </span>
-                    <form class="account-logout" action="{% url 'logout' %}" method="post">
-                        {% csrf_token %}
-                        <button class="btn glass-design account-button" type="submit">
-                            {% translate "Sign out" %}
-                        </button>
-                    </form>
-                {% else %}
-                    <a
-                        class="btn glass-design account-button"
-                        href="{% url 'login' %}{% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'signup' %}?next={{ request.get_full_path|urlencode }}{% endif %}"
-                    >
-                        {% translate "Sign in" %}
-                    </a>
-                {% endif %}
-
-                <form class="language-switcher btn glass-design" action="{% url 'set_language' %}" method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                    <select
-                        id="language-select"
-                        class="language-switcher__select"
-                        name="language"
-                        aria-label="{% trans 'Language' %}"
-                        onchange="this.form.submit()"
-                    >
-                        {% get_available_languages as LANGUAGES %}
-                        {% for language_code, language_name in LANGUAGES %}
-                            <option value="{{ language_code }}" {% if language_code == CURRENT_LANGUAGE %}selected{% endif %}>
-                                {{ language_name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </form>
-
                 <button
                     type="button"
-                    id="theme-toggle"
-                    class="theme-toggle btn glass-design"
-                    aria-label="{% trans 'Switch theme' %}"
-                    aria-pressed="false"
+                    id="mobile-menu-toggle"
+                    class="mobile-menu-toggle btn glass-design"
+                    aria-label="{% trans 'Open navigation' %}"
+                    aria-controls="header-menu"
+                    aria-expanded="false"
+                    data-open-label="{% trans 'Open navigation' %}"
+                    data-close-label="{% trans 'Close navigation' %}"
                 >
-                    <span class="theme-toggle__indicator" aria-hidden="true"></span>
+                    <span class="mobile-menu-toggle__icon" aria-hidden="true"></span>
                 </button>
-            </div>
+
+                <div class="header-menu" id="header-menu">
+                    <nav aria-label="{% translate 'Main navigation' %}">
+                        <a
+                            class="btn glass-design header-nav__link{% if current_url == 'overlay_dashboard' or current_url == 'spotify_list' or current_url == 'spotify_create' or current_url == 'spotify_manage' or current_url == 'spotify_connect' or current_url == 'spotify_callback' or current_url == 'winchallenge_list' or current_url == 'winchallenge_create' or current_url == 'winchallenge_manage' %} is-active{% endif %}"
+                            href="{% url 'overlay_dashboard' %}"
+                            {% if current_url == 'overlay_dashboard' or current_url == 'spotify_list' or current_url == 'spotify_create' or current_url == 'spotify_manage' or current_url == 'spotify_connect' or current_url == 'spotify_callback' or current_url == 'winchallenge_list' or current_url == 'winchallenge_create' or current_url == 'winchallenge_manage' %}aria-current="page"{% endif %}
+                        >
+                            {% trans "My overlays" %}
+                        </a>
+                        <a
+                            class="btn glass-design header-nav__link{% if current_url == 'demo' %} is-active{% endif %}"
+                            href="{% url 'demo' %}"
+                            {% if current_url == 'demo' %}aria-current="page"{% endif %}
+                        >
+                            {% trans "Live demo" %}
+                        </a>
+                        <a
+                            class="btn glass-design header-nav__link{% if current_url == 'about' %} is-active{% endif %}"
+                            href="{% url 'about' %}"
+                            {% if current_url == 'about' %}aria-current="page"{% endif %}
+                        >
+                            {% trans "About" %}
+                        </a>
+                    </nav>
+                {% endwith %}
+
+                    <div class="right">
+                        {% if user.is_authenticated %}
+                            <span class="account-user" title="{% translate 'Signed in as' %} {{ user.get_username }}">
+                                {{ user.get_username }}
+                            </span>
+                            <form class="account-logout" action="{% url 'logout' %}" method="post">
+                                {% csrf_token %}
+                                <button class="btn glass-design account-button" type="submit">
+                                    {% translate "Sign out" %}
+                                </button>
+                            </form>
+                        {% else %}
+                            <a class="btn action-button account-button" href="{% url 'signup' %}{% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'signup' %}?next={{ request.get_full_path|urlencode }}{% endif %}">
+                                {% translate "Create account" %}
+                            </a>
+                            <a
+                                class="btn glass-design account-button"
+                                href="{% url 'login' %}{% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'signup' %}?next={{ request.get_full_path|urlencode }}{% endif %}"
+                            >
+                                {% translate "Sign in" %}
+                            </a>
+                        {% endif %}
+
+                        <form class="language-switcher btn glass-design" action="{% url 'set_language' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <label class="sr-only" for="language-select">{% trans "Language" %}</label>
+                            <select
+                                id="language-select"
+                                class="language-switcher__select"
+                                name="language"
+                            >
+                                {% get_available_languages as LANGUAGES %}
+                                {% for language_code, language_name in LANGUAGES %}
+                                    <option value="{{ language_code }}" {% if language_code == CURRENT_LANGUAGE %}selected{% endif %}>
+                                        {{ language_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button class="language-switcher__submit" type="submit">{% translate "Apply" %}</button>
+                        </form>
+
+                        <button
+                            type="button"
+                            id="theme-toggle"
+                            class="theme-toggle btn glass-design"
+                            aria-label="{% trans 'Switch to dark theme' %}"
+                            aria-pressed="false"
+                            data-light-label="{% trans 'Switch to light theme' %}"
+                            data-dark-label="{% trans 'Switch to dark theme' %}"
+                        >
+                            <span class="theme-toggle__indicator" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                </div>
         {% endblock %}
     </header>
 
-    <main>
+    <main id="main-content" tabindex="-1">
+        {% block breadcrumbs %}{% endblock %}
         {% block content %}{% endblock %}
     </main>
 
@@ -124,9 +159,11 @@
                 </p>
             </div>
 
-            <div class="footer-center">
-
-            </div>
+            <nav class="footer-center footer-nav" aria-label="{% translate 'Footer navigation' %}">
+                <a href="{% url 'home' %}">{% translate "Home" %}</a>
+                <a href="{% url 'demo' %}">{% translate "Live demo" %}</a>
+                <a href="{% url 'about' %}">{% translate "About" %}</a>
+            </nav>
 
             <div class="footer-right">
                 <p>
@@ -136,7 +173,9 @@
         {% endblock %}
     </footer>
 
-    <script src="{% static 'js/base.js' %}"></script>
+    <div class="sr-only" id="site-announcer" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="{% static 'js/base.js' %}?v={{ APP_VERSION }}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

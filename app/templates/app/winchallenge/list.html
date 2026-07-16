@@ -3,11 +3,20 @@
 {% load i18n %}
 
 {% block title %}
-    {% translate "Win Challenges" %}
+    {% translate "Win Challenges" %} &middot; Nexora
 {% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/winchallenge.css' %}">
+    <link rel="stylesheet" href="{% static 'css/winchallenge.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li aria-current="page">{% translate "Win Challenges" %}</li>
+        </ol>
+    </nav>
 {% endblock %}
 
 {% block content %}
@@ -23,7 +32,7 @@
         </section>
 
         {% if messages %}
-            <div class="message-stack" aria-live="polite">
+            <div class="message-stack" role="status" aria-live="polite" aria-atomic="true">
                 {% for message in messages %}
                     <p class="message-stack__item">{{ message }}</p>
                 {% endfor %}
@@ -83,7 +92,7 @@
                                         {% translate "Edit Design" %}
                                     </a>
                                     <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">
-                                        {% translate "Open Preview" %}
+                                        {% translate "Open Preview" %}<span class="sr-only"> ({% translate "opens in a new tab" %})</span>
                                     </a>
                                     <button
                                         class="btn glass-design"
@@ -151,10 +160,10 @@
             </section>
         {% endif %}
 
-        <p class="copy-toast" data-copy-toast hidden>{% translate "OBS link copied" %}</p>
+        <p class="copy-toast" data-copy-toast role="status" aria-live="polite" aria-atomic="true" hidden>{% translate "OBS link copied" %}</p>
     </div>
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{% static 'js/winchallenge.js' %}"></script>
+    <script src="{% static 'js/winchallenge.js' %}?v={{ APP_VERSION }}"></script>
 {% endblock %}

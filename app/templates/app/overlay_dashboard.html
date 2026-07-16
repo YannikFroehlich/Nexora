@@ -1,0 +1,285 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% translate "My overlays" %} &middot; Nexora{% endblock %}
+
+{% block meta_description %}{% translate "Manage your Spotify and Win Challenge overlays in one place." %}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li aria-current="page">{% translate "My overlays" %}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <div class="dashboard-page">
+        <section class="dashboard-hero" aria-labelledby="dashboard-title">
+            <div class="dashboard-hero__copy">
+                <p class="dashboard-label"><span>Nexora</span> {% translate "Overlay dashboard" %}</p>
+                <h1 id="dashboard-title">{% translate "My overlays" %}</h1>
+                <p>{% translate "Manage Spotify and Win Challenge overlays together, open previews and copy OBS links without switching pages." %}</p>
+                <nav class="dashboard-jumps" aria-label="{% translate 'Overlay categories' %}">
+                    <a href="#spotify-overlays">
+                        {% translate "Spotify" %}
+                        <span aria-label="{% blocktranslate count counter=spotify_count %}{{ counter }} overlay{% plural %}{{ counter }} overlays{% endblocktranslate %}">{{ spotify_count }}</span>
+                    </a>
+                    <a href="#winchallenge-overlays">
+                        {% translate "Win Challenges" %}
+                        <span aria-label="{% blocktranslate count counter=winchallenge_count %}{{ counter }} overlay{% plural %}{{ counter }} overlays{% endblocktranslate %}">{{ winchallenge_count }}</span>
+                    </a>
+                </nav>
+            </div>
+
+            <dl class="dashboard-summary" aria-label="{% translate 'Overlay overview' %}">
+                <div>
+                    <dt>{% translate "All overlays" %}</dt>
+                    <dd>{{ overlay_count }}</dd>
+                </div>
+                <div>
+                    <dt>{% translate "Spotify" %}</dt>
+                    <dd>{{ spotify_count }}</dd>
+                </div>
+                <div>
+                    <dt>{% translate "Win Challenges" %}</dt>
+                    <dd>{{ winchallenge_count }}</dd>
+                </div>
+            </dl>
+        </section>
+
+        {% if messages %}
+            <div class="dashboard-messages" role="status" aria-live="polite" aria-atomic="true">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <section class="dashboard-transfer" aria-labelledby="overlay-import-title">
+            <div class="dashboard-transfer__copy">
+                <span class="dashboard-transfer__icon" aria-hidden="true">⇄</span>
+                <div>
+                    <p class="dashboard-label">{% translate "Transfer" %}</p>
+                    <h2 id="overlay-import-title">{% translate "Import overlay" %}</h2>
+                    <p>{% translate "Restore a Nexora JSON export or move an overlay between accounts." %}</p>
+                </div>
+            </div>
+            <form
+                class="dashboard-import"
+                action="{% url 'overlay_import' %}"
+                method="post"
+                enctype="multipart/form-data"
+                novalidate
+            >
+                {% csrf_token %}
+                <label for="{{ import_form.overlay_file.id_for_label }}">{{ import_form.overlay_file.label }}</label>
+                <div class="dashboard-import__controls">
+                    {{ import_form.overlay_file }}
+                    <button class="btn action-button" type="submit">{% translate "Import" %}</button>
+                </div>
+                {% if import_form.overlay_file.help_text %}
+                    <p class="dashboard-import__help" id="{{ import_form.overlay_file.id_for_label }}_help">
+                        {{ import_form.overlay_file.help_text }}
+                    </p>
+                {% endif %}
+                {% if import_form.overlay_file.errors %}
+                    <div class="dashboard-import__errors" id="{{ import_form.overlay_file.id_for_label }}_error" role="alert">
+                        {% for error in import_form.overlay_file.errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+                {% if import_form.non_field_errors %}
+                    <div class="dashboard-import__errors" role="alert">{{ import_form.non_field_errors }}</div>
+                {% endif %}
+            </form>
+        </section>
+
+        <section class="dashboard-collection" id="spotify-overlays" aria-labelledby="spotify-overlays-title">
+            <div class="dashboard-collection__header">
+                <div class="dashboard-collection__title">
+                    <span class="dashboard-collection__icon dashboard-collection__icon--spotify" aria-hidden="true">
+                        <img src="{% static 'imgs/icons/spotify.webp' %}" alt="">
+                    </span>
+                    <div>
+                        <p class="dashboard-label">{% translate "Music and playback" %}</p>
+                        <h2 id="spotify-overlays-title">{% translate "Spotify overlays" %}</h2>
+                    </div>
+                </div>
+                <a class="btn action-button" href="{% url 'spotify_create' %}">{% translate "Create Spotify overlay" %}</a>
+            </div>
+
+            {% if spotify_overlays %}
+                <div class="dashboard-grid">
+                    {% for overlay in spotify_overlays %}
+                        {% url 'spotify_overlay' overlay.public_token as overlay_path %}
+                        <article class="dashboard-card">
+                            <div class="dashboard-card__preview dashboard-card__preview--spotify" aria-label="{% translate 'Preview' %}">
+                                <div
+                                    class="spotify-dashboard-preview"
+                                    style="--preview-background: {{ overlay.background_rgba }}; --preview-accent: {{ overlay.border_color }}; --preview-radius: {{ overlay.corner_radius }}px;"
+                                >
+                                    <img src="{% static 'imgs/icons/spotify.webp' %}" alt="">
+                                    <div>
+                                        <small>{% translate "Now playing" %}</small>
+                                        <strong>Midnight Drive</strong>
+                                        <span>Nova Waves</span>
+                                        <i aria-hidden="true"><b></b></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-card__content">
+                                <div class="dashboard-card__heading">
+                                    <div>
+                                        <p class="dashboard-card__type">{% translate "Spotify overlay" %}</p>
+                                        <h3>{{ overlay.display_name }}</h3>
+                                    </div>
+                                    <span class="status-badge{% if overlay.is_spotify_connected %} status-badge--connected{% endif %}">
+                                        {% if overlay.is_spotify_connected %}{% translate "Connected" %}{% else %}{% translate "Not connected" %}{% endif %}
+                                    </span>
+                                </div>
+
+                                <dl class="dashboard-card__stats">
+                                    <div><dt>{% translate "Size" %}</dt><dd>{{ overlay.canvas_width }} &times; {{ overlay.canvas_height }}</dd></div>
+                                    <div><dt>{% translate "Elements" %}</dt><dd>{{ overlay.elements|length }}</dd></div>
+                                    <div><dt>{% translate "Updated" %}</dt><dd>{{ overlay.updated_at|date:"d.m.Y H:i" }}</dd></div>
+                                </dl>
+
+                                <div class="dashboard-card__actions">
+                                    <a class="btn action-button" href="{% url 'spotify_manage' overlay.pk %}">{% translate "Edit" %}</a>
+                                    <form class="dashboard-card__action-form" action="{% url 'spotify_duplicate' overlay.pk %}" method="post">
+                                        {% csrf_token %}
+                                        <button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button>
+                                    </form>
+                                    <a class="btn glass-design" href="{% url 'spotify_export' overlay.pk %}">{% translate "Export" %}</a>
+                                    <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">
+                                        {% translate "Preview" %}<span class="sr-only"> ({% translate "opens in a new tab" %})</span>
+                                    </a>
+                                    <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
+                                        {% translate "Copy OBS link" %}
+                                    </button>
+                                    <form class="dashboard-card__delete" action="{% url 'spotify_delete' overlay.pk %}" method="post" data-confirm-delete="{% translate 'Delete this Spotify overlay?' %}">
+                                        {% csrf_token %}
+                                        <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="dashboard-empty">
+                    <span class="dashboard-empty__icon" aria-hidden="true">♪</span>
+                    <div>
+                        <h3>{% translate "No Spotify overlays yet" %}</h3>
+                        <p>{% translate "Create a layout for the current track, artwork and playback progress." %}</p>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="dashboard-collection" id="winchallenge-overlays" aria-labelledby="winchallenge-overlays-title">
+            <div class="dashboard-collection__header">
+                <div class="dashboard-collection__title">
+                    <span class="dashboard-collection__icon dashboard-collection__icon--challenge" aria-hidden="true">
+                        <img src="{% static 'imgs/icons/winchallenge.png' %}" alt="">
+                    </span>
+                    <div>
+                        <p class="dashboard-label">{% translate "Goals and progress" %}</p>
+                        <h2 id="winchallenge-overlays-title">{% translate "Win Challenges" %}</h2>
+                    </div>
+                </div>
+                <a class="btn action-button" href="{% url 'winchallenge_create' %}">{% translate "Create Win Challenge" %}</a>
+            </div>
+
+            {% if win_challenges %}
+                <div class="dashboard-grid">
+                    {% for challenge in win_challenges %}
+                        {% url 'winchallenge_overlay' challenge.public_token as overlay_path %}
+                        <article class="dashboard-card">
+                            <div class="dashboard-card__preview dashboard-card__preview--challenge" aria-label="{% translate 'Preview' %}">
+                                <div
+                                    class="challenge-dashboard-preview"
+                                    style="--preview-background: {{ challenge.background_rgba }}; --preview-accent: {{ challenge.accent_color }}; --preview-text: {{ challenge.text_color }}; --preview-border: {{ challenge.border_color }}; --preview-radius: {{ challenge.corner_radius }}px;"
+                                >
+                                    <small>{% translate "Win Challenge" %}</small>
+                                    <div class="challenge-dashboard-preview__title">
+                                        <strong>{{ challenge.display_title }}</strong>
+                                        <span>{{ challenge.total_wins }} {% translate "Wins" %}</span>
+                                    </div>
+                                    <div class="challenge-dashboard-preview__games">
+                                        {% for game in challenge.ordered_games|slice:":3" %}
+                                            <div>
+                                                <span>{{ game.name }}</span>
+                                                <b>{{ game.wins }} / {{ game.target_wins }}</b>
+                                                <i aria-hidden="true"><span style="width: {{ game.progress_percent }}%"></span></i>
+                                            </div>
+                                        {% empty %}
+                                            <p>{% translate "Add your first game in the editor." %}</p>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-card__content">
+                                <div class="dashboard-card__heading">
+                                    <div>
+                                        <p class="dashboard-card__type">{% translate "Win Challenge" %}</p>
+                                        <h3>{{ challenge.display_title }}</h3>
+                                    </div>
+                                    <span class="status-badge status-badge--live">{% translate "Ready for OBS" %}</span>
+                                </div>
+
+                                <dl class="dashboard-card__stats">
+                                    <div><dt>{% translate "Wins" %}</dt><dd>{{ challenge.total_wins }}</dd></div>
+                                    <div><dt>{% translate "Games" %}</dt><dd>{{ challenge.games_count }}</dd></div>
+                                    <div><dt>{% translate "Updated" %}</dt><dd>{{ challenge.updated_at|date:"d.m.Y H:i" }}</dd></div>
+                                </dl>
+
+                                <div class="dashboard-card__actions">
+                                    <a class="btn action-button" href="{% url 'winchallenge_manage' challenge.pk %}">{% translate "Manage" %}</a>
+                                    <a class="btn glass-design" href="{% url 'winchallenge_manage' challenge.pk %}#design">{% translate "Design" %}</a>
+                                    <form class="dashboard-card__action-form" action="{% url 'winchallenge_duplicate' challenge.pk %}" method="post">
+                                        {% csrf_token %}
+                                        <button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button>
+                                    </form>
+                                    <a class="btn glass-design" href="{% url 'winchallenge_export' challenge.pk %}">{% translate "Export" %}</a>
+                                    <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">
+                                        {% translate "Preview" %}<span class="sr-only"> ({% translate "opens in a new tab" %})</span>
+                                    </a>
+                                    <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
+                                        {% translate "Copy OBS link" %}
+                                    </button>
+                                    <form class="dashboard-card__delete" action="{% url 'winchallenge_delete' challenge.pk %}" method="post" data-confirm-delete="{% translate 'Delete this Win Challenge?' %}">
+                                        {% csrf_token %}
+                                        <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="dashboard-empty">
+                    <span class="dashboard-empty__icon" aria-hidden="true">◆</span>
+                    <div>
+                        <h3>{% translate "No Win Challenges yet" %}</h3>
+                        <p>{% translate "Create a counter, add games and keep your stream audience up to date." %}</p>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+
+        <p class="dashboard-toast" data-copy-toast role="status" aria-live="polite" aria-atomic="true" hidden>{% translate "OBS link copied" %}</p>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/dashboard.js' %}?v={{ APP_VERSION }}"></script>
+{% endblock %}

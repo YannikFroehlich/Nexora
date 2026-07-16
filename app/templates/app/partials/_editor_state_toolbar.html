@@ -1,0 +1,22 @@
+{% load i18n %}
+
+<div class="editor-state-toolbar glass-design" data-editor-toolbar>
+    <div class="editor-state-toolbar__actions" role="group" aria-label="{% translate 'Edit history' %}">
+        <button class="btn glass-design" type="button" data-editor-undo disabled>
+            <span>{% translate "Undo" %}</span>
+            <kbd aria-hidden="true">Ctrl+Z</kbd>
+        </button>
+        <button class="btn glass-design" type="button" data-editor-redo disabled>
+            <span>{% translate "Redo" %}</span>
+            <kbd aria-hidden="true">Ctrl+Shift+Z</kbd>
+        </button>
+    </div>
+    <p
+        class="editor-state-toolbar__status"
+        data-editor-save-status
+        data-state="saved"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+    >{% translate "All changes saved" %}</p>
+</div>

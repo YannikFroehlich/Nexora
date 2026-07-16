@@ -10,8 +10,32 @@
     <link rel="stylesheet" href="{% static 'css/spotify.css' %}?v={{ APP_VERSION }}">
 {% endblock %}
 
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li><a href="{% url 'overlay_dashboard' %}#spotify-overlays">{% translate "My overlays" %}</a></li>
+            <li aria-current="page">
+                {% if is_create %}{% translate "Create" %}{% else %}{% translate "Edit" %}{% endif %}
+            </li>
+        </ol>
+    </nav>
+{% endblock %}
+
 {% block content %}
-    <div class="spotify-page spotify-editor-page" data-spotify-editor>
+    <div
+        class="spotify-page spotify-editor-page"
+        data-spotify-editor
+        data-editor-state
+        data-editor-create="{{ is_create|yesno:'true,false' }}"
+        data-editor-draft-key="nexora:draft:spotify:{{ user.pk }}:{% if is_create %}new{% else %}{{ overlay.pk }}{% endif %}"
+        data-status-saved="{% if is_create %}{% translate 'No unsaved changes' %}{% else %}{% translate 'All changes saved' %}{% endif %}"
+        data-status-unsaved="{% translate 'Unsaved changes' %}"
+        data-status-saving="{% translate 'Saving changes...' %}"
+        data-status-failed="{% translate 'Autosave failed. Use the save button to try again.' %}"
+        data-status-draft-saved="{% translate 'Draft saved locally' %}"
+        data-status-draft-restored="{% translate 'Local draft restored' %}"
+    >
         <section class="spotify-hero" aria-labelledby="spotify-editor-title">
             <div>
                 <p class="section-label"><span>Nexora</span> {% translate "Spotify overlays" %}</p>
@@ -24,11 +48,13 @@
                 </h1>
                 <p>{% translate "Add playback elements, style them and drag them to the exact position you want." %}</p>
             </div>
-            <a class="btn glass-design" href="{% url 'spotify_list' %}">{% translate "All Spotify overlays" %}</a>
+            <a class="btn glass-design" href="{% url 'overlay_dashboard' %}#spotify-overlays">{% translate "Back to my overlays" %}</a>
         </section>
 
+        {% include "app/partials/_editor_state_toolbar.html" %}
+
         {% if messages %}
-            <div class="message-stack" aria-live="polite">
+            <div class="message-stack" role="status" aria-live="polite" aria-atomic="true">
                 {% for message in messages %}
                     <p class="message-stack__item{% if message.tags %} message-stack__item--{{ message.tags }}{% endif %}">
                         {{ message }}
@@ -37,13 +63,21 @@
             </div>
         {% endif %}
 
-        <form class="spotify-editor-layout" method="post" novalidate data-spotify-form>
+        <form
+            class="spotify-editor-layout"
+            method="post"
+            novalidate
+            data-spotify-form
+            data-editor-state-form
+            data-editor-form-key="spotify"
+            {% if not is_create %}data-autosave-url="{% url 'spotify_autosave' overlay.pk %}"{% endif %}
+        >
             {% csrf_token %}
             {{ form.elements }}
 
             <div class="spotify-editor-sidebar">
                 {% if form.non_field_errors %}
-                    <div class="form-errors">{{ form.non_field_errors }}</div>
+                    <div class="form-errors" role="alert">{{ form.non_field_errors }}</div>
                 {% endif %}
                 {{ form.elements.errors }}
 
@@ -371,10 +405,11 @@
             </form>
         {% endif %}
 
-        <p class="copy-toast" data-copy-toast hidden>{% translate "OBS link copied" %}</p>
+        <p class="copy-toast" data-copy-toast role="status" aria-live="polite" aria-atomic="true" hidden>{% translate "OBS link copied" %}</p>
     </div>
 {% endblock %}
 
 {% block extra_js %}
     <script src="{% static 'js/spotify.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
 {% endblock %}

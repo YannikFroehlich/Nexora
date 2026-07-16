@@ -10,6 +10,29 @@ from app.models import SpotifyOverlay, WinChallenge, WinChallengeGame
 
 
 BASE_INPUT_CLASS = "form-control"
+MAX_OVERLAY_IMPORT_SIZE = 256 * 1024
+
+
+def _prepare_accessible_auth_fields(form):
+    """Connect auth inputs to help and error text for assistive technology."""
+
+    for field_name, field in form.fields.items():
+        bound_field = form[field_name]
+        described_by = []
+
+        if field.help_text:
+            described_by.append(f"{bound_field.auto_id}_helptext")
+
+        if bound_field.errors:
+            described_by.append(f"{bound_field.auto_id}_error")
+            field.widget.attrs["aria-invalid"] = "true"
+
+        if described_by:
+            field.widget.attrs["aria-describedby"] = " ".join(described_by)
+
+    if form.errors:
+        for field in form.fields.values():
+            field.widget.attrs.pop("autofocus", None)
 
 
 class LoginForm(AuthenticationForm):
@@ -35,6 +58,10 @@ class LoginForm(AuthenticationForm):
             }
         ),
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _prepare_accessible_auth_fields(self)
 
 
 class SignUpForm(UserCreationForm):
@@ -65,6 +92,43 @@ class SignUpForm(UserCreationForm):
                 "autocomplete": "new-password",
             }
         )
+        _prepare_accessible_auth_fields(self)
+
+
+class OverlayImportForm(forms.Form):
+    overlay_file = forms.FileField(
+        label=_("Overlay export file"),
+        help_text=_("Select a JSON file previously exported from Nexora."),
+        widget=forms.FileInput(
+            attrs={
+                "class": "dashboard-import__input",
+                "accept": ".json,application/json",
+            }
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        described_by = ["id_overlay_file_help"]
+
+        if self["overlay_file"].errors:
+            described_by.append("id_overlay_file_error")
+            self.fields["overlay_file"].widget.attrs["aria-invalid"] = "true"
+
+        self.fields["overlay_file"].widget.attrs["aria-describedby"] = " ".join(
+            described_by
+        )
+
+    def clean_overlay_file(self):
+        overlay_file = self.cleaned_data["overlay_file"]
+
+        if overlay_file.size > MAX_OVERLAY_IMPORT_SIZE:
+            raise forms.ValidationError(_("The import file is too large."))
+
+        if not overlay_file.name.lower().endswith(".json"):
+            raise forms.ValidationError(_("Select a JSON file."))
+
+        return overlay_file
 
 
 class ColorInput(forms.TextInput):

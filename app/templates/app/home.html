@@ -6,11 +6,15 @@
     {% trans "Home" %} · Nexora
 {% endblock %}
 
+{% block meta_description %}{% translate "Design Spotify and Win Challenge overlays for OBS, test them live and manage them from one browser-based workspace." %}{% endblock %}
+
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}?v={{ APP_VERSION }}">
 {% endblock %}
 
 {% block content %}
+    {% url 'spotify_create' as spotify_create_url %}
+    {% url 'winchallenge_create' as winchallenge_create_url %}
     <div class="home-page">
         <section class="hero" aria-labelledby="hero-title">
             <div class="hero__copy">
@@ -20,9 +24,19 @@
                     {% translate "Create and customize browser-based overlays for Spotify, win challenges and more — then add them directly to OBS as a browser source." %}
                 </p>
                 <div class="hero-actions">
-                    <a href="#overlays" class="btn action-button">{% translate "Create your first overlay" %}</a>
-                    <a href="#how-it-works" class="btn glass-design secondary-button">{% translate "Learn more" %}</a>
+                    {% if user.is_authenticated %}
+                        <a href="#overlays" class="btn action-button">{% translate "Create your first overlay" %}</a>
+                        <a href="{% url 'demo' %}" class="btn glass-design secondary-button">{% translate "Try live demo" %}</a>
+                    {% else %}
+                        <a href="{% url 'demo' %}" class="btn action-button">{% translate "Try live demo" %}</a>
+                        <a href="{% url 'signup' %}" class="btn glass-design secondary-button">{% translate "Create free account" %}</a>
+                    {% endif %}
                 </div>
+                {% if not user.is_authenticated %}
+                    <p class="hero-account-note">
+                        {% translate "No account is needed for the demo. Sign up only when you want to save an overlay or use it in OBS." %}
+                    </p>
+                {% endif %}
             </div>
 
             <div class="stream-window" aria-label="{% translate 'Example overlay preview' %}">
@@ -99,9 +113,20 @@
                             <li>{% translate "Album artwork and progress" %}</li>
                             <li>{% translate "Custom colors and layouts" %}</li>
                         </ul>
-                        <a href="{% url 'spotify_list' %}" class="btn action-button overlay-card__action">
-                            {% translate "Create Spotify Overlay" %}
-                        </a>
+                        <div class="overlay-card__actions">
+                            <a
+                                href="{% if user.is_authenticated %}{{ spotify_create_url }}{% else %}{% url 'signup' %}?next={{ spotify_create_url|urlencode }}{% endif %}"
+                                class="btn action-button overlay-card__action"
+                            >
+                                {% translate "Create Spotify Overlay" %}
+                            </a>
+                            <a href="{% url 'demo' %}#spotify-demo" class="btn glass-design overlay-card__action overlay-card__action--secondary">
+                                {% translate "Try demo" %}
+                            </a>
+                        </div>
+                        {% if not user.is_authenticated %}
+                            <small class="overlay-card__account-note">{% translate "Free account required to save and use in OBS." %}</small>
+                        {% endif %}
                     </div>
                 </article>
 
@@ -129,9 +154,20 @@
                             <li>{% translate "Custom goals and titles" %}</li>
                             <li>{% translate "Adjustable design and colors" %}</li>
                         </ul>
-                        <a href="{% url 'winchallenge_list' %}" class="btn action-button overlay-card__action">
-                            {% translate "Create Win Challenge" %}
-                        </a>
+                        <div class="overlay-card__actions">
+                            <a
+                                href="{% if user.is_authenticated %}{{ winchallenge_create_url }}{% else %}{% url 'signup' %}?next={{ winchallenge_create_url|urlencode }}{% endif %}"
+                                class="btn action-button overlay-card__action"
+                            >
+                                {% translate "Create Win Challenge" %}
+                            </a>
+                            <a href="{% url 'demo' %}#winchallenge-demo" class="btn glass-design overlay-card__action overlay-card__action--secondary">
+                                {% translate "Try demo" %}
+                            </a>
+                        </div>
+                        {% if not user.is_authenticated %}
+                            <small class="overlay-card__account-note">{% translate "Free account required to save and use in OBS." %}</small>
+                        {% endif %}
                     </div>
                 </article>
             </div>

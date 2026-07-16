@@ -3,17 +3,36 @@
 {% load i18n %}
 
 {% block title %}
-    {{ challenge.display_title }}
+    {{ challenge.display_title }} &middot; Nexora
 {% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/winchallenge.css' %}">
+    <link rel="stylesheet" href="{% static 'css/winchallenge.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li><a href="{% url 'overlay_dashboard' %}#winchallenge-overlays">{% translate "My overlays" %}</a></li>
+            <li aria-current="page">{{ challenge.display_title }}</li>
+        </ol>
+    </nav>
 {% endblock %}
 
 {% block content %}
     <div
         class="winchallenge-page winchallenge-editor-page winchallenge-editor-page--manage"
         data-winchallenge-editor
+        data-editor-state
+        data-editor-create="false"
+        data-editor-draft-key="nexora:draft:winchallenge:{{ user.pk }}:{{ challenge.pk }}"
+        data-status-saved="{% translate 'All changes saved' %}"
+        data-status-unsaved="{% translate 'Unsaved changes' %}"
+        data-status-saving="{% translate 'Saving changes...' %}"
+        data-status-failed="{% translate 'Autosave failed. Use the save button to try again.' %}"
+        data-status-draft-saved="{% translate 'Draft saved locally' %}"
+        data-status-draft-restored="{% translate 'Local draft restored' %}"
         data-number-increase-label="{% translate 'Increase value' %}"
         data-number-decrease-label="{% translate 'Decrease value' %}"
     >
@@ -29,8 +48,10 @@
             </p>
         </section>
 
+        {% include "app/partials/_editor_state_toolbar.html" %}
+
         {% if messages %}
-            <div class="message-stack" aria-live="polite">
+            <div class="message-stack" role="status" aria-live="polite" aria-atomic="true">
                 {% for message in messages %}
                     <p class="message-stack__item">{{ message }}</p>
                 {% endfor %}
@@ -67,12 +88,19 @@
                         </div>
                     </dl>
 
-                    <form method="post" class="stacked-form" novalidate>
+                    <form
+                        method="post"
+                        class="stacked-form"
+                        novalidate
+                        data-editor-state-form
+                        data-editor-form-key="challenge"
+                        data-autosave-url="{% url 'winchallenge_autosave' challenge.pk %}"
+                    >
                         {% csrf_token %}
                         <input type="hidden" name="form_type" value="challenge">
 
                         {% if settings_form.non_field_errors %}
-                            <div class="form-errors">{{ settings_form.non_field_errors }}</div>
+                            <div class="form-errors" role="alert">{{ settings_form.non_field_errors }}</div>
                         {% endif %}
 
                         <div class="field-grid field-grid--two">
@@ -227,12 +255,19 @@
                         <h2 id="design-title">{% translate "Edit overlay design" %}</h2>
                     </div>
 
-                    <form method="post" class="stacked-form" novalidate>
+                    <form
+                        method="post"
+                        class="stacked-form"
+                        novalidate
+                        data-editor-state-form
+                        data-editor-form-key="design"
+                        data-autosave-url="{% url 'winchallenge_autosave' challenge.pk %}"
+                    >
                         {% csrf_token %}
                         <input type="hidden" name="form_type" value="design">
 
                         {% if design_form.non_field_errors %}
-                            <div class="form-errors">{{ design_form.non_field_errors }}</div>
+                            <div class="form-errors" role="alert">{{ design_form.non_field_errors }}</div>
                         {% endif %}
 
                         <div class="field-grid field-grid--two">
@@ -394,10 +429,11 @@
             </aside>
         </div>
 
-        <p class="copy-toast" data-copy-toast hidden>{% translate "OBS link copied" %}</p>
+        <p class="copy-toast" data-copy-toast role="status" aria-live="polite" aria-atomic="true" hidden>{% translate "OBS link copied" %}</p>
     </div>
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{% static 'js/winchallenge.js' %}"></script>
+    <script src="{% static 'js/winchallenge.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
 {% endblock %}

@@ -40,7 +40,7 @@
     --color-footer-link: #d9f4ef;
 
     /* Focus states */
-    --color-focus-ring: rgba(20, 184, 166, 0.42);
+    --color-focus-ring: #0f766e;
 }
 
 .theme-dark,
@@ -77,5 +77,5 @@
     --color-footer-link: #a5f3fc;
 
     /* Focus states */
-    --color-focus-ring: rgba(103, 232, 249, 0.36);
+    --color-focus-ring: #67e8f9;
 }

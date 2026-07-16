@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-14 11:08+0200\n"
+"POT-Creation-Date: 2026-07-16 13:12+0200\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: English\n"
@@ -21,6 +21,20 @@ msgid "Username"
 msgstr ""
 
 msgid "Password"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Overlay export file"
+msgstr "Spotify Overlay"
+
+msgid "Select a JSON file previously exported from Nexora."
+msgstr ""
+
+msgid "The import file is too large."
+msgstr ""
+
+msgid "Select a JSON file."
 msgstr ""
 
 msgid "Overlay title"
@@ -169,6 +183,35 @@ msgstr ""
 msgid "Neon"
 msgstr ""
 
+msgid "The selected file is not valid JSON."
+msgstr ""
+
+msgid "The import file has an invalid structure."
+msgstr ""
+
+msgid "This is not a Nexora overlay export."
+msgstr ""
+
+msgid "This overlay export version is not supported."
+msgstr ""
+
+msgid "The overlay type is not supported."
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "The Spotify overlay data is invalid."
+msgstr "Spotify Overlay"
+
+msgid "The Win Challenge game data is invalid."
+msgstr ""
+
+msgid "The Win Challenge game list is invalid."
+msgstr ""
+
+msgid "The Win Challenge overlay data is invalid."
+msgstr ""
+
 msgid "Spotify credentials are not configured."
 msgstr ""
 
@@ -209,6 +252,17 @@ msgid "Spotify returned an invalid response."
 msgstr ""
 
 msgid "About"
+msgstr ""
+
+msgid ""
+"Learn how Nexora helps creators build customizable browser-source overlays "
+"for OBS."
+msgstr ""
+
+msgid "Breadcrumb"
+msgstr ""
+
+msgid "Home"
 msgstr ""
 
 msgid "About Nexora"
@@ -376,15 +430,41 @@ msgstr ""
 msgid "View all overlays"
 msgstr "Spotify Overlay"
 
+msgid ""
+"Create customizable Spotify and Win Challenge overlays for OBS directly in "
+"your browser."
+msgstr ""
+
+msgid "Skip to main content"
+msgstr ""
+
+msgid "Nexora home"
+msgstr ""
+
+msgid "Open navigation"
+msgstr ""
+
+msgid "Close navigation"
+msgstr ""
+
+msgid "Main navigation"
+msgstr ""
+
 #, fuzzy
 #| msgid "Spotify Overlay"
-msgid "Spotify"
+msgid "My overlays"
 msgstr "Spotify Overlay"
+
+msgid "Live demo"
+msgstr ""
 
 msgid "Signed in as"
 msgstr ""
 
 msgid "Sign out"
+msgstr ""
+
+msgid "Create account"
 msgstr ""
 
 msgid "Sign in"
@@ -393,13 +473,102 @@ msgstr ""
 msgid "Language"
 msgstr ""
 
-msgid "Switch theme"
+msgid "Apply"
+msgstr ""
+
+msgid "Switch to dark theme"
+msgstr ""
+
+msgid "Switch to light theme"
+msgstr ""
+
+msgid "Footer navigation"
 msgstr ""
 
 msgid "Version"
 msgstr ""
 
-msgid "Home"
+msgid "Interactive demo"
+msgstr ""
+
+msgid ""
+"Try Nexora's interactive Spotify and Win Challenge overlay demo without "
+"creating an account."
+msgstr ""
+
+msgid "Try Nexora before you sign up"
+msgstr ""
+
+msgid "Build a sample overlay in seconds"
+msgstr ""
+
+msgid ""
+"Change the content, color and style below. Nothing is saved until you create "
+"an account."
+msgstr ""
+
+msgid "Try the live demo"
+msgstr ""
+
+msgid "Create your first overlay"
+msgstr ""
+
+msgid "Create free account"
+msgstr ""
+
+msgid ""
+"An account is only required when you want to save an overlay, connect "
+"Spotify or use its OBS link."
+msgstr ""
+
+msgid "Overlay playground"
+msgstr ""
+
+msgid "Make it yours"
+msgstr ""
+
+msgid "Every change updates the preview immediately."
+msgstr ""
+
+msgid "Now-playing demo"
+msgstr ""
+
+msgid "Now playing"
+msgstr ""
+
+msgid "Spotify demo controls"
+msgstr ""
+
+msgid "Title"
+msgstr ""
+
+msgid "Artist"
+msgstr ""
+
+msgid "Style"
+msgstr ""
+
+msgid "Create and save Spotify overlay"
+msgstr ""
+
+msgid "Progress demo"
+msgstr ""
+
+msgid "Win Challenge"
+msgstr ""
+
+msgid "Challenge progress"
+msgstr ""
+
+msgid "Win Challenge demo controls"
+msgstr ""
+
+msgid "Create and save Win Challenge"
+msgstr ""
+
+msgid ""
+"Design Spotify and Win Challenge overlays for OBS, test them live and manage "
+"them from one browser-based workspace."
 msgstr ""
 
 msgid "Browser-based overlays for creators"
@@ -413,22 +582,18 @@ msgid ""
 "more — then add them directly to OBS as a browser source."
 msgstr ""
 
-msgid "Create your first overlay"
+msgid "Try live demo"
 msgstr ""
 
-msgid "Learn more"
+msgid ""
+"No account is needed for the demo. Sign up only when you want to save an "
+"overlay or use it in OBS."
 msgstr ""
 
 msgid "Example overlay preview"
 msgstr ""
 
 msgid "Stream preview"
-msgstr ""
-
-msgid "Now playing"
-msgstr ""
-
-msgid "Win Challenge"
 msgstr ""
 
 msgid "Overlay collection"
@@ -456,6 +621,12 @@ msgid "Custom colors and layouts"
 msgstr ""
 
 msgid "Create Spotify Overlay"
+msgstr ""
+
+msgid "Try demo"
+msgstr ""
+
+msgid "Free account required to save and use in OBS."
 msgstr ""
 
 msgid "Win challenge medal"
@@ -530,6 +701,167 @@ msgstr ""
 msgid "Get started"
 msgstr ""
 
+msgid "Manage your Spotify and Win Challenge overlays in one place."
+msgstr ""
+
+msgid "Overlay dashboard"
+msgstr ""
+
+msgid ""
+"Manage Spotify and Win Challenge overlays together, open previews and copy "
+"OBS links without switching pages."
+msgstr ""
+
+msgid "Overlay categories"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Spotify"
+msgstr "Spotify Overlay"
+
+#, python-format
+msgid "%(counter)s overlay"
+msgid_plural "%(counter)s overlays"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Win Challenges"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Overlay overview"
+msgstr "Spotify Overlay"
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "All overlays"
+msgstr "Spotify Overlay"
+
+msgid "Transfer"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Import overlay"
+msgstr "Spotify Overlay"
+
+msgid "Restore a Nexora JSON export or move an overlay between accounts."
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
+msgid "Music and playback"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Spotify overlays"
+msgstr "Spotify Overlay"
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Create Spotify overlay"
+msgstr "Spotify Overlay"
+
+msgid "Preview"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Spotify overlay"
+msgstr "Spotify Overlay"
+
+msgid "Connected"
+msgstr ""
+
+msgid "Not connected"
+msgstr ""
+
+msgid "Size"
+msgstr ""
+
+msgid "Elements"
+msgstr ""
+
+msgid "Updated"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Duplicate"
+msgstr ""
+
+msgid "Export"
+msgstr ""
+
+msgid "opens in a new tab"
+msgstr ""
+
+msgid "Copy OBS link"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Delete this Spotify overlay?"
+msgstr "Spotify Overlay"
+
+msgid "Delete"
+msgstr ""
+
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "No Spotify overlays yet"
+msgstr "Spotify Overlay"
+
+msgid "Create a layout for the current track, artwork and playback progress."
+msgstr ""
+
+msgid "Goals and progress"
+msgstr ""
+
+msgid "Add your first game in the editor."
+msgstr ""
+
+msgid "Ready for OBS"
+msgstr ""
+
+msgid "Games"
+msgstr ""
+
+msgid "Manage"
+msgstr ""
+
+msgid "Design"
+msgstr ""
+
+msgid "Delete this Win Challenge?"
+msgstr ""
+
+msgid "No Win Challenges yet"
+msgstr ""
+
+msgid "Create a counter, add games and keep your stream audience up to date."
+msgstr ""
+
+msgid "OBS link copied"
+msgstr ""
+
+msgid "Edit history"
+msgstr ""
+
+msgid "Undo"
+msgstr ""
+
+msgid "Redo"
+msgstr ""
+
+msgid "All changes saved"
+msgstr ""
+
 msgid "No games yet"
 msgstr ""
 
@@ -542,10 +874,13 @@ msgstr ""
 msgid "Sign in to manage your private overlay library."
 msgstr ""
 
-msgid "No account yet?"
+msgid "Check your entries"
 msgstr ""
 
-msgid "Create account"
+msgid "Required"
+msgstr ""
+
+msgid "No account yet?"
 msgstr ""
 
 msgid ""
@@ -562,10 +897,23 @@ msgstr ""
 msgid "Move overlay element"
 msgstr ""
 
-#, fuzzy
-#| msgid "Spotify Overlay"
-msgid "Spotify overlays"
-msgstr "Spotify Overlay"
+msgid "No unsaved changes"
+msgstr ""
+
+msgid "Unsaved changes"
+msgstr ""
+
+msgid "Saving changes..."
+msgstr ""
+
+msgid "Autosave failed. Use the save button to try again."
+msgstr ""
+
+msgid "Draft saved locally"
+msgstr ""
+
+msgid "Local draft restored"
+msgstr ""
 
 #, fuzzy
 #| msgid "Spotify Overlay"
@@ -584,7 +932,7 @@ msgstr ""
 
 #, fuzzy
 #| msgid "Spotify Overlay"
-msgid "All Spotify overlays"
+msgid "Back to my overlays"
 msgstr "Spotify Overlay"
 
 msgid "General"
@@ -614,12 +962,6 @@ msgid "Content"
 msgstr ""
 
 msgid "Add elements"
-msgstr ""
-
-msgid "Title"
-msgstr ""
-
-msgid "Artist"
 msgstr ""
 
 msgid "Album"
@@ -676,16 +1018,10 @@ msgstr ""
 msgid "Spotify connection"
 msgstr ""
 
-msgid "Connected"
-msgstr ""
-
 msgid "Playback data is available to the overlay."
 msgstr ""
 
 msgid "Disconnect Spotify"
-msgstr ""
-
-msgid "Not connected"
 msgstr ""
 
 msgid "Connect the Spotify account whose playback should be shown."
@@ -755,14 +1091,6 @@ msgstr ""
 
 #, fuzzy
 #| msgid "Spotify Overlay"
-msgid "Delete this Spotify overlay?"
-msgstr "Spotify Overlay"
-
-msgid "OBS link copied"
-msgstr ""
-
-#, fuzzy
-#| msgid "Spotify Overlay"
 msgid "Spotify Overlays"
 msgstr "Spotify Overlay"
 
@@ -781,30 +1109,10 @@ msgstr ""
 msgid "Saved Spotify overlays"
 msgstr "Spotify Overlay"
 
-#, fuzzy
-#| msgid "Spotify Overlay"
-msgid "Spotify overlay"
-msgstr "Spotify Overlay"
-
-msgid "Size"
-msgstr ""
-
-msgid "Elements"
-msgstr ""
-
 msgid "Open"
 msgstr ""
 
-msgid "Edit"
-msgstr ""
-
 msgid "Open preview"
-msgstr ""
-
-msgid "Copy OBS link"
-msgstr ""
-
-msgid "Delete"
 msgstr ""
 
 msgid "No overlays yet"
@@ -845,9 +1153,6 @@ msgstr ""
 msgid "Optional: default Winchallenge"
 msgstr ""
 
-msgid "Design"
-msgstr ""
-
 msgid "Customize the overlay"
 msgstr ""
 
@@ -881,9 +1186,6 @@ msgstr ""
 msgid "Save Win Challenge"
 msgstr ""
 
-msgid "Win Challenges"
-msgstr ""
-
 msgid "Win Challenge overlays"
 msgstr ""
 
@@ -903,15 +1205,6 @@ msgstr ""
 msgid "Overlay"
 msgstr "Spotify Overlay"
 
-msgid "Games"
-msgstr ""
-
-msgid "Updated"
-msgstr ""
-
-msgid "Manage"
-msgstr ""
-
 msgid "Edit Design"
 msgstr ""
 
@@ -919,9 +1212,6 @@ msgid "Open Preview"
 msgstr ""
 
 msgid "Copy OBS Link"
-msgstr ""
-
-msgid "Delete this Win Challenge?"
 msgstr ""
 
 msgid "Create your first Win Challenge"
@@ -1009,6 +1299,14 @@ msgstr "Spotify Overlay"
 msgid "Spotify overlay deleted: %(name)s"
 msgstr ""
 
+msgid "Copy"
+msgstr ""
+
+#, fuzzy, python-format
+#| msgid "Spotify Overlay"
+msgid "Spotify overlay duplicated: %(name)s"
+msgstr "Spotify Overlay"
+
 msgid ""
 "Add your Spotify client credentials to the environment before connecting."
 msgstr ""
@@ -1031,6 +1329,10 @@ msgstr ""
 msgid "Spotify disconnected."
 msgstr ""
 
+#, python-format
+msgid "Overlay imported: %(name)s"
+msgstr ""
+
 msgid "Win Challenge created."
 msgstr ""
 
@@ -1040,8 +1342,15 @@ msgstr ""
 msgid "Overlay design saved."
 msgstr ""
 
+msgid "Unknown autosave form."
+msgstr ""
+
 #, python-format
 msgid "Win Challenge deleted: %(name)s"
+msgstr ""
+
+#, python-format
+msgid "Win Challenge duplicated: %(name)s"
 msgstr ""
 
 msgid "Invalid win change."
@@ -1049,3 +1358,8 @@ msgstr ""
 
 msgid "Game name is required."
 msgstr ""
+
+#, fuzzy
+#~| msgid "Spotify Overlay"
+#~ msgid "All Spotify overlays"
+#~ msgstr "Spotify Overlay"
