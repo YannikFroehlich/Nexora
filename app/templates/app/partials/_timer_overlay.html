@@ -1,0 +1,61 @@
+{% load i18n %}
+
+<article
+    class="timer-overlay timer-overlay--{{ timer.design_template }}"
+    data-timer-overlay
+    data-mode="{{ timer.mode }}"
+    data-duration-seconds="{{ timer.duration_seconds }}"
+    data-display-seconds="{{ timer.display_seconds }}"
+    data-running="{{ timer.effective_is_running|yesno:'true,false' }}"
+    style="
+        --timer-background: {{ timer.background_rgba }};
+        --timer-text: {{ timer.text_color }};
+        --timer-accent: {{ timer.accent_color }};
+        --timer-border: {{ timer.border_color }};
+        --timer-border-width: {{ timer.border_width }}px;
+        --timer-radius: {{ timer.corner_radius }}px;
+        --timer-width: {{ timer.overlay_width }}px;
+        --timer-height: {{ timer.overlay_height }}px;
+        --timer-label-size: {{ timer.label_text_size }}px;
+        --timer-time-size: {{ timer.timer_text_size }}px;
+        --timer-shadow: {{ timer.shadow_css }};
+        --timer-progress: {{ timer.progress_percent }}%;
+    "
+>
+    <div class="timer-overlay__topline">
+        <span class="timer-overlay__mode" data-timer-mode-label>
+            {% if timer.mode == "stopwatch" %}{% translate "Stopwatch" %}{% else %}{% translate "Countdown" %}{% endif %}
+        </span>
+        <span
+            class="timer-overlay__status"
+            data-timer-status
+            data-state="{% if timer.effective_is_running %}running{% elif timer.mode == 'countdown' and timer.display_seconds == 0 %}complete{% else %}paused{% endif %}"
+        >
+            {% if timer.effective_is_running %}
+                {% translate "Running" %}
+            {% elif timer.mode == "countdown" and timer.display_seconds == 0 %}
+                {% translate "Complete" %}
+            {% else %}
+                {% translate "Paused" %}
+            {% endif %}
+        </span>
+    </div>
+
+    <p class="timer-overlay__label" data-timer-label {% if not timer.display_label %}hidden{% endif %}>
+        {{ timer.display_label }}
+    </p>
+    <time class="timer-overlay__time" data-timer-time>{{ timer.formatted_time }}</time>
+
+    <div
+        class="timer-overlay__progress"
+        data-timer-progress-wrap
+        {% if not timer.show_progress or timer.mode == "stopwatch" %}hidden{% endif %}
+        role="progressbar"
+        aria-label="{% translate 'Timer progress' %}"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="{{ timer.progress_percent }}"
+    >
+        <span data-timer-progress></span>
+    </div>
+</article>

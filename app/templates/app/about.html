@@ -4,8 +4,19 @@
 
 {% block title %}{% trans "About" %} | Nexora{% endblock %}
 
+{% block meta_description %}{% translate "Learn how Nexora helps creators build customizable browser-source overlays for OBS." %}{% endblock %}
+
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/about.css' %}">
+    <link rel="stylesheet" href="{% static 'css/about.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li aria-current="page">{% translate "About" %}</li>
+        </ol>
+    </nav>
 {% endblock %}
 
 {% block content %}
@@ -30,7 +41,7 @@
             <aside class="about-hero__panel" aria-label="{% translate 'Nexora at a glance' %}">
                 <div class="about-brand">
                     <span class="about-brand__icon">
-                        <img src="{% static 'imgs/icons/Nexora_Icon.png' %}" alt="">
+                        <img src="{% static 'imgs/icons/nexora_icon.png' %}" alt="">
                     </span>
                     <span>
                         <strong>Nexora</strong>
@@ -76,7 +87,7 @@
         <section class="about-tools" aria-labelledby="tools-title">
             <div class="about-section-heading">
                 <p class="about-label">{% translate "Available now" %}</p>
-                <h2 id="tools-title">{% translate "Two tools, one consistent workflow" %}</h2>
+                <h2 id="tools-title">{% translate "Three tools, one consistent workflow" %}</h2>
             </div>
 
             <div class="about-tools__grid">
@@ -88,7 +99,7 @@
                         <p class="about-tool__type">{% translate "Playback" %}</p>
                         <h3>{% translate "Spotify Overlay" %}</h3>
                         <p>{% translate "Show the current track, artwork, progress and playback status in a layout you control." %}</p>
-                        <a href="{% url 'spotify_list' %}">
+                        <a href="{% url 'overlay_dashboard' %}#spotify-overlays">
                             {% translate "Open Spotify overlays" %}<span aria-hidden="true">→</span>
                         </a>
                     </div>
@@ -102,8 +113,20 @@
                         <p class="about-tool__type">{% translate "Progress" %}</p>
                         <h3>{% translate "Winchallenges" %}</h3>
                         <p>{% translate "Track wins across games and keep your audience up to date with a live challenge overlay." %}</p>
-                        <a href="{% url 'winchallenge_list' %}">
+                        <a href="{% url 'overlay_dashboard' %}#winchallenge-overlays">
                             {% translate "Open Winchallenges" %}<span aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="about-tool about-tool--timer">
+                    <div class="about-tool__icon about-tool__icon--timer" aria-hidden="true">&#9719;</div>
+                    <div class="about-tool__content">
+                        <p class="about-tool__type">{% translate "Time" %}</p>
+                        <h3>{% translate "Stream Timer" %}</h3>
+                        <p>{% translate "Control a synchronized countdown or stopwatch without replacing the browser source in OBS." %}</p>
+                        <a href="{% url 'overlay_dashboard' %}#timer-overlays">
+                            {% translate "Open stream timers" %}<span aria-hidden="true">→</span>
                         </a>
                     </div>
                 </article>

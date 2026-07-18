@@ -284,6 +284,9 @@
         const syncElements = () => {
             elementsInput.value = JSON.stringify(elements);
         };
+        const notifyEditorChange = () => {
+            form.dispatchEvent(new CustomEvent("nexora:editor-change", {bubbles: true}));
+        };
         const snapToGrid = (value) => gridEnabled
             ? Math.round(value / gridSize) * gridSize
             : Math.round(value);
@@ -427,6 +430,7 @@
             elements = elements.filter((element) => element.id !== selectedId);
             selectedId = elements[0]?.id || null;
             render();
+            notifyEditorChange();
 
             if (focusNext && selectedId) {
                 requestAnimationFrame(() => {
@@ -473,6 +477,7 @@
                 elements.push(element);
                 selectedId = element.id;
                 render();
+                notifyEditorChange();
                 return;
             }
 
@@ -562,6 +567,7 @@
             if (event.key === "ArrowDown") element.y += step;
             fitElementToCanvas(element);
             render();
+            notifyEditorChange();
             canvas.querySelector(`[data-element-id="${CSS.escape(element.id)}"]`)?.focus();
         });
 
@@ -583,6 +589,7 @@
             const originBottom = originY + originHeight;
             const currentDesign = design();
             const scale = canvas._spotifyScale || 1;
+            let pointerChanged = false;
 
             node.focus({preventScroll: true});
 
@@ -595,6 +602,10 @@
             const move = (moveEvent) => {
                 const deltaX = Math.round((moveEvent.clientX - startX) / scale);
                 const deltaY = Math.round((moveEvent.clientY - startY) / scale);
+
+                if (deltaX || deltaY) {
+                    pointerChanged = true;
+                }
 
                 if (resizeDirection) {
                     if (resizeDirection.includes("e")) {
@@ -648,12 +659,27 @@
                 window.removeEventListener("pointermove", move);
                 window.removeEventListener("pointerup", end);
                 renderList();
+                if (pointerChanged) {
+                    notifyEditorChange();
+                }
             };
 
             window.addEventListener("pointermove", move);
             window.addEventListener("pointerup", end, {once: true});
         });
 
+        form.addEventListener("nexora:editor-restore", () => {
+            try {
+                elements = JSON.parse(elementsInput.value || "[]");
+            } catch {
+                elements = [];
+            }
+
+            if (!elements.some((element) => element.id === selectedId)) {
+                selectedId = elements[0]?.id || null;
+            }
+            render();
+        });
         form.addEventListener("submit", syncElements);
         render();
     };

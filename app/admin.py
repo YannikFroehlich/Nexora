@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from app.models import SpotifyOverlay, WinChallenge, WinChallengeGame
+from app.models import SpotifyOverlay, TimerOverlay, WinChallenge, WinChallengeGame
 
 
 class WinChallengeGameInline(admin.TabularInline):
@@ -50,3 +50,15 @@ class SpotifyOverlayAdmin(admin.ModelAdmin):
     @admin.display(boolean=True, description="Spotify connected")
     def spotify_connected(self, obj):
         return obj.is_spotify_connected
+
+
+@admin.register(TimerOverlay)
+class TimerOverlayAdmin(admin.ModelAdmin):
+    list_display = ("display_name", "owner", "mode", "timer_running", "updated_at")
+    list_filter = ("mode", "design_template", "is_running", "owner")
+    search_fields = ("name", "label", "public_token", "owner__username")
+    readonly_fields = ("public_token", "created_at", "updated_at")
+
+    @admin.display(boolean=True, description="Running")
+    def timer_running(self, obj):
+        return obj.effective_is_running()

@@ -1,3 +1,4 @@
+import json
 import secrets
 
 from django.contrib.auth import get_user_model, login
@@ -5,25 +6,28 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import F, Max
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.text import slugify
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from app.forms import (
     SignUpForm,
+    OverlayImportForm,
     SpotifyOverlayForm,
+    TimerOverlayForm,
     WinChallengeCreateForm,
     WinChallengeDesignForm,
     WinChallengeGameForm,
     WinChallengeSettingsForm,
 )
-from app.models import SpotifyOverlay, WinChallenge, WinChallengeGame
-from app import spotify_api
+from app.models import SpotifyOverlay, TimerOverlay, WinChallenge, WinChallengeGame
+from app import overlay_transfer, spotify_api
 
 
 def home(request):
@@ -31,9 +35,46 @@ def home(request):
     return render(request, template_name)
 
 
+def demo(request):
+    return render(request, "app/demo.html")
+
+
 def about(request):
     template_name = "app/about.html"
     return render(request, template_name)
+
+
+def robots_txt(request):
+    sitemap_url = request.build_absolute_uri(reverse("sitemap"))
+    content = "\n".join(
+        (
+            "User-agent: *",
+            "Allow: /",
+            "Disallow: /accounts/",
+            "Disallow: /admin/",
+            "Disallow: /overlays/",
+            "Disallow: /spotify/",
+            "Disallow: /timers/",
+            "Disallow: /winchallenges/",
+            f"Sitemap: {sitemap_url}",
+        )
+    )
+    return HttpResponse(content, content_type="text/plain; charset=utf-8")
+
+
+def sitemap(request):
+    public_urls = (
+        request.build_absolute_uri(reverse("home")),
+        request.build_absolute_uri(reverse("demo")),
+        request.build_absolute_uri(reverse("about")),
+    )
+    entries = "".join(f"<url><loc>{url}</loc></url>" for url in public_urls)
+    content = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        f"{entries}</urlset>"
+    )
+    return HttpResponse(content, content_type="application/xml; charset=utf-8")
 
 
 def _safe_next_url(request, fallback="home"):
@@ -65,6 +106,7 @@ def signup(request):
 
                 if is_first_user:
                     SpotifyOverlay.objects.filter(owner__isnull=True).update(owner=user)
+                    TimerOverlay.objects.filter(owner__isnull=True).update(owner=user)
                     WinChallenge.objects.filter(owner__isnull=True).update(owner=user)
 
             login(request, user)
@@ -96,6 +138,19 @@ def _spotify_obs_url(request, overlay):
     )
 
 
+def _json_export_response(payload, overlay_type, overlay_name):
+    filename_slug = slugify(str(overlay_name))[:60] or "overlay"
+    response = HttpResponse(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        content_type="application/json; charset=utf-8",
+    )
+    response["Content-Disposition"] = (
+        f'attachment; filename="nexora-{overlay_type}-{filename_slug}.json"'
+    )
+    response["X-Content-Type-Options"] = "nosniff"
+    return _no_store(response)
+
+
 def _spotify_editor_context(request, form, overlay, is_create):
     return {
         "form": form,
@@ -117,22 +172,7 @@ def _spotify_editor_context(request, form, overlay, is_create):
 
 @login_required
 def spotify_list(request):
-    return render(
-        request,
-        "app/spotify/list.html",
-        {
-            "overlays": _manageable_spotify_overlays(request),
-            "sample_playback": {
-                "title": "Midnight Drive",
-                "artist": "Nova Waves",
-                "album": "Neon Horizons",
-                "image_url": "",
-                "progress_ms": 102000,
-                "duration_ms": 228000,
-                "is_playing": True,
-            },
-        },
-    )
+    return redirect(f"{reverse('overlay_dashboard')}#spotify-overlays")
 
 
 @login_required
@@ -182,12 +222,56 @@ def spotify_manage(request, pk):
 
 @login_required
 @require_POST
+def spotify_autosave(request, pk):
+    overlay = _get_manageable_spotify_overlay(request, pk)
+    form = SpotifyOverlayForm(request.POST, instance=overlay)
+
+    if not form.is_valid():
+        return JsonResponse(
+            {"ok": False, "errors": form.errors.get_json_data()},
+            status=400,
+        )
+
+    form.save()
+    return JsonResponse(
+        {
+            "ok": True,
+            "updated_at": overlay.updated_at.isoformat(),
+        }
+    )
+
+
+@login_required
+@require_POST
 def spotify_delete(request, pk):
     overlay = _get_manageable_spotify_overlay(request, pk)
     overlay_name = overlay.display_name
     overlay.delete()
     messages.success(request, _("Spotify overlay deleted: %(name)s") % {"name": overlay_name})
-    return redirect("spotify_list")
+    return redirect(f"{reverse('overlay_dashboard')}#spotify-overlays")
+
+
+@login_required
+@require_POST
+def spotify_duplicate(request, pk):
+    overlay = _get_manageable_spotify_overlay(request, pk)
+    duplicate = overlay_transfer.duplicate_overlay(overlay, request.user, _("Copy"))
+    messages.success(
+        request,
+        _("Spotify overlay duplicated: %(name)s") % {"name": duplicate.display_name},
+    )
+    return redirect(f"{reverse('overlay_dashboard')}#spotify-overlays")
+
+
+@login_required
+@require_GET
+def spotify_export(request, pk):
+    overlay = _get_manageable_spotify_overlay(request, pk)
+    return _json_export_response(
+        overlay_transfer.spotify_export_payload(overlay),
+        overlay_transfer.SPOTIFY_TYPE,
+        overlay.display_name,
+    )
 
 
 @login_required
@@ -222,7 +306,7 @@ def spotify_callback(request):
         or not secrets.compare_digest(received_state, oauth_session.get("state", ""))
     ):
         messages.error(request, _("The Spotify connection could not be verified."))
-        return redirect("spotify_list")
+        return redirect(f"{reverse('overlay_dashboard')}#spotify-overlays")
 
     overlay = _get_manageable_spotify_overlay(request, overlay_id)
 
@@ -279,6 +363,250 @@ def _manageable_winchallenges(request):
     return WinChallenge.objects.prefetch_related("games").filter(owner=request.user)
 
 
+def _manageable_timer_overlays(request):
+    return TimerOverlay.objects.filter(owner=request.user)
+
+
+def _overlay_dashboard_context(request, import_form=None):
+    spotify_overlays = list(_manageable_spotify_overlays(request))
+    win_challenges = list(_manageable_winchallenges(request))
+    timer_overlays = list(_manageable_timer_overlays(request))
+    return {
+        "spotify_overlays": spotify_overlays,
+        "win_challenges": win_challenges,
+        "timer_overlays": timer_overlays,
+        "spotify_count": len(spotify_overlays),
+        "winchallenge_count": len(win_challenges),
+        "timer_count": len(timer_overlays),
+        "overlay_count": len(spotify_overlays) + len(win_challenges) + len(timer_overlays),
+        "import_form": import_form or OverlayImportForm(),
+    }
+
+
+@login_required
+def overlay_dashboard(request):
+    return render(
+        request,
+        "app/overlay_dashboard.html",
+        _overlay_dashboard_context(request),
+    )
+
+
+@login_required
+@require_POST
+def overlay_import(request):
+    import_form = OverlayImportForm(request.POST, request.FILES)
+
+    if import_form.is_valid():
+        try:
+            payload = overlay_transfer.load_payload(
+                import_form.cleaned_data["overlay_file"]
+            )
+            overlay = overlay_transfer.import_payload(payload, request.user)
+        except overlay_transfer.OverlayTransferError as error:
+            import_form.add_error("overlay_file", str(error))
+        else:
+            display_name = (
+                overlay.display_name
+                if isinstance(overlay, (SpotifyOverlay, TimerOverlay))
+                else overlay.display_title
+            )
+            messages.success(
+                request,
+                _("Overlay imported: %(name)s") % {"name": display_name},
+            )
+            if isinstance(overlay, SpotifyOverlay):
+                section = "spotify-overlays"
+            elif isinstance(overlay, TimerOverlay):
+                section = "timer-overlays"
+            else:
+                section = "winchallenge-overlays"
+            return redirect(f"{reverse('overlay_dashboard')}#{section}")
+
+    return render(
+        request,
+        "app/overlay_dashboard.html",
+        _overlay_dashboard_context(request, import_form),
+        status=400,
+    )
+
+
+def _get_manageable_timer_overlay(request, pk):
+    return get_object_or_404(_manageable_timer_overlays(request), pk=pk)
+
+
+def _timer_obs_url(request, timer):
+    return request.build_absolute_uri(
+        reverse("timer_overlay", args=[timer.public_token])
+    )
+
+
+def _timer_editor_context(request, form, timer, is_create):
+    return {
+        "form": form,
+        "timer": timer,
+        "is_create": is_create,
+        "obs_url": "" if is_create else _timer_obs_url(request, timer),
+    }
+
+
+@login_required
+def timer_list(request):
+    return redirect(f"{reverse('overlay_dashboard')}#timer-overlays")
+
+
+@login_required
+def timer_create(request):
+    timer = TimerOverlay()
+
+    if request.method == "POST":
+        form = TimerOverlayForm(request.POST, instance=timer)
+        if form.is_valid():
+            timer = form.save(commit=False)
+            timer.owner = request.user
+            timer.save()
+            messages.success(request, _("Timer overlay created."))
+            return redirect("timer_manage", pk=timer.pk)
+    else:
+        form = TimerOverlayForm(instance=timer)
+
+    return render(
+        request,
+        "app/timer/create.html",
+        _timer_editor_context(request, form, timer, True),
+    )
+
+
+@login_required
+def timer_manage(request, pk):
+    timer = _get_manageable_timer_overlay(request, pk)
+
+    if request.method == "POST":
+        form = TimerOverlayForm(request.POST, instance=timer)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Timer overlay saved."))
+            return redirect("timer_manage", pk=timer.pk)
+    else:
+        form = TimerOverlayForm(instance=timer)
+
+    return render(
+        request,
+        "app/timer/create.html",
+        _timer_editor_context(request, form, timer, False),
+    )
+
+
+@login_required
+@require_POST
+def timer_autosave(request, pk):
+    timer = _get_manageable_timer_overlay(request, pk)
+    form = TimerOverlayForm(request.POST, instance=timer)
+
+    if not form.is_valid():
+        return JsonResponse(
+            {"ok": False, "errors": form.errors.get_json_data()},
+            status=400,
+        )
+
+    timer = form.save()
+    return JsonResponse({"ok": True, "updated_at": timer.updated_at.isoformat()})
+
+
+@login_required
+@require_POST
+def timer_control(request, pk):
+    action = request.POST.get("action", "")
+
+    if action not in {"start", "pause", "reset"}:
+        return JsonResponse({"error": _("Unknown timer action.")}, status=400)
+
+    with transaction.atomic():
+        timer = get_object_or_404(
+            TimerOverlay.objects.select_for_update().filter(owner=request.user),
+            pk=pk,
+        )
+        now = timezone.now()
+        elapsed = timer.elapsed_seconds(now)
+        limit = (
+            timer.duration_seconds
+            if timer.mode == TimerOverlay.MODE_COUNTDOWN
+            else TimerOverlay.MAX_SECONDS
+        )
+
+        if action == "reset":
+            timer.accumulated_seconds = 0
+            timer.started_at = None
+            timer.is_running = False
+        elif action == "pause":
+            timer.accumulated_seconds = elapsed
+            timer.started_at = None
+            timer.is_running = False
+        else:
+            if elapsed >= limit:
+                elapsed = 0
+            timer.accumulated_seconds = elapsed
+            timer.started_at = now
+            timer.is_running = True
+
+        timer.save(
+            update_fields=(
+                "accumulated_seconds",
+                "started_at",
+                "is_running",
+                "updated_at",
+            )
+        )
+
+    return _no_store(JsonResponse(timer.state_payload()))
+
+
+@login_required
+@require_POST
+def timer_delete(request, pk):
+    timer = _get_manageable_timer_overlay(request, pk)
+    timer_name = timer.display_name
+    timer.delete()
+    messages.success(request, _("Timer overlay deleted: %(name)s") % {"name": timer_name})
+    return redirect(f"{reverse('overlay_dashboard')}#timer-overlays")
+
+
+@login_required
+@require_POST
+def timer_duplicate(request, pk):
+    timer = _get_manageable_timer_overlay(request, pk)
+    duplicate = overlay_transfer.duplicate_overlay(timer, request.user, _("Copy"))
+    messages.success(
+        request,
+        _("Timer overlay duplicated: %(name)s") % {"name": duplicate.display_name},
+    )
+    return redirect(f"{reverse('overlay_dashboard')}#timer-overlays")
+
+
+@login_required
+@require_GET
+def timer_export(request, pk):
+    timer = _get_manageable_timer_overlay(request, pk)
+    return _json_export_response(
+        overlay_transfer.timer_export_payload(timer),
+        overlay_transfer.TIMER_TYPE,
+        timer.display_name,
+    )
+
+
+@never_cache
+def timer_overlay(request, public_token):
+    timer = get_object_or_404(TimerOverlay, public_token=public_token)
+    response = render(request, "app/timer/public_overlay.html", {"timer": timer})
+    return _no_store(response)
+
+
+@never_cache
+def timer_overlay_state(request, public_token):
+    timer = get_object_or_404(TimerOverlay, public_token=public_token)
+    return _no_store(JsonResponse(timer.state_payload()))
+
+
 def _get_manageable_winchallenge(request, pk):
     return get_object_or_404(_manageable_winchallenges(request), pk=pk)
 
@@ -314,13 +642,7 @@ def _state_response(challenge):
 
 @login_required
 def winchallenge_list(request):
-    return render(
-        request,
-        "app/winchallenge/list.html",
-        {
-            "challenges": _manageable_winchallenges(request),
-        },
-    )
+    return redirect(f"{reverse('overlay_dashboard')}#winchallenge-overlays")
 
 
 @login_required
@@ -393,13 +715,68 @@ def winchallenge_manage(request, pk):
 
 @login_required
 @require_POST
+def winchallenge_autosave(request, pk):
+    challenge = _get_manageable_winchallenge(request, pk)
+    form_type = request.POST.get("form_type")
+
+    if form_type == "challenge":
+        form = WinChallengeSettingsForm(request.POST, instance=challenge)
+    elif form_type == "design":
+        form = WinChallengeDesignForm(request.POST, instance=challenge)
+    else:
+        return JsonResponse(
+            {"ok": False, "error": _("Unknown autosave form.")},
+            status=400,
+        )
+
+    if not form.is_valid():
+        return JsonResponse(
+            {"ok": False, "errors": form.errors.get_json_data()},
+            status=400,
+        )
+
+    form.save(commit=False)
+    challenge.save(update_fields=[*form.fields, "updated_at"])
+    return JsonResponse(
+        {
+            "ok": True,
+            "updated_at": challenge.updated_at.isoformat(),
+        }
+    )
+
+
+@login_required
+@require_POST
 def winchallenge_delete(request, pk):
     challenge = _get_manageable_winchallenge(request, pk)
     challenge_title = challenge.display_title
     challenge.delete()
     messages.success(request, _("Win Challenge deleted: %(name)s") % {"name": challenge_title})
 
-    return redirect("winchallenge_list")
+    return redirect(f"{reverse('overlay_dashboard')}#winchallenge-overlays")
+
+
+@login_required
+@require_POST
+def winchallenge_duplicate(request, pk):
+    challenge = _get_manageable_winchallenge(request, pk)
+    duplicate = overlay_transfer.duplicate_overlay(challenge, request.user, _("Copy"))
+    messages.success(
+        request,
+        _("Win Challenge duplicated: %(name)s") % {"name": duplicate.display_title},
+    )
+    return redirect(f"{reverse('overlay_dashboard')}#winchallenge-overlays")
+
+
+@login_required
+@require_GET
+def winchallenge_export(request, pk):
+    challenge = _get_manageable_winchallenge(request, pk)
+    return _json_export_response(
+        overlay_transfer.winchallenge_export_payload(challenge),
+        overlay_transfer.WINCHALLENGE_TYPE,
+        challenge.display_title,
+    )
 
 
 @login_required

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-14 11:08+0200\n"
+"POT-Creation-Date: 2026-07-17 00:26+0200\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: German\n"
@@ -22,6 +22,18 @@ msgstr "Benutzername"
 
 msgid "Password"
 msgstr "Passwort"
+
+msgid "Overlay export file"
+msgstr "Overlay-Exportdatei"
+
+msgid "Select a JSON file previously exported from Nexora."
+msgstr "Wähle eine JSON-Datei aus, die zuvor aus Nexora exportiert wurde."
+
+msgid "The import file is too large."
+msgstr "Die Importdatei ist zu groß."
+
+msgid "Select a JSON file."
+msgstr "Wähle eine JSON-Datei aus."
 
 msgid "Overlay title"
 msgstr "Overlay-Titel"
@@ -155,6 +167,42 @@ msgstr "Ein Elementwert liegt außerhalb des erlaubten Bereichs."
 msgid "Every element color must be a valid hex color."
 msgstr "Jede Elementfarbe muss eine gültige Hex-Farbe sein."
 
+msgid "Hours"
+msgstr "Stunden"
+
+msgid "Minutes"
+msgstr "Minuten"
+
+msgid "Seconds"
+msgstr "Sekunden"
+
+msgid "Label"
+msgstr "Beschriftung"
+
+msgid "Timer type"
+msgstr "Timer-Typ"
+
+msgid "Timer text size"
+msgstr "Timer-Schriftgröße"
+
+msgid "Show progress bar"
+msgstr "Fortschrittsbalken anzeigen"
+
+msgid "Optional text displayed above the time."
+msgstr "Optionaler Text, der über der Zeit angezeigt wird."
+
+msgid "Stream Timer"
+msgstr "Stream-Timer"
+
+msgid "Starting soon"
+msgstr "Gleich geht's los"
+
+msgid "The timer duration must be at least one second."
+msgstr "Die Timer-Dauer muss mindestens eine Sekunde betragen."
+
+msgid "The timer duration must be shorter than 100 hours."
+msgstr "Die Timer-Dauer muss kürzer als 100 Stunden sein."
+
 msgid "Enter a valid hex color, for example #14b8a6."
 msgstr "Gib eine gültige Hex-Farbe ein, zum Beispiel #14b8a6."
 
@@ -166,6 +214,42 @@ msgstr "Glass"
 
 msgid "Neon"
 msgstr "Neon"
+
+msgid "Countdown"
+msgstr "Countdown"
+
+msgid "Stopwatch"
+msgstr "Stoppuhr"
+
+msgid "The selected file is not valid JSON."
+msgstr "Die ausgewählte Datei enthält kein gültiges JSON."
+
+msgid "The import file has an invalid structure."
+msgstr "Die Importdatei hat eine ungültige Struktur."
+
+msgid "This is not a Nexora overlay export."
+msgstr "Diese Datei ist kein Nexora-Overlay-Export."
+
+msgid "This overlay export version is not supported."
+msgstr "Diese Version des Overlay-Exports wird nicht unterstützt."
+
+msgid "The overlay type is not supported."
+msgstr "Dieser Overlay-Typ wird nicht unterstützt."
+
+msgid "The Spotify overlay data is invalid."
+msgstr "Die Daten des Spotify-Overlays sind ungültig."
+
+msgid "The Win Challenge game data is invalid."
+msgstr "Die Spieldaten der Win Challenge sind ungültig."
+
+msgid "The timer overlay data is invalid."
+msgstr "Die Daten des Timer-Overlays sind ungültig."
+
+msgid "The Win Challenge game list is invalid."
+msgstr "Die Spieleliste der Win Challenge ist ungültig."
+
+msgid "The Win Challenge overlay data is invalid."
+msgstr "Die Daten des Win-Challenge-Overlays sind ungültig."
 
 msgid "Spotify credentials are not configured."
 msgstr "Die Spotify-Zugangsdaten sind nicht konfiguriert."
@@ -210,6 +294,19 @@ msgstr "Spotify hat eine ungültige Antwort zurückgegeben."
 
 msgid "About"
 msgstr "Über"
+
+msgid ""
+"Learn how Nexora helps creators build customizable browser-source overlays "
+"for OBS."
+msgstr ""
+"Erfahre, wie Nexora Creatorn dabei hilft, anpassbare Browser-Source-Overlays "
+"für OBS zu erstellen."
+
+msgid "Breadcrumb"
+msgstr "Brotkrümelnavigation"
+
+msgid "Home"
+msgstr "Start"
 
 msgid "About Nexora"
 msgstr "Über Nexora"
@@ -281,8 +378,8 @@ msgstr ""
 msgid "Available now"
 msgstr "Jetzt verfügbar"
 
-msgid "Two tools, one consistent workflow"
-msgstr "Zwei Tools, ein einheitlicher Workflow"
+msgid "Three tools, one consistent workflow"
+msgstr "Drei Tools, ein einheitlicher Workflow"
 
 msgid "Playback"
 msgstr "Wiedergabe"
@@ -315,6 +412,19 @@ msgstr ""
 
 msgid "Open Winchallenges"
 msgstr "Winchallenges öffnen"
+
+msgid "Time"
+msgstr "Zeit"
+
+msgid ""
+"Control a synchronized countdown or stopwatch without replacing the browser "
+"source in OBS."
+msgstr ""
+"Steuere einen synchronisierten Countdown oder eine Stoppuhr, ohne die "
+"Browser-Quelle in OBS zu ersetzen."
+
+msgid "Open stream timers"
+msgstr "Stream-Timer öffnen"
 
 msgid "Our principles"
 msgstr "Unsere Prinzipien"
@@ -387,8 +497,33 @@ msgstr "Wähle ein Tool, passe es an und bringe es in OBS."
 msgid "View all overlays"
 msgstr "Alle Overlays ansehen"
 
-msgid "Spotify"
-msgstr "Spotify"
+msgid ""
+"Create customizable Spotify, timer and Win Challenge overlays for OBS "
+"directly in your browser."
+msgstr ""
+"Erstelle anpassbare Spotify-, Timer- und Win-Challenge-Overlays für OBS "
+"direkt in deinem Browser."
+
+msgid "Skip to main content"
+msgstr "Zum Hauptinhalt springen"
+
+msgid "Nexora home"
+msgstr "Nexora-Startseite"
+
+msgid "Open navigation"
+msgstr "Navigation öffnen"
+
+msgid "Close navigation"
+msgstr "Navigation schließen"
+
+msgid "Main navigation"
+msgstr "Hauptnavigation"
+
+msgid "My overlays"
+msgstr "Meine Overlays"
+
+msgid "Live demo"
+msgstr "Live-Demo"
 
 msgid "Signed in as"
 msgstr "Angemeldet als"
@@ -396,20 +531,120 @@ msgstr "Angemeldet als"
 msgid "Sign out"
 msgstr "Abmelden"
 
+msgid "Create account"
+msgstr "Konto erstellen"
+
 msgid "Sign in"
 msgstr "Anmelden"
 
 msgid "Language"
 msgstr "Sprache"
 
-msgid "Switch theme"
-msgstr "Theme wechseln"
+msgid "Apply"
+msgstr "Anwenden"
+
+msgid "Switch to dark theme"
+msgstr "Zum dunklen Design wechseln"
+
+msgid "Switch to light theme"
+msgstr "Zum hellen Design wechseln"
+
+msgid "Footer navigation"
+msgstr "Footer-Navigation"
 
 msgid "Version"
 msgstr "Version"
 
-msgid "Home"
-msgstr "Start"
+msgid "Interactive demo"
+msgstr "Interaktive Demo"
+
+msgid ""
+"Try Nexora's interactive Spotify and Win Challenge overlay demo without "
+"creating an account."
+msgstr ""
+"Probiere Nexoras interaktive Spotify- und Win-Challenge-Overlay-Demo aus, "
+"ohne ein Konto zu erstellen."
+
+msgid "Try Nexora before you sign up"
+msgstr "Nexora vor der Registrierung ausprobieren"
+
+msgid "Build a sample overlay in seconds"
+msgstr "Erstelle in Sekunden ein Beispiel-Overlay"
+
+msgid ""
+"Change the content, color and style below. Nothing is saved until you create "
+"an account."
+msgstr ""
+"Passe unten Inhalt, Farbe und Stil an. Gespeichert wird erst, wenn du ein "
+"Konto erstellst."
+
+msgid "Try the live demo"
+msgstr "Live-Demo ausprobieren"
+
+msgid "Create your first overlay"
+msgstr "Erstes Overlay erstellen"
+
+msgid "Create free account"
+msgstr "Kostenloses Konto erstellen"
+
+msgid ""
+"An account is only required when you want to save an overlay, connect "
+"Spotify or use its OBS link."
+msgstr ""
+"Ein Konto brauchst du erst, wenn du ein Overlay speichern, Spotify verbinden "
+"oder den OBS-Link verwenden möchtest."
+
+msgid "Overlay playground"
+msgstr "Overlay-Spielwiese"
+
+msgid "Make it yours"
+msgstr "Passe es an deinen Stil an"
+
+msgid "Every change updates the preview immediately."
+msgstr "Jede Änderung wird sofort in der Vorschau angezeigt."
+
+msgid "Now-playing demo"
+msgstr "Wiedergabe-Demo"
+
+msgid "Now playing"
+msgstr "Läuft gerade"
+
+msgid "Spotify demo controls"
+msgstr "Steuerelemente der Spotify-Demo"
+
+msgid "Title"
+msgstr "Titel"
+
+msgid "Artist"
+msgstr "Künstler"
+
+msgid "Style"
+msgstr "Stil"
+
+msgid "Create and save Spotify overlay"
+msgstr "Spotify-Overlay erstellen und speichern"
+
+msgid "Progress demo"
+msgstr "Fortschritts-Demo"
+
+msgid "Win Challenge"
+msgstr "Win Challenge"
+
+msgid "Challenge progress"
+msgstr "Challenge-Fortschritt"
+
+msgid "Win Challenge demo controls"
+msgstr "Steuerelemente der Win-Challenge-Demo"
+
+msgid "Create and save Win Challenge"
+msgstr "Win Challenge erstellen und speichern"
+
+msgid ""
+"Design Spotify, timer and Win Challenge overlays for OBS and manage them "
+"from one browser-based workspace."
+msgstr ""
+"Gestalte Spotify-, Timer- und Win-Challenge-Overlays für OBS und verwalte "
+"sie in einer browserbasierten Arbeitsumgebung."
 
 msgid "Browser-based overlays for creators"
 msgstr "Browserbasierte Overlays für Creator"
@@ -424,23 +659,21 @@ msgstr ""
 "Erstelle und gestalte browserbasierte Overlays für Spotify, Win Challenges "
 "und mehr – und füge sie anschließend direkt als Browser-Quelle in OBS ein."
 
-msgid "Create your first overlay"
-msgstr "Erstes Overlay erstellen"
+msgid "Try live demo"
+msgstr "Live-Demo ausprobieren"
 
-msgid "Learn more"
-msgstr "Mehr erfahren"
+msgid ""
+"No account is needed for the demo. Sign up only when you want to save an "
+"overlay or use it in OBS."
+msgstr ""
+"Für die Demo brauchst du kein Konto. Registriere dich erst, wenn du ein "
+"Overlay speichern oder in OBS verwenden möchtest."
 
 msgid "Example overlay preview"
 msgstr "Beispielhafte Overlay-Vorschau"
 
 msgid "Stream preview"
 msgstr "Stream-Vorschau"
-
-msgid "Now playing"
-msgstr "Läuft gerade"
-
-msgid "Win Challenge"
-msgstr "Win Challenge"
 
 msgid "Overlay collection"
 msgstr "Overlay-Auswahl"
@@ -470,6 +703,12 @@ msgstr "Individuelle Farben und Layouts"
 msgid "Create Spotify Overlay"
 msgstr "Spotify-Overlay erstellen"
 
+msgid "Try demo"
+msgstr "Demo ausprobieren"
+
+msgid "Free account required to save and use in OBS."
+msgstr "Kostenloses Konto zum Speichern und für OBS erforderlich."
+
 msgid "Win challenge medal"
 msgstr "Medaille der Win Challenge"
 
@@ -488,6 +727,26 @@ msgstr "Anpassbares Design und Farben"
 
 msgid "Create Win Challenge"
 msgstr "Win Challenge erstellen"
+
+msgid "Ready"
+msgstr "Bereit"
+
+msgid "Run a countdown or stopwatch that stays synchronized in your OBS scene."
+msgstr ""
+"Nutze einen Countdown oder eine Stoppuhr, die in deiner OBS-Szene synchron "
+"bleibt."
+
+msgid "Countdown and stopwatch modes"
+msgstr "Countdown- und Stoppuhr-Modus"
+
+msgid "Live start, pause and reset controls"
+msgstr "Live-Steuerung für Start, Pause und Zurücksetzen"
+
+msgid "Minimal, glass and neon designs"
+msgstr "Minimal-, Glass- und Neon-Designs"
+
+msgid "Create Stream Timer"
+msgstr "Stream-Timer erstellen"
 
 msgid "How it works"
 msgstr "So funktioniert es"
@@ -544,6 +803,205 @@ msgstr ""
 msgid "Get started"
 msgstr "Jetzt starten"
 
+msgid "Manage your Spotify, timer and Win Challenge overlays in one place."
+msgstr "Verwalte deine Spotify-, Timer- und Win-Challenge-Overlays an einem Ort."
+
+msgid "Overlay dashboard"
+msgstr "Overlay-Dashboard"
+
+msgid ""
+"Manage Spotify, timer and Win Challenge overlays together, open previews and "
+"copy OBS links without switching pages."
+msgstr ""
+"Verwalte Spotify-, Timer- und Win-Challenge-Overlays gemeinsam, öffne "
+"Vorschauen und kopiere OBS-Links, ohne zwischen Seiten zu wechseln."
+
+msgid "Overlay categories"
+msgstr "Overlay-Kategorien"
+
+msgid "Spotify"
+msgstr "Spotify"
+
+#, python-format
+msgid "%(counter)s overlay"
+msgid_plural "%(counter)s overlays"
+msgstr[0] "%(counter)s Overlay"
+msgstr[1] "%(counter)s Overlays"
+
+msgid "Win Challenges"
+msgstr "Win Challenges"
+
+msgid "Timers"
+msgstr "Timer"
+
+msgid "Overlay overview"
+msgstr "Overlay-Übersicht"
+
+msgid "All overlays"
+msgstr "Alle Overlays"
+
+msgid "Transfer"
+msgstr "Übertragen"
+
+msgid "Import overlay"
+msgstr "Overlay importieren"
+
+msgid "Restore a Nexora JSON export or move an overlay between accounts."
+msgstr ""
+"Stelle einen Nexora-JSON-Export wieder her oder übertrage ein Overlay "
+"zwischen Konten."
+
+msgid "Import"
+msgstr "Importieren"
+
+msgid "Music and playback"
+msgstr "Musik und Wiedergabe"
+
+msgid "Spotify overlays"
+msgstr "Spotify-Overlays"
+
+msgid "Create Spotify overlay"
+msgstr "Spotify-Overlay erstellen"
+
+msgid "Preview"
+msgstr "Vorschau"
+
+msgid "Spotify overlay"
+msgstr "Spotify-Overlay"
+
+msgid "Connected"
+msgstr "Verbunden"
+
+msgid "Not connected"
+msgstr "Nicht verbunden"
+
+msgid "Size"
+msgstr "Größe"
+
+msgid "Elements"
+msgstr "Elemente"
+
+msgid "Updated"
+msgstr "Aktualisiert"
+
+msgid "Edit"
+msgstr "Bearbeiten"
+
+msgid "Duplicate"
+msgstr "Duplizieren"
+
+msgid "Export"
+msgstr "Exportieren"
+
+msgid "opens in a new tab"
+msgstr "öffnet in einem neuen Tab"
+
+msgid "Copy OBS link"
+msgstr "OBS-Link kopieren"
+
+msgid "Delete this Spotify overlay?"
+msgstr "Dieses Spotify-Overlay löschen?"
+
+msgid "Delete"
+msgstr "Löschen"
+
+msgid "No Spotify overlays yet"
+msgstr "Noch keine Spotify-Overlays"
+
+msgid "Create a layout for the current track, artwork and playback progress."
+msgstr ""
+"Erstelle ein Layout für den aktuellen Titel, das Cover und den "
+"Wiedergabefortschritt."
+
+msgid "Goals and progress"
+msgstr "Ziele und Fortschritt"
+
+msgid "Add your first game in the editor."
+msgstr "Füge dein erstes Spiel im Editor hinzu."
+
+msgid "Ready for OBS"
+msgstr "Bereit für OBS"
+
+msgid "Games"
+msgstr "Spiele"
+
+msgid "Manage"
+msgstr "Verwalten"
+
+msgid "Design"
+msgstr "Design"
+
+msgid "Delete this Win Challenge?"
+msgstr "Diese Win Challenge löschen?"
+
+msgid "No Win Challenges yet"
+msgstr "Noch keine Win Challenges"
+
+msgid "Create a counter, add games and keep your stream audience up to date."
+msgstr ""
+"Erstelle einen Zähler, füge Spiele hinzu und halte dein Stream-Publikum auf "
+"dem Laufenden."
+
+msgid "Time and pacing"
+msgstr "Zeit und Ablauf"
+
+msgid "Stream timers"
+msgstr "Stream-Timer"
+
+msgid "Create stream timer"
+msgstr "Stream-Timer erstellen"
+
+msgid "Running"
+msgstr "Läuft"
+
+msgid "Paused"
+msgstr "Pausiert"
+
+msgid "Stream timer"
+msgstr "Stream-Timer"
+
+msgid "Type"
+msgstr "Typ"
+
+msgid "Duration"
+msgstr "Dauer"
+
+msgid "Control"
+msgstr "Steuern"
+
+msgid "Delete this timer overlay?"
+msgstr "Dieses Timer-Overlay löschen?"
+
+msgid "No stream timers yet"
+msgstr "Noch keine Stream-Timer"
+
+msgid ""
+"Create a countdown or stopwatch that you can control live during your stream."
+msgstr ""
+"Erstelle einen Countdown oder eine Stoppuhr, die du während deines Streams "
+"live steuern kannst."
+
+msgid "OBS link copied"
+msgstr "OBS-Link kopiert"
+
+msgid "Edit history"
+msgstr "Bearbeitungsverlauf"
+
+msgid "Undo"
+msgstr "Rückgängig"
+
+msgid "Redo"
+msgstr "Wiederholen"
+
+msgid "All changes saved"
+msgstr "Alle Änderungen gespeichert"
+
+msgid "Complete"
+msgstr "Fertig"
+
+msgid "Timer progress"
+msgstr "Timer-Fortschritt"
+
 msgid "No games yet"
 msgstr "Noch keine Spiele"
 
@@ -556,11 +1014,14 @@ msgstr "Nexora-Konto"
 msgid "Sign in to manage your private overlay library."
 msgstr "Melde dich an, um deine private Overlay-Bibliothek zu verwalten."
 
+msgid "Check your entries"
+msgstr "Überprüfe deine Eingaben"
+
+msgid "Required"
+msgstr "Pflichtfeld"
+
 msgid "No account yet?"
 msgstr "Noch kein Konto?"
-
-msgid "Create account"
-msgstr "Konto erstellen"
 
 msgid ""
 "Create an account to keep your overlays private and manage them from any "
@@ -572,14 +1033,28 @@ msgstr ""
 msgid "Already have an account?"
 msgstr "Du hast bereits ein Konto?"
 
-msgid "Paused"
-msgstr "Pausiert"
-
 msgid "Move overlay element"
 msgstr "Overlay-Element verschieben"
 
-msgid "Spotify overlays"
-msgstr "Spotify-Overlays"
+msgid "No unsaved changes"
+msgstr "Keine ungespeicherten Änderungen"
+
+msgid "Unsaved changes"
+msgstr "Ungespeicherte Änderungen"
+
+msgid "Saving changes..."
+msgstr "Änderungen werden gespeichert..."
+
+msgid "Autosave failed. Use the save button to try again."
+msgstr ""
+"Automatisches Speichern fehlgeschlagen. Bitte erneut über die Speichern-"
+"Schaltfläche versuchen."
+
+msgid "Draft saved locally"
+msgstr "Entwurf lokal gespeichert"
+
+msgid "Local draft restored"
+msgstr "Lokaler Entwurf wiederhergestellt"
 
 msgid "Create a Spotify overlay"
 msgstr "Spotify-Overlay erstellen"
@@ -594,8 +1069,8 @@ msgstr ""
 "Füge Wiedergabe-Elemente hinzu, gestalte sie und ziehe sie an die gewünschte "
 "Position."
 
-msgid "All Spotify overlays"
-msgstr "Alle Spotify-Overlays"
+msgid "Back to my overlays"
+msgstr "Zurück zu meinen Overlays"
 
 msgid "General"
 msgstr "Allgemein"
@@ -624,12 +1099,6 @@ msgstr "Inhalt"
 msgid "Add elements"
 msgstr "Elemente hinzufügen"
 
-msgid "Title"
-msgstr "Titel"
-
-msgid "Artist"
-msgstr "Künstler"
-
 msgid "Album"
 msgstr "Album"
 
@@ -644,9 +1113,6 @@ msgstr "Vergangene Zeit"
 
 msgid "Elapsed"
 msgstr "Vergangen"
-
-msgid "Duration"
-msgstr "Dauer"
 
 msgid "Playback status"
 msgstr "Wiedergabestatus"
@@ -684,17 +1150,11 @@ msgstr "Live-Daten"
 msgid "Spotify connection"
 msgstr "Spotify-Verbindung"
 
-msgid "Connected"
-msgstr "Verbunden"
-
 msgid "Playback data is available to the overlay."
 msgstr "Wiedergabedaten stehen dem Overlay zur Verfügung."
 
 msgid "Disconnect Spotify"
 msgstr "Spotify trennen"
-
-msgid "Not connected"
-msgstr "Nicht verbunden"
 
 msgid "Connect the Spotify account whose playback should be shown."
 msgstr "Verbinde das Spotify-Konto, dessen Wiedergabe angezeigt werden soll."
@@ -767,12 +1227,6 @@ msgstr "Rastergröße"
 msgid "OBS browser source"
 msgstr "OBS-Browser-Quelle"
 
-msgid "Delete this Spotify overlay?"
-msgstr "Dieses Spotify-Overlay löschen?"
-
-msgid "OBS link copied"
-msgstr "OBS-Link kopiert"
-
 msgid "Spotify Overlays"
 msgstr "Spotify-Overlays"
 
@@ -791,29 +1245,11 @@ msgstr "Deine Sammlung"
 msgid "Saved Spotify overlays"
 msgstr "Gespeicherte Spotify-Overlays"
 
-msgid "Spotify overlay"
-msgstr "Spotify-Overlay"
-
-msgid "Size"
-msgstr "Größe"
-
-msgid "Elements"
-msgstr "Elemente"
-
 msgid "Open"
 msgstr "Offen"
 
-msgid "Edit"
-msgstr "Bearbeiten"
-
 msgid "Open preview"
 msgstr "Vorschau öffnen"
-
-msgid "Copy OBS link"
-msgstr "OBS-Link kopieren"
-
-msgid "Delete"
-msgstr "Löschen"
 
 msgid "No overlays yet"
 msgstr "Noch keine Overlays"
@@ -826,6 +1262,65 @@ msgid ""
 msgstr ""
 "Starte mit einem fertigen Layout und verschiebe, skaliere oder entferne "
 "anschließend jedes Element."
+
+msgid "Create a stream timer"
+msgstr "Stream-Timer erstellen"
+
+msgid "Edit stream timer"
+msgstr "Stream-Timer bearbeiten"
+
+msgid ""
+"Build a countdown or stopwatch and control it live while OBS keeps the same "
+"browser-source URL."
+msgstr ""
+"Erstelle einen Countdown oder eine Stoppuhr und steuere sie live, während "
+"OBS dieselbe Browser-Source-URL behält."
+
+msgid "Live control"
+msgstr "Live-Steuerung"
+
+msgid "Timer controls"
+msgstr "Timer-Steuerung"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "Pause"
+msgstr "Pause"
+
+msgid "Reset"
+msgstr "Zurücksetzen"
+
+msgid "Timer settings"
+msgstr "Timer-Einstellungen"
+
+msgid "Appearance"
+msgstr "Aussehen"
+
+msgid "Overlay design"
+msgstr "Overlay-Design"
+
+msgid "Create timer"
+msgstr "Timer erstellen"
+
+msgid "Save timer"
+msgstr "Timer speichern"
+
+msgid "OBS Link"
+msgstr "OBS-Link"
+
+msgid "Copy OBS Link"
+msgstr "OBS-Link kopieren"
+
+#, python-format
+msgid "Recommended browser-source size: %(width)s × %(height)s pixels."
+msgstr "Empfohlene Größe der Browser-Quelle: %(width)s × %(height)s Pixel."
+
+msgid "Overlay preview"
+msgstr "Overlay-Vorschau"
+
+msgid "Transparent OBS canvas"
+msgstr "Transparente OBS-Fläche"
 
 msgid "Increase value"
 msgstr "Wert erhöhen"
@@ -845,9 +1340,6 @@ msgstr ""
 "Lege ein Ziel fest, wähle ein Startdesign und passe die Vorschau vor dem "
 "Speichern an."
 
-msgid "Overlay preview"
-msgstr "Overlay-Vorschau"
-
 msgid "General settings"
 msgstr "Allgemeine Einstellungen"
 
@@ -856,9 +1348,6 @@ msgstr "Challenge"
 
 msgid "Optional: default Winchallenge"
 msgstr "Optional: Standard Winchallenge"
-
-msgid "Design"
-msgstr "Design"
 
 msgid "Customize the overlay"
 msgstr "Overlay anpassen"
@@ -893,9 +1382,6 @@ msgstr "Abbrechen"
 msgid "Save Win Challenge"
 msgstr "Win Challenge speichern"
 
-msgid "Win Challenges"
-msgstr "Win Challenges"
-
 msgid "Win Challenge overlays"
 msgstr "Win-Challenge-Overlays"
 
@@ -915,26 +1401,11 @@ msgstr "Gespeicherte Win Challenges"
 msgid "Overlay"
 msgstr "Overlay"
 
-msgid "Games"
-msgstr "Spiele"
-
-msgid "Updated"
-msgstr "Aktualisiert"
-
-msgid "Manage"
-msgstr "Verwalten"
-
 msgid "Edit Design"
 msgstr "Design bearbeiten"
 
 msgid "Open Preview"
 msgstr "Vorschau öffnen"
-
-msgid "Copy OBS Link"
-msgstr "OBS-Link kopieren"
-
-msgid "Delete this Win Challenge?"
-msgstr "Diese Win Challenge löschen?"
 
 msgid "Create your first Win Challenge"
 msgstr "Erstelle deine erste Win Challenge"
@@ -948,9 +1419,6 @@ msgstr ""
 
 msgid "Win Challenge sections"
 msgstr "Win-Challenge-Bereiche"
-
-msgid "OBS Link"
-msgstr "OBS-Link"
 
 msgid "Settings"
 msgstr "Einstellungen"
@@ -1019,6 +1487,13 @@ msgstr "Spotify-Overlay gespeichert."
 msgid "Spotify overlay deleted: %(name)s"
 msgstr "Spotify-Overlay gelöscht: %(name)s"
 
+msgid "Copy"
+msgstr "Kopie"
+
+#, python-format
+msgid "Spotify overlay duplicated: %(name)s"
+msgstr "Spotify-Overlay dupliziert: %(name)s"
+
 msgid ""
 "Add your Spotify client credentials to the environment before connecting."
 msgstr ""
@@ -1043,6 +1518,27 @@ msgstr "Spotify wurde erfolgreich verbunden."
 msgid "Spotify disconnected."
 msgstr "Spotify wurde getrennt."
 
+#, python-format
+msgid "Overlay imported: %(name)s"
+msgstr "Overlay importiert: %(name)s"
+
+msgid "Timer overlay created."
+msgstr "Timer-Overlay erstellt."
+
+msgid "Timer overlay saved."
+msgstr "Timer-Overlay gespeichert."
+
+msgid "Unknown timer action."
+msgstr "Unbekannte Timer-Aktion."
+
+#, python-format
+msgid "Timer overlay deleted: %(name)s"
+msgstr "Timer-Overlay gelöscht: %(name)s"
+
+#, python-format
+msgid "Timer overlay duplicated: %(name)s"
+msgstr "Timer-Overlay dupliziert: %(name)s"
+
 msgid "Win Challenge created."
 msgstr "Win Challenge erstellt."
 
@@ -1052,12 +1548,25 @@ msgstr "Challenge-Einstellungen gespeichert."
 msgid "Overlay design saved."
 msgstr "Overlay-Design gespeichert."
 
+msgid "Unknown autosave form."
+msgstr "Unbekanntes Formular für automatisches Speichern."
+
 #, python-format
 msgid "Win Challenge deleted: %(name)s"
 msgstr "Win Challenge gelöscht: %(name)s"
+
+#, python-format
+msgid "Win Challenge duplicated: %(name)s"
+msgstr "Win Challenge dupliziert: %(name)s"
 
 msgid "Invalid win change."
 msgstr "Ungültige Win-Änderung."
 
 msgid "Game name is required."
 msgstr "Der Spielname ist erforderlich."
+
+#~ msgid "All Spotify overlays"
+#~ msgstr "Alle Spotify-Overlays"
+
+#~ msgid "Learn more"
+#~ msgstr "Mehr erfahren"

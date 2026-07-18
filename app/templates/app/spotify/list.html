@@ -2,10 +2,19 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}{% translate "Spotify Overlays" %}{% endblock %}
+{% block title %}{% translate "Spotify Overlays" %} &middot; Nexora{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/spotify.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li aria-current="page">{% translate "Spotify overlays" %}</li>
+        </ol>
+    </nav>
 {% endblock %}
 
 {% block content %}
@@ -19,7 +28,7 @@
         </section>
 
         {% if messages %}
-            <div class="message-stack" aria-live="polite">
+            <div class="message-stack" role="status" aria-live="polite" aria-atomic="true">
                 {% for message in messages %}<p class="message-stack__item">{{ message }}</p>{% endfor %}
             </div>
         {% endif %}
@@ -59,7 +68,9 @@
                                 </dl>
                                 <div class="spotify-card__actions">
                                     <a class="btn action-button" href="{% url 'spotify_manage' overlay.pk %}">{% translate "Edit" %}</a>
-                                    <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">{% translate "Open preview" %}</a>
+                                    <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">
+                                        {% translate "Open preview" %}<span class="sr-only"> ({% translate "opens in a new tab" %})</span>
+                                    </a>
                                     <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
                                         {% translate "Copy OBS link" %}
                                     </button>
@@ -95,7 +106,7 @@
             </section>
         {% endif %}
 
-        <p class="copy-toast" data-copy-toast hidden>{% translate "OBS link copied" %}</p>
+        <p class="copy-toast" data-copy-toast role="status" aria-live="polite" aria-atomic="true" hidden>{% translate "OBS link copied" %}</p>
     </div>
 {% endblock %}
 

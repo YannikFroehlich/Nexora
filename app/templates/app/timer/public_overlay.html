@@ -1,0 +1,28 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'de' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="{% static 'css/timer.css' %}?v={{ APP_VERSION }}">
+    <title>{{ timer.display_name }}</title>
+</head>
+<body
+    class="timer-overlay-source"
+    data-timer-source
+    data-state-url="{% url 'timer_overlay_state' timer.public_token %}"
+    data-label-countdown="{% translate 'Countdown' %}"
+    data-label-stopwatch="{% translate 'Stopwatch' %}"
+    data-label-running="{% translate 'Running' %}"
+    data-label-paused="{% translate 'Paused' %}"
+    data-label-complete="{% translate 'Complete' %}"
+>
+    <main class="timer-overlay-source__frame">
+        {% include "app/partials/_timer_overlay.html" with timer=timer %}
+    </main>
+    <script src="{% static 'js/timer.js' %}?v={{ APP_VERSION }}"></script>
+</body>
+</html>

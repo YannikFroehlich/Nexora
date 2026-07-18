@@ -3,17 +3,36 @@
 {% load i18n %}
 
 {% block title %}
-    {% translate "Create Win Challenge" %}
+    {% translate "Create Win Challenge" %} &middot; Nexora
 {% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/winchallenge.css' %}">
+    <link rel="stylesheet" href="{% static 'css/winchallenge.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li><a href="{% url 'overlay_dashboard' %}#winchallenge-overlays">{% translate "My overlays" %}</a></li>
+            <li aria-current="page">{% translate "Create" %}</li>
+        </ol>
+    </nav>
 {% endblock %}
 
 {% block content %}
     <div
         class="winchallenge-page winchallenge-editor-page winchallenge-editor-page--create"
         data-winchallenge-editor
+        data-editor-state
+        data-editor-create="true"
+        data-editor-draft-key="nexora:draft:winchallenge:{{ user.pk }}:new"
+        data-status-saved="{% translate 'No unsaved changes' %}"
+        data-status-unsaved="{% translate 'Unsaved changes' %}"
+        data-status-saving="{% translate 'Saving changes...' %}"
+        data-status-failed="{% translate 'Autosave failed. Use the save button to try again.' %}"
+        data-status-draft-saved="{% translate 'Draft saved locally' %}"
+        data-status-draft-restored="{% translate 'Local draft restored' %}"
         data-number-increase-label="{% translate 'Increase value' %}"
         data-number-decrease-label="{% translate 'Decrease value' %}"
     >
@@ -23,7 +42,15 @@
             <p>{% translate "Set a goal, choose a starter design and adjust the preview before saving." %}</p>
         </section>
 
-        <form class="editor-layout editor-layout--create create-editor-layout" method="post" novalidate>
+        {% include "app/partials/_editor_state_toolbar.html" %}
+
+        <form
+            class="editor-layout editor-layout--create create-editor-layout"
+            method="post"
+            novalidate
+            data-editor-state-form
+            data-editor-form-key="create"
+        >
             {% csrf_token %}
 
             <aside
@@ -43,7 +70,7 @@
 
             <div class="editor-panels">
                 {% if form.non_field_errors %}
-                    <div class="form-errors">{{ form.non_field_errors }}</div>
+                    <div class="form-errors" role="alert">{{ form.non_field_errors }}</div>
                 {% endif %}
 
                 <section class="editor-panel editor-panel--intro editor-panel--surface" aria-labelledby="general-title">
@@ -261,7 +288,7 @@
                 </section>
 
                 <div class="editor-actions">
-                    <a class="btn glass-design" href="{% url 'winchallenge_list' %}">{% translate "Cancel" %}</a>
+                    <a class="btn glass-design" href="{% url 'overlay_dashboard' %}#winchallenge-overlays">{% translate "Cancel" %}</a>
                     <button class="btn action-button" type="submit">{% translate "Save Win Challenge" %}</button>
                 </div>
             </div>
@@ -270,5 +297,6 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{% static 'js/winchallenge.js' %}"></script>
+    <script src="{% static 'js/winchallenge.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
 {% endblock %}
