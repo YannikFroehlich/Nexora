@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -40,6 +42,58 @@ def _load_local_environment(path):
             os.environ.setdefault(key, value)
 
 
+def _environment_bool(name, default=False):
+    """Read a boolean environment variable with validation."""
+
+    value = os.environ.get(name)
+
+    if value is None or not value.strip():
+        return default
+
+    normalized_value = value.strip().lower()
+
+    if normalized_value in {'1', 'true', 'yes', 'on'}:
+        return True
+
+    if normalized_value in {'0', 'false', 'no', 'off'}:
+        return False
+
+    raise ImproperlyConfigured(
+        f'{name} must be one of: true, false, 1, 0, yes, no, on, off.'
+    )
+
+
+def _environment_list(name, default=''):
+    """Read a comma-separated environment variable without blank entries."""
+
+    return [
+        item.strip()
+        for item in os.environ.get(name, default).split(',')
+        if item.strip()
+    ]
+
+
+def _environment_non_negative_int(name, default=0):
+    """Read a non-negative integer environment variable."""
+
+    value = os.environ.get(name)
+
+    if value is None or not value.strip():
+        return default
+
+    try:
+        parsed_value = int(value)
+    except ValueError as error:
+        raise ImproperlyConfigured(
+            f'{name} must be a non-negative integer.'
+        ) from error
+
+    if parsed_value < 0:
+        raise ImproperlyConfigured(f'{name} must be a non-negative integer.')
+
+    return parsed_value
+
+
 _load_local_environment(BASE_DIR / '.env')
 
 APP_VERSION = os.environ.get('APP_VERSION', '').strip()
@@ -51,16 +105,50 @@ if not APP_VERSION:
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    'django-insecure-7+vf=5_l!9cw-9n(kqd*1!)jsk(eni-88x3dpks4cxm8t#__e%',
-)
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'true').lower() in {'1', 'true', 'yes', 'on'}
+DEBUG = _environment_bool('DJANGO_DEBUG', default=True)
 
-ALLOWED_HOSTS = []
+# SECURITY WARNING: keep the secret key used in production secret!
+DEVELOPMENT_SECRET_KEY = (
+    'django-insecure-7+vf=5_l!9cw-9n(kqd*1!)jsk(eni-88x3dpks4cxm8t#__e%'
+)
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '').strip()
+
+if not SECRET_KEY and DEBUG:
+    SECRET_KEY = DEVELOPMENT_SECRET_KEY
+
+if not DEBUG and SECRET_KEY in {
+    '',
+    DEVELOPMENT_SECRET_KEY,
+    'replace-with-a-long-random-secret',
+}:
+    raise ImproperlyConfigured(
+        'DJANGO_SECRET_KEY must contain a unique, secure value when '
+        'DJANGO_DEBUG=false.'
+    )
+
+ALLOWED_HOSTS = _environment_list(
+    'DJANGO_ALLOWED_HOSTS',
+    default='localhost,127.0.0.1,[::1]',
+)
+CSRF_TRUSTED_ORIGINS = _environment_list('DJANGO_CSRF_TRUSTED_ORIGINS')
+
+SECURE_SSL_REDIRECT = _environment_bool(
+    'DJANGO_SECURE_SSL_REDIRECT',
+    default=False,
+)
+SESSION_COOKIE_SECURE = _environment_bool(
+    'DJANGO_SESSION_COOKIE_SECURE',
+    default=False,
+)
+CSRF_COOKIE_SECURE = _environment_bool(
+    'DJANGO_CSRF_COOKIE_SECURE',
+    default=False,
+)
+SECURE_HSTS_SECONDS = _environment_non_negative_int(
+    'DJANGO_SECURE_HSTS_SECONDS',
+    default=0,
+)
 
 SPOTIFY_CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID', '').strip()
 SPOTIFY_CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET', '').strip()
@@ -81,6 +169,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -115,10 +204,12 @@ WSGI_APPLICATION = 'nexora.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+sqlite_path = os.environ.get('SQLITE_PATH', '').strip()
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': Path(sqlite_path) if sqlite_path else BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -169,4 +260,20 @@ LOCALE_PATHS = [
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = '/app/static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+WHITENOISE_AUTOREFRESH = DEBUG
+WHITENOISE_USE_FINDERS = DEBUG
+
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': (
+            'django.contrib.staticfiles.storage.StaticFilesStorage'
+            if DEBUG
+            else 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+        ),
+    },
+}

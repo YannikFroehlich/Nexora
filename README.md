@@ -177,6 +177,9 @@ Update the values in `.env`:
 ```env
 DJANGO_SECRET_KEY=replace-with-a-long-random-secret
 DJANGO_DEBUG=true
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+DJANGO_CSRF_TRUSTED_ORIGINS=http://127.0.0.1:8000
+SQLITE_PATH=
 
 SPOTIFY_CLIENT_ID=your-spotify-client-id
 SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
@@ -184,6 +187,10 @@ SPOTIFY_REDIRECT_URI=http://127.0.0.1:8000/spotify/callback/
 ```
 
 > `.env` contains sensitive credentials and must never be committed to Git.
+>
+> `.env.example` is prepared for the Docker server. For local development, use
+> the values above: `DJANGO_DEBUG=true` and an empty `SQLITE_PATH` keep using the
+> local `db.sqlite3`.
 
 ### 5. Prepare the database
 
@@ -261,6 +268,9 @@ Nexora/
 │   └── views.py             # Authentication, management, and overlay views
 ├── locale/                  # German and English translations
 ├── nexora/                  # Django project configuration
+├── compose.yml              # Docker Compose service
+├── Dockerfile               # Production container image
+├── docker-entrypoint.sh     # Migrations and static collection on startup
 ├── .env.example             # Environment variable template
 ├── manage.py
 ├── requirements.txt
@@ -320,9 +330,187 @@ Check for missing model migrations:
 python manage.py makemigrations --check --dry-run
 ```
 
+## Docker-Bereitstellung im Heimnetz
+
+Die Docker-Konfiguration startet Nexora mit Gunicorn, stellt statische Dateien
+über WhiteNoise bereit und speichert SQLite dauerhaft unter
+`~/docker/Nexora/data/db.sqlite3`. Auf dem Linux-Server werden Docker Engine,
+das Compose-Plugin und Git benötigt.
+
+### Erstinstallation
+
+Mit `BENUTZERNAME` ist der Linux-Benutzer auf dem Server gemeint:
+
+```bash
+ssh BENUTZERNAME@192.168.178.175
+
+mkdir -p ~/docker
+cd ~/docker
+git clone https://github.com/YannikFroehlich/Nexora.git
+cd Nexora
+
+cp .env.example .env
+nano .env
+
+mkdir -p data
+docker compose up -d --build
+docker compose ps
+docker compose logs -f web
+```
+
+Ersetze in `.env` insbesondere den Beispielwert von `DJANGO_SECRET_KEY`. Einen
+sicheren Wert kannst du ohne eine systemweite Django-Installation mit Python
+erzeugen:
+
+```bash
+python3 -c "import secrets; print(secrets.token_urlsafe(64))"
+```
+
+Falls auf dem Server noch kein Python 3 installiert ist, funktioniert alternativ
+das offizielle Python-Image:
+
+```bash
+docker run --rm python:3.12-slim python -c "import secrets; print(secrets.token_urlsafe(64))"
+```
+
+Die wesentlichen Serverwerte in `.env` sind:
+
+```env
+DJANGO_DEBUG=false
+DJANGO_ALLOWED_HOSTS=192.168.178.175,localhost,127.0.0.1
+DJANGO_CSRF_TRUSTED_ORIGINS=http://192.168.178.175:8001
+SQLITE_PATH=/app/data/db.sqlite3
+
+DJANGO_SECURE_SSL_REDIRECT=false
+DJANGO_SESSION_COOKIE_SECURE=false
+DJANGO_CSRF_COOKIE_SECURE=false
+DJANGO_SECURE_HSTS_SECONDS=0
+
+SPOTIFY_REDIRECT_URI=
+```
+
+Der Container läuft als Benutzer mit UID/GID `1000`. Bei einem abweichenden
+Server-Benutzer und einem Berechtigungsfehler kann der Datenordner einmalig
+angepasst werden:
+
+```bash
+sudo chown -R 1000:1000 ~/docker/Nexora/data
+```
+
+Nexora ist anschließend unter
+`http://192.168.178.175:8001` erreichbar.
+
+### Betrieb und Administration
+
+```bash
+cd ~/docker/Nexora
+
+docker compose ps
+docker compose logs -f web
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py check
+docker compose restart
+docker compose down
+```
+
+`docker compose down` entfernt den Container und das Netzwerk, aber nicht die
+per Bind-Mount gespeicherte Datei im lokalen `data`-Ordner.
+
+### Updates einspielen
+
+```bash
+cd ~/docker/Nexora
+git pull
+docker compose up -d --build
+docker compose logs --tail=100 web
+```
+
+Migrationen und `collectstatic --noinput` laufen bei jedem neu gestarteten
+Container automatisch vor Gunicorn.
+
+### SQLite-Datenbank sichern
+
+Für eine konsistente einfache Dateikopie sollte der Web-Container während des
+Backups gestoppt sein:
+
+```bash
+cd ~/docker/Nexora
+docker compose stop web
+cp data/db.sqlite3 "data/db.sqlite3.backup-$(date +%Y%m%d-%H%M%S)"
+docker compose start web
+```
+
+Bewahre zusätzliche Kopien der Backups außerhalb dieses Servers auf.
+
+### Bestehende lokale Datenbank auf den Server kopieren
+
+Stoppe zuerst auf dem Server den Container, damit während des Austauschs keine
+Schreibzugriffe stattfinden:
+
+```bash
+ssh BENUTZERNAME@192.168.178.175
+cd ~/docker/Nexora
+docker compose stop web
+```
+
+Kopiere danach auf deinem lokalen Windows-Rechner in PowerShell die vorhandene
+Datenbank an das persistente Ziel:
+
+```powershell
+scp .\db.sqlite3 BENUTZERNAME@192.168.178.175:~/docker/Nexora/data/db.sqlite3
+```
+
+Starte den Container anschließend auf dem Server wieder. Der Entrypoint wendet
+noch fehlende Migrationen an:
+
+```bash
+cd ~/docker/Nexora
+docker compose start web
+docker compose logs --tail=100 web
+```
+
+Eine vorhandene Serverdatenbank sollte vor dem Überschreiben wie oben beschrieben
+gesichert werden. Die lokale `db.sqlite3` wird durch `.dockerignore` ausdrücklich
+nicht in das Image kopiert.
+
+### Spotify konfigurieren
+
+Aus Sicht von Nexora liegt der Callback beim aktuellen Zugriff im Heimnetz unter:
+
+```text
+http://192.168.178.175:8001/spotify/callback/
+```
+
+Spotify akzeptiert HTTP-Redirects jedoch nur für Loopback-Adressen wie
+`127.0.0.1`, nicht für eine private LAN-IP. Deshalb sollte
+`SPOTIFY_REDIRECT_URI` auf dem Server zunächst leer bleiben. Für funktionierendes
+Spotify OAuth benötigt die Server-Bereitstellung eine HTTPS-Domain vor einem
+Reverse Proxy. Die spätere HTTPS-Callback-URI muss dann in `.env` und im Spotify
+Developer Dashboard exakt identisch eingetragen werden.
+
+Für die lokale Entwicklung ist weiterhin diese erlaubte Loopback-URI geeignet:
+
+```env
+SPOTIFY_REDIRECT_URI=http://127.0.0.1:8000/spotify/callback/
+```
+
+Trage außerdem `SPOTIFY_CLIENT_ID` und `SPOTIFY_CLIENT_SECRET` aus der Spotify-App
+in `.env` ein und starte den Container nach einer späteren Server-Konfiguration
+neu:
+
+```bash
+docker compose restart
+```
+
+Bei der HTTPS-Bereitstellung müssen `SPOTIFY_REDIRECT_URI`,
+`DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` und die optionalen
+Cookie-/HTTPS-Sicherheitseinstellungen gemeinsam auf die HTTPS-Adresse umgestellt
+werden.
+
 ## 🔐 Production notes
 
-The current configuration primarily targets local development. Before deploying Nexora publicly, at minimum:
+The configuration supports both local development and the Docker deployment
+described above. Before exposing Nexora publicly, at minimum:
 
 - Set `DJANGO_DEBUG=false`
 - Use a long, unique `DJANGO_SECRET_KEY`
@@ -331,7 +519,7 @@ The current configuration primarily targets local development. Before deploying 
 - Enable secure session and CSRF cookies
 - Configure HSTS and HTTPS redirects carefully
 - Use a production-ready database and backup strategy
-- Configure `STATIC_ROOT` and serve static files through an appropriate web server
+- Put the application behind a maintained HTTPS reverse proxy
 - Keep Spotify credentials outside the repository
 - Encrypt stored Spotify access and refresh tokens
 - Protect open registration with invitations, email verification, or rate limiting when required
@@ -344,7 +532,6 @@ The current configuration primarily targets local development. Before deploying 
 - Overlay duplication and import/export
 - Regeneratable public OBS tokens
 - WebSocket- or Server-Sent Events-based live updates
-- Docker setup for development and deployment
 - CI checks and broader browser-level test coverage
 
 ## 🤝 Contributing
