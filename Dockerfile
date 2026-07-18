@@ -16,8 +16,8 @@ COPY --chown=nexora:nexora . .
 
 RUN sed -i 's/\r$//' /app/docker-entrypoint.sh \
     && chmod +x /app/docker-entrypoint.sh \
-    && mkdir -p /app/data /app/staticfiles \
-    && chown -R nexora:nexora /app/data /app/staticfiles
+    && mkdir -p /app/.gunicorn /app/data /app/staticfiles \
+    && chown -R nexora:nexora /app/.gunicorn /app/data /app/staticfiles
 
 USER nexora
 
