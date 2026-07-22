@@ -537,8 +537,17 @@
 .overlay-card__icon--timer {
     color: #7c3aed;
     background: rgba(139, 92, 246, 0.14);
-    font-size: 1.55rem;
-    font-weight: 850;
+}
+
+.overlay-card__icon--timer svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .overlay-card__content {
@@ -617,7 +626,7 @@
 
 .overlay-card__actions {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: 1fr;
     gap: 10px;
     margin-top: auto;
 }
@@ -625,6 +634,7 @@
 .overlay-card__action {
     align-self: stretch;
     margin-top: 0;
+    white-space: nowrap;
 }
 
 .overlay-card__action--secondary {
@@ -889,10 +899,6 @@
 
     .overlay-card__content > p {
         min-height: 0;
-    }
-
-    .overlay-card__actions {
-        grid-template-columns: 1fr;
     }
 
     .spotify-widget {

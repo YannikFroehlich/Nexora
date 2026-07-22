@@ -183,7 +183,12 @@
                     </div>
                     <div class="overlay-card__content">
                         <div class="overlay-card__title">
-                            <div class="overlay-card__icon overlay-card__icon--timer" aria-hidden="true">&#9719;</div>
+                            <div class="overlay-card__icon overlay-card__icon--timer" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" focusable="false">
+                                    <circle cx="12" cy="12" r="8.25"></circle>
+                                    <path d="M12 7.5V12H16.5"></path>
+                                </svg>
+                            </div>
                             <h3>{% translate "Stream Timer" %}</h3>
                         </div>
                         <p>{% translate "Run a countdown or stopwatch that stays synchronized in your OBS scene." %}</p>

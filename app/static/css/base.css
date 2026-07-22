@@ -493,7 +493,7 @@ header .right {
     min-height: 32px;
     padding: 5px 9px;
     border: 0;
-    border-radius: 10px;
+    border-radius: 999px;
     color: var(--color-button-text);
     background: var(--color-button-bg);
     font: inherit;
