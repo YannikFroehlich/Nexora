@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<section class="card overlay-version-history" aria-labelledby="overlay-version-title">
+<section class="card overlay-shared-panel overlay-version-history" aria-labelledby="overlay-version-title">
     <div class="panel-heading">
         <p class="section-label">{% translate "History" %}</p>
         <h2 id="overlay-version-title">{% translate "Saved versions" %}</h2>
@@ -24,7 +24,7 @@
                 </form>
             </li>
         {% empty %}
-            <li>{% translate "No saved versions yet." %}</li>
+            <li class="overlay-version-list__empty">{% translate "No saved versions yet." %}</li>
         {% endfor %}
     </ol>
 </section>
