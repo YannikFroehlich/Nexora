@@ -798,7 +798,7 @@
     min-height: 44px;
     overflow: hidden;
     border: 1px solid var(--wc-overview-border);
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--wc-overview-surface-solid);
     transition: border-color 160ms ease, box-shadow 160ms ease;
 }
@@ -1003,7 +1003,7 @@
 .winchallenge-editor-page--create .preview-panel--surface,
 .winchallenge-editor-page--create .editor-actions {
     border: 1px solid var(--wc-overview-border);
-    border-radius: 8px;
+    border-radius: 24px;
     background: var(--wc-overview-surface);
     box-shadow: 0 16px 42px var(--wc-overview-shadow);
 }
@@ -1041,7 +1041,7 @@
     height: 42px;
     flex: 0 0 42px;
     border: 1px solid var(--wc-overview-border);
-    border-radius: 8px;
+    border-radius: 14px;
     color: var(--color-link-hover);
     background: var(--wc-overview-surface-solid);
     font-size: 0.78rem;
@@ -1074,7 +1074,7 @@
 .winchallenge-editor-page--create .preset-card {
     min-height: 82px;
     border-color: var(--wc-overview-border);
-    border-radius: 8px;
+    border-radius: 16px;
     background: var(--wc-overview-surface-solid);
 }
 
@@ -1086,7 +1086,7 @@
 }
 
 .winchallenge-editor-page--create .preset-card__preview {
-    border-radius: 6px;
+    border-radius: 12px;
 }
 
 .winchallenge-editor-page--create .preset-card__preview--glass {
@@ -1097,8 +1097,12 @@
 .winchallenge-editor-page--create .color-control,
 .winchallenge-editor-page--create .toggle-row {
     border-color: var(--wc-overview-border);
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--wc-overview-surface-solid);
+}
+
+.winchallenge-editor-page--create .toggle-row {
+    border-radius: 14px;
 }
 
 .winchallenge-editor-page--create .form-control {
@@ -1187,7 +1191,7 @@
 
 .winchallenge-editor-page--manage .message-stack__item {
     border-color: var(--wc-overview-border);
-    border-radius: 8px;
+    border-radius: 14px;
     background: var(--wc-overview-surface-solid);
     box-shadow: 0 10px 28px var(--wc-overview-shadow);
 }
@@ -1204,7 +1208,7 @@
 .winchallenge-editor-page--manage .editor-panel--surface,
 .winchallenge-editor-page--manage .preview-panel--surface {
     border: 1px solid var(--wc-overview-border);
-    border-radius: 8px;
+    border-radius: 24px;
     background: var(--wc-overview-surface);
     box-shadow: 0 16px 42px var(--wc-overview-shadow);
 }
@@ -1223,7 +1227,7 @@
     overflow: hidden;
     margin-bottom: 22px;
     border: 1px solid var(--wc-overview-rule);
-    border-radius: 8px;
+    border-radius: 16px;
     background: var(--wc-overview-rule);
 }
 
@@ -1248,7 +1252,16 @@
 .winchallenge-editor-page--manage .toggle-row,
 .winchallenge-editor-page--manage .game-row,
 .winchallenge-editor-page--manage .empty-inline {
-    border-radius: 8px;
+    border-radius: 12px;
+}
+
+.winchallenge-editor-page--manage .toggle-row {
+    border-radius: 14px;
+}
+
+.winchallenge-editor-page--manage .game-row,
+.winchallenge-editor-page--manage .empty-inline {
+    border-radius: 16px;
 }
 
 .winchallenge-editor-page--manage .form-control {
@@ -1312,7 +1325,7 @@
     margin: 0 auto 22px;
     padding: 6px;
     border: 1px solid var(--wc-overview-border);
-    border-radius: 10px;
+    border-radius: 18px;
     background: var(--wc-overview-surface);
     box-shadow: 0 12px 32px var(--wc-overview-shadow);
 }
@@ -1321,7 +1334,7 @@
     min-height: 40px;
     padding: 8px 18px;
     border: 0;
-    border-radius: 6px;
+    border-radius: 12px;
     background: transparent;
     box-shadow: none;
 }

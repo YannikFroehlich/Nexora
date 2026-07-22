@@ -11,6 +11,10 @@
     padding: 42px clamp(4px, 2vw, 26px) 30px;
 }
 
+.timer-hero > .btn {
+    flex: 0 0 auto;
+}
+
 .timer-hero h1 {
     max-width: 780px;
     margin: 7px 0 10px;
@@ -486,14 +490,19 @@
     }
 }
 
+@media (max-width: 760px) {
+    .timer-hero {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
 @media (max-width: 680px) {
     .timer-page {
         width: min(100% - 20px, 1520px);
     }
 
     .timer-hero {
-        align-items: flex-start;
-        flex-direction: column;
         padding-top: 26px;
     }
 

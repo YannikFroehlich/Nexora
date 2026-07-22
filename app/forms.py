@@ -58,11 +58,20 @@ def _configure_branding_fields(form, asset_owner):
         field.label = label
         field.required = False
         field.empty_label = _("None")
+        widget_attrs = {
+            "class": BASE_INPUT_CLASS,
+            "data-branding-field": field_name,
+        }
+        if not field.queryset.exists():
+            widget_attrs.update(
+                {
+                    "disabled": True,
+                    "aria-disabled": "true",
+                }
+            )
         field.widget = OverlayAssetSelect(
-            attrs={
-                "class": BASE_INPUT_CLASS,
-                "data-branding-field": field_name,
-            },
+            attrs=widget_attrs,
+            choices=field.choices,
         )
 
 

@@ -330,6 +330,41 @@ class OverlayAssetTests(TestCase):
         self.media_settings.enable()
         self.addCleanup(self.media_settings.disable)
 
+    def test_branding_asset_selects_render_a_disabled_empty_choice(self):
+        editor_forms = (
+            WinChallengeCreateForm(asset_owner=self.user),
+            SpotifyOverlayForm(asset_owner=self.user),
+            TimerOverlayForm(asset_owner=self.user),
+        )
+
+        for form in editor_forms:
+            with self.subTest(form=form.__class__.__name__):
+                for field_name in ("font_asset", "logo_asset", "background_asset"):
+                    field = form.fields[field_name]
+                    choices = list(field.widget.choices)
+
+                    self.assertEqual(len(choices), 1)
+                    self.assertEqual(choices[0][0], "")
+                    self.assertTrue(str(choices[0][1]))
+                    self.assertTrue(field.widget.attrs["disabled"])
+                    self.assertEqual(field.widget.attrs["aria-disabled"], "true")
+
+    def test_branding_asset_select_is_enabled_when_matching_assets_exist(self):
+        image = OverlayAsset.objects.create(
+            owner=self.user,
+            name="Available logo",
+            kind=OverlayAsset.KIND_IMAGE,
+            file="overlay-assets/available/logo.png",
+        )
+        form = SpotifyOverlayForm(asset_owner=self.user)
+
+        for field_name in ("logo_asset", "background_asset"):
+            field = form.fields[field_name]
+            choice_values = [str(value) for value, _label in field.widget.choices]
+
+            self.assertNotIn("disabled", field.widget.attrs)
+            self.assertEqual(choice_values, ["", str(image.pk)])
+
     def test_valid_image_and_font_uploads_are_private_to_the_owner(self):
         image_response = self.client.post(
             reverse("overlay_asset_upload"),

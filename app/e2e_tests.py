@@ -202,3 +202,49 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
             "font-family",
             "Georgia, serif",
         )
+
+    def test_editor_surfaces_empty_assets_and_responsive_actions_are_consistent(self):
+        editor_pages = (
+            (
+                reverse("spotify_manage", args=[self.spotify.pk]),
+                ".spotify-panel",
+            ),
+            (
+                reverse("timer_manage", args=[self.timer.pk]),
+                ".timer-panel",
+            ),
+            (
+                reverse("winchallenge_manage", args=[self.challenge.pk]),
+                ".editor-panel--surface",
+            ),
+        )
+
+        for path, panel_selector in editor_pages:
+            with self.subTest(path=path):
+                page = self.context.new_page()
+                page.goto(self.live_server_url + path)
+
+                expect(page.locator(panel_selector).first).to_have_css(
+                    "border-radius",
+                    "24px",
+                )
+                branding = page.locator("[data-overlay-branding-controls]")
+                expect(branding).to_have_css("border-top-width", "1px")
+
+                asset_selects = page.locator("[data-branding-field]")
+                self.assertEqual(asset_selects.count(), 3)
+                for index in range(asset_selects.count()):
+                    select = asset_selects.nth(index)
+                    self.assertTrue(select.is_disabled())
+                    self.assertEqual(select.locator("option").count(), 1)
+
+                page.close()
+
+        timer_page = self.context.new_page()
+        timer_page.set_viewport_size({"width": 760, "height": 900})
+        timer_page.goto(self.live_server_url + reverse("timer_manage", args=[self.timer.pk]))
+        back_button = timer_page.locator(".timer-hero > .btn")
+        box = back_button.bounding_box()
+        self.assertIsNotNone(box)
+        self.assertLessEqual(box["height"], 48)
+        timer_page.close()
