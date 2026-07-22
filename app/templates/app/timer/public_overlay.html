@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex">
     <link rel="stylesheet" href="{% static 'css/timer.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
     <title>{{ timer.display_name }}</title>
 </head>
 <body
@@ -23,6 +24,8 @@
     <main class="timer-overlay-source__frame">
         {% include "app/partials/_timer_overlay.html" with timer=timer %}
     </main>
+    <script src="{% static 'js/polling.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/timer.js' %}?v={{ APP_VERSION }}"></script>
 </body>
 </html>

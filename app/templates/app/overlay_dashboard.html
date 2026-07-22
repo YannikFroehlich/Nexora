@@ -172,6 +172,16 @@
                                     <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
                                         {% translate "Copy OBS link" %}
                                     </button>
+                                    <form
+                                        class="dashboard-card__action-form"
+                                        action="{% url 'spotify_renew_obs_link' overlay.pk %}"
+                                        method="post"
+                                        data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+                                    >
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#spotify-overlays">
+                                        <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
+                                    </form>
                                     <form class="dashboard-card__delete" action="{% url 'spotify_delete' overlay.pk %}" method="post" data-confirm-delete="{% translate 'Delete this Spotify overlay?' %}">
                                         {% csrf_token %}
                                         <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
@@ -264,6 +274,16 @@
                                     <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
                                         {% translate "Copy OBS link" %}
                                     </button>
+                                    <form
+                                        class="dashboard-card__action-form"
+                                        action="{% url 'winchallenge_renew_obs_link' challenge.pk %}"
+                                        method="post"
+                                        data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+                                    >
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#winchallenge-overlays">
+                                        <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
+                                    </form>
                                     <form class="dashboard-card__delete" action="{% url 'winchallenge_delete' challenge.pk %}" method="post" data-confirm-delete="{% translate 'Delete this Win Challenge?' %}">
                                         {% csrf_token %}
                                         <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
@@ -348,6 +368,16 @@
                                     <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
                                         {% translate "Copy OBS link" %}
                                     </button>
+                                    <form
+                                        class="dashboard-card__action-form"
+                                        action="{% url 'timer_renew_obs_link' timer.pk %}"
+                                        method="post"
+                                        data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+                                    >
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#timer-overlays">
+                                        <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
+                                    </form>
                                     <form class="dashboard-card__delete" action="{% url 'timer_delete' timer.pk %}" method="post" data-confirm-delete="{% translate 'Delete this timer overlay?' %}">
                                         {% csrf_token %}
                                         <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>

@@ -6,6 +6,7 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/timer.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -22,6 +23,7 @@
     <div
         class="timer-page"
         data-timer-editor
+        data-overlay-branding-editor
         data-editor-state
         data-editor-create="{{ is_create|yesno:'true,false' }}"
         data-editor-draft-key="nexora:draft:timer:{{ user.pk }}:{% if is_create %}new{% else %}{{ timer.pk }}{% endif %}"
@@ -178,10 +180,17 @@
                             <label for="{{ form.shadow_enabled.id_for_label }}">{{ form.shadow_enabled }}<span>{{ form.shadow_enabled.label }}</span></label>
                         </div>
 
+                        {% include "app/partials/_overlay_branding_controls.html" with branding_form=form %}
+
                         <button class="btn action-button timer-save" type="submit">
                             {% if is_create %}{% translate "Create timer" %}{% else %}{% translate "Save timer" %}{% endif %}
                         </button>
                     </section>
+                </form>
+
+                <form id="overlay-asset-upload-form" action="{% url 'overlay_asset_upload' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 </form>
 
                 {% if not is_create %}
@@ -197,6 +206,16 @@
                             <input class="form-control" type="text" value="{{ obs_url }}" readonly data-obs-url>
                             <button class="btn action-button" type="button" data-copy-url="{{ obs_url }}">{% translate "Copy OBS Link" %}</button>
                         </div>
+                        <form
+                            class="obs-link-renew-form"
+                            action="{% url 'timer_renew_obs_link' timer.pk %}"
+                            method="post"
+                            data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+                        >
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{% url 'timer_manage' timer.pk %}">
+                            <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
+                        </form>
                         <p>{% blocktranslate with width=timer.overlay_width height=timer.overlay_height %}Recommended browser-source size: {{ width }} × {{ height }} pixels.{% endblocktranslate %}</p>
                         <div class="timer-danger-zone">
                             <a class="btn glass-design" href="{% url 'timer_overlay' timer.public_token %}" target="_blank" rel="noopener">{% translate "Open preview" %}</a>
@@ -223,11 +242,16 @@
             </aside>
         </div>
 
+        {% if not is_create %}
+            {% include "app/partials/_overlay_version_history.html" with overlay=timer %}
+        {% endif %}
+
         <p class="timer-toast" data-copy-toast role="status" aria-live="polite" aria-atomic="true" hidden>{% translate "OBS link copied" %}</p>
     </div>
 {% endblock %}
 
 {% block extra_js %}
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/timer.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
 {% endblock %}

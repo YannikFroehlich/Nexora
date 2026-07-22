@@ -45,6 +45,9 @@ Create a freely positioned now-playing overlay for your Spotify playback.
   - Total duration
   - Playback status
 - Spotify connection through OAuth
+- One shared Spotify connection per account
+- Encrypted access and refresh tokens
+- Shared short-lived playback cache across Spotify overlays
 - Public OBS browser-source URL
 - Live playback updates
 
@@ -93,6 +96,12 @@ Create a persistent countdown or stopwatch and control it live without replacing
 - User accounts with private overlay libraries
 - Owner-based access control for all management pages and actions
 - Public OBS overlay URLs protected by hard-to-guess UUID tokens
+- Regeneratable public OBS URLs for immediate revocation
+- Conditional state requests with overlap prevention and error backoff
+- Automatic version history with the 30 most recent distinct states and one-click restore
+- Built-in font presets including Arial, Verdana, Georgia, Times New Roman, and Courier New
+- Reusable custom fonts, logos, and background images across all overlay types
+- Validated image uploads (PNG, JPEG, WebP up to 5 MB) and font uploads (WOFF, WOFF2, TTF, OTF up to 3 MB)
 - Automatic adoption of existing ownerless overlays by the first registered account
 - SQLite database for local development
 - Version display based on the `VERSION` file
@@ -180,10 +189,13 @@ DJANGO_DEBUG=true
 DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 DJANGO_CSRF_TRUSTED_ORIGINS=http://127.0.0.1:8000
 SQLITE_PATH=
+DJANGO_MEDIA_ROOT=
 
 SPOTIFY_CLIENT_ID=your-spotify-client-id
 SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
 SPOTIFY_REDIRECT_URI=http://127.0.0.1:8000/spotify/callback/
+SPOTIFY_TOKEN_ENCRYPTION_KEY=
+SPOTIFY_PLAYBACK_CACHE_SECONDS=8
 ```
 
 > `.env` contains sensitive credentials and must never be committed to Git.
@@ -240,6 +252,18 @@ http://127.0.0.1:8000/spotify/callback/
 
 For a production domain, `SPOTIFY_REDIRECT_URI` must use the same public HTTPS URL in both `.env` and the Spotify Developer Dashboard.
 
+Spotify tokens are encrypted before they are stored. If
+`SPOTIFY_TOKEN_ENCRYPTION_KEY` is empty, Nexora derives a stable key from
+`DJANGO_SECRET_KEY`. For production, set a dedicated Fernet key before applying
+migration `0011` for the first time, then keep it stable across deployments.
+Changing either the configured encryption key or its `DJANGO_SECRET_KEY`
+fallback afterwards makes existing Spotify tokens unreadable and requires users
+to reconnect Spotify:
+
+```bash
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
 ## 🎥 Add an overlay to OBS
 
 1. Create or open an overlay in Nexora.
@@ -253,6 +277,11 @@ For a production domain, `SPOTIFY_REDIRECT_URI` must use the same public HTTPS U
 
 Future changes made in Nexora are picked up by the overlay without recreating the source in OBS.
 
+Each editor also keeps a server-side history of saved states. Restoring an older
+state first preserves the current state, so the operation remains reversible.
+Uploaded branding files belong to the signed-in account and are selected through
+random token URLs that work in OBS without exposing the media directory itself.
+
 ## 📁 Project structure
 
 ```text
@@ -263,9 +292,18 @@ Nexora/
 │   ├── templates/           # Pages, editors, authentication, and overlays
 │   ├── forms.py             # Forms and input validation
 │   ├── models.py            # Spotify, timer, and Win Challenge models
+│   ├── overlay_versions.py  # Version snapshots, retention, and restore logic
 │   ├── spotify_api.py       # Spotify OAuth and playback API client
+│   ├── upload_validators.py # Image and font upload validation
 │   ├── urls.py              # Application routes
-│   └── views.py             # Authentication, management, and overlay views
+│   ├── views/               # Feature-oriented HTTP views
+│   │   ├── common.py        # Shared OBS, ETag, export, and response helpers
+│   │   ├── dashboard.py     # Shared overlay dashboard and imports
+│   │   ├── pages.py         # Public pages and authentication
+│   │   ├── spotify.py       # Spotify management and public overlay views
+│   │   ├── timer.py         # Timer management and public overlay views
+│   │   └── winchallenge.py  # Win Challenge management and overlay views
+│   └── e2e_tests.py         # Playwright editor and OBS browser tests
 ├── locale/                  # German and English translations
 ├── nexora/                  # Django project configuration
 ├── compose.yml              # Docker Compose service
@@ -273,7 +311,11 @@ Nexora/
 ├── docker-entrypoint.sh     # Migrations and static collection on startup
 ├── .env.example             # Environment variable template
 ├── manage.py
-├── requirements.txt
+├── .github/                 # CI workflow and Dependabot configuration
+├── LICENSE                  # MIT license
+├── pyproject.toml           # Ruff and Coverage configuration
+├── requirements.txt         # Runtime dependencies
+├── requirements-dev.txt     # Development and test dependencies
 └── VERSION
 ```
 
@@ -309,6 +351,41 @@ Edit the generated `django.po` files and compile them:
 ```bash
 python manage.py compilemessages
 ```
+
+## ✅ Quality checks
+
+Install the development dependencies once:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+Run formatting, linting, unit tests, and the 80% branch-coverage gate:
+
+```bash
+ruff format .
+ruff check .
+coverage run manage.py test
+coverage report
+```
+
+Run the Chromium editor and OBS browser-source tests separately:
+
+```bash
+python -m playwright install chromium
+python manage.py test app.e2e_tests
+```
+
+Audit the pinned runtime dependencies:
+
+```bash
+pip-audit --requirement requirements.txt
+```
+
+GitHub Actions runs Ruff, coverage, migration checks, `collectstatic`, the
+dependency audit, Playwright, and a complete Docker image build for every pull
+request and every push to `main`. Dependabot checks Python, Actions, and Docker
+dependencies weekly.
 
 ## ✅ Project checks
 
@@ -380,6 +457,7 @@ DJANGO_DEBUG=false
 DJANGO_ALLOWED_HOSTS=192.168.178.175,localhost,127.0.0.1
 DJANGO_CSRF_TRUSTED_ORIGINS=http://192.168.178.175:8001
 SQLITE_PATH=/app/data/db.sqlite3
+DJANGO_MEDIA_ROOT=/app/data/media
 
 DJANGO_SECURE_SSL_REDIRECT=false
 DJANGO_SESSION_COOKIE_SECURE=false
@@ -387,6 +465,8 @@ DJANGO_CSRF_COOKIE_SECURE=false
 DJANGO_SECURE_HSTS_SECONDS=0
 
 SPOTIFY_REDIRECT_URI=
+SPOTIFY_TOKEN_ENCRYPTION_KEY=
+SPOTIFY_PLAYBACK_CACHE_SECONDS=8
 ```
 
 Der Container läuft als Benutzer mit UID/GID `1000`. Bei einem abweichenden
@@ -414,7 +494,8 @@ docker compose down
 ```
 
 `docker compose down` entfernt den Container und das Netzwerk, aber nicht die
-per Bind-Mount gespeicherte Datei im lokalen `data`-Ordner.
+per Bind-Mount gespeicherte Datenbank und Branding-Dateien im lokalen
+`data`-Ordner.
 
 ### Updates einspielen
 
@@ -521,7 +602,7 @@ described above. Before exposing Nexora publicly, at minimum:
 - Use a production-ready database and backup strategy
 - Put the application behind a maintained HTTPS reverse proxy
 - Keep Spotify credentials outside the repository
-- Encrypt stored Spotify access and refresh tokens
+- Keep `SPOTIFY_TOKEN_ENCRYPTION_KEY` stable and outside the repository
 - Protect open registration with invitations, email verification, or rate limiting when required
 
 ## 🗺️ Possible next steps
@@ -529,10 +610,8 @@ described above. Before exposing Nexora publicly, at minimum:
 - Additional overlay types such as counters, goals, lower thirds, and social alerts
 - Account recovery and profile management
 - Template gallery and reusable personal presets
-- Overlay duplication and import/export
-- Regeneratable public OBS tokens
 - WebSocket- or Server-Sent Events-based live updates
-- CI checks and broader browser-level test coverage
+- Visual regression snapshots for multiple overlay themes and resolutions
 
 ## 🤝 Contributing
 
@@ -546,7 +625,7 @@ Ideas, bug reports, and improvements are welcome.
 
 ## 📄 License
 
-This repository does not currently include a license file. Add an appropriate `LICENSE` before publicly distributing the project, then update this section accordingly.
+Nexora is distributed under the [MIT License](LICENSE).
 
 ---
 

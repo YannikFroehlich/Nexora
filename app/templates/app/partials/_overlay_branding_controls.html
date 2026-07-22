@@ -1,0 +1,54 @@
+{% load i18n %}
+
+<section class="card overlay-branding-panel" data-overlay-branding-controls>
+    <div class="panel-heading">
+        <p class="section-label">{% translate "Branding" %}</p>
+        <h2>{% translate "Fonts, logos and images" %}</h2>
+    </div>
+    <p>{% translate "Choose a preset font or use your own uploaded font. Uploaded fonts take priority. Images can be reused as logos or backgrounds." %}</p>
+
+    <div class="overlay-branding-grid">
+        <div class="form-field">
+            <label for="{{ branding_form.font_family.id_for_label }}">{{ branding_form.font_family.label }}</label>
+            {{ branding_form.font_family }}
+            {{ branding_form.font_family.errors }}
+        </div>
+        <div class="form-field">
+            <label for="{{ branding_form.font_asset.id_for_label }}">{{ branding_form.font_asset.label }}</label>
+            {{ branding_form.font_asset }}
+            {{ branding_form.font_asset.errors }}
+        </div>
+        <div class="form-field">
+            <label for="{{ branding_form.logo_asset.id_for_label }}">{{ branding_form.logo_asset.label }}</label>
+            {{ branding_form.logo_asset }}
+            {{ branding_form.logo_asset.errors }}
+        </div>
+        <div class="form-field">
+            <label for="{{ branding_form.background_asset.id_for_label }}">{{ branding_form.background_asset.label }}</label>
+            {{ branding_form.background_asset }}
+            {{ branding_form.background_asset.errors }}
+        </div>
+    </div>
+
+    <div class="overlay-asset-upload">
+        <strong>{% translate "Upload a new asset" %}</strong>
+        <small>{% translate "Images: PNG, JPEG or WebP up to 5 MB. Fonts: WOFF, WOFF2, TTF or OTF up to 3 MB." %}</small>
+        <div class="overlay-asset-upload-grid">
+            <div class="form-field">
+                <label for="{{ asset_upload_form.name.id_for_label }}">{{ asset_upload_form.name.label }}</label>
+                {{ asset_upload_form.name }}
+            </div>
+            <div class="form-field">
+                <label for="{{ asset_upload_form.kind.id_for_label }}">{{ asset_upload_form.kind.label }}</label>
+                {{ asset_upload_form.kind }}
+            </div>
+            <div class="form-field">
+                <label for="{{ asset_upload_form.file.id_for_label }}">{{ asset_upload_form.file.label }}</label>
+                {{ asset_upload_form.file }}
+            </div>
+        </div>
+        <button class="btn glass-design" type="submit" form="overlay-asset-upload-form">
+            {% translate "Upload asset" %}
+        </button>
+    </div>
+</section>

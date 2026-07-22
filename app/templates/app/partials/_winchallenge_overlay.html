@@ -1,8 +1,13 @@
 {% load i18n %}
 
+{% if challenge.font_asset_id %}
+    <style>@font-face { font-family: "NexoraUploadedOverlayFont"; src: url("{{ challenge.font_asset.public_url }}"); font-display: swap; }</style>
+{% endif %}
+
 <div
     class="winchallenge-overlay"
     data-winchallenge-overlay
+    data-overlay-branding-root
     data-page-interval-seconds="{{ challenge.page_interval_seconds }}"
     style="
         --wc-bg: {{ challenge.background_rgba }};
@@ -23,8 +28,13 @@
         --wc-pager-font-size: {{ challenge.pager_text_size }}px;
         --wc-item-spacing: {{ challenge.item_spacing }}px;
         --wc-shadow: {{ challenge.shadow_css }};
+        --nexora-overlay-font: {% if challenge.font_asset_id %}'NexoraUploadedOverlayFont'{% else %}{{ challenge.font_css_stack }}{% endif %};
+        {% if challenge.background_asset_id %}--nexora-overlay-background-image: url("{{ challenge.background_asset.public_url }}");{% endif %}
     "
 >
+    {% if challenge.logo_asset_id %}
+        <img class="overlay-custom-logo" src="{{ challenge.logo_asset.public_url }}" alt="" data-overlay-custom-logo>
+    {% endif %}
     <div class="winchallenge-overlay__header">
         <div>
             <p class="winchallenge-overlay__label">{% translate "Win Challenge" %}</p>

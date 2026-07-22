@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex">
     <link rel="stylesheet" href="{% static 'css/winchallenge.css' %}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
     <title>{{ challenge.display_title }}</title>
 </head>
 <body
@@ -20,6 +21,8 @@
         {% include "app/partials/_winchallenge_overlay.html" with challenge=challenge %}
     </main>
 
-    <script src="{% static 'js/winchallenge.js' %}"></script>
+    <script src="{% static 'js/polling.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/winchallenge.js' %}?v={{ APP_VERSION }}"></script>
 </body>
 </html>

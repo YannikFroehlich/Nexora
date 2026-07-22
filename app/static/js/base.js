@@ -128,3 +128,13 @@
         }
     }
 })();
+
+(() => {
+    document.addEventListener("submit", (event) => {
+        const form = event.target.closest("[data-confirm-action]");
+
+        if (form && !window.confirm(form.dataset.confirmAction)) {
+            event.preventDefault();
+        }
+    });
+})();

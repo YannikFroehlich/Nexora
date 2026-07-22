@@ -687,22 +687,19 @@
     const initializePublicOverlay = (body) => {
         const canvas = body.querySelector("[data-spotify-canvas]");
         const stateUrl = body.dataset.stateUrl;
-        if (!canvas || !stateUrl) return;
+        if (!canvas || !stateUrl || !window.NexoraPolling) return;
 
-        const update = async () => {
-            try {
-                const response = await fetch(stateUrl, {cache: "no-store", credentials: "same-origin"});
-                if (!response.ok) return;
-                const state = await response.json();
+        window.NexoraPolling.start({
+            url: stateUrl,
+            interval: 5000,
+            hiddenInterval: 15000,
+            onData: (state) => {
                 applyCanvasDesign(canvas, state);
+                window.NexoraBranding?.apply(canvas, state);
                 renderElements(canvas, state.elements || [], state.playback || {}, false);
-            } catch {
-                // Keep the last rendered state while Spotify or the network is unavailable.
-            }
-        };
+            },
+        });
 
-        update();
-        window.setInterval(update, 5000);
         window.setInterval(() => {
             if (canvas._spotifyPlayback) updatePlaybackContent(canvas, canvas._spotifyPlayback);
         }, 250);

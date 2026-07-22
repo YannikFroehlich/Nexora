@@ -25,13 +25,13 @@ def _load_local_environment(path):
     if not path.exists():
         return
 
-    for raw_line in path.read_text(encoding='utf-8').splitlines():
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
         line = raw_line.strip()
 
-        if not line or line.startswith('#') or '=' not in line:
+        if not line or line.startswith("#") or "=" not in line:
             continue
 
-        key, value = line.split('=', 1)
+        key, value = line.split("=", 1)
         key = key.strip()
         value = value.strip()
 
@@ -52,25 +52,19 @@ def _environment_bool(name, default=False):
 
     normalized_value = value.strip().lower()
 
-    if normalized_value in {'1', 'true', 'yes', 'on'}:
+    if normalized_value in {"1", "true", "yes", "on"}:
         return True
 
-    if normalized_value in {'0', 'false', 'no', 'off'}:
+    if normalized_value in {"0", "false", "no", "off"}:
         return False
 
-    raise ImproperlyConfigured(
-        f'{name} must be one of: true, false, 1, 0, yes, no, on, off.'
-    )
+    raise ImproperlyConfigured(f"{name} must be one of: true, false, 1, 0, yes, no, on, off.")
 
 
-def _environment_list(name, default=''):
+def _environment_list(name, default=""):
     """Read a comma-separated environment variable without blank entries."""
 
-    return [
-        item.strip()
-        for item in os.environ.get(name, default).split(',')
-        if item.strip()
-    ]
+    return [item.strip() for item in os.environ.get(name, default).split(",") if item.strip()]
 
 
 def _environment_non_negative_int(name, default=0):
@@ -84,132 +78,134 @@ def _environment_non_negative_int(name, default=0):
     try:
         parsed_value = int(value)
     except ValueError as error:
-        raise ImproperlyConfigured(
-            f'{name} must be a non-negative integer.'
-        ) from error
+        raise ImproperlyConfigured(f"{name} must be a non-negative integer.") from error
 
     if parsed_value < 0:
-        raise ImproperlyConfigured(f'{name} must be a non-negative integer.')
+        raise ImproperlyConfigured(f"{name} must be a non-negative integer.")
 
     return parsed_value
 
 
-_load_local_environment(BASE_DIR / '.env')
+_load_local_environment(BASE_DIR / ".env")
 
-APP_VERSION = os.environ.get('APP_VERSION', '').strip()
+APP_VERSION = os.environ.get("APP_VERSION", "").strip()
 
 if not APP_VERSION:
-    APP_VERSION = (BASE_DIR / 'VERSION').read_text(encoding='utf-8').strip()
+    APP_VERSION = (BASE_DIR / "VERSION").read_text(encoding="utf-8").strip()
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = _environment_bool('DJANGO_DEBUG', default=True)
+DEBUG = _environment_bool("DJANGO_DEBUG", default=True)
 
 # SECURITY WARNING: keep the secret key used in production secret!
-DEVELOPMENT_SECRET_KEY = (
-    'django-insecure-7+vf=5_l!9cw-9n(kqd*1!)jsk(eni-88x3dpks4cxm8t#__e%'
-)
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '').strip()
+DEVELOPMENT_SECRET_KEY = "django-insecure-7+vf=5_l!9cw-9n(kqd*1!)jsk(eni-88x3dpks4cxm8t#__e%"
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "").strip()
 
 if not SECRET_KEY and DEBUG:
     SECRET_KEY = DEVELOPMENT_SECRET_KEY
 
 if not DEBUG and SECRET_KEY in {
-    '',
+    "",
     DEVELOPMENT_SECRET_KEY,
-    'replace-with-a-long-random-secret',
+    "replace-with-a-long-random-secret",
 }:
     raise ImproperlyConfigured(
-        'DJANGO_SECRET_KEY must contain a unique, secure value when '
-        'DJANGO_DEBUG=false.'
+        "DJANGO_SECRET_KEY must contain a unique, secure value when DJANGO_DEBUG=false."
     )
 
 ALLOWED_HOSTS = _environment_list(
-    'DJANGO_ALLOWED_HOSTS',
-    default='localhost,127.0.0.1,[::1]',
+    "DJANGO_ALLOWED_HOSTS",
+    default="localhost,127.0.0.1,[::1]",
 )
-CSRF_TRUSTED_ORIGINS = _environment_list('DJANGO_CSRF_TRUSTED_ORIGINS')
+CSRF_TRUSTED_ORIGINS = _environment_list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
 SECURE_SSL_REDIRECT = _environment_bool(
-    'DJANGO_SECURE_SSL_REDIRECT',
+    "DJANGO_SECURE_SSL_REDIRECT",
     default=False,
 )
 SESSION_COOKIE_SECURE = _environment_bool(
-    'DJANGO_SESSION_COOKIE_SECURE',
+    "DJANGO_SESSION_COOKIE_SECURE",
     default=False,
 )
 CSRF_COOKIE_SECURE = _environment_bool(
-    'DJANGO_CSRF_COOKIE_SECURE',
+    "DJANGO_CSRF_COOKIE_SECURE",
     default=False,
 )
 SECURE_HSTS_SECONDS = _environment_non_negative_int(
-    'DJANGO_SECURE_HSTS_SECONDS',
+    "DJANGO_SECURE_HSTS_SECONDS",
     default=0,
 )
 
-SPOTIFY_CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID', '').strip()
-SPOTIFY_CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET', '').strip()
-SPOTIFY_REDIRECT_URI = os.environ.get('SPOTIFY_REDIRECT_URI', '').strip()
+SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID", "").strip()
+SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET", "").strip()
+SPOTIFY_REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI", "").strip()
+SPOTIFY_TOKEN_ENCRYPTION_KEY = os.environ.get(
+    "SPOTIFY_TOKEN_ENCRYPTION_KEY",
+    "",
+).strip()
+SPOTIFY_PLAYBACK_CACHE_SECONDS = _environment_non_negative_int(
+    "SPOTIFY_PLAYBACK_CACHE_SECONDS",
+    default=8,
+)
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'app',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "app",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'nexora.urls'
+ROOT_URLCONF = "nexora.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'app/templates']
-        ,
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'app.context_processors.app_metadata',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "app/templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "app.context_processors.app_metadata",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'nexora.wsgi.application'
+WSGI_APPLICATION = "nexora.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-sqlite_path = os.environ.get('SQLITE_PATH', '').strip()
+sqlite_path = os.environ.get("SQLITE_PATH", "").strip()
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': Path(sqlite_path) if sqlite_path else BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": Path(sqlite_path) if sqlite_path else BASE_DIR / "db.sqlite3",
     }
 }
 
@@ -219,61 +215,62 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'home'
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
 
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
 LANGUAGES = [
-    ('de', 'Deutsch'),
-    ('en', 'English'),
+    ("de", "Deutsch"),
+    ("en", "English"),
 ]
 
-LANGUAGE_CODE = 'de'
+LANGUAGE_CODE = "de"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
 USE_TZ = True
 
 LOCALE_PATHS = [
-    BASE_DIR / 'locale',
+    BASE_DIR / "locale",
 ]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_ROOT = Path(os.getenv("DJANGO_MEDIA_ROOT") or BASE_DIR / "media")
 WHITENOISE_AUTOREFRESH = DEBUG
 WHITENOISE_USE_FINDERS = DEBUG
 
 STORAGES = {
-    'default': {
-        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
-    'staticfiles': {
-        'BACKEND': (
-            'django.contrib.staticfiles.storage.StaticFilesStorage'
+    "staticfiles": {
+        "BACKEND": (
+            "django.contrib.staticfiles.storage.StaticFilesStorage"
             if DEBUG
-            else 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+            else "whitenoise.storage.CompressedManifestStaticFilesStorage"
         ),
     },
 }

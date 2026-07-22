@@ -597,6 +597,17 @@ header .right {
     opacity: 0;
 }
 
+/* OBS link actions */
+.obs-link-renew-form {
+    display: flex;
+    justify-content: flex-end;
+    margin: 10px 0 0;
+}
+
+.obs-link-renew-form .btn {
+    min-height: 42px;
+}
+
 /* Motion preferences */
 @media (prefers-reduced-motion: reduce) {
     html {

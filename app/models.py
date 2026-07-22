@@ -1,12 +1,16 @@
 import uuid
+from pathlib import Path
 
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models import Sum
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from app.encrypted_fields import EncryptedTextField
+from app.upload_validators import validate_overlay_asset
 
 hex_color_validator = RegexValidator(
     regex=r"^#[0-9A-Fa-f]{6}$",
@@ -14,7 +18,167 @@ hex_color_validator = RegexValidator(
 )
 
 
-class WinChallenge(models.Model):
+def overlay_asset_upload_to(instance, filename):
+    extension = Path(filename).suffix.lower()
+    return f"overlay-assets/{instance.owner_id}/{uuid.uuid4().hex}{extension}"
+
+
+class OverlayAsset(models.Model):
+    KIND_IMAGE = "image"
+    KIND_FONT = "font"
+    KIND_CHOICES = (
+        (KIND_IMAGE, _("Image")),
+        (KIND_FONT, _("Font")),
+    )
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="overlay_assets",
+    )
+    public_token = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        db_index=True,
+    )
+    name = models.CharField(max_length=120)
+    kind = models.CharField(max_length=12, choices=KIND_CHOICES)
+    file = models.FileField(upload_to=overlay_asset_upload_to, max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("kind", "name", "created_at")
+
+    def __str__(self):
+        return self.name
+
+    def clean(self):
+        super().clean()
+        if self.file:
+            validate_overlay_asset(self.file, self.kind)
+
+    @property
+    def public_url(self):
+        return reverse("overlay_asset_file", args=[self.public_token])
+
+
+class OverlayBrandingMixin(models.Model):
+    FONT_SYSTEM = "system"
+    FONT_ARIAL = "arial"
+    FONT_VERDANA = "verdana"
+    FONT_TREBUCHET = "trebuchet"
+    FONT_GEORGIA = "georgia"
+    FONT_TIMES = "times"
+    FONT_COURIER = "courier"
+    FONT_FAMILY_CHOICES = (
+        (FONT_SYSTEM, _("System default")),
+        (FONT_ARIAL, "Arial"),
+        (FONT_VERDANA, "Verdana"),
+        (FONT_TREBUCHET, "Trebuchet MS"),
+        (FONT_GEORGIA, "Georgia"),
+        (FONT_TIMES, "Times New Roman"),
+        (FONT_COURIER, "Courier New"),
+    )
+    FONT_CSS_STACKS = {
+        FONT_SYSTEM: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        FONT_ARIAL: "Arial, sans-serif",
+        FONT_VERDANA: "Verdana, sans-serif",
+        FONT_TREBUCHET: "'Trebuchet MS', sans-serif",
+        FONT_GEORGIA: "Georgia, serif",
+        FONT_TIMES: "'Times New Roman', serif",
+        FONT_COURIER: "'Courier New', monospace",
+    }
+
+    font_family = models.CharField(
+        max_length=20,
+        choices=FONT_FAMILY_CHOICES,
+        default=FONT_SYSTEM,
+    )
+    font_asset = models.ForeignKey(
+        OverlayAsset,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        blank=True,
+        null=True,
+        limit_choices_to={"kind": OverlayAsset.KIND_FONT},
+    )
+    logo_asset = models.ForeignKey(
+        OverlayAsset,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        blank=True,
+        null=True,
+        limit_choices_to={"kind": OverlayAsset.KIND_IMAGE},
+    )
+    background_asset = models.ForeignKey(
+        OverlayAsset,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        blank=True,
+        null=True,
+        limit_choices_to={"kind": OverlayAsset.KIND_IMAGE},
+    )
+
+    class Meta:
+        abstract = True
+
+    @property
+    def font_css_stack(self):
+        return self.FONT_CSS_STACKS.get(
+            self.font_family,
+            self.FONT_CSS_STACKS[self.FONT_SYSTEM],
+        )
+
+    def branding_payload(self):
+        return {
+            "font_family": self.font_family,
+            "font_url": self.font_asset.public_url if self.font_asset_id else "",
+            "logo_url": self.logo_asset.public_url if self.logo_asset_id else "",
+            "background_image_url": (
+                self.background_asset.public_url if self.background_asset_id else ""
+            ),
+        }
+
+
+class OverlayVersion(models.Model):
+    REASON_CREATED = "created"
+    REASON_MANUAL = "manual"
+    REASON_AUTOSAVE = "autosave"
+    REASON_RESTORE = "restore"
+    REASON_CHOICES = (
+        (REASON_CREATED, _("Created")),
+        (REASON_MANUAL, _("Saved manually")),
+        (REASON_AUTOSAVE, _("Autosaved")),
+        (REASON_RESTORE, _("Restored")),
+    )
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="overlay_versions",
+    )
+    overlay_type = models.CharField(max_length=20)
+    overlay_id = models.PositiveBigIntegerField()
+    snapshot = models.JSONField()
+    fingerprint = models.CharField(max_length=64)
+    reason = models.CharField(max_length=16, choices=REASON_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at", "-pk")
+        indexes = [
+            models.Index(
+                fields=("owner", "overlay_type", "overlay_id", "-created_at"),
+                name="overlay_version_lookup",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.overlay_type}:{self.overlay_id} @ {self.created_at}"
+
+
+class WinChallenge(OverlayBrandingMixin, models.Model):
     """Editable win counter overlay configuration."""
 
     DEFAULT_OVERLAY_TITLE = _("Winchallenge")
@@ -155,7 +319,9 @@ class WinChallenge(models.Model):
         cached_games = getattr(self, "_prefetched_objects_cache", {}).get("games")
 
         if cached_games is not None:
-            return sorted(cached_games, key=lambda game: (game.sort_order, game.created_at, game.pk))
+            return sorted(
+                cached_games, key=lambda game: (game.sort_order, game.created_at, game.pk)
+            )
 
         return self.games.order_by("sort_order", "created_at", "pk")
 
@@ -187,10 +353,7 @@ class WinChallenge(models.Model):
     def game_pages(self):
         games = list(self.ordered_games)
 
-        return [
-            games[index:index + 3]
-            for index in range(0, len(games), 3)
-        ]
+        return [games[index : index + 3] for index in range(0, len(games), 3)]
 
     @property
     def game_page_count(self):
@@ -254,12 +417,15 @@ class WinChallenge(models.Model):
                 "shadow_enabled": self.shadow_enabled,
                 "shadow_css": self.shadow_css,
                 "show_games_list": self.show_games_list,
+                **self.branding_payload(),
             },
         }
 
 
 class WinChallengeGame(models.Model):
     """Single game row with its own atomic win counter."""
+
+    MAX_WINS = 99999
 
     challenge = models.ForeignKey(
         WinChallenge,
@@ -269,11 +435,11 @@ class WinChallengeGame(models.Model):
     name = models.CharField(max_length=120)
     wins = models.PositiveIntegerField(
         default=0,
-        validators=[MinValueValidator(0), MaxValueValidator(99999)],
+        validators=[MinValueValidator(0), MaxValueValidator(MAX_WINS)],
     )
     target_wins = models.PositiveIntegerField(
         default=10,
-        validators=[MinValueValidator(1), MaxValueValidator(99999)],
+        validators=[MinValueValidator(1), MaxValueValidator(MAX_WINS)],
     )
     sort_order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -379,7 +545,40 @@ def default_spotify_elements():
     ]
 
 
-class SpotifyOverlay(models.Model):
+class SpotifyConnection(models.Model):
+    """One encrypted Spotify authorization and playback cache per account."""
+
+    owner = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="spotify_connection",
+        blank=True,
+        null=True,
+    )
+    access_token = EncryptedTextField(blank=True)
+    refresh_token = EncryptedTextField(blank=True)
+    token_expires_at = models.DateTimeField(blank=True, null=True)
+    connected_at = models.DateTimeField(blank=True, null=True)
+    playback_cache = models.JSONField(default=dict, blank=True)
+    playback_cached_at = models.DateTimeField(blank=True, null=True)
+    playback_refresh_started_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-updated_at", "-created_at")
+
+    def __str__(self):
+        if self.owner_id:
+            return f"Spotify: {self.owner}"
+        return f"Spotify connection {self.pk or 'new'}"
+
+    @property
+    def is_connected(self):
+        return bool(self.access_token or self.refresh_token)
+
+
+class SpotifyOverlay(OverlayBrandingMixin, models.Model):
     """A freely composed browser-source overlay for Spotify playback."""
 
     DEFAULT_NAME = _("Spotify-Overlay")
@@ -390,6 +589,13 @@ class SpotifyOverlay(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="spotify_overlays",
+        blank=True,
+        null=True,
+    )
+    connection = models.ForeignKey(
+        SpotifyConnection,
+        on_delete=models.SET_NULL,
+        related_name="overlays",
         blank=True,
         null=True,
     )
@@ -432,11 +638,6 @@ class SpotifyOverlay(models.Model):
     )
     elements = models.JSONField(default=default_spotify_elements)
 
-    spotify_access_token = models.TextField(blank=True)
-    spotify_refresh_token = models.TextField(blank=True)
-    spotify_token_expires_at = models.DateTimeField(blank=True, null=True)
-    spotify_connected_at = models.DateTimeField(blank=True, null=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -452,7 +653,7 @@ class SpotifyOverlay(models.Model):
 
     @property
     def is_spotify_connected(self):
-        return bool(self.spotify_access_token or self.spotify_refresh_token)
+        return bool(self.connection_id and self.connection.is_connected)
 
     @property
     def background_rgba(self):
@@ -486,10 +687,11 @@ class SpotifyOverlay(models.Model):
             "corner_radius": self.corner_radius,
             "elements": self.elements,
             "updated_at": self.updated_at.isoformat() if self.updated_at else "",
+            **self.branding_payload(),
         }
 
 
-class TimerOverlay(models.Model):
+class TimerOverlay(OverlayBrandingMixin, models.Model):
     """Persistent countdown or stopwatch browser-source overlay."""
 
     DEFAULT_NAME = _("Stream Timer")
@@ -668,9 +870,7 @@ class TimerOverlay(models.Model):
             "duration_seconds": self.duration_seconds,
             "display_seconds": self.display_seconds(now),
             "is_running": self.effective_is_running(now),
-            "is_complete": (
-                self.mode == self.MODE_COUNTDOWN and self.display_seconds(now) == 0
-            ),
+            "is_complete": (self.mode == self.MODE_COUNTDOWN and self.display_seconds(now) == 0),
             "progress_percent": self.progress_percent(now),
             "server_time": now.isoformat(),
             "updated_at": self.updated_at.isoformat() if self.updated_at else "",
@@ -691,5 +891,6 @@ class TimerOverlay(models.Model):
                 "show_progress": self.show_progress,
                 "shadow_enabled": self.shadow_enabled,
                 "shadow_css": self.shadow_css,
+                **self.branding_payload(),
             },
         }

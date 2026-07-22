@@ -6,8 +6,14 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 
 from app.forms import SpotifyOverlayForm, TimerOverlayForm
-from app.models import SpotifyOverlay, TimerOverlay, WinChallenge, WinChallengeGame
-
+from app.models import (
+    OverlayBrandingMixin,
+    SpotifyConnection,
+    SpotifyOverlay,
+    TimerOverlay,
+    WinChallenge,
+    WinChallengeGame,
+)
 
 FORMAT_NAME = "nexora-overlay"
 FORMAT_VERSION = 1
@@ -27,6 +33,7 @@ SPOTIFY_FIELDS = (
     "border_width",
     "corner_radius",
     "elements",
+    "font_family",
 )
 
 WINCHALLENGE_FIELDS = (
@@ -53,6 +60,7 @@ WINCHALLENGE_FIELDS = (
     "item_spacing",
     "shadow_enabled",
     "show_games_list",
+    "font_family",
 )
 
 GAME_FIELDS = ("name", "wins", "target_wins")
@@ -76,6 +84,7 @@ TIMER_FIELDS = (
     "timer_text_size",
     "show_progress",
     "shadow_enabled",
+    "font_family",
 )
 
 
@@ -84,10 +93,7 @@ class OverlayTransferError(ValueError):
 
 
 def _model_fields(instance, field_names):
-    return {
-        field_name: copy.deepcopy(getattr(instance, field_name))
-        for field_name in field_names
-    }
+    return {field_name: copy.deepcopy(getattr(instance, field_name)) for field_name in field_names}
 
 
 def spotify_export_payload(overlay):
@@ -105,10 +111,7 @@ def winchallenge_export_payload(challenge):
         "version": FORMAT_VERSION,
         "type": WINCHALLENGE_TYPE,
         "overlay": _model_fields(challenge, WINCHALLENGE_FIELDS),
-        "games": [
-            _model_fields(game, GAME_FIELDS)
-            for game in challenge.ordered_games
-        ],
+        "games": [_model_fields(game, GAME_FIELDS) for game in challenge.ordered_games],
     }
 
 
@@ -156,6 +159,14 @@ def _require_exact_keys(data, expected_keys):
         raise OverlayTransferError(_("The import file has an invalid structure."))
 
 
+def _overlay_data_with_defaults(data):
+    if not isinstance(data, dict):
+        raise OverlayTransferError(_("The import file has an invalid structure."))
+    normalized = copy.deepcopy(data)
+    normalized.setdefault("font_family", OverlayBrandingMixin.FONT_SYSTEM)
+    return normalized
+
+
 def _validate_envelope(payload):
     overlay_type = payload.get("type")
     expected_root_keys = {"format", "version", "type", "overlay"}
@@ -178,7 +189,7 @@ def _validate_envelope(payload):
 
 
 def _import_spotify(payload, owner):
-    overlay_data = payload["overlay"]
+    overlay_data = _overlay_data_with_defaults(payload["overlay"])
     _require_exact_keys(overlay_data, SPOTIFY_FIELDS)
     form_data = copy.deepcopy(overlay_data)
     form_data["elements"] = json.dumps(
@@ -186,13 +197,14 @@ def _import_spotify(payload, owner):
         ensure_ascii=False,
         separators=(",", ":"),
     )
-    form = SpotifyOverlayForm(data=form_data)
+    form = SpotifyOverlayForm(data=form_data, asset_owner=owner)
 
     if not form.is_valid():
         raise OverlayTransferError(_("The Spotify overlay data is invalid."))
 
     overlay = form.save(commit=False)
     overlay.owner = owner
+    overlay.connection, _created = SpotifyConnection.objects.get_or_create(owner=owner)
     overlay.save()
     return overlay
 
@@ -214,7 +226,7 @@ def _validated_game(game_data, challenge, sort_order):
 
 
 def _import_timer(payload, owner):
-    overlay_data = payload["overlay"]
+    overlay_data = _overlay_data_with_defaults(payload["overlay"])
     _require_exact_keys(overlay_data, TIMER_FIELDS)
     form_data = copy.deepcopy(overlay_data)
     duration_seconds = form_data.pop("duration_seconds")
@@ -231,7 +243,7 @@ def _import_timer(payload, owner):
             "duration_seconds_part": seconds,
         }
     )
-    form = TimerOverlayForm(data=form_data)
+    form = TimerOverlayForm(data=form_data, asset_owner=owner)
 
     if not form.is_valid():
         raise OverlayTransferError(_("The timer overlay data is invalid."))
@@ -243,7 +255,7 @@ def _import_timer(payload, owner):
 
 
 def _import_winchallenge(payload, owner):
-    overlay_data = payload["overlay"]
+    overlay_data = _overlay_data_with_defaults(payload["overlay"])
     games_data = payload["games"]
     _require_exact_keys(overlay_data, WINCHALLENGE_FIELDS)
 
@@ -282,7 +294,7 @@ def import_payload(payload, owner):
 def _copy_label(value, suffix, maximum_length=120):
     value = str(value).strip()
     suffix = f" ({suffix})"
-    return f"{value[:maximum_length - len(suffix)]}{suffix}"
+    return f"{value[: maximum_length - len(suffix)]}{suffix}"
 
 
 def duplicate_overlay(overlay, owner, copy_suffix):
@@ -304,4 +316,11 @@ def duplicate_overlay(overlay, owner, copy_suffix):
             copy_suffix,
         )
 
-    return import_payload(payload, owner)
+    duplicate = import_payload(payload, owner)
+    branding_fields = ("font_asset", "logo_asset", "background_asset")
+    for field_name in branding_fields:
+        asset = getattr(overlay, field_name, None)
+        if asset and asset.owner_id == owner.pk:
+            setattr(duplicate, field_name, asset)
+    duplicate.save(update_fields=[*branding_fields, "updated_at"])
+    return duplicate
