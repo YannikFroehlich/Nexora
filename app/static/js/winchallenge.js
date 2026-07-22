@@ -433,6 +433,7 @@
     const applyState = (state) => {
         document.querySelectorAll("[data-winchallenge-overlay]").forEach((overlay) => {
             applyDesignToOverlay(overlay, state.design);
+            window.NexoraBranding?.apply(overlay, state.design);
             setText(overlay, "[data-overlay-title]", state.title);
             setText(overlay, "[data-total-wins]", state.total_wins);
 
@@ -854,33 +855,20 @@
         let lastUpdated = source.dataset.lastUpdated || "";
         const stateUrl = source.dataset.stateUrl;
 
-        const poll = async () => {
-            try {
-                const response = await fetch(stateUrl, {
-                    cache: "no-store",
-                    headers: {
-                        Accept: "application/json",
-                    },
-                });
-
-                if (!response.ok) {
-                    return;
-                }
-
-                const state = await response.json();
-
-                if (state.updated_at !== lastUpdated) {
-                    lastUpdated = state.updated_at;
-                    source.dataset.lastUpdated = lastUpdated;
-                    applyState(state);
-                }
-            } catch {
-                // OBS should keep the last rendered state during short network hiccups.
-            }
-        };
-
-        window.setInterval(poll, 1500);
-        poll();
+        if (window.NexoraPolling) {
+            window.NexoraPolling.start({
+                url: stateUrl,
+                interval: 1500,
+                hiddenInterval: 10000,
+                onData: (state) => {
+                    if (state.updated_at !== lastUpdated) {
+                        lastUpdated = state.updated_at;
+                        source.dataset.lastUpdated = lastUpdated;
+                        applyState(state);
+                    }
+                },
+            });
+        }
     };
 
     document.addEventListener("click", async (event) => {

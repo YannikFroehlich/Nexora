@@ -8,10 +8,13 @@ from urllib import parse as urlparse
 from urllib import request as urlrequest
 
 from django.conf import settings
+from django.db import transaction
+from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from app.models import SpotifyConnection, SpotifyOverlay
 
 AUTHORIZE_URL = "https://accounts.spotify.com/authorize"
 TOKEN_URL = "https://accounts.spotify.com/api/token"
@@ -30,9 +33,7 @@ def is_configured():
 
 
 def redirect_uri(request):
-    return settings.SPOTIFY_REDIRECT_URI or request.build_absolute_uri(
-        reverse("spotify_callback")
-    )
+    return settings.SPOTIFY_REDIRECT_URI or request.build_absolute_uri(reverse("spotify_callback"))
 
 
 def authorization_url(request, state):
@@ -51,6 +52,82 @@ def authorization_url(request, state):
     return f"{AUTHORIZE_URL}?{query}"
 
 
+def connection_for_owner(owner):
+    connection, _created = SpotifyConnection.objects.get_or_create(owner=owner)
+    SpotifyOverlay.objects.filter(owner=owner).exclude(connection=connection).update(
+        connection=connection
+    )
+    return connection
+
+
+def connection_for_overlay(overlay):
+    if overlay.connection_id:
+        return overlay.connection
+
+    if not overlay.owner_id:
+        connection = SpotifyConnection.objects.create()
+        overlay.connection = connection
+        overlay.save(update_fields=("connection", "updated_at"))
+        return connection
+
+    connection = connection_for_owner(overlay.owner)
+    overlay.connection = connection
+    return connection
+
+
+@transaction.atomic
+def adopt_connections(owner):
+    """Consolidate ownerless legacy connections after first-user adoption."""
+
+    linked_connections = list(
+        SpotifyConnection.objects.select_for_update()
+        .filter(overlays__owner=owner)
+        .distinct()
+        .order_by("-connected_at", "-updated_at")
+    )
+    primary = SpotifyConnection.objects.select_for_update().filter(owner=owner).first()
+
+    if primary is None and linked_connections:
+        primary = linked_connections[0]
+        primary.owner = owner
+        primary.save(update_fields=("owner", "updated_at"))
+    elif primary is None:
+        primary = SpotifyConnection.objects.create(owner=owner)
+
+    if not primary.is_connected:
+        donor = next(
+            (
+                connection
+                for connection in linked_connections
+                if connection.pk != primary.pk and connection.is_connected
+            ),
+            None,
+        )
+        if donor:
+            primary.access_token = donor.access_token
+            primary.refresh_token = donor.refresh_token
+            primary.token_expires_at = donor.token_expires_at
+            primary.connected_at = donor.connected_at
+            primary.save(
+                update_fields=(
+                    "access_token",
+                    "refresh_token",
+                    "token_expires_at",
+                    "connected_at",
+                    "updated_at",
+                )
+            )
+
+    SpotifyOverlay.objects.filter(owner=owner).update(connection=primary)
+    redundant_ids = [
+        connection.pk
+        for connection in linked_connections
+        if connection.pk != primary.pk and connection.owner_id is None
+    ]
+    SpotifyConnection.objects.filter(pk__in=redundant_ids).delete()
+    return primary
+
+
 def exchange_authorization_code(request, overlay, code):
     token_data = _token_request(
         {
@@ -59,20 +136,32 @@ def exchange_authorization_code(request, overlay, code):
             "redirect_uri": redirect_uri(request),
         }
     )
-    _store_token_response(overlay, token_data, connected=True)
+    connection = connection_for_overlay(overlay)
+    _store_token_response(connection, token_data, connected=True)
 
 
 def disconnect(overlay):
-    overlay.spotify_access_token = ""
-    overlay.spotify_refresh_token = ""
-    overlay.spotify_token_expires_at = None
-    overlay.spotify_connected_at = None
-    overlay.save(
+    if not overlay.connection_id:
+        return
+
+    connection = overlay.connection
+    connection.access_token = ""
+    connection.refresh_token = ""
+    connection.token_expires_at = None
+    connection.connected_at = None
+    connection.playback_cache = {}
+    connection.playback_cached_at = None
+    connection.playback_refresh_started_at = None
+    connection.save(
         update_fields=(
-            "spotify_access_token",
-            "spotify_refresh_token",
-            "spotify_token_expires_at",
-            "spotify_connected_at",
+            "access_token",
+            "refresh_token",
+            "token_expires_at",
+            "connected_at",
+            "playback_cache",
+            "playback_cached_at",
+            "playback_refresh_started_at",
+            "updated_at",
         )
     )
 
@@ -86,26 +175,92 @@ def overlay_state_payload(overlay):
         payload["playback"] = empty_playback()
         return payload
 
-    try:
-        payload["playback"] = current_playback(overlay)
-    except SpotifyAPIError as error:
-        payload["error"] = _("Spotify is currently unavailable. Please reconnect if this continues.")
-        payload["needs_reconnect"] = error.status_code in {400, 401, 403}
-        payload["playback"] = empty_playback()
+    playback_state = cached_playback_state(overlay.connection)
+    payload["playback"] = playback_state["playback"]
+
+    if playback_state.get("error"):
+        payload["error"] = _(
+            "Spotify is currently unavailable. Please reconnect if this continues."
+        )
+        payload["needs_reconnect"] = playback_state.get("needs_reconnect", False)
 
     return payload
 
 
-def current_playback(overlay):
-    access_token = _valid_access_token(overlay)
+def cached_playback_state(connection):
+    now = timezone.now()
+    cache_seconds = settings.SPOTIFY_PLAYBACK_CACHE_SECONDS
+    stale_before = now - timedelta(seconds=cache_seconds)
+
+    if (
+        connection.playback_cache
+        and connection.playback_cached_at
+        and connection.playback_cached_at > stale_before
+    ):
+        return connection.playback_cache
+
+    lease_expired_before = now - timedelta(seconds=15)
+    claimed = (
+        SpotifyConnection.objects.filter(pk=connection.pk)
+        .filter(Q(playback_cached_at__isnull=True) | Q(playback_cached_at__lte=stale_before))
+        .filter(
+            Q(playback_refresh_started_at__isnull=True)
+            | Q(playback_refresh_started_at__lt=lease_expired_before)
+        )
+        .update(playback_refresh_started_at=now)
+    )
+
+    if not claimed:
+        connection.refresh_from_db(
+            fields=(
+                "playback_cache",
+                "playback_cached_at",
+                "playback_refresh_started_at",
+            )
+        )
+        return connection.playback_cache or {
+            "playback": empty_playback(),
+            "error": False,
+            "needs_reconnect": False,
+        }
+
+    try:
+        state = {
+            "playback": current_playback(connection),
+            "error": False,
+            "needs_reconnect": False,
+        }
+    except SpotifyAPIError as error:
+        state = {
+            "playback": empty_playback(),
+            "error": True,
+            "needs_reconnect": error.status_code in {400, 401, 403},
+        }
+
+    connection.playback_cache = state
+    connection.playback_cached_at = timezone.now()
+    connection.playback_refresh_started_at = None
+    connection.save(
+        update_fields=(
+            "playback_cache",
+            "playback_cached_at",
+            "playback_refresh_started_at",
+            "updated_at",
+        )
+    )
+    return state
+
+
+def current_playback(connection):
+    access_token = _valid_access_token(connection)
 
     try:
         response = _api_request(CURRENTLY_PLAYING_URL, access_token)
     except SpotifyAPIError as error:
-        if error.status_code != 401 or not overlay.spotify_refresh_token:
+        if error.status_code != 401 or not connection.refresh_token:
             raise
 
-        access_token = _refresh_access_token(overlay)
+        access_token = _refresh_access_token(connection)
         response = _api_request(CURRENTLY_PLAYING_URL, access_token)
 
     if response is None or not response.get("item"):
@@ -121,9 +276,7 @@ def current_playback(overlay):
         images = item.get("images") or show.get("images") or []
     else:
         artists = ", ".join(
-            artist.get("name", "")
-            for artist in item.get("artists", [])
-            if artist.get("name")
+            artist.get("name", "") for artist in item.get("artists", []) if artist.get("name")
         )
         album_data = item.get("album") or {}
         album = album_data.get("name") or ""
@@ -158,37 +311,37 @@ def empty_playback():
     }
 
 
-def _valid_access_token(overlay):
-    expires_at = overlay.spotify_token_expires_at
+def _valid_access_token(connection):
+    expires_at = connection.token_expires_at
 
     if (
-        overlay.spotify_access_token
+        connection.access_token
         and expires_at
         and expires_at > timezone.now() + timedelta(seconds=60)
     ):
-        return overlay.spotify_access_token
+        return connection.access_token
 
-    if overlay.spotify_refresh_token:
-        return _refresh_access_token(overlay)
+    if connection.refresh_token:
+        return _refresh_access_token(connection)
 
-    if overlay.spotify_access_token:
-        return overlay.spotify_access_token
+    if connection.access_token:
+        return connection.access_token
 
     raise SpotifyAPIError(_("Spotify is not connected."), status_code=401)
 
 
-def _refresh_access_token(overlay):
+def _refresh_access_token(connection):
     token_data = _token_request(
         {
             "grant_type": "refresh_token",
-            "refresh_token": overlay.spotify_refresh_token,
+            "refresh_token": connection.refresh_token,
         }
     )
-    _store_token_response(overlay, token_data)
-    return overlay.spotify_access_token
+    _store_token_response(connection, token_data)
+    return connection.access_token
 
 
-def _store_token_response(overlay, token_data, connected=False):
+def _store_token_response(connection, token_data, connected=False):
     access_token = token_data.get("access_token")
 
     if not access_token:
@@ -199,23 +352,34 @@ def _store_token_response(overlay, token_data, connected=False):
     except (TypeError, ValueError):
         expires_in = 3600
 
-    overlay.spotify_access_token = access_token
-    overlay.spotify_token_expires_at = timezone.now() + timedelta(seconds=expires_in)
+    connection.access_token = access_token
+    connection.token_expires_at = timezone.now() + timedelta(seconds=expires_in)
 
     if token_data.get("refresh_token"):
-        overlay.spotify_refresh_token = token_data["refresh_token"]
+        connection.refresh_token = token_data["refresh_token"]
 
     update_fields = [
-        "spotify_access_token",
-        "spotify_refresh_token",
-        "spotify_token_expires_at",
+        "access_token",
+        "refresh_token",
+        "token_expires_at",
+        "updated_at",
     ]
 
     if connected:
-        overlay.spotify_connected_at = timezone.now()
-        update_fields.append("spotify_connected_at")
+        connection.connected_at = timezone.now()
+        update_fields.append("connected_at")
 
-    overlay.save(update_fields=update_fields)
+    connection.playback_cache = {}
+    connection.playback_cached_at = None
+    connection.playback_refresh_started_at = None
+    update_fields.extend(
+        (
+            "playback_cache",
+            "playback_cached_at",
+            "playback_refresh_started_at",
+        )
+    )
+    connection.save(update_fields=update_fields)
 
 
 def _token_request(data):
@@ -253,7 +417,9 @@ def _read_json_response(request, allow_empty=False):
         try:
             body = error.read().decode("utf-8")
             error_payload = json.loads(body)
-            message = error_payload.get("error_description") or error_payload.get("error", {}).get("message")
+            message = error_payload.get("error_description") or error_payload.get("error", {}).get(
+                "message"
+            )
         except (AttributeError, UnicodeDecodeError, json.JSONDecodeError):
             message = None
 

@@ -1,24 +1,41 @@
 import json
 from datetime import timedelta
+from io import BytesIO
 from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import connection as database_connection
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from PIL import Image
 
+from app import overlay_versions
 from app.forms import (
     SpotifyOverlayForm,
     TimerOverlayForm,
     WinChallengeCreateForm,
     WinChallengeDesignForm,
 )
-from app.models import SpotifyOverlay, TimerOverlay, WinChallenge, WinChallengeGame
-
+from app.models import (
+    OverlayAsset,
+    OverlayVersion,
+    SpotifyConnection,
+    SpotifyOverlay,
+    TimerOverlay,
+    WinChallenge,
+    WinChallengeGame,
+)
 
 User = get_user_model()
+
+
+def uploaded_png(name="logo.png", color=(20, 184, 166, 255)):
+    buffer = BytesIO()
+    Image.new("RGBA", (4, 4), color).save(buffer, format="PNG")
+    return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/png")
 
 
 class HomeViewTests(TestCase):
@@ -41,8 +58,8 @@ class HomeViewTests(TestCase):
         self.assertContains(response, 'id="mobile-menu-toggle"')
         self.assertContains(response, 'aria-controls="header-menu"')
         self.assertContains(response, 'aria-expanded="false"')
-        self.assertContains(response, 'data-open-label=')
-        self.assertContains(response, 'data-close-label=')
+        self.assertContains(response, "data-open-label=")
+        self.assertContains(response, "data-close-label=")
         self.assertContains(response, 'class="header-menu" id="header-menu"')
 
     def test_page_exposes_skip_link_landmarks_and_public_indexing(self):
@@ -102,7 +119,9 @@ class HomeViewTests(TestCase):
             response,
             f'href="{reverse("signup")}?next={reverse("timer_create")}"',
         )
-        self.assertContains(response, "Kostenloses Konto zum Speichern und f\u00fcr OBS erforderlich.")
+        self.assertContains(
+            response, "Kostenloses Konto zum Speichern und f\u00fcr OBS erforderlich."
+        )
 
     def test_authenticated_overlay_actions_open_the_selected_editor(self):
         user = User.objects.create_user(username="home-creator")
@@ -129,7 +148,7 @@ class DemoViewTests(TestCase):
         self.assertContains(response, 'data-demo-card="spotify"')
         self.assertContains(response, 'data-demo-card="winchallenge"')
         self.assertContains(response, 'data-demo-style="neon"', count=2)
-        self.assertContains(response, 'data-demo-progress')
+        self.assertContains(response, "data-demo-progress")
 
     def test_demo_signup_actions_return_to_selected_editor(self):
         response = self.client.get(reverse("demo"))
@@ -206,7 +225,7 @@ class AuthenticationAccessibilityTests(TestCase):
         self.assertContains(response, 'id="id_username_error"')
         self.assertContains(response, 'aria-invalid="true"')
         self.assertContains(response, 'aria-describedby="id_username_error"')
-        self.assertContains(response, 'data-error-summary')
+        self.assertContains(response, "data-error-summary")
 
 
 class AboutViewTests(TestCase):
@@ -264,10 +283,14 @@ class OverlayDashboardTests(TestCase):
         self.assertContains(response, "timer-dashboard-preview")
         self.assertContains(response, reverse("spotify_duplicate", args=[spotify_overlay.pk]))
         self.assertContains(response, reverse("spotify_export", args=[spotify_overlay.pk]))
+        self.assertContains(response, reverse("spotify_renew_obs_link", args=[spotify_overlay.pk]))
         self.assertContains(response, reverse("winchallenge_duplicate", args=[challenge.pk]))
         self.assertContains(response, reverse("winchallenge_export", args=[challenge.pk]))
+        self.assertContains(response, reverse("winchallenge_renew_obs_link", args=[challenge.pk]))
         self.assertContains(response, reverse("timer_duplicate", args=[timer.pk]))
         self.assertContains(response, reverse("timer_export", args=[timer.pk]))
+        self.assertContains(response, reverse("timer_renew_obs_link", args=[timer.pk]))
+        self.assertContains(response, "OBS-Link erneuern", count=3)
         self.assertContains(response, reverse("overlay_import"))
         self.assertContains(response, 'enctype="multipart/form-data"')
         self.assertEqual(response.context["overlay_count"], 3)
@@ -275,19 +298,333 @@ class OverlayDashboardTests(TestCase):
     def test_legacy_overview_urls_redirect_to_dashboard_sections(self):
         self.assertRedirects(
             self.client.get(reverse("spotify_list")),
-            f'{reverse("overlay_dashboard")}#spotify-overlays',
+            f"{reverse('overlay_dashboard')}#spotify-overlays",
             fetch_redirect_response=False,
         )
         self.assertRedirects(
             self.client.get(reverse("winchallenge_list")),
-            f'{reverse("overlay_dashboard")}#winchallenge-overlays',
+            f"{reverse('overlay_dashboard')}#winchallenge-overlays",
             fetch_redirect_response=False,
         )
         self.assertRedirects(
             self.client.get(reverse("timer_list")),
-            f'{reverse("overlay_dashboard")}#timer-overlays',
+            f"{reverse('overlay_dashboard')}#timer-overlays",
             fetch_redirect_response=False,
         )
+
+
+class OverlayAssetTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="asset-owner")
+        self.client.force_login(self.user)
+        self.media_settings = override_settings(
+            STORAGES={
+                "default": {
+                    "BACKEND": "django.core.files.storage.InMemoryStorage",
+                },
+                "staticfiles": {
+                    "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+                },
+            }
+        )
+        self.media_settings.enable()
+        self.addCleanup(self.media_settings.disable)
+
+    def test_valid_image_and_font_uploads_are_private_to_the_owner(self):
+        image_response = self.client.post(
+            reverse("overlay_asset_upload"),
+            {
+                "asset-name": "Channel logo",
+                "asset-kind": OverlayAsset.KIND_IMAGE,
+                "asset-file": uploaded_png(),
+                "next": reverse("spotify_create"),
+            },
+        )
+        font_response = self.client.post(
+            reverse("overlay_asset_upload"),
+            {
+                "asset-name": "Stream font",
+                "asset-kind": OverlayAsset.KIND_FONT,
+                "asset-file": SimpleUploadedFile(
+                    "stream.woff2",
+                    b"wOF2" + (b"\0" * 64),
+                    content_type="font/woff2",
+                ),
+                "next": reverse("timer_create"),
+            },
+        )
+
+        self.assertRedirects(image_response, reverse("spotify_create"))
+        self.assertRedirects(font_response, reverse("timer_create"))
+        self.assertEqual(
+            set(OverlayAsset.objects.values_list("owner", "kind")),
+            {
+                (self.user.pk, OverlayAsset.KIND_IMAGE),
+                (self.user.pk, OverlayAsset.KIND_FONT),
+            },
+        )
+
+    def test_invalid_or_mismatched_upload_is_rejected(self):
+        response = self.client.post(
+            reverse("overlay_asset_upload"),
+            {
+                "asset-name": "Unsafe logo",
+                "asset-kind": OverlayAsset.KIND_IMAGE,
+                "asset-file": SimpleUploadedFile(
+                    "unsafe.svg",
+                    b"<svg><script>alert(1)</script></svg>",
+                    content_type="image/svg+xml",
+                ),
+            },
+        )
+
+        self.assertRedirects(response, reverse("overlay_dashboard"))
+        self.assertFalse(OverlayAsset.objects.exists())
+
+    def test_asset_file_uses_token_url_and_safe_response_headers(self):
+        self.client.post(
+            reverse("overlay_asset_upload"),
+            {
+                "asset-name": "OBS logo",
+                "asset-kind": OverlayAsset.KIND_IMAGE,
+                "asset-file": uploaded_png(),
+            },
+        )
+        asset = OverlayAsset.objects.get()
+        self.client.logout()
+
+        response = self.client.get(asset.public_url)
+        content = b"".join(response.streaming_content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/png")
+        self.assertEqual(response["Cache-Control"], "public, max-age=31536000, immutable")
+        self.assertEqual(response["X-Content-Type-Options"], "nosniff")
+        self.assertTrue(content.startswith(b"\x89PNG"))
+
+    def test_asset_from_another_account_cannot_be_selected(self):
+        other_user = User.objects.create_user(username="other-asset-owner")
+        foreign_asset = OverlayAsset.objects.create(
+            owner=other_user,
+            name="Foreign logo",
+            kind=OverlayAsset.KIND_IMAGE,
+            file="overlay-assets/foreign/logo.png",
+        )
+        overlay = SpotifyOverlay.objects.create(owner=self.user, name="Owned overlay")
+        response = self.client.post(
+            reverse("spotify_autosave", args=[overlay.pk]),
+            {
+                "name": overlay.name,
+                "canvas_width": overlay.canvas_width,
+                "canvas_height": overlay.canvas_height,
+                "background_color": overlay.background_color,
+                "background_opacity": overlay.background_opacity,
+                "border_color": overlay.border_color,
+                "border_width": overlay.border_width,
+                "corner_radius": overlay.corner_radius,
+                "elements": json.dumps(overlay.elements),
+                "logo_asset": foreign_asset.pk,
+            },
+        )
+
+        overlay.refresh_from_db()
+        self.assertEqual(response.status_code, 400)
+        self.assertIsNone(overlay.logo_asset)
+
+    def test_uploaded_branding_is_available_in_editor_and_public_state(self):
+        self.client.post(
+            reverse("overlay_asset_upload"),
+            {
+                "asset-name": "Public logo",
+                "asset-kind": OverlayAsset.KIND_IMAGE,
+                "asset-file": uploaded_png(),
+            },
+        )
+        self.client.post(
+            reverse("overlay_asset_upload"),
+            {
+                "asset-name": "Public font",
+                "asset-kind": OverlayAsset.KIND_FONT,
+                "asset-file": SimpleUploadedFile(
+                    "public.woff",
+                    b"wOFF" + (b"\0" * 64),
+                    content_type="font/woff",
+                ),
+            },
+        )
+        logo = OverlayAsset.objects.get(kind=OverlayAsset.KIND_IMAGE)
+        font = OverlayAsset.objects.get(kind=OverlayAsset.KIND_FONT)
+        overlay = SpotifyOverlay.objects.create(
+            owner=self.user,
+            name="Branded",
+            font_family=SpotifyOverlay.FONT_GEORGIA,
+            logo_asset=logo,
+            background_asset=logo,
+            font_asset=font,
+        )
+
+        editor_response = self.client.get(reverse("spotify_manage", args=[overlay.pk]))
+        public_response = self.client.get(reverse("spotify_overlay", args=[overlay.public_token]))
+        state_response = self.client.get(
+            reverse("spotify_overlay_state", args=[overlay.public_token])
+        )
+
+        self.assertContains(editor_response, "Public logo")
+        self.assertContains(editor_response, "Georgia")
+        self.assertContains(editor_response, logo.public_url)
+        self.assertContains(editor_response, font.public_url)
+        self.assertContains(public_response, logo.public_url)
+        self.assertContains(public_response, font.public_url)
+        self.assertEqual(state_response.json()["logo_url"], logo.public_url)
+        self.assertEqual(
+            state_response.json()["background_image_url"],
+            logo.public_url,
+        )
+        self.assertEqual(state_response.json()["font_url"], font.public_url)
+        self.assertEqual(
+            state_response.json()["font_family"],
+            SpotifyOverlay.FONT_GEORGIA,
+        )
+
+
+class OverlayVersionTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="version-owner")
+        self.client.force_login(self.user)
+        self.spotify = SpotifyOverlay.objects.create(owner=self.user, name="Original")
+
+    def spotify_form_data(self, **updates):
+        data = {
+            field_name: (
+                getattr(self.spotify, field_name)
+                if getattr(self.spotify, field_name) is not None
+                else ""
+            )
+            for field_name in SpotifyOverlayForm.Meta.fields
+        }
+        data["elements"] = json.dumps(self.spotify.elements)
+        data.update(updates)
+        return data
+
+    def test_editor_creates_baseline_and_autosave_keeps_distinct_versions(self):
+        manage_response = self.client.get(reverse("spotify_manage", args=[self.spotify.pk]))
+        changed_response = self.client.post(
+            reverse("spotify_autosave", args=[self.spotify.pk]),
+            self.spotify_form_data(name="Changed"),
+        )
+        duplicate_response = self.client.post(
+            reverse("spotify_autosave", args=[self.spotify.pk]),
+            self.spotify_form_data(name="Changed"),
+        )
+
+        self.assertContains(manage_response, "overlay-version-history")
+        self.assertEqual(changed_response.status_code, 200)
+        self.assertEqual(duplicate_response.status_code, 200)
+        self.assertEqual(overlay_versions.versions_for(self.spotify).count(), 2)
+
+    def test_restore_recovers_overlay_and_branding_state(self):
+        logo = OverlayAsset.objects.create(
+            owner=self.user,
+            name="Logo",
+            kind=OverlayAsset.KIND_IMAGE,
+            file="overlay-assets/version-owner/logo.png",
+        )
+        baseline, _ = overlay_versions.record_version(
+            self.spotify,
+            OverlayVersion.REASON_CREATED,
+        )
+        self.spotify.name = "Changed"
+        self.spotify.font_family = SpotifyOverlay.FONT_GEORGIA
+        self.spotify.logo_asset = logo
+        self.spotify.save()
+        overlay_versions.record_version(self.spotify)
+
+        response = self.client.post(
+            reverse(
+                "overlay_version_restore",
+                args=["spotify", self.spotify.pk, baseline.pk],
+            )
+        )
+
+        self.spotify.refresh_from_db()
+        self.assertRedirects(
+            response,
+            reverse("spotify_manage", args=[self.spotify.pk]),
+        )
+        self.assertEqual(self.spotify.name, "Original")
+        self.assertEqual(self.spotify.font_family, SpotifyOverlay.FONT_SYSTEM)
+        self.assertIsNone(self.spotify.logo_asset)
+        self.assertEqual(overlay_versions.versions_for(self.spotify).count(), 3)
+
+    def test_winchallenge_restore_replaces_games(self):
+        challenge = WinChallenge.objects.create(owner=self.user, title="First")
+        game = WinChallengeGame.objects.create(
+            challenge=challenge,
+            name="Rocket League",
+            wins=0,
+            target_wins=3,
+        )
+        baseline, _ = overlay_versions.record_version(
+            challenge,
+            OverlayVersion.REASON_CREATED,
+        )
+        challenge.title = "Changed"
+        challenge.save()
+        game.wins = 2
+        game.save()
+
+        overlay_versions.restore_version(challenge, baseline)
+        challenge.refresh_from_db()
+
+        self.assertEqual(challenge.title, "First")
+        self.assertEqual(challenge.games.get().wins, 0)
+
+    def test_timer_restore_recovers_duration_and_design(self):
+        timer = TimerOverlay.objects.create(
+            owner=self.user,
+            name="Break",
+            duration_seconds=120,
+            accent_color="#14b8a6",
+        )
+        baseline, _ = overlay_versions.record_version(
+            timer,
+            OverlayVersion.REASON_CREATED,
+        )
+        timer.duration_seconds = 600
+        timer.accent_color = "#ff5500"
+        timer.save()
+
+        overlay_versions.restore_version(timer, baseline)
+        timer.refresh_from_db()
+
+        self.assertEqual(timer.duration_seconds, 120)
+        self.assertEqual(timer.accent_color, "#14b8a6")
+
+    def test_restore_endpoint_rejects_a_version_from_another_account(self):
+        other_user = User.objects.create_user(username="other-version-owner")
+        other_overlay = SpotifyOverlay.objects.create(owner=other_user, name="Private")
+        foreign_version, _ = overlay_versions.record_version(other_overlay)
+
+        response = self.client.post(
+            reverse(
+                "overlay_version_restore",
+                args=["spotify", self.spotify.pk, foreign_version.pk],
+            )
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.spotify.refresh_from_db()
+        self.assertEqual(self.spotify.name, "Original")
+
+    def test_only_the_30_most_recent_distinct_versions_are_retained(self):
+        for index in range(35):
+            self.spotify.name = f"Version {index}"
+            self.spotify.save(update_fields=["name", "updated_at"])
+            overlay_versions.record_version(self.spotify)
+
+        versions = overlay_versions.versions_for(self.spotify)
+        self.assertEqual(versions.count(), 30)
+        self.assertEqual(versions.first().snapshot["payload"]["overlay"]["name"], "Version 34")
 
 
 class OverlayTransferTests(TestCase):
@@ -315,14 +652,16 @@ class OverlayTransferTests(TestCase):
             sort_order=0,
         )
 
-    def test_spotify_duplicate_copies_design_but_not_connection_or_public_url(self):
-        self.spotify.spotify_access_token = "private-access-token"
-        self.spotify.spotify_refresh_token = "private-refresh-token"
-        self.spotify.save()
-
-        response = self.client.post(
-            reverse("spotify_duplicate", args=[self.spotify.pk])
+    def test_spotify_duplicate_shares_connection_but_not_public_url(self):
+        connection = SpotifyConnection.objects.create(
+            owner=self.user,
+            access_token="private-access-token",
+            refresh_token="private-refresh-token",
         )
+        self.spotify.connection = connection
+        self.spotify.save(update_fields=["connection"])
+
+        response = self.client.post(reverse("spotify_duplicate", args=[self.spotify.pk]))
 
         duplicate = SpotifyOverlay.objects.exclude(pk=self.spotify.pk).get(owner=self.user)
         self.assertEqual(response.status_code, 302)
@@ -330,14 +669,11 @@ class OverlayTransferTests(TestCase):
         self.assertEqual(duplicate.border_color, self.spotify.border_color)
         self.assertEqual(duplicate.elements, self.spotify.elements)
         self.assertNotEqual(duplicate.public_token, self.spotify.public_token)
-        self.assertFalse(duplicate.spotify_access_token)
-        self.assertFalse(duplicate.spotify_refresh_token)
+        self.assertEqual(duplicate.connection, connection)
         self.assertNotEqual(duplicate.name, self.spotify.name)
 
     def test_winchallenge_duplicate_copies_design_and_games(self):
-        response = self.client.post(
-            reverse("winchallenge_duplicate", args=[self.challenge.pk])
-        )
+        response = self.client.post(reverse("winchallenge_duplicate", args=[self.challenge.pk]))
 
         duplicate = WinChallenge.objects.exclude(pk=self.challenge.pk).get(owner=self.user)
         duplicate_game = duplicate.games.get()
@@ -350,8 +686,12 @@ class OverlayTransferTests(TestCase):
         self.assertEqual(duplicate_game.target_wins, 7)
 
     def test_spotify_export_is_json_and_omits_private_fields(self):
-        self.spotify.spotify_access_token = "private-access-token"
-        self.spotify.save()
+        connection = SpotifyConnection.objects.create(
+            owner=self.user,
+            access_token="private-access-token",
+        )
+        self.spotify.connection = connection
+        self.spotify.save(update_fields=["connection"])
 
         response = self.client.get(reverse("spotify_export", args=[self.spotify.pk]))
         payload = json.loads(response.content)
@@ -368,9 +708,7 @@ class OverlayTransferTests(TestCase):
         self.assertNotIn("spotify_access_token", response.content.decode())
 
     def test_winchallenge_export_contains_ordered_games(self):
-        response = self.client.get(
-            reverse("winchallenge_export", args=[self.challenge.pk])
-        )
+        response = self.client.get(reverse("winchallenge_export", args=[self.challenge.pk]))
         payload = json.loads(response.content)
 
         self.assertEqual(response.status_code, 200)
@@ -382,9 +720,7 @@ class OverlayTransferTests(TestCase):
         )
 
     def test_spotify_export_can_be_imported_as_new_owned_overlay(self):
-        export_response = self.client.get(
-            reverse("spotify_export", args=[self.spotify.pk])
-        )
+        export_response = self.client.get(reverse("spotify_export", args=[self.spotify.pk]))
         upload = SimpleUploadedFile(
             "green-room.json",
             export_response.content,
@@ -403,10 +739,25 @@ class OverlayTransferTests(TestCase):
         self.assertEqual(imported.elements, self.spotify.elements)
         self.assertNotEqual(imported.public_token, self.spotify.public_token)
 
-    def test_winchallenge_export_can_be_imported_with_games(self):
-        export_response = self.client.get(
-            reverse("winchallenge_export", args=[self.challenge.pk])
+    def test_older_export_without_preset_font_remains_importable(self):
+        payload = json.loads(
+            self.client.get(reverse("spotify_export", args=[self.spotify.pk])).content
         )
+        payload["overlay"].pop("font_family")
+        upload = SimpleUploadedFile(
+            "older-export.json",
+            json.dumps(payload).encode(),
+            content_type="application/json",
+        )
+
+        response = self.client.post(reverse("overlay_import"), {"overlay_file": upload})
+
+        imported = SpotifyOverlay.objects.exclude(pk=self.spotify.pk).get(owner=self.user)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(imported.font_family, SpotifyOverlay.FONT_SYSTEM)
+
+    def test_winchallenge_export_can_be_imported_with_games(self):
+        export_response = self.client.get(reverse("winchallenge_export", args=[self.challenge.pk]))
         upload = SimpleUploadedFile(
             "ranked-run.json",
             export_response.content,
@@ -472,15 +823,11 @@ class OverlayTransferTests(TestCase):
         )
 
         self.assertEqual(
-            self.client.post(
-                reverse("spotify_duplicate", args=[foreign_spotify.pk])
-            ).status_code,
+            self.client.post(reverse("spotify_duplicate", args=[foreign_spotify.pk])).status_code,
             404,
         )
         self.assertEqual(
-            self.client.get(
-                reverse("spotify_export", args=[foreign_spotify.pk])
-            ).status_code,
+            self.client.get(reverse("spotify_export", args=[foreign_spotify.pk])).status_code,
             404,
         )
         self.assertEqual(
@@ -500,8 +847,12 @@ class OverlayTransferTests(TestCase):
 class WinChallengeModelTests(TestCase):
     def test_total_wins_are_calculated_from_games(self):
         challenge = WinChallenge.objects.create(title="Road to Diamond")
-        WinChallengeGame.objects.create(challenge=challenge, name="Rocket League", wins=4, target_wins=6)
-        game = WinChallengeGame.objects.create(challenge=challenge, name="Valorant", wins=2, target_wins=4)
+        WinChallengeGame.objects.create(
+            challenge=challenge, name="Rocket League", wins=4, target_wins=6
+        )
+        game = WinChallengeGame.objects.create(
+            challenge=challenge, name="Valorant", wins=2, target_wins=4
+        )
 
         self.assertEqual(challenge.total_wins, 6)
         self.assertEqual(game.progress_percent, 50)
@@ -581,7 +932,9 @@ class WinChallengeEndpointTests(TestCase):
     def test_create_assigns_the_signed_in_user(self):
         candidate = WinChallenge()
         data = {
-            field_name: getattr(candidate, field_name)
+            field_name: (
+                getattr(candidate, field_name) if getattr(candidate, field_name) is not None else ""
+            )
             for field_name in WinChallengeCreateForm.Meta.fields
         }
         data.update(
@@ -631,7 +984,11 @@ class WinChallengeEndpointTests(TestCase):
 
     def test_design_autosave_updates_design_without_changing_title(self):
         data = {
-            field_name: getattr(self.challenge, field_name)
+            field_name: (
+                getattr(self.challenge, field_name)
+                if getattr(self.challenge, field_name) is not None
+                else ""
+            )
             for field_name in WinChallengeDesignForm.Meta.fields
         }
         data.update({"form_type": "design", "accent_color": "#ff5500"})
@@ -722,6 +1079,23 @@ class WinChallengeEndpointTests(TestCase):
         self.assertEqual(increment_response.status_code, 200)
         self.assertEqual(self.game.wins, 1)
 
+    def test_game_win_updates_do_not_exceed_maximum(self):
+        self.game.wins = WinChallengeGame.MAX_WINS - 1
+        self.game.save(update_fields=["wins"])
+        url = reverse("winchallenge_game_wins", args=[self.challenge.pk, self.game.pk])
+
+        increment_response = self.client.post(url, {"delta": 1})
+        capped_response = self.client.post(url, {"delta": 1})
+        self.game.refresh_from_db()
+
+        self.assertEqual(increment_response.status_code, 200)
+        self.assertEqual(capped_response.status_code, 200)
+        self.assertEqual(self.game.wins, WinChallengeGame.MAX_WINS)
+        self.assertEqual(
+            capped_response.json()["games"][0]["wins"],
+            WinChallengeGame.MAX_WINS,
+        )
+
     def test_reaching_target_marks_game_as_complete(self):
         self.game.wins = self.game.target_wins - 1
         self.game.save(update_fields=["wins"])
@@ -793,6 +1167,30 @@ class SpotifyOverlayModelTests(TestCase):
             {"artwork", "title", "artist", "progress", "elapsed", "duration"},
         )
 
+    def test_spotify_tokens_are_encrypted_in_the_database(self):
+        owner = User.objects.create_user(username="encrypted-token-owner")
+        connection = SpotifyConnection.objects.create(
+            owner=owner,
+            access_token="secret-access-token",
+            refresh_token="secret-refresh-token",
+        )
+
+        with database_connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT access_token, refresh_token FROM app_spotifyconnection WHERE id = %s",
+                [connection.pk],
+            )
+            stored_access_token, stored_refresh_token = cursor.fetchone()
+
+        self.assertTrue(stored_access_token.startswith("fernet$"))
+        self.assertTrue(stored_refresh_token.startswith("fernet$"))
+        self.assertNotIn("secret-access-token", stored_access_token)
+        self.assertNotIn("secret-refresh-token", stored_refresh_token)
+
+        connection.refresh_from_db()
+        self.assertEqual(connection.access_token, "secret-access-token")
+        self.assertEqual(connection.refresh_token, "secret-refresh-token")
+
 
 class SpotifyOverlayFormTests(TestCase):
     def valid_data(self, **overrides):
@@ -855,7 +1253,11 @@ class SpotifyOverlayEndpointTests(TestCase):
 
     def spotify_form_data(self, **updates):
         data = {
-            field_name: getattr(self.overlay, field_name)
+            field_name: (
+                getattr(self.overlay, field_name)
+                if getattr(self.overlay, field_name) is not None
+                else ""
+            )
             for field_name in SpotifyOverlayForm.Meta.fields
         }
         data["elements"] = json.dumps(self.overlay.elements)
@@ -881,7 +1283,9 @@ class SpotifyOverlayEndpointTests(TestCase):
             f'data-autosave-url="{reverse("spotify_autosave", args=[self.overlay.pk])}"',
         )
         self.assertContains(manage_response, reverse("spotify_connect", args=[self.overlay.pk]))
-        self.assertContains(manage_response, reverse("spotify_overlay", args=[self.overlay.public_token]))
+        self.assertContains(
+            manage_response, reverse("spotify_overlay", args=[self.overlay.public_token])
+        )
 
     def test_create_editor_uses_local_drafts_without_server_autosave(self):
         response = self.client.get(reverse("spotify_create"))
@@ -939,12 +1343,17 @@ class SpotifyOverlayEndpointTests(TestCase):
         self.assertEqual(created.border_color, "#ff8800")
         self.assertEqual(created.border_width, 6)
         self.assertEqual(created.owner, self.user)
+        self.assertEqual(created.connection.owner, self.user)
 
     def test_public_state_does_not_expose_spotify_tokens(self):
-        self.overlay.spotify_access_token = "secret-access-token"
-        self.overlay.spotify_refresh_token = "secret-refresh-token"
-        self.overlay.spotify_token_expires_at = timezone.now() + timedelta(hours=1)
-        self.overlay.save()
+        connection = SpotifyConnection.objects.create(
+            owner=self.user,
+            access_token="secret-access-token",
+            refresh_token="secret-refresh-token",
+            token_expires_at=timezone.now() + timedelta(hours=1),
+        )
+        self.overlay.connection = connection
+        self.overlay.save(update_fields=["connection"])
 
         with patch(
             "app.spotify_api._api_request",
@@ -956,7 +1365,10 @@ class SpotifyOverlayEndpointTests(TestCase):
                     "name": "Night Drive",
                     "duration_ms": 200000,
                     "artists": [{"name": "Nova"}],
-                    "album": {"name": "Lights", "images": [{"url": "https://example.com/cover.jpg"}]},
+                    "album": {
+                        "name": "Lights",
+                        "images": [{"url": "https://example.com/cover.jpg"}],
+                    },
                 },
             },
         ):
@@ -976,6 +1388,69 @@ class SpotifyOverlayEndpointTests(TestCase):
         self.assertEqual(payload["border_width"], self.overlay.border_width)
         self.assertNotIn("spotify_access_token", payload)
         self.assertNotIn("spotify_refresh_token", payload)
+
+    def test_shared_connection_reuses_cached_playback_across_overlays(self):
+        connection = SpotifyConnection.objects.create(
+            owner=self.user,
+            access_token="secret-access-token",
+            refresh_token="secret-refresh-token",
+            token_expires_at=timezone.now() + timedelta(hours=1),
+        )
+        self.overlay.connection = connection
+        self.overlay.save(update_fields=["connection"])
+        second_overlay = SpotifyOverlay.objects.create(
+            owner=self.user,
+            connection=connection,
+            name="Second layout",
+        )
+        playback_response = {
+            "is_playing": True,
+            "progress_ms": 1000,
+            "item": {
+                "type": "track",
+                "name": "Night Drive",
+                "duration_ms": 200000,
+                "artists": [{"name": "Nova"}],
+                "album": {"name": "Lights", "images": []},
+            },
+        }
+
+        with patch("app.spotify_api._api_request", return_value=playback_response) as api_request:
+            first_response = self.client.get(
+                reverse("spotify_overlay_state", args=[self.overlay.public_token])
+            )
+            second_response = self.client.get(
+                reverse("spotify_overlay_state", args=[second_overlay.public_token])
+            )
+
+        self.assertEqual(first_response.status_code, 200)
+        self.assertEqual(second_response.status_code, 200)
+        self.assertEqual(second_response.json()["playback"]["title"], "Night Drive")
+        api_request.assert_called_once()
+
+    def test_disconnect_clears_the_shared_connection_for_all_overlays(self):
+        connection = SpotifyConnection.objects.create(
+            owner=self.user,
+            access_token="secret-access-token",
+            refresh_token="secret-refresh-token",
+        )
+        self.overlay.connection = connection
+        self.overlay.save(update_fields=["connection"])
+        second_overlay = SpotifyOverlay.objects.create(
+            owner=self.user,
+            connection=connection,
+            name="Second layout",
+        )
+
+        response = self.client.post(reverse("spotify_disconnect", args=[self.overlay.pk]))
+        connection.refresh_from_db()
+        self.overlay.refresh_from_db()
+        second_overlay.refresh_from_db()
+
+        self.assertRedirects(response, reverse("spotify_manage", args=[self.overlay.pk]))
+        self.assertFalse(connection.is_connected)
+        self.assertFalse(self.overlay.is_spotify_connected)
+        self.assertFalse(second_overlay.is_spotify_connected)
 
     @override_settings(
         SPOTIFY_CLIENT_ID="client-id",
@@ -1135,7 +1610,7 @@ class TimerOverlayEndpointTests(TestCase):
 
         self.assertContains(response, "data-timer-editor")
         self.assertContains(response, "data-timer-controls")
-        self.assertContains(response, "data-timer-action=\"start\"")
+        self.assertContains(response, 'data-timer-action="start"')
         self.assertContains(response, reverse("timer_overlay", args=[self.timer.public_token]))
         self.assertContains(response, "data-editor-state")
         self.assertContains(response, reverse("timer_autosave", args=[self.timer.pk]))
@@ -1158,8 +1633,9 @@ class TimerOverlayEndpointTests(TestCase):
 
     def test_start_pause_and_reset_persist_timer_state(self):
         start_time = timezone.now()
-        with patch("app.views.timezone.now", return_value=start_time), patch(
-            "app.models.timezone.now", return_value=start_time
+        with (
+            patch("app.views.timezone.now", return_value=start_time),
+            patch("app.models.timezone.now", return_value=start_time),
         ):
             start_response = self.client.post(
                 reverse("timer_control", args=[self.timer.pk]),
@@ -1172,8 +1648,9 @@ class TimerOverlayEndpointTests(TestCase):
         self.assertEqual(self.timer.started_at, start_time)
 
         pause_time = start_time + timedelta(seconds=9)
-        with patch("app.views.timezone.now", return_value=pause_time), patch(
-            "app.models.timezone.now", return_value=pause_time
+        with (
+            patch("app.views.timezone.now", return_value=pause_time),
+            patch("app.models.timezone.now", return_value=pause_time),
         ):
             pause_response = self.client.post(
                 reverse("timer_control", args=[self.timer.pk]),
@@ -1196,9 +1673,7 @@ class TimerOverlayEndpointTests(TestCase):
 
     def test_public_state_does_not_expose_owner_or_public_token(self):
         self.client.logout()
-        response = self.client.get(
-            reverse("timer_overlay_state", args=[self.timer.public_token])
-        )
+        response = self.client.get(reverse("timer_overlay_state", args=[self.timer.public_token]))
         payload = response.json()
 
         self.assertEqual(response.status_code, 200)
@@ -1214,14 +1689,12 @@ class TimerOverlayEndpointTests(TestCase):
         self.timer.is_running = True
         self.timer.save()
 
-        duplicate_response = self.client.post(
-            reverse("timer_duplicate", args=[self.timer.pk])
-        )
+        duplicate_response = self.client.post(reverse("timer_duplicate", args=[self.timer.pk]))
         duplicate = TimerOverlay.objects.exclude(pk=self.timer.pk).get()
 
         self.assertRedirects(
             duplicate_response,
-            f'{reverse("overlay_dashboard")}#timer-overlays',
+            f"{reverse('overlay_dashboard')}#timer-overlays",
             fetch_redirect_response=False,
         )
         self.assertEqual(duplicate.duration_seconds, self.timer.duration_seconds)
@@ -1244,7 +1717,7 @@ class TimerOverlayEndpointTests(TestCase):
         imported = TimerOverlay.objects.filter(name=self.timer.name).exclude(pk=self.timer.pk).get()
         self.assertRedirects(
             import_response,
-            f'{reverse("overlay_dashboard")}#timer-overlays',
+            f"{reverse('overlay_dashboard')}#timer-overlays",
             fetch_redirect_response=False,
         )
         self.assertEqual(imported.duration_seconds, self.timer.duration_seconds)
@@ -1264,20 +1737,173 @@ class TimerOverlayEndpointTests(TestCase):
         self.assertEqual(created.accent_color, candidate.accent_color)
 
 
+class PublicStateConditionalRequestTests(TestCase):
+    def setUp(self):
+        owner = User.objects.create_user(username="conditional-state-owner")
+        self.timer = TimerOverlay.objects.create(owner=owner)
+        self.state_urls = (
+            reverse(
+                "spotify_overlay_state",
+                args=[SpotifyOverlay.objects.create(owner=owner).public_token],
+            ),
+            reverse(
+                "timer_overlay_state",
+                args=[self.timer.public_token],
+            ),
+            reverse(
+                "winchallenge_overlay_state",
+                args=[WinChallenge.objects.create(owner=owner).public_token],
+            ),
+        )
+
+    def test_unchanged_public_states_return_not_modified(self):
+        for state_url in self.state_urls:
+            with self.subTest(state_url=state_url):
+                first_response = self.client.get(state_url)
+                conditional_response = self.client.get(
+                    state_url,
+                    HTTP_IF_NONE_MATCH=first_response["ETag"],
+                )
+
+                self.assertEqual(first_response.status_code, 200)
+                self.assertEqual(conditional_response.status_code, 304)
+                self.assertEqual(conditional_response.content, b"")
+
+    def test_changed_state_invalidates_the_previous_etag(self):
+        state_url = reverse("timer_overlay_state", args=[self.timer.public_token])
+        first_response = self.client.get(state_url)
+        self.timer.label = "Updated label"
+        self.timer.save(update_fields=["label", "updated_at"])
+
+        changed_response = self.client.get(
+            state_url,
+            HTTP_IF_NONE_MATCH=first_response["ETag"],
+        )
+
+        self.assertEqual(changed_response.status_code, 200)
+        self.assertNotEqual(changed_response["ETag"], first_response["ETag"])
+        self.assertEqual(changed_response.json()["label"], "Updated label")
+
+
+class PublicOBSLinkRotationTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username="rotation-owner")
+        self.other_user = User.objects.create_user(username="rotation-other")
+        self.client.force_login(self.owner)
+        self.overlays = (
+            (
+                SpotifyOverlay.objects.create(owner=self.owner, name="Spotify"),
+                "spotify_renew_obs_link",
+                "spotify_overlay",
+                "spotify_overlay_state",
+            ),
+            (
+                TimerOverlay.objects.create(owner=self.owner, name="Timer"),
+                "timer_renew_obs_link",
+                "timer_overlay",
+                "timer_overlay_state",
+            ),
+            (
+                WinChallenge.objects.create(owner=self.owner, title="Challenge"),
+                "winchallenge_renew_obs_link",
+                "winchallenge_overlay",
+                "winchallenge_overlay_state",
+            ),
+        )
+
+    def test_owner_can_renew_and_revoke_each_public_obs_link(self):
+        for overlay, renew_url_name, public_url_name, state_url_name in self.overlays:
+            with self.subTest(overlay=overlay):
+                previous_token = overlay.public_token
+
+                response = self.client.post(
+                    reverse(renew_url_name, args=[overlay.pk]),
+                )
+                overlay.refresh_from_db()
+
+                self.assertRedirects(response, reverse("overlay_dashboard"))
+                self.assertNotEqual(overlay.public_token, previous_token)
+                self.assertEqual(
+                    self.client.get(reverse(public_url_name, args=[previous_token])).status_code,
+                    404,
+                )
+                self.assertEqual(
+                    self.client.get(reverse(state_url_name, args=[previous_token])).status_code,
+                    404,
+                )
+                self.assertEqual(
+                    self.client.get(
+                        reverse(public_url_name, args=[overlay.public_token])
+                    ).status_code,
+                    200,
+                )
+                self.assertEqual(
+                    self.client.get(
+                        reverse(state_url_name, args=[overlay.public_token])
+                    ).status_code,
+                    200,
+                )
+
+    def test_renewing_a_public_obs_link_requires_post(self):
+        for overlay, renew_url_name, _public_url_name, _state_url_name in self.overlays:
+            with self.subTest(overlay=overlay):
+                previous_token = overlay.public_token
+
+                response = self.client.get(reverse(renew_url_name, args=[overlay.pk]))
+                overlay.refresh_from_db()
+
+                self.assertEqual(response.status_code, 405)
+                self.assertEqual(overlay.public_token, previous_token)
+
+    def test_users_cannot_renew_foreign_public_obs_links(self):
+        foreign_overlays = (
+            (
+                SpotifyOverlay.objects.create(owner=self.other_user, name="Foreign Spotify"),
+                "spotify_renew_obs_link",
+            ),
+            (
+                TimerOverlay.objects.create(owner=self.other_user, name="Foreign Timer"),
+                "timer_renew_obs_link",
+            ),
+            (
+                WinChallenge.objects.create(owner=self.other_user, title="Foreign Challenge"),
+                "winchallenge_renew_obs_link",
+            ),
+        )
+
+        for overlay, renew_url_name in foreign_overlays:
+            with self.subTest(overlay=overlay):
+                previous_token = overlay.public_token
+
+                response = self.client.post(reverse(renew_url_name, args=[overlay.pk]))
+                overlay.refresh_from_db()
+
+                self.assertEqual(response.status_code, 404)
+                self.assertEqual(overlay.public_token, previous_token)
+
+
 class AccessControlTests(TestCase):
     def setUp(self):
         self.owner = User.objects.create_user(username="owner")
         self.other_user = User.objects.create_user(username="other")
-        self.owner_challenge = WinChallenge.objects.create(owner=self.owner, title="Owner Challenge")
-        self.foreign_challenge = WinChallenge.objects.create(owner=self.other_user, title="Foreign Challenge")
+        self.owner_challenge = WinChallenge.objects.create(
+            owner=self.owner, title="Owner Challenge"
+        )
+        self.foreign_challenge = WinChallenge.objects.create(
+            owner=self.other_user, title="Foreign Challenge"
+        )
         self.foreign_game = WinChallengeGame.objects.create(
             challenge=self.foreign_challenge,
             name="Private Game",
         )
         self.owner_spotify = SpotifyOverlay.objects.create(owner=self.owner, name="Owner Spotify")
-        self.foreign_spotify = SpotifyOverlay.objects.create(owner=self.other_user, name="Foreign Spotify")
+        self.foreign_spotify = SpotifyOverlay.objects.create(
+            owner=self.other_user, name="Foreign Spotify"
+        )
         self.owner_timer = TimerOverlay.objects.create(owner=self.owner, name="Owner Timer")
-        self.foreign_timer = TimerOverlay.objects.create(owner=self.other_user, name="Foreign Timer")
+        self.foreign_timer = TimerOverlay.objects.create(
+            owner=self.other_user, name="Foreign Timer"
+        )
 
     def test_management_pages_redirect_anonymous_users_to_login(self):
         protected_urls = (
@@ -1288,17 +1914,20 @@ class AccessControlTests(TestCase):
             reverse("spotify_autosave", args=[self.owner_spotify.pk]),
             reverse("spotify_duplicate", args=[self.owner_spotify.pk]),
             reverse("spotify_export", args=[self.owner_spotify.pk]),
+            reverse("spotify_renew_obs_link", args=[self.owner_spotify.pk]),
             reverse("timer_list"),
             reverse("timer_create"),
             reverse("timer_autosave", args=[self.owner_timer.pk]),
             reverse("timer_control", args=[self.owner_timer.pk]),
             reverse("timer_duplicate", args=[self.owner_timer.pk]),
             reverse("timer_export", args=[self.owner_timer.pk]),
+            reverse("timer_renew_obs_link", args=[self.owner_timer.pk]),
             reverse("winchallenge_list"),
             reverse("winchallenge_create"),
             reverse("winchallenge_autosave", args=[self.owner_challenge.pk]),
             reverse("winchallenge_duplicate", args=[self.owner_challenge.pk]),
             reverse("winchallenge_export", args=[self.owner_challenge.pk]),
+            reverse("winchallenge_renew_obs_link", args=[self.owner_challenge.pk]),
         )
 
         for url in protected_urls:
@@ -1322,7 +1951,9 @@ class AccessControlTests(TestCase):
             404,
         )
         self.assertEqual(
-            self.client.get(reverse("winchallenge_manage", args=[self.foreign_challenge.pk])).status_code,
+            self.client.get(
+                reverse("winchallenge_manage", args=[self.foreign_challenge.pk])
+            ).status_code,
             404,
         )
         self.assertEqual(
@@ -1391,6 +2022,9 @@ class AccessControlTests(TestCase):
         self.assertEqual(spotify_response.status_code, 200)
         self.assertEqual(challenge_response.status_code, 200)
         self.assertEqual(timer_response.status_code, 200)
+        self.assertContains(spotify_response, "js/polling.js")
+        self.assertContains(challenge_response, "js/polling.js")
+        self.assertContains(timer_response, "js/polling.js")
 
 
 class SignUpTests(TestCase):

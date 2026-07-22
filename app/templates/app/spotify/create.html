@@ -8,6 +8,7 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/spotify.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -26,6 +27,7 @@
     <div
         class="spotify-page spotify-editor-page"
         data-spotify-editor
+        data-overlay-branding-editor
         data-editor-state
         data-editor-create="{{ is_create|yesno:'true,false' }}"
         data-editor-draft-key="nexora:draft:spotify:{{ user.pk }}:{% if is_create %}new{% else %}{{ overlay.pk }}{% endif %}"
@@ -177,6 +179,8 @@
                     </div>
                 </section>
 
+                {% include "app/partials/_overlay_branding_controls.html" with branding_form=form %}
+
                 <section class="spotify-panel" aria-labelledby="spotify-elements-title">
                     <div class="panel-heading panel-heading--numbered">
                         <span class="panel-heading__number" aria-hidden="true">02</span>
@@ -280,6 +284,9 @@
                             <p class="section-label">{% translate "Live data" %}</p>
                             <h2 id="spotify-connection-title">{% translate "Spotify connection" %}</h2>
                         </div>
+                        <p class="spotify-panel-note">
+                            {% translate "This Spotify connection is shared by all your Spotify overlays." %}
+                        </p>
 
                         {% if overlay.is_spotify_connected %}
                             <div class="connection-status connection-status--connected">
@@ -323,6 +330,11 @@
                             <input class="form-control" type="text" value="{{ obs_url }}" readonly data-obs-url>
                             <button class="btn action-button" type="button" data-copy-url="{{ obs_url }}">
                                 {% translate "Copy link" %}
+                            </button>
+                        </div>
+                        <div class="obs-link-renew-form">
+                            <button class="btn glass-design" type="submit" form="spotify-renew-obs-link-form">
+                                {% translate "Renew OBS link" %}
                             </button>
                         </div>
                         <p class="spotify-panel-note spotify-source-dimensions">
@@ -391,7 +403,25 @@
             </aside>
         </form>
 
+        <form id="overlay-asset-upload-form" action="{% url 'overlay_asset_upload' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        </form>
+
         {% if not is_create %}
+            {% include "app/partials/_overlay_version_history.html" %}
+        {% endif %}
+
+        {% if not is_create %}
+            <form
+                id="spotify-renew-obs-link-form"
+                action="{% url 'spotify_renew_obs_link' overlay.pk %}"
+                method="post"
+                data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+            >
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'spotify_manage' overlay.pk %}">
+            </form>
             <form id="spotify-disconnect-form" action="{% url 'spotify_disconnect' overlay.pk %}" method="post">
                 {% csrf_token %}
             </form>
@@ -410,6 +440,7 @@
 {% endblock %}
 
 {% block extra_js %}
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/spotify.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
 {% endblock %}

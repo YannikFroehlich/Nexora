@@ -8,6 +8,7 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/winchallenge.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -24,6 +25,7 @@
     <div
         class="winchallenge-page winchallenge-editor-page winchallenge-editor-page--manage"
         data-winchallenge-editor
+        data-overlay-branding-editor
         data-editor-state
         data-editor-create="false"
         data-editor-draft-key="nexora:draft:winchallenge:{{ user.pk }}:{{ challenge.pk }}"
@@ -388,6 +390,8 @@
                             </label>
                         </div>
 
+                        {% include "app/partials/_overlay_branding_controls.html" with branding_form=design_form %}
+
                         <button class="btn action-button" type="submit">{% translate "Save design" %}</button>
                     </form>
                 </section>
@@ -404,6 +408,16 @@
                             {% translate "Copy OBS Link" %}
                         </button>
                     </div>
+                    <form
+                        class="obs-link-renew-form"
+                        action="{% url 'winchallenge_renew_obs_link' challenge.pk %}"
+                        method="post"
+                        data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+                    >
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{% url 'winchallenge_manage' challenge.pk %}#obs-link">
+                        <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
+                    </form>
 
                     <ol class="obs-steps">
                         <li>{% translate "Add a new browser source in OBS" %}</li>
@@ -429,11 +443,19 @@
             </aside>
         </div>
 
+        <form id="overlay-asset-upload-form" action="{% url 'overlay_asset_upload' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        </form>
+
+        {% include "app/partials/_overlay_version_history.html" with overlay=challenge %}
+
         <p class="copy-toast" data-copy-toast role="status" aria-live="polite" aria-atomic="true" hidden>{% translate "OBS link copied" %}</p>
     </div>
 {% endblock %}
 
 {% block extra_js %}
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/winchallenge.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
 {% endblock %}

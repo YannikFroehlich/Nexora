@@ -1,0 +1,30 @@
+{% load i18n %}
+
+<section class="card overlay-version-history" aria-labelledby="overlay-version-title">
+    <div class="panel-heading">
+        <p class="section-label">{% translate "History" %}</p>
+        <h2 id="overlay-version-title">{% translate "Saved versions" %}</h2>
+    </div>
+    <p>{% translate "Nexora keeps the 30 most recent distinct states of this overlay." %}</p>
+
+    <ol class="overlay-version-list">
+        {% for version in overlay_versions %}
+            <li class="overlay-version-list__item">
+                <span class="overlay-version-list__meta">
+                    <strong>{{ version.get_reason_display }}</strong>
+                    <small>{{ version.created_at|date:"SHORT_DATETIME_FORMAT" }}</small>
+                </span>
+                <form
+                    action="{% url 'overlay_version_restore' version_overlay_type overlay.pk version.pk %}"
+                    method="post"
+                    data-confirm-action="{% translate 'Restore this saved version? The current state will remain available in the history.' %}"
+                >
+                    {% csrf_token %}
+                    <button class="btn glass-design" type="submit">{% translate "Restore" %}</button>
+                </form>
+            </li>
+        {% empty %}
+            <li>{% translate "No saved versions yet." %}</li>
+        {% endfor %}
+    </ol>
+</section>

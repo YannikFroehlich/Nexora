@@ -8,6 +8,7 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/winchallenge.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -24,6 +25,7 @@
     <div
         class="winchallenge-page winchallenge-editor-page winchallenge-editor-page--create"
         data-winchallenge-editor
+        data-overlay-branding-editor
         data-editor-state
         data-editor-create="true"
         data-editor-draft-key="nexora:draft:winchallenge:{{ user.pk }}:new"
@@ -285,6 +287,8 @@
                             </label>
                         </div>
                     </section>
+
+                    {% include "app/partials/_overlay_branding_controls.html" with branding_form=form %}
                 </section>
 
                 <div class="editor-actions">
@@ -293,10 +297,16 @@
                 </div>
             </div>
         </form>
+
+        <form id="overlay-asset-upload-form" action="{% url 'overlay_asset_upload' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        </form>
     </div>
 {% endblock %}
 
 {% block extra_js %}
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/winchallenge.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
 {% endblock %}

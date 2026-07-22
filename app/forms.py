@@ -6,11 +6,72 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.utils.translation import gettext_lazy as _
 
-from app.models import SpotifyOverlay, TimerOverlay, WinChallenge, WinChallengeGame
-
+from app.models import (
+    OverlayAsset,
+    SpotifyOverlay,
+    TimerOverlay,
+    WinChallenge,
+    WinChallengeGame,
+)
 
 BASE_INPUT_CLASS = "form-control"
 MAX_OVERLAY_IMPORT_SIZE = 256 * 1024
+
+
+class OverlayAssetSelect(forms.Select):
+    def create_option(self, name, value, *args, **kwargs):
+        option = super().create_option(name, value, *args, **kwargs)
+        asset = getattr(value, "instance", None)
+        if asset is not None:
+            option["attrs"]["data-asset-url"] = asset.public_url
+        return option
+
+
+def _configure_branding_fields(form, asset_owner):
+    font_family = form.fields.get("font_family")
+    if font_family is not None:
+        font_family.label = _("Preset font")
+        font_family.required = False
+        font_family.widget.attrs.update(
+            {
+                "class": BASE_INPUT_CLASS,
+                "data-branding-font-family": "",
+            }
+        )
+
+    owner_assets = (
+        OverlayAsset.objects.filter(owner=asset_owner)
+        if asset_owner and asset_owner.is_authenticated
+        else OverlayAsset.objects.none()
+    )
+    field_config = {
+        "font_asset": (OverlayAsset.KIND_FONT, _("Custom font")),
+        "logo_asset": (OverlayAsset.KIND_IMAGE, _("Logo")),
+        "background_asset": (OverlayAsset.KIND_IMAGE, _("Background image")),
+    }
+
+    for field_name, (kind, label) in field_config.items():
+        field = form.fields.get(field_name)
+        if field is None:
+            continue
+        field.queryset = owner_assets.filter(kind=kind)
+        field.label = label
+        field.required = False
+        field.empty_label = _("None")
+        field.widget = OverlayAssetSelect(
+            attrs={
+                "class": BASE_INPUT_CLASS,
+                "data-branding-field": field_name,
+            },
+        )
+
+
+def _selected_font_family(form):
+    return (
+        form.cleaned_data.get("font_family")
+        or form.instance.font_family
+        or form.instance.FONT_SYSTEM
+    )
 
 
 def _prepare_accessible_auth_fields(form):
@@ -115,9 +176,7 @@ class OverlayImportForm(forms.Form):
             described_by.append("id_overlay_file_error")
             self.fields["overlay_file"].widget.attrs["aria-invalid"] = "true"
 
-        self.fields["overlay_file"].widget.attrs["aria-describedby"] = " ".join(
-            described_by
-        )
+        self.fields["overlay_file"].widget.attrs["aria-describedby"] = " ".join(described_by)
 
     def clean_overlay_file(self):
         overlay_file = self.cleaned_data["overlay_file"]
@@ -129,6 +188,53 @@ class OverlayImportForm(forms.Form):
             raise forms.ValidationError(_("Select a JSON file."))
 
         return overlay_file
+
+
+class OverlayAssetUploadForm(forms.ModelForm):
+    class Meta:
+        model = OverlayAsset
+        fields = ("name", "kind", "file")
+        labels = {
+            "name": _("Asset name"),
+            "kind": _("Asset type"),
+            "file": _("File"),
+        }
+        widgets = {
+            "name": forms.TextInput(
+                attrs={
+                    "class": BASE_INPUT_CLASS,
+                    "placeholder": _("My logo or font"),
+                    "form": "overlay-asset-upload-form",
+                }
+            ),
+            "kind": forms.Select(
+                attrs={
+                    "class": BASE_INPUT_CLASS,
+                    "form": "overlay-asset-upload-form",
+                }
+            ),
+            "file": forms.FileInput(
+                attrs={
+                    "class": BASE_INPUT_CLASS,
+                    "accept": ".png,.jpg,.jpeg,.webp,.woff,.woff2,.ttf,.otf",
+                    "form": "overlay-asset-upload-form",
+                }
+            ),
+        }
+
+    def __init__(self, *args, owner=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.owner = owner
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip()
+
+    def save(self, commit=True):
+        asset = super().save(commit=False)
+        asset.owner = self.owner
+        if commit:
+            asset.save()
+        return asset
 
 
 class ColorInput(forms.TextInput):
@@ -163,6 +269,10 @@ class WinChallengeBaseForm(forms.ModelForm):
             "item_spacing",
             "shadow_enabled",
             "show_games_list",
+            "font_family",
+            "font_asset",
+            "logo_asset",
+            "background_asset",
         )
         labels = {
             "title": _("Overlay title"),
@@ -194,7 +304,9 @@ class WinChallengeBaseForm(forms.ModelForm):
             "page_interval_seconds": _("Seconds before switching to the next page."),
         }
         widgets = {
-            "title": forms.TextInput(attrs={"class": BASE_INPUT_CLASS, "placeholder": _("Road to Diamond")}),
+            "title": forms.TextInput(
+                attrs={"class": BASE_INPUT_CLASS, "placeholder": _("Road to Diamond")}
+            ),
             "design_template": forms.Select(attrs={"class": BASE_INPUT_CLASS}),
             "background_color": ColorInput(attrs={"class": "color-control"}),
             "background_opacity": forms.NumberInput(
@@ -203,25 +315,53 @@ class WinChallengeBaseForm(forms.ModelForm):
             "text_color": ColorInput(attrs={"class": "color-control"}),
             "accent_color": ColorInput(attrs={"class": "color-control"}),
             "border_color": ColorInput(attrs={"class": "color-control"}),
-            "border_width": forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 12, "step": 1}),
-            "corner_radius": forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 64, "step": 1}),
-            "padding": forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 8, "max": 64, "step": 1}),
-            "overlay_width": forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 260, "max": 1200, "step": 1}),
-            "overlay_height": forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 1000, "step": 1}),
-            "label_text_size": forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 6, "max": 32, "step": 1}),
-            "title_text_size": forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 10, "max": 64, "step": 1}),
-            "total_text_size": forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 8, "max": 40, "step": 1}),
-            "game_text_size": forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 8, "max": 48, "step": 1}),
-            "game_score_text_size": forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 8, "max": 36, "step": 1}),
-            "pager_text_size": forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 8, "max": 32, "step": 1}),
-            "page_interval_seconds": forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 1, "max": 60, "step": 1}),
-            "item_spacing": forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 4, "max": 28, "step": 1}),
+            "border_width": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 12, "step": 1}
+            ),
+            "corner_radius": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 64, "step": 1}
+            ),
+            "padding": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 8, "max": 64, "step": 1}
+            ),
+            "overlay_width": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 260, "max": 1200, "step": 1}
+            ),
+            "overlay_height": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 1000, "step": 1}
+            ),
+            "label_text_size": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 6, "max": 32, "step": 1}
+            ),
+            "title_text_size": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 10, "max": 64, "step": 1}
+            ),
+            "total_text_size": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 8, "max": 40, "step": 1}
+            ),
+            "game_text_size": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 8, "max": 48, "step": 1}
+            ),
+            "game_score_text_size": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 8, "max": 36, "step": 1}
+            ),
+            "pager_text_size": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 8, "max": 32, "step": 1}
+            ),
+            "page_interval_seconds": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 1, "max": 60, "step": 1}
+            ),
+            "item_spacing": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 4, "max": 28, "step": 1}
+            ),
             "shadow_enabled": forms.CheckboxInput(attrs={"class": "toggle-control"}),
             "show_games_list": forms.CheckboxInput(attrs={"class": "toggle-control"}),
         }
 
     def __init__(self, *args, **kwargs):
+        asset_owner = kwargs.pop("asset_owner", None)
         super().__init__(*args, **kwargs)
+        _configure_branding_fields(self, asset_owner)
         self._sync_numeric_widget_limits()
 
     def _sync_numeric_widget_limits(self):
@@ -255,6 +395,9 @@ class WinChallengeBaseForm(forms.ModelForm):
 
     def clean_title(self):
         return self.cleaned_data["title"].strip()
+
+    def clean_font_family(self):
+        return _selected_font_family(self)
 
 
 class WinChallengeCreateForm(WinChallengeBaseForm):
@@ -309,6 +452,10 @@ class WinChallengeDesignForm(WinChallengeBaseForm):
             "item_spacing",
             "shadow_enabled",
             "show_games_list",
+            "font_family",
+            "font_asset",
+            "logo_asset",
+            "background_asset",
         )
 
 
@@ -333,7 +480,7 @@ class WinChallengeGameForm(forms.ModelForm):
                 attrs={
                     "class": BASE_INPUT_CLASS,
                     "min": 0,
-                    "max": 99999,
+                    "max": WinChallengeGame.MAX_WINS,
                     "placeholder": 0,
                 }
             ),
@@ -341,7 +488,7 @@ class WinChallengeGameForm(forms.ModelForm):
                 attrs={
                     "class": BASE_INPUT_CLASS,
                     "min": 1,
-                    "max": 99999,
+                    "max": WinChallengeGame.MAX_WINS,
                     "placeholder": 10,
                 }
             ),
@@ -350,13 +497,13 @@ class WinChallengeGameForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["wins"].min_value = 0
-        self.fields["wins"].max_value = 99999
+        self.fields["wins"].max_value = WinChallengeGame.MAX_WINS
         self.fields["wins"].widget.attrs["min"] = 0
-        self.fields["wins"].widget.attrs["max"] = 99999
+        self.fields["wins"].widget.attrs["max"] = WinChallengeGame.MAX_WINS
         self.fields["target_wins"].min_value = 1
-        self.fields["target_wins"].max_value = 99999
+        self.fields["target_wins"].max_value = WinChallengeGame.MAX_WINS
         self.fields["target_wins"].widget.attrs["min"] = 1
-        self.fields["target_wins"].widget.attrs["max"] = 99999
+        self.fields["target_wins"].widget.attrs["max"] = WinChallengeGame.MAX_WINS
 
     def clean_name(self):
         return self.cleaned_data["name"].strip()
@@ -390,6 +537,10 @@ class SpotifyOverlayForm(forms.ModelForm):
             "border_width",
             "corner_radius",
             "elements",
+            "font_family",
+            "font_asset",
+            "logo_asset",
+            "background_asset",
         )
         labels = {
             "name": _("Overlay name"),
@@ -425,7 +576,9 @@ class SpotifyOverlayForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        asset_owner = kwargs.pop("asset_owner", None)
         super().__init__(*args, **kwargs)
+        _configure_branding_fields(self, asset_owner)
         self.fields["name"].required = False
 
         limits = {
@@ -450,6 +603,9 @@ class SpotifyOverlayForm(forms.ModelForm):
 
     def clean_name(self):
         return self.cleaned_data["name"].strip() or "Spotify-Overlay"
+
+    def clean_font_family(self):
+        return _selected_font_family(self)
 
     def clean_elements(self):
         try:
@@ -527,25 +683,19 @@ class TimerOverlayForm(forms.ModelForm):
         label=_("Hours"),
         min_value=0,
         max_value=99,
-        widget=forms.NumberInput(
-            attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 99, "step": 1}
-        ),
+        widget=forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 99, "step": 1}),
     )
     duration_minutes = forms.IntegerField(
         label=_("Minutes"),
         min_value=0,
         max_value=59,
-        widget=forms.NumberInput(
-            attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 59, "step": 1}
-        ),
+        widget=forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 59, "step": 1}),
     )
     duration_seconds_part = forms.IntegerField(
         label=_("Seconds"),
         min_value=0,
         max_value=59,
-        widget=forms.NumberInput(
-            attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 59, "step": 1}
-        ),
+        widget=forms.NumberInput(attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 59, "step": 1}),
     )
 
     class Meta:
@@ -571,6 +721,10 @@ class TimerOverlayForm(forms.ModelForm):
             "timer_text_size",
             "show_progress",
             "shadow_enabled",
+            "font_family",
+            "font_asset",
+            "logo_asset",
+            "background_asset",
         )
         labels = {
             "name": _("Overlay name"),
@@ -634,7 +788,9 @@ class TimerOverlayForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        asset_owner = kwargs.pop("asset_owner", None)
         super().__init__(*args, **kwargs)
+        _configure_branding_fields(self, asset_owner)
         self.fields["name"].required = False
         self.fields["label"].required = False
 
@@ -654,6 +810,9 @@ class TimerOverlayForm(forms.ModelForm):
 
     def clean_name(self):
         return self.cleaned_data["name"].strip() or "Stream Timer"
+
+    def clean_font_family(self):
+        return _selected_font_family(self)
 
     def clean_label(self):
         return self.cleaned_data["label"].strip()

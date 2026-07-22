@@ -1,8 +1,13 @@
 {% load i18n %}
 
+{% if timer.font_asset_id %}
+    <style>@font-face { font-family: "NexoraUploadedOverlayFont"; src: url("{{ timer.font_asset.public_url }}"); font-display: swap; }</style>
+{% endif %}
+
 <article
     class="timer-overlay timer-overlay--{{ timer.design_template }}"
     data-timer-overlay
+    data-overlay-branding-root
     data-mode="{{ timer.mode }}"
     data-duration-seconds="{{ timer.duration_seconds }}"
     data-display-seconds="{{ timer.display_seconds }}"
@@ -20,8 +25,13 @@
         --timer-time-size: {{ timer.timer_text_size }}px;
         --timer-shadow: {{ timer.shadow_css }};
         --timer-progress: {{ timer.progress_percent }}%;
+        --nexora-overlay-font: {% if timer.font_asset_id %}'NexoraUploadedOverlayFont'{% else %}{{ timer.font_css_stack }}{% endif %};
+        {% if timer.background_asset_id %}--nexora-overlay-background-image: url("{{ timer.background_asset.public_url }}");{% endif %}
     "
 >
+    {% if timer.logo_asset_id %}
+        <img class="overlay-custom-logo" src="{{ timer.logo_asset.public_url }}" alt="" data-overlay-custom-logo>
+    {% endif %}
     <div class="timer-overlay__topline">
         <span class="timer-overlay__mode" data-timer-mode-label>
             {% if timer.mode == "stopwatch" %}{% translate "Stopwatch" %}{% else %}{% translate "Countdown" %}{% endif %}

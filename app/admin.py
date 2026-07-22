@@ -1,6 +1,44 @@
 from django.contrib import admin
 
-from app.models import SpotifyOverlay, TimerOverlay, WinChallenge, WinChallengeGame
+from app.models import (
+    OverlayAsset,
+    OverlayVersion,
+    SpotifyConnection,
+    SpotifyOverlay,
+    TimerOverlay,
+    WinChallenge,
+    WinChallengeGame,
+)
+
+
+@admin.register(OverlayAsset)
+class OverlayAssetAdmin(admin.ModelAdmin):
+    list_display = ("name", "kind", "owner", "created_at")
+    list_filter = ("kind", "created_at")
+    search_fields = ("name", "owner__username", "public_token")
+    readonly_fields = ("public_token", "created_at")
+
+
+@admin.register(OverlayVersion)
+class OverlayVersionAdmin(admin.ModelAdmin):
+    list_display = ("overlay_type", "overlay_id", "owner", "reason", "created_at")
+    list_filter = ("overlay_type", "reason", "created_at")
+    search_fields = ("owner__username", "overlay_id", "fingerprint")
+    readonly_fields = (
+        "owner",
+        "overlay_type",
+        "overlay_id",
+        "snapshot",
+        "fingerprint",
+        "reason",
+        "created_at",
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 class WinChallengeGameInline(admin.TabularInline):
@@ -34,11 +72,12 @@ class WinChallengeGameAdmin(admin.ModelAdmin):
 @admin.register(SpotifyOverlay)
 class SpotifyOverlayAdmin(admin.ModelAdmin):
     list_display = ("display_name", "owner", "canvas_size", "spotify_connected", "updated_at")
-    list_filter = ("background_opacity", "spotify_connected_at", "owner")
+    list_select_related = ("connection",)
+    list_filter = ("background_opacity", "connection__connected_at", "owner")
     search_fields = ("name", "public_token", "owner__username")
     readonly_fields = (
         "public_token",
-        "spotify_connected_at",
+        "connection",
         "created_at",
         "updated_at",
     )
@@ -50,6 +89,30 @@ class SpotifyOverlayAdmin(admin.ModelAdmin):
     @admin.display(boolean=True, description="Spotify connected")
     def spotify_connected(self, obj):
         return obj.is_spotify_connected
+
+
+@admin.register(SpotifyConnection)
+class SpotifyConnectionAdmin(admin.ModelAdmin):
+    list_display = ("owner", "spotify_connected", "connected_at", "playback_cached_at")
+    list_filter = ("connected_at",)
+    search_fields = ("owner__username",)
+    exclude = ("access_token", "refresh_token", "playback_cache")
+    readonly_fields = (
+        "owner",
+        "token_expires_at",
+        "connected_at",
+        "playback_cached_at",
+        "playback_refresh_started_at",
+        "created_at",
+        "updated_at",
+    )
+
+    @admin.display(boolean=True, description="Spotify connected")
+    def spotify_connected(self, obj):
+        return obj.is_connected
+
+    def has_add_permission(self, request):
+        return False
 
 
 @admin.register(TimerOverlay)

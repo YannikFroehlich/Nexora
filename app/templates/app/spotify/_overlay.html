@@ -1,9 +1,14 @@
 {% load static %}
 {% load i18n %}
 
+{% if overlay.font_asset_id %}
+    <style>@font-face { font-family: "NexoraUploadedOverlayFont"; src: url("{{ overlay.font_asset.public_url }}"); font-display: swap; }</style>
+{% endif %}
+
 <div
     class="spotify-overlay-canvas{% if is_editor %} spotify-overlay-canvas--editor{% endif %}"
     data-spotify-canvas
+    data-overlay-branding-root
     data-fallback-image="{% static 'imgs/icons/spotify.webp' %}"
     data-playing-label="{% translate 'Now playing' %}"
     data-paused-label="{% translate 'Paused' %}"
@@ -14,8 +19,13 @@
         --spotify-canvas-border-color: {{ overlay.border_color }};
         --spotify-canvas-border-width: {{ overlay.border_width }}px;
         --spotify-canvas-radius: {{ overlay.corner_radius }}px;
+        --nexora-overlay-font: {% if overlay.font_asset_id %}'NexoraUploadedOverlayFont'{% else %}{{ overlay.font_css_stack }}{% endif %};
+        {% if overlay.background_asset_id %}--nexora-overlay-background-image: url("{{ overlay.background_asset.public_url }}");{% endif %}
     "
 >
+    {% if overlay.logo_asset_id %}
+        <img class="overlay-custom-logo" src="{{ overlay.logo_asset.public_url }}" alt="" data-overlay-custom-logo>
+    {% endif %}
     {% for element in overlay.elements %}
         <div
             class="spotify-overlay-element spotify-overlay-element--{{ element.type }}"

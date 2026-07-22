@@ -1,6 +1,5 @@
 from django.conf import settings
 
-
 PUBLIC_INDEXABLE_URLS = {"home", "demo", "about"}
 
 

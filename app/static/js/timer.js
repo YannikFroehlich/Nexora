@@ -117,6 +117,9 @@
             overlay.style.setProperty("--timer-label-size", `${numberValue(design.label_text_size, 16)}px`);
             overlay.style.setProperty("--timer-time-size", `${numberValue(design.timer_text_size, 76)}px`);
             overlay.style.setProperty("--timer-shadow", design.shadow_enabled === false ? "none" : (design.shadow_css || "0 20px 52px rgba(0, 0, 0, .38)"));
+            if (["font_family", "font_url", "logo_url", "background_image_url"].some((key) => key in design)) {
+                window.NexoraBranding?.apply(overlay, design);
+            }
             showProgress = design.show_progress !== false;
 
             if (label) {
@@ -197,22 +200,14 @@
         const overlay = source.querySelector("[data-timer-overlay]");
         const controller = controllers.get(overlay);
 
-        const poll = async () => {
-            try {
-                const response = await fetch(source.dataset.stateUrl, {
-                    cache: "no-store",
-                    headers: {Accept: "application/json"},
-                });
-                if (response.ok) {
-                    controller?.applyState(await response.json());
-                }
-            } catch {
-                // OBS keeps rendering the locally advancing clock during short outages.
-            }
-        };
-
-        window.setInterval(poll, 1200);
-        poll();
+        if (window.NexoraPolling) {
+            window.NexoraPolling.start({
+                url: source.dataset.stateUrl,
+                interval: 1200,
+                hiddenInterval: 10000,
+                onData: (state) => controller?.applyState(state),
+            });
+        }
     }
 
     const editor = document.querySelector("[data-timer-editor]");

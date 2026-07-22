@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex">
     <link rel="stylesheet" href="{% static 'css/spotify.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
     <title>{{ overlay.display_name }}</title>
 </head>
 <body
@@ -20,6 +21,8 @@
     <main class="spotify-overlay-source__frame">
         {% include "app/spotify/_overlay.html" with playback=sample_playback %}
     </main>
+    <script src="{% static 'js/polling.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/spotify.js' %}?v={{ APP_VERSION }}"></script>
 </body>
 </html>
