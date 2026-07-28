@@ -3,6 +3,8 @@ from django.contrib import admin
 from app.models import (
     OverlayAsset,
     OverlayVersion,
+    ScoreOverlay,
+    ScoreParticipant,
     SpotifyConnection,
     SpotifyOverlay,
     TimerOverlay,
@@ -67,6 +69,34 @@ class WinChallengeGameAdmin(admin.ModelAdmin):
     list_filter = ("challenge",)
     search_fields = ("name", "challenge__title")
     readonly_fields = ("created_at",)
+
+
+class ScoreParticipantInline(admin.TabularInline):
+    model = ScoreParticipant
+    extra = 0
+    fields = ("name", "score", "accent_color", "image_asset", "sort_order", "created_at")
+    readonly_fields = ("created_at",)
+
+
+@admin.register(ScoreOverlay)
+class ScoreOverlayAdmin(admin.ModelAdmin):
+    inlines = (ScoreParticipantInline,)
+    list_display = ("display_name", "owner", "canvas_size", "participant_count", "updated_at")
+    list_filter = ("allow_negative_scores", "background_opacity", "owner")
+    search_fields = ("name", "public_token", "owner__username")
+    readonly_fields = ("public_token", "created_at", "updated_at")
+
+    @admin.display(description="Size")
+    def canvas_size(self, obj):
+        return f"{obj.canvas_width} x {obj.canvas_height}"
+
+
+@admin.register(ScoreParticipant)
+class ScoreParticipantAdmin(admin.ModelAdmin):
+    list_display = ("name", "overlay", "score", "sort_order", "created_at")
+    list_filter = ("overlay",)
+    search_fields = ("name", "overlay__name")
+    readonly_fields = ("public_id", "created_at")
 
 
 @admin.register(SpotifyOverlay)

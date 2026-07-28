@@ -545,6 +545,87 @@ def default_spotify_elements():
     ]
 
 
+def default_score_elements(participants=None):
+    """Starter layout used by new score HUD overlays."""
+
+    participant_keys = []
+    if participants:
+        participant_keys = [str(participant.public_id) for participant in participants[:2]]
+
+    if len(participant_keys) < 2:
+        participant_keys = [*participant_keys, *[f"slot-{index}" for index in range(len(participant_keys) + 1, 3)]]
+
+    elements = []
+    positions = (
+        {
+            "image_x": 34,
+            "name_x": 142,
+            "score_x": 302,
+            "align": "left",
+            "accent": "#38bdf8",
+        },
+        {
+            "image_x": 806,
+            "name_x": 560,
+            "score_x": 458,
+            "align": "right",
+            "accent": "#fb7185",
+        },
+    )
+
+    for index, participant_key in enumerate(participant_keys[:2]):
+        position = positions[index]
+        prefix = f"participant-{index + 1}"
+        elements.extend(
+            [
+                {
+                    "id": f"{prefix}-image",
+                    "type": "participant_image",
+                    "participant_id": participant_key,
+                    "x": position["image_x"],
+                    "y": 50,
+                    "width": 120,
+                    "height": 120,
+                    "font_size": 38,
+                    "color": "#ffffff",
+                    "background_color": position["accent"],
+                    "border_radius": 24,
+                    "text_align": "center",
+                },
+                {
+                    "id": f"{prefix}-name",
+                    "type": "participant_name",
+                    "participant_id": participant_key,
+                    "x": position["name_x"],
+                    "y": 62,
+                    "width": 240,
+                    "height": 40,
+                    "font_size": 28,
+                    "color": "#ffffff",
+                    "background_color": "#111827",
+                    "border_radius": 10,
+                    "text_align": position["align"],
+                },
+                {
+                    "id": f"{prefix}-score",
+                    "type": "participant_score",
+                    "participant_id": participant_key,
+                    "x": position["score_x"],
+                    "y": 103,
+                    "width": 140,
+                    "height": 78,
+                    "font_size": 62,
+                    "color": "#ffffff",
+                    "background_color": position["accent"],
+                    "border_radius": 18,
+                    "text_align": "center",
+                },
+            ]
+        )
+
+    return elements
+
+
 class SpotifyConnection(models.Model):
     """One encrypted Spotify authorization and playback cache per account."""
 
@@ -689,6 +770,214 @@ class SpotifyOverlay(OverlayBrandingMixin, models.Model):
             "updated_at": self.updated_at.isoformat() if self.updated_at else "",
             **self.branding_payload(),
         }
+
+
+class ScoreOverlay(OverlayBrandingMixin, models.Model):
+    """Freely composed score HUD for players or teams."""
+
+    DEFAULT_NAME = _("Score HUD")
+    MAX_PARTICIPANTS = 8
+    MIN_PARTICIPANTS = 2
+    MAX_SCORE = 99999
+    MIN_SCORE = -99999
+    SOURCE_EXTRA_WIDTH = 80
+    SOURCE_EXTRA_HEIGHT = 96
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="score_overlays",
+        blank=True,
+        null=True,
+    )
+    public_token = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        db_index=True,
+    )
+    name = models.CharField(max_length=120, default="Score HUD", blank=True)
+    canvas_width = models.PositiveSmallIntegerField(
+        default=960,
+        validators=[MinValueValidator(320), MaxValueValidator(1920)],
+    )
+    canvas_height = models.PositiveSmallIntegerField(
+        default=240,
+        validators=[MinValueValidator(140), MaxValueValidator(1080)],
+    )
+    background_color = models.CharField(
+        max_length=7,
+        default="#0f172a",
+        validators=[hex_color_validator],
+    )
+    background_opacity = models.PositiveSmallIntegerField(
+        default=72,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+    border_color = models.CharField(
+        max_length=7,
+        default="#38bdf8",
+        validators=[hex_color_validator],
+    )
+    border_width = models.PositiveSmallIntegerField(
+        default=1,
+        validators=[MinValueValidator(0), MaxValueValidator(24)],
+    )
+    corner_radius = models.PositiveSmallIntegerField(
+        default=28,
+        validators=[MinValueValidator(0), MaxValueValidator(80)],
+    )
+    allow_negative_scores = models.BooleanField(default=False)
+    elements = models.JSONField(default=default_score_elements)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-updated_at", "-created_at")
+
+    def __str__(self):
+        return str(self.display_name)
+
+    @property
+    def display_name(self):
+        return self.name or self.DEFAULT_NAME
+
+    @property
+    def ordered_participants(self):
+        if self.pk is None:
+            return []
+
+        cached_participants = getattr(self, "_prefetched_objects_cache", {}).get("participants")
+        if cached_participants is not None:
+            return sorted(
+                cached_participants,
+                key=lambda participant: (
+                    participant.sort_order,
+                    participant.created_at,
+                    participant.pk,
+                ),
+            )
+
+        return self.participants.order_by("sort_order", "created_at", "pk")
+
+    @property
+    def participant_count(self):
+        if self.pk is None:
+            return 0
+
+        cached_participants = getattr(self, "_prefetched_objects_cache", {}).get("participants")
+        if cached_participants is not None:
+            return len(cached_participants)
+
+        return self.participants.count()
+
+    @property
+    def background_rgba(self):
+        red = int(self.background_color[1:3], 16)
+        green = int(self.background_color[3:5], 16)
+        blue = int(self.background_color[5:7], 16)
+        alpha = self.background_opacity / 100
+        return f"rgba({red}, {green}, {blue}, {alpha:.2f})"
+
+    @property
+    def browser_source_width(self):
+        return self.canvas_width + self.SOURCE_EXTRA_WIDTH
+
+    @property
+    def browser_source_height(self):
+        return self.canvas_height + self.SOURCE_EXTRA_HEIGHT
+
+    def design_payload(self):
+        return {
+            "name": self.display_name,
+            "canvas_width": self.canvas_width,
+            "canvas_height": self.canvas_height,
+            "browser_source_width": self.browser_source_width,
+            "browser_source_height": self.browser_source_height,
+            "background_color": self.background_color,
+            "background_opacity": self.background_opacity,
+            "background_rgba": self.background_rgba,
+            "border_color": self.border_color,
+            "border_width": self.border_width,
+            "corner_radius": self.corner_radius,
+            "allow_negative_scores": self.allow_negative_scores,
+            "elements": self.elements,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else "",
+            **self.branding_payload(),
+        }
+
+    def state_payload(self):
+        participants = []
+        for participant in self.ordered_participants:
+            participants.append(
+                {
+                    "id": str(participant.public_id),
+                    "name": participant.name,
+                    "score": participant.score,
+                    "accent_color": participant.accent_color,
+                    "initials": participant.initials,
+                    "image_url": (
+                        participant.image_asset.public_url
+                        if participant.image_asset_id
+                        else ""
+                    ),
+                }
+            )
+
+        return {
+            **self.design_payload(),
+            "participants": participants,
+        }
+
+
+class ScoreParticipant(models.Model):
+    """Single player or team row with an atomic score counter."""
+
+    overlay = models.ForeignKey(
+        ScoreOverlay,
+        on_delete=models.CASCADE,
+        related_name="participants",
+    )
+    public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True)
+    name = models.CharField(max_length=120)
+    score = models.IntegerField(
+        default=0,
+        validators=[
+            MinValueValidator(ScoreOverlay.MIN_SCORE),
+            MaxValueValidator(ScoreOverlay.MAX_SCORE),
+        ],
+    )
+    accent_color = models.CharField(
+        max_length=7,
+        default="#38bdf8",
+        validators=[hex_color_validator],
+    )
+    image_asset = models.ForeignKey(
+        OverlayAsset,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        blank=True,
+        null=True,
+        limit_choices_to={"kind": OverlayAsset.KIND_IMAGE},
+    )
+    sort_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("sort_order", "created_at", "pk")
+
+    def __str__(self):
+        return f"{self.name} ({self.score})"
+
+    @property
+    def initials(self):
+        words = [word for word in self.name.strip().split() if word]
+        if not words:
+            return "?"
+        if len(words) == 1:
+            return words[0][:2].upper()
+        return f"{words[0][0]}{words[-1][0]}".upper()
 
 
 class TimerOverlay(OverlayBrandingMixin, models.Model):

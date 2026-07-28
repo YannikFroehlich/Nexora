@@ -8,6 +8,8 @@ from django.utils.translation import gettext_lazy as _
 
 from app.models import (
     OverlayAsset,
+    ScoreOverlay,
+    ScoreParticipant,
     SpotifyOverlay,
     TimerOverlay,
     WinChallenge,
@@ -683,6 +685,277 @@ class SpotifyOverlayForm(forms.ModelForm):
             raise forms.ValidationError(_("Every element color must be a valid hex color."))
 
         return value.lower()
+
+
+class ScoreOverlayForm(forms.ModelForm):
+    """Score HUD settings plus the JSON layout maintained by the visual editor."""
+
+    ALLOWED_ELEMENT_TYPES = {
+        "participant_image",
+        "participant_name",
+        "participant_score",
+    }
+    ELEMENT_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+    PARTICIPANT_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+    TEXT_ALIGN_CHOICES = {"left", "center", "right"}
+    elements = forms.CharField(widget=forms.HiddenInput(attrs={"data-elements-input": ""}))
+
+    class Meta:
+        model = ScoreOverlay
+        fields = (
+            "name",
+            "canvas_width",
+            "canvas_height",
+            "background_color",
+            "background_opacity",
+            "border_color",
+            "border_width",
+            "corner_radius",
+            "allow_negative_scores",
+            "elements",
+            "font_family",
+            "font_asset",
+            "logo_asset",
+            "background_asset",
+        )
+        labels = {
+            "name": _("Overlay name"),
+            "canvas_width": _("Overlay width"),
+            "canvas_height": _("Overlay height"),
+            "background_color": _("Background color"),
+            "background_opacity": _("Background opacity"),
+            "border_color": _("Border color"),
+            "border_width": _("Border width"),
+            "corner_radius": _("Corner radius"),
+            "allow_negative_scores": _("Allow negative scores"),
+        }
+        help_texts = {
+            "background_opacity": _("0 is transparent, 100 is fully opaque."),
+            "allow_negative_scores": _("When disabled, minus buttons stop at 0."),
+        }
+        widgets = {
+            "name": forms.TextInput(
+                attrs={"class": BASE_INPUT_CLASS, "placeholder": _("Score HUD")}
+            ),
+            "canvas_width": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 320, "max": 1920, "step": 1}
+            ),
+            "canvas_height": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 140, "max": 1080, "step": 1}
+            ),
+            "background_color": ColorInput(attrs={"class": "color-control"}),
+            "background_opacity": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 100, "step": 1}
+            ),
+            "border_color": ColorInput(attrs={"class": "color-control"}),
+            "border_width": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 24, "step": 1}
+            ),
+            "corner_radius": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 80, "step": 1}
+            ),
+            "allow_negative_scores": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        asset_owner = kwargs.pop("asset_owner", None)
+        super().__init__(*args, **kwargs)
+        _configure_branding_fields(self, asset_owner)
+        self.fields["name"].required = False
+
+        limits = {
+            "canvas_width": (320, 1920),
+            "canvas_height": (140, 1080),
+            "background_opacity": (0, 100),
+            "border_width": (0, 24),
+            "corner_radius": (0, 80),
+        }
+        for field_name, (minimum, maximum) in limits.items():
+            self.fields[field_name].min_value = minimum
+            self.fields[field_name].max_value = maximum
+            self.fields[field_name].widget.attrs["min"] = minimum
+            self.fields[field_name].widget.attrs["max"] = maximum
+
+        if not self.is_bound:
+            self.initial["elements"] = json.dumps(
+                self.instance.elements,
+                ensure_ascii=False,
+                separators=(",", ":"),
+            )
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip() or "Score HUD"
+
+    def clean_font_family(self):
+        return _selected_font_family(self)
+
+    def clean_elements(self):
+        try:
+            raw_elements = json.loads(self.cleaned_data["elements"])
+        except (TypeError, ValueError, json.JSONDecodeError) as error:
+            raise forms.ValidationError(_("The element layout is invalid.")) from error
+
+        if not isinstance(raw_elements, list):
+            raise forms.ValidationError(_("The element layout must be a list."))
+
+        if len(raw_elements) > ScoreOverlay.MAX_PARTICIPANTS * 3:
+            raise forms.ValidationError(_("A maximum of 24 elements is allowed."))
+
+        normalized = []
+        used_ids = set()
+
+        for raw_element in raw_elements:
+            if not isinstance(raw_element, dict):
+                raise forms.ValidationError(_("Every overlay element must be an object."))
+
+            element_id = str(raw_element.get("id", ""))
+            element_type = str(raw_element.get("type", ""))
+            participant_id = str(raw_element.get("participant_id", ""))
+
+            if not self.ELEMENT_ID_PATTERN.fullmatch(element_id) or element_id in used_ids:
+                raise forms.ValidationError(_("Every overlay element needs a unique valid ID."))
+
+            if element_type not in self.ALLOWED_ELEMENT_TYPES:
+                raise forms.ValidationError(_("An unknown score element was submitted."))
+
+            if not self.PARTICIPANT_ID_PATTERN.fullmatch(participant_id):
+                raise forms.ValidationError(_("Every score element needs a participant."))
+
+            used_ids.add(element_id)
+            normalized.append(
+                {
+                    "id": element_id,
+                    "type": element_type,
+                    "participant_id": participant_id,
+                    "x": self._integer_value(raw_element, "x", 0, 1920),
+                    "y": self._integer_value(raw_element, "y", 0, 1080),
+                    "width": self._integer_value(raw_element, "width", 24, 1920),
+                    "height": self._integer_value(raw_element, "height", 8, 1080),
+                    "font_size": self._integer_value(raw_element, "font_size", 8, 160),
+                    "border_radius": self._integer_value(raw_element, "border_radius", 0, 200),
+                    "color": self._color_value(raw_element, "color"),
+                    "background_color": self._color_value(raw_element, "background_color"),
+                    "text_align": self._text_align_value(raw_element),
+                }
+            )
+
+        return normalized
+
+    @staticmethod
+    def _integer_value(element, key, minimum, maximum):
+        try:
+            value = int(element.get(key))
+        except (TypeError, ValueError) as error:
+            raise forms.ValidationError(_("Element values must be whole numbers.")) from error
+
+        if not minimum <= value <= maximum:
+            raise forms.ValidationError(_("An element value is outside the allowed range."))
+
+        return value
+
+    @staticmethod
+    def _color_value(element, key):
+        value = str(element.get(key, ""))
+
+        if not re.fullmatch(r"#[0-9A-Fa-f]{6}", value):
+            raise forms.ValidationError(_("Every element color must be a valid hex color."))
+
+        return value.lower()
+
+    def _text_align_value(self, element):
+        value = str(element.get("text_align", "center"))
+        return value if value in self.TEXT_ALIGN_CHOICES else "center"
+
+
+class ScoreOverlayCreateForm(ScoreOverlayForm):
+    player_one_name = forms.CharField(
+        label=_("Player 1"),
+        max_length=120,
+        widget=forms.TextInput(
+            attrs={
+                "class": BASE_INPUT_CLASS,
+                "placeholder": _("Player 1"),
+                "autocomplete": "off",
+            }
+        ),
+    )
+    player_two_name = forms.CharField(
+        label=_("Player 2"),
+        max_length=120,
+        widget=forms.TextInput(
+            attrs={
+                "class": BASE_INPUT_CLASS,
+                "placeholder": _("Player 2"),
+                "autocomplete": "off",
+            }
+        ),
+    )
+
+    class Meta(ScoreOverlayForm.Meta):
+        fields = (
+            "name",
+            "player_one_name",
+            "player_two_name",
+            "canvas_width",
+            "canvas_height",
+            "background_color",
+            "background_opacity",
+            "border_color",
+            "border_width",
+            "corner_radius",
+            "allow_negative_scores",
+            "elements",
+            "font_family",
+            "font_asset",
+            "logo_asset",
+            "background_asset",
+        )
+
+    def clean_player_one_name(self):
+        return self.cleaned_data["player_one_name"].strip()
+
+    def clean_player_two_name(self):
+        return self.cleaned_data["player_two_name"].strip()
+
+
+class ScoreParticipantForm(forms.ModelForm):
+    class Meta:
+        model = ScoreParticipant
+        fields = ("name", "accent_color", "image_asset")
+        labels = {
+            "name": _("Name"),
+            "accent_color": _("Color"),
+            "image_asset": _("Image"),
+        }
+        widgets = {
+            "name": forms.TextInput(
+                attrs={
+                    "class": BASE_INPUT_CLASS,
+                    "placeholder": _("Player or team"),
+                    "autocomplete": "off",
+                }
+            ),
+            "accent_color": ColorInput(attrs={"class": "color-control"}),
+        }
+
+    def __init__(self, *args, owner=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.owner = owner
+        assets = (
+            OverlayAsset.objects.filter(owner=owner, kind=OverlayAsset.KIND_IMAGE)
+            if owner and owner.is_authenticated
+            else OverlayAsset.objects.none()
+        )
+        self.fields["image_asset"].queryset = assets
+        self.fields["image_asset"].required = False
+        self.fields["image_asset"].empty_label = _("No image")
+        self.fields["image_asset"].widget = OverlayAssetSelect(
+            attrs={"class": BASE_INPUT_CLASS},
+            choices=self.fields["image_asset"].choices,
+        )
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip()
 
 
 class TimerOverlayForm(forms.ModelForm):

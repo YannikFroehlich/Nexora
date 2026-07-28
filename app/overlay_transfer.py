@@ -1,13 +1,16 @@
 import copy
 import json
+import uuid
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.translation import gettext as _
 
-from app.forms import SpotifyOverlayForm, TimerOverlayForm
+from app.forms import ScoreOverlayForm, SpotifyOverlayForm, TimerOverlayForm
 from app.models import (
     OverlayBrandingMixin,
+    ScoreOverlay,
+    ScoreParticipant,
     SpotifyConnection,
     SpotifyOverlay,
     TimerOverlay,
@@ -22,6 +25,7 @@ MAX_IMPORT_BYTES = 256 * 1024
 SPOTIFY_TYPE = "spotify"
 TIMER_TYPE = "timer"
 WINCHALLENGE_TYPE = "winchallenge"
+SCORE_TYPE = "score"
 
 SPOTIFY_FIELDS = (
     "name",
@@ -87,6 +91,27 @@ TIMER_FIELDS = (
     "font_family",
 )
 
+SCORE_FIELDS = (
+    "name",
+    "canvas_width",
+    "canvas_height",
+    "background_color",
+    "background_opacity",
+    "border_color",
+    "border_width",
+    "corner_radius",
+    "allow_negative_scores",
+    "elements",
+    "font_family",
+)
+
+SCORE_PARTICIPANT_FIELDS = (
+    "public_id",
+    "name",
+    "score",
+    "accent_color",
+)
+
 
 class OverlayTransferError(ValueError):
     """Safe, user-facing error for invalid import files."""
@@ -124,6 +149,22 @@ def timer_export_payload(timer):
     }
 
 
+def score_export_payload(overlay):
+    return {
+        "format": FORMAT_NAME,
+        "version": FORMAT_VERSION,
+        "type": SCORE_TYPE,
+        "overlay": _model_fields(overlay, SCORE_FIELDS),
+        "participants": [
+            {
+                **_model_fields(participant, SCORE_PARTICIPANT_FIELDS),
+                "public_id": str(participant.public_id),
+            }
+            for participant in overlay.ordered_participants
+        ],
+    }
+
+
 def export_payload(overlay):
     if isinstance(overlay, SpotifyOverlay):
         return spotify_export_payload(overlay)
@@ -133,6 +174,9 @@ def export_payload(overlay):
 
     if isinstance(overlay, TimerOverlay):
         return timer_export_payload(overlay)
+
+    if isinstance(overlay, ScoreOverlay):
+        return score_export_payload(overlay)
 
     raise TypeError("Unsupported overlay model")
 
@@ -173,6 +217,8 @@ def _validate_envelope(payload):
 
     if overlay_type == WINCHALLENGE_TYPE:
         expected_root_keys.add("games")
+    elif overlay_type == SCORE_TYPE:
+        expected_root_keys.add("participants")
 
     _require_exact_keys(payload, expected_root_keys)
 
@@ -182,7 +228,7 @@ def _validate_envelope(payload):
     if payload["version"] != FORMAT_VERSION:
         raise OverlayTransferError(_("This overlay export version is not supported."))
 
-    if overlay_type not in {SPOTIFY_TYPE, TIMER_TYPE, WINCHALLENGE_TYPE}:
+    if overlay_type not in {SPOTIFY_TYPE, TIMER_TYPE, WINCHALLENGE_TYPE, SCORE_TYPE}:
         raise OverlayTransferError(_("The overlay type is not supported."))
 
     return overlay_type
@@ -254,6 +300,68 @@ def _import_timer(payload, owner):
     return timer
 
 
+def _validated_score_participant(participant_data, overlay, sort_order):
+    _require_exact_keys(participant_data, SCORE_PARTICIPANT_FIELDS)
+    participant = ScoreParticipant(
+        overlay=overlay,
+        sort_order=sort_order,
+        **participant_data,
+    )
+
+    try:
+        participant.full_clean(exclude=("overlay",))
+    except ValidationError as error:
+        raise OverlayTransferError(_("The score participant data is invalid.")) from error
+
+    return participant
+
+
+def _import_score(payload, owner):
+    overlay_data = _overlay_data_with_defaults(payload["overlay"])
+    participants_data = copy.deepcopy(payload["participants"])
+    _require_exact_keys(overlay_data, SCORE_FIELDS)
+
+    if (
+        not isinstance(participants_data, list)
+        or not ScoreOverlay.MIN_PARTICIPANTS
+        <= len(participants_data)
+        <= ScoreOverlay.MAX_PARTICIPANTS
+    ):
+        raise OverlayTransferError(_("The score participant list is invalid."))
+
+    participant_id_map = {
+        str(participant_data["public_id"]): str(uuid.uuid4())
+        for participant_data in participants_data
+    }
+    for participant_data in participants_data:
+        participant_data["public_id"] = participant_id_map[str(participant_data["public_id"])]
+
+    form_data = copy.deepcopy(overlay_data)
+    for element in form_data.get("elements", []):
+        participant_id = str(element.get("participant_id", ""))
+        if participant_id in participant_id_map:
+            element["participant_id"] = participant_id_map[participant_id]
+    form_data["elements"] = json.dumps(
+        form_data["elements"],
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    form = ScoreOverlayForm(data=form_data, asset_owner=owner)
+
+    if not form.is_valid():
+        raise OverlayTransferError(_("The score overlay data is invalid."))
+
+    overlay = form.save(commit=False)
+    overlay.owner = owner
+    overlay.save()
+    participants = [
+        _validated_score_participant(participant_data, overlay, sort_order)
+        for sort_order, participant_data in enumerate(participants_data)
+    ]
+    ScoreParticipant.objects.bulk_create(participants)
+    return overlay
+
+
 def _import_winchallenge(payload, owner):
     overlay_data = _overlay_data_with_defaults(payload["overlay"])
     games_data = payload["games"]
@@ -287,6 +395,9 @@ def import_payload(payload, owner):
 
     if overlay_type == TIMER_TYPE:
         return _import_timer(payload, owner)
+
+    if overlay_type == SCORE_TYPE:
+        return _import_score(payload, owner)
 
     return _import_winchallenge(payload, owner)
 

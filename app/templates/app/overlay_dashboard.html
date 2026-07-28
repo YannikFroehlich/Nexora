@@ -4,7 +4,7 @@
 
 {% block title %}{% translate "My overlays" %} &middot; Nexora{% endblock %}
 
-{% block meta_description %}{% translate "Manage your Spotify, timer and Win Challenge overlays in one place." %}{% endblock %}
+{% block meta_description %}{% translate "Manage your Spotify, score, timer and Win Challenge overlays in one place." %}{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v={{ APP_VERSION }}">
@@ -25,7 +25,7 @@
             <div class="dashboard-hero__copy">
                 <p class="dashboard-label"><span>Nexora</span> {% translate "Overlay dashboard" %}</p>
                 <h1 id="dashboard-title">{% translate "My overlays" %}</h1>
-                <p>{% translate "Manage Spotify, timer and Win Challenge overlays together, open previews and copy OBS links without switching pages." %}</p>
+                <p>{% translate "Manage Spotify, score, timer and Win Challenge overlays together, open previews and copy OBS links without switching pages." %}</p>
                 <nav class="dashboard-jumps" aria-label="{% translate 'Overlay categories' %}">
                     <a href="#spotify-overlays">
                         {% translate "Spotify" %}
@@ -34,6 +34,10 @@
                     <a href="#winchallenge-overlays">
                         {% translate "Win Challenges" %}
                         <span aria-label="{% blocktranslate count counter=winchallenge_count %}{{ counter }} overlay{% plural %}{{ counter }} overlays{% endblocktranslate %}">{{ winchallenge_count }}</span>
+                    </a>
+                    <a href="#score-overlays">
+                        {% translate "Score HUDs" %}
+                        <span aria-label="{% blocktranslate count counter=score_count %}{{ counter }} overlay{% plural %}{{ counter }} overlays{% endblocktranslate %}">{{ score_count }}</span>
                     </a>
                     <a href="#timer-overlays">
                         {% translate "Timers" %}
@@ -54,6 +58,10 @@
                 <div>
                     <dt>{% translate "Win Challenges" %}</dt>
                     <dd>{{ winchallenge_count }}</dd>
+                </div>
+                <div>
+                    <dt>{% translate "Score HUDs" %}</dt>
+                    <dd>{{ score_count }}</dd>
                 </div>
                 <div>
                     <dt>{% translate "Timers" %}</dt>
@@ -299,6 +307,98 @@
                     <div>
                         <h3>{% translate "No Win Challenges yet" %}</h3>
                         <p>{% translate "Create a counter, add games and keep your stream audience up to date." %}</p>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="dashboard-collection" id="score-overlays" aria-labelledby="score-overlays-title">
+            <div class="dashboard-collection__header">
+                <div class="dashboard-collection__title">
+                    <span class="dashboard-collection__icon dashboard-collection__icon--score" aria-hidden="true">#</span>
+                    <div>
+                        <p class="dashboard-label">{% translate "Scores and matchups" %}</p>
+                        <h2 id="score-overlays-title">{% translate "Score HUDs" %}</h2>
+                    </div>
+                </div>
+                <a class="btn action-button" href="{% url 'score_create' %}">{% translate "Create Score HUD" %}</a>
+            </div>
+
+            {% if score_overlays %}
+                <div class="dashboard-grid">
+                    {% for overlay in score_overlays %}
+                        {% url 'score_overlay' overlay.public_token as overlay_path %}
+                        <article class="dashboard-card">
+                            <div class="dashboard-card__preview dashboard-card__preview--score" aria-label="{% translate 'Preview' %}">
+                                <div
+                                    class="score-dashboard-preview"
+                                    style="--preview-background: {{ overlay.background_rgba }}; --preview-accent: {{ overlay.border_color }}; --preview-radius: {{ overlay.corner_radius }}px;"
+                                >
+                                    {% for participant in overlay.ordered_participants|slice:":2" %}
+                                        <div>
+                                            <span>{{ participant.initials }}</span>
+                                            <strong>{{ participant.name }}</strong>
+                                            <b>{{ participant.score }}</b>
+                                        </div>
+                                    {% empty %}
+                                        <p>{% translate "Add players in the editor." %}</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="dashboard-card__content">
+                                <div class="dashboard-card__heading">
+                                    <div>
+                                        <p class="dashboard-card__type">{% translate "Score HUD" %}</p>
+                                        <h3>{{ overlay.display_name }}</h3>
+                                    </div>
+                                    <span class="status-badge status-badge--live">{% translate "Ready for OBS" %}</span>
+                                </div>
+
+                                <dl class="dashboard-card__stats">
+                                    <div><dt>{% translate "Participants" %}</dt><dd>{{ overlay.participant_count }}</dd></div>
+                                    <div><dt>{% translate "Elements" %}</dt><dd>{{ overlay.elements|length }}</dd></div>
+                                    <div><dt>{% translate "Updated" %}</dt><dd>{{ overlay.updated_at|date:"d.m.Y H:i" }}</dd></div>
+                                </dl>
+
+                                <div class="dashboard-card__actions">
+                                    <a class="btn action-button" href="{% url 'score_manage' overlay.pk %}">{% translate "Manage" %}</a>
+                                    <form class="dashboard-card__action-form" action="{% url 'score_duplicate' overlay.pk %}" method="post">
+                                        {% csrf_token %}
+                                        <button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button>
+                                    </form>
+                                    <a class="btn glass-design" href="{% url 'score_export' overlay.pk %}">{% translate "Export" %}</a>
+                                    <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">
+                                        {% translate "Preview" %}<span class="sr-only"> ({% translate "opens in a new tab" %})</span>
+                                    </a>
+                                    <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
+                                        {% translate "Copy OBS link" %}
+                                    </button>
+                                    <form
+                                        class="dashboard-card__action-form"
+                                        action="{% url 'score_renew_obs_link' overlay.pk %}"
+                                        method="post"
+                                        data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+                                    >
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#score-overlays">
+                                        <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
+                                    </form>
+                                    <form class="dashboard-card__delete" action="{% url 'score_delete' overlay.pk %}" method="post" data-confirm-delete="{% translate 'Delete this Score HUD?' %}">
+                                        {% csrf_token %}
+                                        <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="dashboard-empty">
+                    <span class="dashboard-empty__icon" aria-hidden="true">#</span>
+                    <div>
+                        <h3>{% translate "No Score HUDs yet" %}</h3>
+                        <p>{% translate "Create a live scoreboard for players or teams with fully editable HUD elements." %}</p>
                     </div>
                 </div>
             {% endif %}

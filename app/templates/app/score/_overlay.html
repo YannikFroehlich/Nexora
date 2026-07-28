@@ -1,0 +1,15 @@
+{% load i18n %}
+
+<div
+    class="score-overlay-canvas{% if is_editor %} score-overlay-canvas--editor{% endif %}"
+    data-score-canvas
+    data-fallback-image-label="{% translate 'No image' %}"
+    style="
+        --score-canvas-width: {{ overlay.canvas_width }}px;
+        --score-canvas-height: {{ overlay.canvas_height }}px;
+        --score-canvas-background: {{ overlay.background_rgba }};
+        --score-canvas-border-color: {{ overlay.border_color }};
+        --score-canvas-border-width: {{ overlay.border_width }}px;
+        --score-canvas-radius: {{ overlay.corner_radius }}px;
+    "
+></div>

@@ -14,6 +14,7 @@ from PIL import Image
 
 from app import overlay_versions
 from app.forms import (
+    ScoreOverlayForm,
     SpotifyOverlayForm,
     TimerOverlayForm,
     WinChallengeCreateForm,
@@ -22,6 +23,8 @@ from app.forms import (
 from app.models import (
     OverlayAsset,
     OverlayVersion,
+    ScoreOverlay,
+    ScoreParticipant,
     SpotifyConnection,
     SpotifyOverlay,
     TimerOverlay,
@@ -187,6 +190,7 @@ class DiscoverabilityTests(TestCase):
         self.assertEqual(response["Content-Type"], "text/plain; charset=utf-8")
         self.assertIn("Disallow: /accounts/", content)
         self.assertIn("Disallow: /overlays/", content)
+        self.assertIn("Disallow: /scores/", content)
         self.assertIn("Disallow: /spotify/", content)
         self.assertIn("Disallow: /timers/", content)
         self.assertIn("Disallow: /winchallenges/", content)
@@ -262,24 +266,29 @@ class OverlayDashboardTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'id="spotify-overlays"')
         self.assertContains(response, 'id="winchallenge-overlays"')
+        self.assertContains(response, 'id="score-overlays"')
         self.assertContains(response, 'id="timer-overlays"')
-        self.assertContains(response, 'class="dashboard-empty"', count=3)
+        self.assertContains(response, 'class="dashboard-empty"', count=4)
         self.assertEqual(content.count(f'href="{reverse("spotify_create")}"'), 1)
         self.assertEqual(content.count(f'href="{reverse("winchallenge_create")}"'), 1)
+        self.assertEqual(content.count(f'href="{reverse("score_create")}"'), 1)
         self.assertEqual(content.count(f'href="{reverse("timer_create")}"'), 1)
 
     def test_dashboard_shows_saved_overlays_from_all_tools(self):
         spotify_overlay = SpotifyOverlay.objects.create(owner=self.user, name="Stream Music")
         challenge = WinChallenge.objects.create(owner=self.user, title="Road to Diamond")
+        score_overlay = ScoreOverlay.objects.create(owner=self.user, name="Match Score")
         timer = TimerOverlay.objects.create(owner=self.user, name="Starting Soon")
 
         response = self.client.get(reverse("overlay_dashboard"))
 
         self.assertContains(response, spotify_overlay.display_name)
         self.assertContains(response, challenge.display_title)
+        self.assertContains(response, score_overlay.display_name)
         self.assertContains(response, timer.display_name)
         self.assertContains(response, "spotify-dashboard-preview")
         self.assertContains(response, "challenge-dashboard-preview")
+        self.assertContains(response, "score-dashboard-preview")
         self.assertContains(response, "timer-dashboard-preview")
         self.assertContains(response, reverse("spotify_duplicate", args=[spotify_overlay.pk]))
         self.assertContains(response, reverse("spotify_export", args=[spotify_overlay.pk]))
@@ -287,13 +296,16 @@ class OverlayDashboardTests(TestCase):
         self.assertContains(response, reverse("winchallenge_duplicate", args=[challenge.pk]))
         self.assertContains(response, reverse("winchallenge_export", args=[challenge.pk]))
         self.assertContains(response, reverse("winchallenge_renew_obs_link", args=[challenge.pk]))
+        self.assertContains(response, reverse("score_duplicate", args=[score_overlay.pk]))
+        self.assertContains(response, reverse("score_export", args=[score_overlay.pk]))
+        self.assertContains(response, reverse("score_renew_obs_link", args=[score_overlay.pk]))
         self.assertContains(response, reverse("timer_duplicate", args=[timer.pk]))
         self.assertContains(response, reverse("timer_export", args=[timer.pk]))
         self.assertContains(response, reverse("timer_renew_obs_link", args=[timer.pk]))
-        self.assertContains(response, "OBS-Link erneuern", count=3)
+        self.assertContains(response, "OBS-Link erneuern", count=4)
         self.assertContains(response, reverse("overlay_import"))
         self.assertContains(response, 'enctype="multipart/form-data"')
-        self.assertEqual(response.context["overlay_count"], 3)
+        self.assertEqual(response.context["overlay_count"], 4)
 
     def test_legacy_overview_urls_redirect_to_dashboard_sections(self):
         self.assertRedirects(
@@ -309,6 +321,11 @@ class OverlayDashboardTests(TestCase):
         self.assertRedirects(
             self.client.get(reverse("timer_list")),
             f"{reverse('overlay_dashboard')}#timer-overlays",
+            fetch_redirect_response=False,
+        )
+        self.assertRedirects(
+            self.client.get(reverse("score_list")),
+            f"{reverse('overlay_dashboard')}#score-overlays",
             fetch_redirect_response=False,
         )
 
@@ -334,6 +351,7 @@ class OverlayAssetTests(TestCase):
         editor_forms = (
             WinChallengeCreateForm(asset_owner=self.user),
             SpotifyOverlayForm(asset_owner=self.user),
+            ScoreOverlayForm(asset_owner=self.user),
             TimerOverlayForm(asset_owner=self.user),
         )
 
@@ -1772,6 +1790,248 @@ class TimerOverlayEndpointTests(TestCase):
         self.assertEqual(created.accent_color, candidate.accent_color)
 
 
+class ScoreOverlayEndpointTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="score-owner")
+        self.client.force_login(self.user)
+        self.overlay = ScoreOverlay.objects.create(owner=self.user, name="Finals")
+        self.player_one = ScoreParticipant.objects.create(
+            overlay=self.overlay,
+            name="Alice",
+            accent_color="#38bdf8",
+            sort_order=0,
+        )
+        self.player_two = ScoreParticipant.objects.create(
+            overlay=self.overlay,
+            name="Bob",
+            accent_color="#fb7185",
+            sort_order=1,
+        )
+        self.overlay.elements = [
+            {
+                "id": f"participant-{self.player_one.public_id}-name",
+                "type": "participant_name",
+                "participant_id": str(self.player_one.public_id),
+                "x": 20,
+                "y": 20,
+                "width": 180,
+                "height": 32,
+                "font_size": 20,
+                "color": "#ffffff",
+                "background_color": "#111827",
+                "border_radius": 8,
+                "text_align": "left",
+            },
+            {
+                "id": f"participant-{self.player_one.public_id}-score",
+                "type": "participant_score",
+                "participant_id": str(self.player_one.public_id),
+                "x": 220,
+                "y": 20,
+                "width": 90,
+                "height": 50,
+                "font_size": 38,
+                "color": "#ffffff",
+                "background_color": "#38bdf8",
+                "border_radius": 12,
+                "text_align": "center",
+            },
+        ]
+        self.overlay.save()
+
+    def score_form_data(self, **updates):
+        data = {
+            "name": self.overlay.name,
+            "canvas_width": self.overlay.canvas_width,
+            "canvas_height": self.overlay.canvas_height,
+            "background_color": self.overlay.background_color,
+            "background_opacity": self.overlay.background_opacity,
+            "border_color": self.overlay.border_color,
+            "border_width": self.overlay.border_width,
+            "corner_radius": self.overlay.corner_radius,
+            "elements": json.dumps(self.overlay.elements),
+            "font_family": self.overlay.font_family,
+        }
+        if self.overlay.allow_negative_scores:
+            data["allow_negative_scores"] = "on"
+        data.update(updates)
+        return data
+
+    def test_create_starts_with_two_zero_score_participants(self):
+        candidate = ScoreOverlay()
+        response = self.client.post(
+            reverse("score_create"),
+            {
+                "name": "Grand Final",
+                "player_one_name": "Team Blue",
+                "player_two_name": "Team Red",
+                "canvas_width": candidate.canvas_width,
+                "canvas_height": candidate.canvas_height,
+                "background_color": candidate.background_color,
+                "background_opacity": candidate.background_opacity,
+                "border_color": candidate.border_color,
+                "border_width": candidate.border_width,
+                "corner_radius": candidate.corner_radius,
+                "elements": json.dumps(candidate.elements),
+                "font_family": candidate.font_family,
+            },
+        )
+
+        created = ScoreOverlay.objects.get(name="Grand Final")
+        participants = list(created.ordered_participants)
+        self.assertRedirects(response, reverse("score_manage", args=[created.pk]))
+        self.assertEqual(created.owner, self.user)
+        self.assertEqual([participant.name for participant in participants], ["Team Blue", "Team Red"])
+        self.assertEqual([participant.score for participant in participants], [0, 0])
+        self.assertEqual(len(created.elements), 6)
+
+    def test_manage_page_contains_canvas_controls_and_obs_url(self):
+        response = self.client.get(reverse("score_manage", args=[self.overlay.pk]))
+
+        self.assertContains(response, "data-score-editor")
+        self.assertContains(response, "data-layout-template=\"duel\"")
+        self.assertContains(response, reverse("score_overlay", args=[self.overlay.public_token]))
+        self.assertContains(response, "data-editor-state")
+        self.assertContains(response, reverse("score_autosave", args=[self.overlay.pk]))
+
+    def test_autosave_updates_canvas_design_and_elements(self):
+        response = self.client.post(
+            reverse("score_autosave", args=[self.overlay.pk]),
+            self.score_form_data(
+                canvas_width=1120,
+                border_color="#22c55e",
+                elements=json.dumps(
+                    [
+                        {
+                            **self.overlay.elements[0],
+                            "x": 44,
+                            "font_size": 24,
+                            "text_align": "center",
+                        }
+                    ]
+                ),
+            ),
+        )
+
+        self.overlay.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.overlay.canvas_width, 1120)
+        self.assertEqual(self.overlay.border_color, "#22c55e")
+        self.assertEqual(self.overlay.elements[0]["x"], 44)
+        self.assertEqual(self.overlay.elements[0]["text_align"], "center")
+
+    def test_score_buttons_respect_negative_score_setting(self):
+        decrease_response = self.client.post(
+            reverse(
+                "score_participant_score",
+                args=[self.overlay.pk, self.player_one.public_id],
+            ),
+            {"delta": -1},
+        )
+        self.player_one.refresh_from_db()
+        self.assertEqual(decrease_response.status_code, 200)
+        self.assertEqual(self.player_one.score, 0)
+
+        increase_response = self.client.post(
+            reverse(
+                "score_participant_score",
+                args=[self.overlay.pk, self.player_one.public_id],
+            ),
+            {"delta": 1},
+        )
+        self.player_one.refresh_from_db()
+        self.assertEqual(increase_response.status_code, 200)
+        self.assertEqual(self.player_one.score, 1)
+
+        self.overlay.allow_negative_scores = True
+        self.overlay.save(update_fields=["allow_negative_scores", "updated_at"])
+        self.player_one.score = 0
+        self.player_one.save(update_fields=["score"])
+        self.client.post(
+            reverse(
+                "score_participant_score",
+                args=[self.overlay.pk, self.player_one.public_id],
+            ),
+            {"delta": -1},
+        )
+        self.player_one.refresh_from_db()
+        self.assertEqual(self.player_one.score, -1)
+
+    def test_participant_add_delete_and_reset_return_public_state(self):
+        add_response = self.client.post(
+            reverse("score_participant_add", args=[self.overlay.pk]),
+            {
+                "name": "Carol",
+                "accent_color": "#22c55e",
+                "image_asset": "",
+            },
+        )
+        created = ScoreParticipant.objects.get(name="Carol")
+        self.assertEqual(add_response.status_code, 200)
+        self.assertIn(str(created.public_id), json.dumps(add_response.json()["elements"]))
+
+        reset_response = self.client.post(reverse("score_reset_all", args=[self.overlay.pk]))
+        self.assertEqual(reset_response.status_code, 200)
+        self.assertTrue(
+            all(participant["score"] == 0 for participant in reset_response.json()["participants"])
+        )
+
+        delete_response = self.client.post(
+            reverse("score_participant_delete", args=[self.overlay.pk, created.public_id])
+        )
+        self.assertEqual(delete_response.status_code, 200)
+        self.assertFalse(ScoreParticipant.objects.filter(pk=created.pk).exists())
+
+    def test_public_state_does_not_expose_owner_or_public_token(self):
+        self.client.logout()
+        response = self.client.get(reverse("score_overlay_state", args=[self.overlay.public_token]))
+        payload = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(payload["name"], "Finals")
+        self.assertIn("participants", payload)
+        self.assertEqual(payload["participants"][0]["name"], "Alice")
+        self.assertNotIn("owner", payload)
+        self.assertNotIn("public_token", payload)
+
+    def test_duplicate_and_transfer_preserve_scores_with_new_participant_ids(self):
+        self.player_one.score = 3
+        self.player_one.save(update_fields=["score"])
+
+        duplicate_response = self.client.post(reverse("score_duplicate", args=[self.overlay.pk]))
+        duplicate = ScoreOverlay.objects.exclude(pk=self.overlay.pk).get()
+
+        self.assertRedirects(
+            duplicate_response,
+            f"{reverse('overlay_dashboard')}#score-overlays",
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(duplicate.participants.count(), 2)
+        self.assertEqual(duplicate.participants.get(name="Alice").score, 3)
+        self.assertNotEqual(
+            set(duplicate.participants.values_list("public_id", flat=True)),
+            set(self.overlay.participants.values_list("public_id", flat=True)),
+        )
+
+        export_response = self.client.get(reverse("score_export", args=[self.overlay.pk]))
+        payload = json.loads(export_response.content)
+        self.assertEqual(payload["type"], "score")
+        self.assertEqual(payload["participants"][0]["score"], 3)
+
+        upload = SimpleUploadedFile(
+            "score.json",
+            json.dumps(payload).encode("utf-8"),
+            content_type="application/json",
+        )
+        import_response = self.client.post(reverse("overlay_import"), {"overlay_file": upload})
+        self.assertRedirects(
+            import_response,
+            f"{reverse('overlay_dashboard')}#score-overlays",
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(ScoreOverlay.objects.filter(name=self.overlay.name).count(), 2)
+
+
 class PublicStateConditionalRequestTests(TestCase):
     def setUp(self):
         owner = User.objects.create_user(username="conditional-state-owner")
@@ -1784,6 +2044,10 @@ class PublicStateConditionalRequestTests(TestCase):
             reverse(
                 "timer_overlay_state",
                 args=[self.timer.public_token],
+            ),
+            reverse(
+                "score_overlay_state",
+                args=[ScoreOverlay.objects.create(owner=owner).public_token],
             ),
             reverse(
                 "winchallenge_overlay_state",
@@ -1837,6 +2101,12 @@ class PublicOBSLinkRotationTests(TestCase):
                 "timer_renew_obs_link",
                 "timer_overlay",
                 "timer_overlay_state",
+            ),
+            (
+                ScoreOverlay.objects.create(owner=self.owner, name="Score"),
+                "score_renew_obs_link",
+                "score_overlay",
+                "score_overlay_state",
             ),
             (
                 WinChallenge.objects.create(owner=self.owner, title="Challenge"),
@@ -1901,6 +2171,10 @@ class PublicOBSLinkRotationTests(TestCase):
                 "timer_renew_obs_link",
             ),
             (
+                ScoreOverlay.objects.create(owner=self.other_user, name="Foreign Score"),
+                "score_renew_obs_link",
+            ),
+            (
                 WinChallenge.objects.create(owner=self.other_user, title="Foreign Challenge"),
                 "winchallenge_renew_obs_link",
             ),
@@ -1935,6 +2209,10 @@ class AccessControlTests(TestCase):
         self.foreign_spotify = SpotifyOverlay.objects.create(
             owner=self.other_user, name="Foreign Spotify"
         )
+        self.owner_score = ScoreOverlay.objects.create(owner=self.owner, name="Owner Score")
+        self.foreign_score = ScoreOverlay.objects.create(
+            owner=self.other_user, name="Foreign Score"
+        )
         self.owner_timer = TimerOverlay.objects.create(owner=self.owner, name="Owner Timer")
         self.foreign_timer = TimerOverlay.objects.create(
             owner=self.other_user, name="Foreign Timer"
@@ -1950,6 +2228,12 @@ class AccessControlTests(TestCase):
             reverse("spotify_duplicate", args=[self.owner_spotify.pk]),
             reverse("spotify_export", args=[self.owner_spotify.pk]),
             reverse("spotify_renew_obs_link", args=[self.owner_spotify.pk]),
+            reverse("score_list"),
+            reverse("score_create"),
+            reverse("score_autosave", args=[self.owner_score.pk]),
+            reverse("score_duplicate", args=[self.owner_score.pk]),
+            reverse("score_export", args=[self.owner_score.pk]),
+            reverse("score_renew_obs_link", args=[self.owner_score.pk]),
             reverse("timer_list"),
             reverse("timer_create"),
             reverse("timer_autosave", args=[self.owner_timer.pk]),
@@ -1977,12 +2261,18 @@ class AccessControlTests(TestCase):
 
         self.assertContains(dashboard, self.owner_spotify.name)
         self.assertNotContains(dashboard, self.foreign_spotify.name)
+        self.assertContains(dashboard, self.owner_score.name)
+        self.assertNotContains(dashboard, self.foreign_score.name)
         self.assertContains(dashboard, self.owner_challenge.title)
         self.assertNotContains(dashboard, self.foreign_challenge.title)
         self.assertContains(dashboard, self.owner_timer.name)
         self.assertNotContains(dashboard, self.foreign_timer.name)
         self.assertEqual(
             self.client.get(reverse("spotify_manage", args=[self.foreign_spotify.pk])).status_code,
+            404,
+        )
+        self.assertEqual(
+            self.client.get(reverse("score_manage", args=[self.foreign_score.pk])).status_code,
             404,
         )
         self.assertEqual(
@@ -1998,6 +2288,13 @@ class AccessControlTests(TestCase):
         self.assertEqual(
             self.client.post(
                 reverse("spotify_autosave", args=[self.foreign_spotify.pk]),
+                {},
+            ).status_code,
+            404,
+        )
+        self.assertEqual(
+            self.client.post(
+                reverse("score_autosave", args=[self.foreign_score.pk]),
                 {},
             ).status_code,
             404,
@@ -2047,6 +2344,9 @@ class AccessControlTests(TestCase):
         spotify_response = self.client.get(
             reverse("spotify_overlay", args=[self.owner_spotify.public_token])
         )
+        score_response = self.client.get(
+            reverse("score_overlay", args=[self.owner_score.public_token])
+        )
         challenge_response = self.client.get(
             reverse("winchallenge_overlay", args=[self.owner_challenge.public_token])
         )
@@ -2055,9 +2355,11 @@ class AccessControlTests(TestCase):
         )
 
         self.assertEqual(spotify_response.status_code, 200)
+        self.assertEqual(score_response.status_code, 200)
         self.assertEqual(challenge_response.status_code, 200)
         self.assertEqual(timer_response.status_code, 200)
         self.assertContains(spotify_response, "js/polling.js")
+        self.assertContains(score_response, "js/polling.js")
         self.assertContains(challenge_response, "js/polling.js")
         self.assertContains(timer_response, "js/polling.js")
 
@@ -2084,6 +2386,7 @@ class SignUpTests(TestCase):
     def test_first_account_claims_existing_unowned_overlays(self):
         challenge = WinChallenge.objects.create(title="Existing Challenge")
         spotify = SpotifyOverlay.objects.create(name="Existing Spotify")
+        score = ScoreOverlay.objects.create(name="Existing Score")
         timer = TimerOverlay.objects.create(name="Existing Timer")
 
         response = self.client.post(
@@ -2098,10 +2401,12 @@ class SignUpTests(TestCase):
         user = User.objects.get(username="first-owner")
         challenge.refresh_from_db()
         spotify.refresh_from_db()
+        score.refresh_from_db()
         timer.refresh_from_db()
         self.assertRedirects(response, reverse("home"))
         self.assertEqual(challenge.owner, user)
         self.assertEqual(spotify.owner, user)
+        self.assertEqual(score.owner, user)
         self.assertEqual(timer.owner, user)
         self.assertEqual(int(self.client.session["_auth_user_id"]), user.pk)
 
