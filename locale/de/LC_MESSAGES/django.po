@@ -282,17 +282,17 @@ msgstr "Jede Elementfarbe muss eine gültige Hex-Farbe sein."
 
 #: .\app\forms.py:733
 msgid "Allow negative scores"
-msgstr ""
+msgstr "Negative Punktzahlen erlauben"
 
 #: .\app\forms.py:737
 msgid "When disabled, minus buttons stop at 0."
-msgstr ""
+msgstr "Wenn deaktiviert, stoppen die Minus-Schaltflächen bei 0."
 
 #: .\app\forms.py:741 .\app\models.py:1564
 #: .\app\templates\app\overlay_dashboard.html:360
 #: .\app\templates\app\score\create.html:53
 msgid "Score HUD"
-msgstr ""
+msgstr "Score HUD"
 
 #: .\app\forms.py:806
 #, fuzzy
@@ -314,15 +314,15 @@ msgstr "Jedes Overlay-Element benötigt eine eindeutige gültige ID."
 
 #: .\app\forms.py:876 .\app\forms.py:881
 msgid "Player 1"
-msgstr ""
+msgstr "Spieler 1"
 
 #: .\app\forms.py:887 .\app\forms.py:892
 msgid "Player 2"
-msgstr ""
+msgstr "Spieler 2"
 
 #: .\app\forms.py:931
 msgid "Name"
-msgstr ""
+msgstr "Name"
 
 #: .\app\forms.py:932 .\app\templates\app\spotify\create.html:262
 #: .\app\templates\app\twitch_goal\create.html:156
@@ -335,7 +335,7 @@ msgstr "Bild"
 
 #: .\app\forms.py:939
 msgid "Player or team"
-msgstr ""
+msgstr "Spieler oder Team"
 
 #: .\app\forms.py:956 .\app\templates\app\score\_overlay.html:12
 #, fuzzy
@@ -569,11 +569,11 @@ msgstr "Anpassen"
 
 #: .\app\models.py:836
 msgid "Broadcast duel"
-msgstr ""
+msgstr "Broadcast-Duell"
 
 #: .\app\models.py:837
 msgid "Broadcast list"
-msgstr ""
+msgstr "Broadcast-Liste"
 
 #: .\app\models.py:1257 .\app\templates\app\about.html:138
 #: .\app\templates\app\demo.html:109 .\app\templates\app\home.html:223
@@ -1661,7 +1661,7 @@ msgstr "Win Challenges"
 #: .\app\templates\app\overlay_dashboard.html:67
 #: .\app\templates\app\overlay_dashboard.html:329
 msgid "Score HUDs"
-msgstr ""
+msgstr "Score HUDs"
 
 #: .\app\templates\app\overlay_dashboard.html:43
 #: .\app\templates\app\overlay_dashboard.html:71
@@ -1940,7 +1940,7 @@ msgstr "Füge dein erstes Spiel im Editor hinzu."
 
 #: .\app\templates\app\overlay_dashboard.html:367
 msgid "Participants"
-msgstr ""
+msgstr "Teilnehmer"
 
 #: .\app\templates\app\overlay_dashboard.html:395
 #: .\app\templates\app\score\create.html:388
@@ -1959,7 +1959,7 @@ msgstr "Noch keine Overlays"
 msgid ""
 "Create a live scoreboard for players or teams with fully editable HUD "
 "elements."
-msgstr ""
+msgstr "Erstelle ein Live-Scoreboard für Spieler oder Teams mit frei gestaltbaren HUD-Elementen."
 
 #: .\app\templates\app\overlay_dashboard.html:420
 msgid "Community growth"
@@ -1967,7 +1967,7 @@ msgstr "Community-Wachstum"
 
 #: .\app\templates\app\overlay_dashboard.html:445
 msgid "Mode"
-msgstr ""
+msgstr "Modus"
 
 #: .\app\templates\app\overlay_dashboard.html:455
 #: .\app\templates\app\twitch_goal\create.html:214
@@ -2265,7 +2265,7 @@ msgstr "Lokaler Entwurf wiederhergestellt"
 msgid ""
 "This replaces the current custom element positions with the selected "
 "broadcast preset. Continue?"
-msgstr ""
+msgstr "Dies ersetzt die aktuellen benutzerdefinierten Elementpositionen durch das gewählte Broadcast-Preset. Fortfahren?"
 
 #: .\app\templates\app\score\create.html:56
 #, fuzzy
@@ -2275,11 +2275,11 @@ msgstr "Overlay erstellen"
 
 #: .\app\templates\app\score\create.html:58
 msgid "Edit Score HUD"
-msgstr ""
+msgstr "Score HUD bearbeiten"
 
 #: .\app\templates\app\score\create.html:61
 msgid "Place player images, names and scores freely on a clean OBS overlay."
-msgstr ""
+msgstr "Platziere Spielerbilder, Namen und Punktzahlen frei auf einem cleanen OBS-Overlay."
 
 #: .\app\templates\app\score\create.html:63
 #: .\app\templates\app\spotify\create.html:53
@@ -2301,11 +2301,11 @@ msgstr "Einstellungen speichern"
 
 #: .\app\templates\app\score\create.html:187
 msgid "Participants and scores"
-msgstr ""
+msgstr "Teilnehmer und Punktzahlen"
 
 #: .\app\templates\app\score\create.html:194
 msgid "Score"
-msgstr ""
+msgstr "Punktzahl"
 
 #: .\app\templates\app\score\create.html:195
 #, fuzzy
@@ -2315,7 +2315,7 @@ msgstr "Minuten"
 
 #: .\app\templates\app\score\create.html:196
 msgid "Plus one"
-msgstr ""
+msgstr "Plus eins"
 
 #: .\app\templates\app\score\create.html:197
 #, fuzzy
@@ -2325,11 +2325,11 @@ msgstr "Zurücksetzen"
 
 #: .\app\templates\app\score\create.html:198
 msgid "Save participant"
-msgstr ""
+msgstr "Teilnehmer speichern"
 
 #: .\app\templates\app\score\create.html:199
 msgid "Delete participant"
-msgstr ""
+msgstr "Teilnehmer löschen"
 
 #: .\app\templates\app\score\create.html:200
 #, fuzzy
@@ -2339,11 +2339,11 @@ msgstr "Dieses Spiel löschen?"
 
 #: .\app\templates\app\score\create.html:218
 msgid "Add participant"
-msgstr ""
+msgstr "Teilnehmer hinzufügen"
 
 #: .\app\templates\app\score\create.html:222
 msgid "Reset all scores"
-msgstr ""
+msgstr "Alle Punktzahlen zurücksetzen"
 
 #: .\app\templates\app\score\create.html:228
 #: .\app\templates\app\spotify\create.html:326
@@ -2366,7 +2366,7 @@ msgstr "Link kopieren"
 
 #: .\app\templates\app\score\create.html:241
 msgid "Recommended source size:"
-msgstr ""
+msgstr "Empfohlene Quellgröße:"
 
 #: .\app\templates\app\score\create.html:253
 #: .\app\templates\app\spotify\create.html:229
@@ -2404,12 +2404,12 @@ msgstr "Ausrichtungswerkzeuge"
 #: .\app\templates\app\score\create.html:300
 #: .\app\templates\app\twitch_goal\create.html:161
 msgid "Left"
-msgstr ""
+msgstr "Links"
 
 #: .\app\templates\app\score\create.html:301
 #: .\app\templates\app\twitch_goal\create.html:161
 msgid "Center"
-msgstr ""
+msgstr "Mitte"
 
 #: .\app\templates\app\score\create.html:302
 #: .\app\templates\app\twitch_goal\create.html:161
@@ -2449,7 +2449,7 @@ msgstr "Live-Vorschau"
 
 #: .\app\templates\app\score\create.html:331
 msgid "Drag the HUD into shape"
-msgstr ""
+msgstr "Das HUD in Form ziehen"
 
 #: .\app\templates\app\score\create.html:333
 #, fuzzy
@@ -2459,11 +2459,11 @@ msgstr "Layout"
 
 #: .\app\templates\app\score\create.html:334
 msgid "Broadcast Duel"
-msgstr ""
+msgstr "Broadcast-Duell"
 
 #: .\app\templates\app\score\create.html:335
 msgid "Broadcast List"
-msgstr ""
+msgstr "Broadcast-Liste"
 
 #: .\app\templates\app\score\create.html:339
 #, fuzzy
@@ -2801,7 +2801,7 @@ msgstr "Transparente OBS-Fläche"
 #: .\app\templates\app\twitch_goal\_overlay.html:53
 #, python-format
 msgid "%(value)s remaining"
-msgstr ""
+msgstr "Noch %(value)s"
 
 #: .\app\templates\app\twitch_goal\create.html:41
 msgid "Create a Twitch goal"
@@ -3348,11 +3348,11 @@ msgstr "Overlay-Version wiederhergestellt."
 
 #: .\app\views\score.py:201
 msgid "Score HUD created."
-msgstr ""
+msgstr "Score HUD erstellt."
 
 #: .\app\views\score.py:227
 msgid "Score HUD saved."
-msgstr ""
+msgstr "Score HUD gespeichert."
 
 #: .\app\views\score.py:267
 #, fuzzy, python-format
@@ -3379,7 +3379,7 @@ msgstr "Es sind maximal 30 Elemente erlaubt."
 
 #: .\app\views\score.py:370
 msgid "At least two participants are required."
-msgstr ""
+msgstr "Es sind mindestens zwei Teilnehmer erforderlich."
 
 #: .\app\views\score.py:401 .\app\views\score.py:404
 #, fuzzy
