@@ -390,7 +390,7 @@
                             </label>
                         </div>
 
-                        {% include "app/partials/_overlay_branding_controls.html" with branding_form=design_form %}
+                        {% include "app/partials/_overlay_branding_controls.html" with branding_form=design_form overlay=challenge is_create=False overlay_type="winchallenge" %}
 
                         <button class="btn action-button" type="submit">{% translate "Save design" %}</button>
                     </form>
@@ -446,6 +446,20 @@
         <form id="overlay-asset-upload-form" action="{% url 'overlay_asset_upload' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        </form>
+
+        <form id="overlay-preset-save-form" action="{% url 'preset_save' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="overlay_type" value="winchallenge">
+            <input type="hidden" name="pk" value="{{ challenge.pk }}">
+        </form>
+        <form
+            id="overlay-preset-apply-form"
+            action="{% url 'preset_apply' overlay_type='winchallenge' pk=challenge.pk %}"
+            method="post"
+            data-confirm-action="{% translate 'This replaces the current font, images, colors, border and corner radius. Continue?' %}"
+        >
+            {% csrf_token %}
         </form>
 
         {% include "app/partials/_overlay_version_history.html" with overlay=challenge %}

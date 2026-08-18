@@ -51,4 +51,42 @@
             {% translate "Upload asset" %}
         </button>
     </div>
+
+    {% if not is_create %}
+    <div class="overlay-preset-controls">
+        <div class="overlay-preset-save">
+            <strong>{% translate "Save current style as a template" %}</strong>
+            <div class="overlay-preset-save-form">
+                <input
+                    class="form-control"
+                    type="text"
+                    name="name"
+                    maxlength="80"
+                    required
+                    placeholder="{% translate 'Template name' %}"
+                    form="overlay-preset-save-form"
+                >
+                <button class="btn glass-design" type="submit" form="overlay-preset-save-form">
+                    {% translate "Save as template" %}
+                </button>
+            </div>
+        </div>
+
+        {% if style_presets %}
+        <div class="overlay-preset-apply">
+            <strong>{% translate "Apply a saved template" %}</strong>
+            <div class="overlay-preset-apply-form">
+                <select class="form-control" name="preset_id" required form="overlay-preset-apply-form">
+                    {% for style_preset in style_presets %}
+                        <option value="{{ style_preset.pk }}">{{ style_preset.name }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn glass-design" type="submit" form="overlay-preset-apply-form">
+                    {% translate "Apply template" %}
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
 </section>

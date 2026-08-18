@@ -27,6 +27,7 @@ from app.views.common import (
 )
 from app.views.dashboard import manageable_winchallenges
 from app.views.pages import safe_next_url
+from app.views.presets import manageable_presets
 
 
 def get_manageable_winchallenge(request, pk):
@@ -142,6 +143,7 @@ def winchallenge_manage(request, pk):
         "game_form": WinChallengeGameForm(),
         "obs_url": winchallenge_obs_url(request, challenge),
         "asset_upload_form": OverlayAssetUploadForm(prefix="asset"),
+        "style_presets": manageable_presets(request),
     }
     context.update(overlay_versions.editor_version_context(challenge))
     return render(

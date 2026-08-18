@@ -178,6 +178,26 @@ class OverlayVersion(models.Model):
         return f"{self.overlay_type}:{self.overlay_id} @ {self.created_at}"
 
 
+class OverlayPreset(models.Model):
+    """Reusable branding/style snapshot that can be applied to any overlay type."""
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="overlay_presets",
+    )
+    name = models.CharField(max_length=80)
+    style = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("name",)
+
+    def __str__(self):
+        return self.name
+
+
 class WinChallenge(OverlayBrandingMixin, models.Model):
     """Editable win counter overlay configuration."""
 

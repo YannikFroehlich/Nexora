@@ -1,0 +1,97 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% translate "Templates" %} &middot; Nexora{% endblock %}
+
+{% block meta_description %}{% translate "Manage reusable style templates and apply them to any overlay." %}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li aria-current="page">{% translate "Templates" %}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <div class="dashboard-page">
+        <section class="dashboard-hero" aria-labelledby="preset-list-title">
+            <div class="dashboard-hero__copy">
+                <p class="dashboard-label"><span>Nexora</span> {% translate "Template gallery" %}</p>
+                <h1 id="preset-list-title">{% translate "Templates" %}</h1>
+                <p>{% translate "Save a style from any overlay and apply it to any other overlay, whatever its type." %}</p>
+            </div>
+        </section>
+
+        {% if messages %}
+            <div class="dashboard-messages" role="status" aria-live="polite" aria-atomic="true">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <section class="dashboard-collection" aria-labelledby="preset-collection-title">
+            <div class="dashboard-collection__header">
+                <div class="dashboard-collection__title">
+                    <div>
+                        <h2 id="preset-collection-title" class="sr-only">{% translate "Templates" %}</h2>
+                    </div>
+                </div>
+            </div>
+
+            {% if presets %}
+                <div class="dashboard-grid">
+                    {% for preset in presets %}
+                        <article class="dashboard-card">
+                            <div class="dashboard-card__content">
+                                <div class="dashboard-card__heading">
+                                    <div>
+                                        <p class="dashboard-card__type">{% translate "Template" %}</p>
+                                        <h3>{{ preset.name }}</h3>
+                                    </div>
+                                </div>
+
+                                <div class="preset-swatches" aria-hidden="true">
+                                    <span class="preset-swatch" style="background:{{ preset.style.background_color }}"></span>
+                                    <span class="preset-swatch" style="background:{{ preset.style.border_color }}"></span>
+                                </div>
+
+                                <dl class="dashboard-card__stats">
+                                    <div><dt>{% translate "Font" %}</dt><dd>{{ preset.style.font_family }}</dd></div>
+                                    <div><dt>{% translate "Updated" %}</dt><dd>{{ preset.updated_at|date:"d.m.Y H:i" }}</dd></div>
+                                </dl>
+
+                                <div class="dashboard-card__actions">
+                                    <form
+                                        class="dashboard-card__delete"
+                                        action="{% url 'preset_delete' preset.pk %}"
+                                        method="post"
+                                        data-confirm-action="{% translate 'Delete this template?' %}"
+                                    >
+                                        {% csrf_token %}
+                                        <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="dashboard-empty">
+                    <span class="dashboard-empty__icon" aria-hidden="true">#</span>
+                    <div>
+                        <h3>{% translate "No templates yet" %}</h3>
+                        <p>{% translate "Open any overlay you already styled and save it as a template from its Branding section." %}</p>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+{% endblock %}

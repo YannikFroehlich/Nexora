@@ -12,6 +12,7 @@ from app.views.dashboard import (
     overlay_version_restore,
 )
 from app.views.pages import about, demo, home, robots_txt, signup, sitemap
+from app.views.presets import preset_apply, preset_delete, preset_list, preset_save
 from app.views.score import (
     score_autosave,
     score_create,
@@ -101,6 +102,10 @@ __all__ = [
     "overlay_dashboard",
     "overlay_import",
     "overlay_version_restore",
+    "preset_apply",
+    "preset_delete",
+    "preset_list",
+    "preset_save",
     "robots_txt",
     "score_autosave",
     "score_create",

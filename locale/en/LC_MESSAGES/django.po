@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-18 08:03+0200\n"
+"POT-Creation-Date: 2026-08-18 09:39+0200\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: English\n"
@@ -33,7 +33,7 @@ msgstr ""
 msgid "Background image"
 msgstr ""
 
-#: .\app\forms.py:64 .\app\models.py:1296 .\app\models.py:1319
+#: .\app\forms.py:64 .\app\models.py:1316 .\app\models.py:1339
 msgid "None"
 msgstr ""
 
@@ -200,7 +200,7 @@ msgstr ""
 msgid "Road to Diamond"
 msgstr ""
 
-#: .\app\forms.py:422 .\app\models.py:184
+#: .\app\forms.py:422 .\app\models.py:204
 msgid "Winchallenge"
 msgstr ""
 
@@ -242,7 +242,7 @@ msgstr ""
 msgid "Overlay height"
 msgstr ""
 
-#: .\app\forms.py:570 .\app\models.py:1101
+#: .\app\forms.py:570 .\app\models.py:1121
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Spotify-Overlay"
@@ -292,7 +292,7 @@ msgstr ""
 msgid "When disabled, minus buttons stop at 0."
 msgstr ""
 
-#: .\app\forms.py:741 .\app\models.py:1564
+#: .\app\forms.py:741 .\app\models.py:1584
 #: .\app\templates\app\overlay_dashboard.html:360
 #: .\app\templates\app\score\create.html:53
 msgid "Score HUD"
@@ -460,7 +460,7 @@ msgstr ""
 msgid "Optional text displayed above the time."
 msgstr ""
 
-#: .\app\forms.py:1311 .\app\forms.py:1365 .\app\models.py:1813
+#: .\app\forms.py:1311 .\app\forms.py:1365 .\app\models.py:1833
 #: .\app\templates\app\about.html:126 .\app\templates\app\home.html:193
 msgid "Stream Timer"
 msgstr ""
@@ -481,7 +481,7 @@ msgstr ""
 msgid "Enter a valid hex color, for example #14b8a6."
 msgstr ""
 
-#: .\app\models.py:31
+#: .\app\models.py:31 .\app\templates\app\presets\list.html:67
 msgid "Font"
 msgstr ""
 
@@ -507,141 +507,141 @@ msgstr ""
 msgid "Restored"
 msgstr ""
 
-#: .\app\models.py:192 .\app\models.py:1827 .\app\templates\app\demo.html:93
+#: .\app\models.py:212 .\app\models.py:1847 .\app\templates\app\demo.html:93
 #: .\app\templates\app\demo.html:173
 #: .\app\templates\app\winchallenge\create.html:117
 msgid "Minimal"
 msgstr ""
 
-#: .\app\models.py:193 .\app\models.py:1828 .\app\templates\app\demo.html:94
+#: .\app\models.py:213 .\app\models.py:1848 .\app\templates\app\demo.html:94
 #: .\app\templates\app\demo.html:174
 #: .\app\templates\app\winchallenge\create.html:126
 msgid "Glass"
 msgstr ""
 
-#: .\app\models.py:194 .\app\models.py:1829 .\app\templates\app\demo.html:95
+#: .\app\models.py:214 .\app\models.py:1849 .\app\templates\app\demo.html:95
 #: .\app\templates\app\demo.html:175
 #: .\app\templates\app\winchallenge\create.html:135
 msgid "Neon"
 msgstr ""
 
-#: .\app\models.py:555
+#: .\app\models.py:575
 msgid "Horizontal bar"
 msgstr ""
 
-#: .\app\models.py:556
+#: .\app\models.py:576
 msgid "Compact bar"
 msgstr ""
 
-#: .\app\models.py:557
+#: .\app\models.py:577
 msgid "Vertical card"
 msgstr ""
 
-#: .\app\models.py:558
+#: .\app\models.py:578
 msgid "Radial goal"
 msgstr ""
 
-#: .\app\models.py:559 .\app\models.py:838
+#: .\app\models.py:579 .\app\models.py:858
 msgid "Custom"
 msgstr ""
 
-#: .\app\models.py:836
+#: .\app\models.py:856
 msgid "Broadcast duel"
 msgstr ""
 
-#: .\app\models.py:837
+#: .\app\models.py:857
 msgid "Broadcast list"
 msgstr ""
 
-#: .\app\models.py:1257 .\app\templates\app\about.html:138
+#: .\app\models.py:1277 .\app\templates\app\about.html:138
 #: .\app\templates\app\demo.html:109 .\app\templates\app\home.html:223
 msgid "Twitch Goal"
 msgstr ""
 
-#: .\app\models.py:1264 .\app\models.py:1457 .\app\templates\app\home.html:220
+#: .\app\models.py:1284 .\app\models.py:1477 .\app\templates\app\home.html:220
 msgid "Follower goal"
 msgstr ""
 
-#: .\app\models.py:1265
+#: .\app\models.py:1285
 msgid "Subscription goal"
 msgstr ""
 
-#: .\app\models.py:1271
+#: .\app\models.py:1291
 msgid "Active subscriptions"
 msgstr ""
 
-#: .\app\models.py:1272
+#: .\app\models.py:1292
 msgid "Subscription points"
 msgstr ""
 
-#: .\app\models.py:1278
+#: .\app\models.py:1298
 msgid "Total count"
 msgstr ""
 
-#: .\app\models.py:1279
+#: .\app\models.py:1299
 msgid "Campaign growth"
 msgstr ""
 
-#: .\app\models.py:1297
+#: .\app\models.py:1317
 msgid "Confetti"
 msgstr ""
 
-#: .\app\models.py:1298
+#: .\app\models.py:1318
 msgid "Fireworks"
 msgstr ""
 
-#: .\app\models.py:1299
+#: .\app\models.py:1319
 msgid "Neon burst"
 msgstr ""
 
-#: .\app\models.py:1300
+#: .\app\models.py:1320
 msgid "Bounce and pulse"
 msgstr ""
 
-#: .\app\models.py:1301
+#: .\app\models.py:1321
 msgid "Particle rain"
 msgstr ""
 
-#: .\app\models.py:1308
+#: .\app\models.py:1328
 msgid "Low"
 msgstr ""
 
-#: .\app\models.py:1309
+#: .\app\models.py:1329
 msgid "Medium"
 msgstr ""
 
-#: .\app\models.py:1310
+#: .\app\models.py:1330
 msgid "High"
 msgstr ""
 
-#: .\app\models.py:1320
+#: .\app\models.py:1340
 msgid "Chime"
 msgstr ""
 
-#: .\app\models.py:1321
+#: .\app\models.py:1341
 msgid "Fanfare"
 msgstr ""
 
-#: .\app\models.py:1322
+#: .\app\models.py:1342
 msgid "Arcade win"
 msgstr ""
 
-#: .\app\models.py:1323
+#: .\app\models.py:1343
 msgid "Sparkle"
 msgstr ""
 
-#: .\app\models.py:1457
+#: .\app\models.py:1477
 msgid "Sub goal"
 msgstr ""
 
-#: .\app\models.py:1819 .\app\templates\app\home.html:179
+#: .\app\models.py:1839 .\app\templates\app\home.html:179
 #: .\app\templates\app\partials\_timer_overlay.html:37
 #: .\app\templates\app\timer\create.html:36
 #: .\app\templates\app\timer\public_overlay.html:18
 msgid "Countdown"
 msgstr ""
 
-#: .\app\models.py:1820 .\app\templates\app\partials\_timer_overlay.html:37
+#: .\app\models.py:1840 .\app\templates\app\partials\_timer_overlay.html:37
 #: .\app\templates\app\timer\create.html:37
 #: .\app\templates\app\timer\public_overlay.html:19
 msgid "Stopwatch"
@@ -769,7 +769,7 @@ msgid "Spotify returned an invalid response."
 msgstr ""
 
 #: .\app\templates\app\about.html:5 .\app\templates\app\about.html:17
-#: .\app\templates\app\base.html:86 .\app\templates\app\base.html:165
+#: .\app\templates\app\base.html:93 .\app\templates\app\base.html:172
 msgid "About"
 msgstr ""
 
@@ -781,6 +781,7 @@ msgstr ""
 
 #: .\app\templates\app\about.html:14 .\app\templates\app\demo.html:14
 #: .\app\templates\app\overlay_dashboard.html:14
+#: .\app\templates\app\presets\list.html:14
 #: .\app\templates\app\registration\login.html:12
 #: .\app\templates\app\registration\signup.html:12
 #: .\app\templates\app\score\create.html:15
@@ -794,9 +795,10 @@ msgstr ""
 msgid "Breadcrumb"
 msgstr ""
 
-#: .\app\templates\app\about.html:16 .\app\templates\app\base.html:163
+#: .\app\templates\app\about.html:16 .\app\templates\app\base.html:170
 #: .\app\templates\app\demo.html:16 .\app\templates\app\home.html:6
 #: .\app\templates\app\overlay_dashboard.html:16
+#: .\app\templates\app\presets\list.html:16
 #: .\app\templates\app\registration\login.html:14
 #: .\app\templates\app\registration\signup.html:14
 #: .\app\templates\app\score\create.html:17
@@ -1095,19 +1097,26 @@ msgstr ""
 msgid "My overlays"
 msgstr "Spotify Overlay"
 
-#: .\app\templates\app\base.html:79 .\app\templates\app\base.html:164
+#: .\app\templates\app\base.html:79 .\app\templates\app\presets\list.html:5
+#: .\app\templates\app\presets\list.html:17
+#: .\app\templates\app\presets\list.html:27
+#: .\app\templates\app\presets\list.html:44
+msgid "Templates"
+msgstr ""
+
+#: .\app\templates\app\base.html:86 .\app\templates\app\base.html:171
 msgid "Live demo"
 msgstr ""
 
-#: .\app\templates\app\base.html:93
+#: .\app\templates\app\base.html:100
 msgid "Signed in as"
 msgstr ""
 
-#: .\app\templates\app\base.html:99
+#: .\app\templates\app\base.html:106
 msgid "Sign out"
 msgstr ""
 
-#: .\app\templates\app\base.html:104
+#: .\app\templates\app\base.html:111
 #: .\app\templates\app\registration\login.html:71
 #: .\app\templates\app\registration\signup.html:5
 #: .\app\templates\app\registration\signup.html:15
@@ -1116,7 +1125,7 @@ msgstr ""
 msgid "Create account"
 msgstr ""
 
-#: .\app\templates\app\base.html:110
+#: .\app\templates\app\base.html:117
 #: .\app\templates\app\registration\login.html:5
 #: .\app\templates\app\registration\login.html:15
 #: .\app\templates\app\registration\login.html:24
@@ -1125,27 +1134,27 @@ msgstr ""
 msgid "Sign in"
 msgstr ""
 
-#: .\app\templates\app\base.html:117
+#: .\app\templates\app\base.html:124
 msgid "Language"
 msgstr ""
 
-#: .\app\templates\app\base.html:130
+#: .\app\templates\app\base.html:137
 msgid "Apply"
 msgstr ""
 
-#: .\app\templates\app\base.html:137 .\app\templates\app\base.html:140
+#: .\app\templates\app\base.html:144 .\app\templates\app\base.html:147
 msgid "Switch to dark theme"
 msgstr ""
 
-#: .\app\templates\app\base.html:139
+#: .\app\templates\app\base.html:146
 msgid "Switch to light theme"
 msgstr ""
 
-#: .\app\templates\app\base.html:162
+#: .\app\templates\app\base.html:169
 msgid "Footer navigation"
 msgstr ""
 
-#: .\app\templates\app\base.html:170
+#: .\app\templates\app\base.html:177
 msgid "Version"
 msgstr ""
 
@@ -1278,7 +1287,7 @@ msgstr ""
 #: .\app\templates\app\partials\_winchallenge_overlay.html:40
 #: .\app\templates\app\winchallenge\list.html:141
 #: .\app\templates\app\winchallenge\manage.html:42
-#: .\app\views\winchallenge.py:87
+#: .\app\views\winchallenge.py:88
 msgid "Win Challenge"
 msgstr ""
 
@@ -1697,6 +1706,7 @@ msgstr ""
 #: .\app\templates\app\overlay_dashboard.html:369
 #: .\app\templates\app\overlay_dashboard.html:446
 #: .\app\templates\app\overlay_dashboard.html:514
+#: .\app\templates\app\presets\list.html:68
 #: .\app\templates\app\winchallenge\list.html:82
 #: .\app\templates\app\winchallenge\manage.html:88
 msgid "Updated"
@@ -1784,6 +1794,7 @@ msgstr "Spotify Overlay"
 #: .\app\templates\app\overlay_dashboard.html:397
 #: .\app\templates\app\overlay_dashboard.html:455
 #: .\app\templates\app\overlay_dashboard.html:542
+#: .\app\templates\app\presets\list.html:79
 #: .\app\templates\app\spotify\list.html:79
 #: .\app\templates\app\timer\create.html:224
 #: .\app\templates\app\winchallenge\list.html:111
@@ -1819,7 +1830,7 @@ msgstr ""
 #: .\app\templates\app\winchallenge\manage.html:65
 #: .\app\templates\app\winchallenge\manage.html:84
 #: .\app\templates\app\winchallenge\manage.html:122
-#: .\app\views\winchallenge.py:247
+#: .\app\views\winchallenge.py:249
 msgid "Games"
 msgstr ""
 
@@ -2038,6 +2049,32 @@ msgstr ""
 msgid "Upload asset"
 msgstr ""
 
+#: .\app\templates\app\partials\_overlay_branding_controls.html:58
+msgid "Save current style as a template"
+msgstr ""
+
+#: .\app\templates\app\partials\_overlay_branding_controls.html:69
+msgid "Template name"
+msgstr ""
+
+#: .\app\templates\app\partials\_overlay_branding_controls.html:71
+msgid "Save as template"
+msgstr ""
+
+#: .\app\templates\app\partials\_overlay_branding_controls.html:77
+msgid "Apply a saved template"
+msgstr ""
+
+#: .\app\templates\app\partials\_overlay_branding_controls.html:82
+msgid ""
+"This replaces the current font, images, colors, border and corner radius. "
+"Continue?"
+msgstr ""
+
+#: .\app\templates\app\partials\_overlay_branding_controls.html:90
+msgid "Apply template"
+msgstr ""
+
 #: .\app\templates\app\partials\_overlay_version_history.html:5
 msgid "History"
 msgstr ""
@@ -2087,6 +2124,42 @@ msgstr ""
 #: .\app\templates\app\winchallenge\manage.html:179
 #: .\app\templates\app\winchallenge\manage.html:184
 msgid "Completed"
+msgstr ""
+
+#: .\app\templates\app\presets\list.html:7
+msgid "Manage reusable style templates and apply them to any overlay."
+msgstr ""
+
+#: .\app\templates\app\presets\list.html:26
+msgid "Template gallery"
+msgstr ""
+
+#: .\app\templates\app\presets\list.html:28
+msgid ""
+"Save a style from any overlay and apply it to any other overlay, whatever "
+"its type."
+msgstr ""
+
+#: .\app\templates\app\presets\list.html:56
+msgid "Template"
+msgstr ""
+
+#: .\app\templates\app\presets\list.html:76
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Delete this template?"
+msgstr "Spotify Overlay"
+
+#: .\app\templates\app\presets\list.html:90
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "No templates yet"
+msgstr "Spotify Overlay"
+
+#: .\app\templates\app\presets\list.html:91
+msgid ""
+"Open any overlay you already styled and save it as a template from its "
+"Branding section."
 msgstr ""
 
 #: .\app\templates\app\registration\login.html:23
@@ -3223,218 +3296,244 @@ msgstr ""
 msgid "Overlay version restored."
 msgstr "Spotify Overlay"
 
-#: .\app\views\score.py:201
+#: .\app\views\presets.py:40
+msgid "Enter a name for the template."
+msgstr ""
+
+#: .\app\views\presets.py:48
+#, fuzzy, python-format
+#| msgid "Spotify Overlay"
+msgid "Template saved: %(name)s"
+msgstr "Spotify Overlay"
+
+#: .\app\views\presets.py:67
+msgid "This template could not be applied."
+msgstr ""
+
+#: .\app\views\presets.py:70
+#, fuzzy, python-format
+#| msgid "Spotify Overlay"
+msgid "Template applied: %(name)s"
+msgstr "Spotify Overlay"
+
+#: .\app\views\presets.py:81
+#, fuzzy, python-format
+#| msgid "Spotify Overlay"
+msgid "Template deleted: %(name)s"
+msgstr "Spotify Overlay"
+
+#: .\app\views\score.py:203
 msgid "Score HUD created."
 msgstr ""
 
-#: .\app\views\score.py:227
+#: .\app\views\score.py:229
 msgid "Score HUD saved."
 msgstr ""
 
-#: .\app\views\score.py:267
+#: .\app\views\score.py:269
 #, fuzzy, python-format
 #| msgid "Spotify Overlay"
 msgid "Score HUD deleted: %(name)s"
 msgstr "Spotify Overlay"
 
-#: .\app\views\score.py:275 .\app\views\spotify.py:160 .\app\views\timer.py:190
-#: .\app\views\twitch_goal.py:172 .\app\views\winchallenge.py:209
+#: .\app\views\score.py:277 .\app\views\spotify.py:162 .\app\views\timer.py:192
+#: .\app\views\twitch_goal.py:174 .\app\views\winchallenge.py:211
 msgid "Copy"
 msgstr ""
 
-#: .\app\views\score.py:278
+#: .\app\views\score.py:280
 #, fuzzy, python-format
 #| msgid "Spotify Overlay"
 msgid "Score HUD duplicated: %(name)s"
 msgstr "Spotify Overlay"
 
-#: .\app\views\score.py:312
+#: .\app\views\score.py:314
 msgid "A maximum of 8 participants is allowed."
 msgstr ""
 
-#: .\app\views\score.py:370
+#: .\app\views\score.py:372
 msgid "At least two participants are required."
 msgstr ""
 
-#: .\app\views\score.py:401 .\app\views\score.py:404
+#: .\app\views\score.py:403 .\app\views\score.py:406
 msgid "Invalid score change."
 msgstr ""
 
-#: .\app\views\spotify.py:78
+#: .\app\views\spotify.py:80
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Spotify overlay created."
 msgstr "Spotify Overlay"
 
-#: .\app\views\spotify.py:104
+#: .\app\views\spotify.py:106
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Spotify overlay saved."
 msgstr "Spotify Overlay"
 
-#: .\app\views\spotify.py:151
+#: .\app\views\spotify.py:153
 #, python-format
 msgid "Spotify overlay deleted: %(name)s"
 msgstr ""
 
-#: .\app\views\spotify.py:164
+#: .\app\views\spotify.py:166
 #, fuzzy, python-format
 #| msgid "Spotify Overlay"
 msgid "Spotify overlay duplicated: %(name)s"
 msgstr "Spotify Overlay"
 
-#: .\app\views\spotify.py:198
+#: .\app\views\spotify.py:200
 msgid ""
 "Add your Spotify client credentials to the environment before connecting."
 msgstr ""
 
-#: .\app\views\spotify.py:222
+#: .\app\views\spotify.py:224
 msgid "The Spotify connection could not be verified."
 msgstr ""
 
-#: .\app\views\spotify.py:228
+#: .\app\views\spotify.py:230
 msgid "Spotify access was not granted."
 msgstr ""
 
-#: .\app\views\spotify.py:234
+#: .\app\views\spotify.py:236
 msgid "Spotify returned no authorization code."
 msgstr ""
 
-#: .\app\views\spotify.py:242
+#: .\app\views\spotify.py:244
 msgid "Spotify could not be connected. Check your app settings."
 msgstr ""
 
-#: .\app\views\spotify.py:245
+#: .\app\views\spotify.py:247
 msgid "Spotify connected successfully."
 msgstr ""
 
-#: .\app\views\spotify.py:255
+#: .\app\views\spotify.py:257
 msgid "Spotify disconnected from all overlays."
 msgstr ""
 
-#: .\app\views\timer.py:66
+#: .\app\views\timer.py:68
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Timer overlay created."
 msgstr "Spotify Overlay"
 
-#: .\app\views\timer.py:91
+#: .\app\views\timer.py:93
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Timer overlay saved."
 msgstr "Spotify Overlay"
 
-#: .\app\views\timer.py:130
+#: .\app\views\timer.py:132
 msgid "Unknown timer action."
 msgstr ""
 
-#: .\app\views\timer.py:181
+#: .\app\views\timer.py:183
 #, fuzzy, python-format
 #| msgid "Spotify Overlay"
 msgid "Timer overlay deleted: %(name)s"
 msgstr "Spotify Overlay"
 
-#: .\app\views\timer.py:194
+#: .\app\views\timer.py:196
 #, fuzzy, python-format
 #| msgid "Spotify Overlay"
 msgid "Timer overlay duplicated: %(name)s"
 msgstr "Spotify Overlay"
 
-#: .\app\views\twitch_goal.py:107
+#: .\app\views\twitch_goal.py:109
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Twitch goal overlay created."
 msgstr "Spotify Overlay"
 
-#: .\app\views\twitch_goal.py:130
+#: .\app\views\twitch_goal.py:132
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Twitch goal overlay saved."
 msgstr "Spotify Overlay"
 
-#: .\app\views\twitch_goal.py:164
+#: .\app\views\twitch_goal.py:166
 #, fuzzy, python-format
 #| msgid "Spotify Overlay"
 msgid "Twitch goal overlay deleted: %(name)s"
 msgstr "Spotify Overlay"
 
-#: .\app\views\twitch_goal.py:176
+#: .\app\views\twitch_goal.py:178
 #, fuzzy, python-format
 #| msgid "Spotify Overlay"
 msgid "Twitch goal overlay duplicated: %(name)s"
 msgstr "Spotify Overlay"
 
-#: .\app\views\twitch_goal.py:207
+#: .\app\views\twitch_goal.py:209
 msgid "Add Twitch client credentials before connecting."
 msgstr ""
 
-#: .\app\views\twitch_goal.py:232
+#: .\app\views\twitch_goal.py:234
 msgid "The Twitch connection could not be verified."
 msgstr ""
 
-#: .\app\views\twitch_goal.py:236
+#: .\app\views\twitch_goal.py:238
 msgid "Twitch access was not granted."
 msgstr ""
 
-#: .\app\views\twitch_goal.py:240
+#: .\app\views\twitch_goal.py:242
 msgid "Twitch returned no authorization code."
 msgstr ""
 
-#: .\app\views\twitch_goal.py:250
+#: .\app\views\twitch_goal.py:252
 msgid "Twitch could not be connected. Check the app settings."
 msgstr ""
 
-#: .\app\views\twitch_goal.py:254
+#: .\app\views\twitch_goal.py:256
 msgid "Twitch connected successfully."
 msgstr ""
 
-#: .\app\views\twitch_goal.py:263
+#: .\app\views\twitch_goal.py:265
 msgid "Twitch disconnected from all goal overlays."
 msgstr ""
 
-#: .\app\views\twitch_goal.py:272
+#: .\app\views\twitch_goal.py:274
 msgid "This is not a campaign goal."
 msgstr ""
 
-#: .\app\views\twitch_goal.py:274
+#: .\app\views\twitch_goal.py:276
 msgid "Connect Twitch first."
 msgstr ""
 
-#: .\app\views\twitch_goal.py:278
+#: .\app\views\twitch_goal.py:280
 msgid "No Twitch value is available."
 msgstr ""
 
-#: .\app\views\winchallenge.py:77
+#: .\app\views\winchallenge.py:78
 msgid "Win Challenge created."
 msgstr ""
 
-#: .\app\views\winchallenge.py:110
+#: .\app\views\winchallenge.py:111
 msgid "Challenge settings saved."
 msgstr ""
 
-#: .\app\views\winchallenge.py:123
+#: .\app\views\winchallenge.py:124
 msgid "Overlay design saved."
 msgstr ""
 
-#: .\app\views\winchallenge.py:170
+#: .\app\views\winchallenge.py:172
 msgid "Unknown autosave form."
 msgstr ""
 
-#: .\app\views\winchallenge.py:200
+#: .\app\views\winchallenge.py:202
 #, python-format
 msgid "Win Challenge deleted: %(name)s"
 msgstr ""
 
-#: .\app\views\winchallenge.py:213
+#: .\app\views\winchallenge.py:215
 #, python-format
 msgid "Win Challenge duplicated: %(name)s"
 msgstr ""
 
-#: .\app\views\winchallenge.py:280 .\app\views\winchallenge.py:283
+#: .\app\views\winchallenge.py:282 .\app\views\winchallenge.py:285
 msgid "Invalid win change."
 msgstr ""
 
-#: .\app\views\winchallenge.py:315
+#: .\app\views\winchallenge.py:317
 msgid "Game name is required."
 msgstr ""
 

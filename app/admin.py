@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from app.models import (
     OverlayAsset,
+    OverlayPreset,
     OverlayVersion,
     ScoreOverlay,
     ScoreParticipant,
@@ -37,6 +38,14 @@ class OverlayVersionAdmin(admin.ModelAdmin):
         "reason",
         "created_at",
     )
+
+
+@admin.register(OverlayPreset)
+class OverlayPresetAdmin(admin.ModelAdmin):
+    list_display = ("name", "owner", "updated_at")
+    list_filter = ("owner",)
+    search_fields = ("name", "owner__username")
+    readonly_fields = ("created_at", "updated_at")
 
     def has_add_permission(self, request):
         return False

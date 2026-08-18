@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from PIL import Image
 
-from app import overlay_versions
+from app import overlay_presets, overlay_versions
 from app.forms import (
     ScoreOverlayForm,
     SpotifyOverlayForm,
@@ -22,6 +22,7 @@ from app.forms import (
 )
 from app.models import (
     OverlayAsset,
+    OverlayPreset,
     OverlayVersion,
     ScoreOverlay,
     ScoreParticipant,
@@ -695,6 +696,128 @@ class OverlayVersionTests(TestCase):
         versions = overlay_versions.versions_for(self.spotify)
         self.assertEqual(versions.count(), 30)
         self.assertEqual(versions.first().snapshot["payload"]["overlay"]["name"], "Version 34")
+
+
+class OverlayPresetTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="preset-owner")
+        self.other_user = User.objects.create_user(username="preset-other")
+        self.client.force_login(self.user)
+        self.goal = TwitchGoalOverlay.objects.create(
+            owner=self.user,
+            name="Goal",
+            background_color="#111111",
+            border_color="#222222",
+            background_opacity=50,
+            border_width=24,
+            corner_radius=100,
+            font_family=TwitchGoalOverlay.FONT_GEORGIA,
+        )
+
+    def score_with_participants(self, name="Target"):
+        score = ScoreOverlay.objects.create(owner=self.user, name=name)
+        ScoreParticipant.objects.create(overlay=score, name="Alice", sort_order=0)
+        ScoreParticipant.objects.create(overlay=score, name="Bob", sort_order=1)
+        return score
+
+    def test_preset_applies_across_overlay_types(self):
+        self.client.post(
+            reverse("preset_save"),
+            {"overlay_type": "twitch_goal", "pk": self.goal.pk, "name": "My Style"},
+        )
+        preset = OverlayPreset.objects.get(owner=self.user, name="My Style")
+        score = self.score_with_participants()
+
+        response = self.client.post(
+            reverse("preset_apply", args=["score", score.pk]),
+            {"preset_id": preset.pk},
+        )
+
+        score.refresh_from_db()
+        self.assertRedirects(response, reverse("score_manage", args=[score.pk]))
+        self.assertEqual(score.background_color, "#111111")
+        self.assertEqual(score.border_color, "#222222")
+        self.assertEqual(score.background_opacity, 50)
+        self.assertEqual(score.font_family, TwitchGoalOverlay.FONT_GEORGIA)
+        # Score allows up to 24/80, so the TwitchGoal source values fit unclamped.
+        self.assertEqual(score.border_width, 24)
+        self.assertEqual(score.corner_radius, 80)
+
+    def test_apply_clamps_values_to_the_target_types_own_bounds(self):
+        preset = OverlayPreset.objects.create(
+            owner=self.user,
+            name="Bold",
+            style=overlay_presets.capture_style(self.goal),
+        )
+        challenge = WinChallenge.objects.create(owner=self.user, title="Target Challenge")
+
+        self.client.post(
+            reverse("preset_apply", args=["winchallenge", challenge.pk]),
+            {"preset_id": preset.pk},
+        )
+
+        challenge.refresh_from_db()
+        # WinChallenge caps border_width at 12 and corner_radius at 64.
+        self.assertEqual(challenge.border_width, 12)
+        self.assertEqual(challenge.corner_radius, 64)
+
+    def test_apply_records_a_pre_apply_version_for_recovery(self):
+        preset = OverlayPreset.objects.create(
+            owner=self.user,
+            name="Bold",
+            style=overlay_presets.capture_style(self.goal),
+        )
+        score = self.score_with_participants()
+        original_color = score.background_color
+
+        self.client.post(
+            reverse("preset_apply", args=["score", score.pk]),
+            {"preset_id": preset.pk},
+        )
+
+        versions = overlay_versions.versions_for(score)
+        self.assertEqual(versions.count(), 2)
+        pre_apply_version = versions.last()
+        self.assertEqual(
+            pre_apply_version.snapshot["payload"]["overlay"]["background_color"],
+            original_color,
+        )
+
+    def test_another_users_preset_or_overlay_returns_404(self):
+        foreign_preset = OverlayPreset.objects.create(
+            owner=self.other_user,
+            name="Foreign",
+            style=overlay_presets.capture_style(self.goal),
+        )
+        foreign_score = ScoreOverlay.objects.create(owner=self.other_user, name="Foreign Score")
+        own_score = ScoreOverlay.objects.create(owner=self.user, name="Own Score")
+
+        apply_on_foreign_overlay = self.client.post(
+            reverse("preset_apply", args=["score", foreign_score.pk]),
+            {"preset_id": foreign_preset.pk},
+        )
+        apply_foreign_preset = self.client.post(
+            reverse("preset_apply", args=["score", own_score.pk]),
+            {"preset_id": foreign_preset.pk},
+        )
+        delete_foreign_preset = self.client.post(reverse("preset_delete", args=[foreign_preset.pk]))
+
+        self.assertEqual(apply_on_foreign_overlay.status_code, 404)
+        self.assertEqual(apply_foreign_preset.status_code, 404)
+        self.assertEqual(delete_foreign_preset.status_code, 404)
+        self.assertTrue(OverlayPreset.objects.filter(pk=foreign_preset.pk).exists())
+
+    def test_preset_delete_removes_it_from_the_gallery(self):
+        preset = OverlayPreset.objects.create(
+            owner=self.user,
+            name="Bold",
+            style=overlay_presets.capture_style(self.goal),
+        )
+
+        response = self.client.post(reverse("preset_delete", args=[preset.pk]))
+
+        self.assertRedirects(response, reverse("preset_list"))
+        self.assertFalse(OverlayPreset.objects.filter(pk=preset.pk).exists())
 
 
 class OverlayTransferTests(TestCase):

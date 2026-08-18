@@ -72,6 +72,13 @@
                             {% trans "My overlays" %}
                         </a>
                         <a
+                            class="btn glass-design header-nav__link{% if current_url == 'preset_list' %} is-active{% endif %}"
+                            href="{% url 'preset_list' %}"
+                            {% if current_url == 'preset_list' %}aria-current="page"{% endif %}
+                        >
+                            {% trans "Templates" %}
+                        </a>
+                        <a
                             class="btn glass-design header-nav__link{% if current_url == 'demo' %} is-active{% endif %}"
                             href="{% url 'demo' %}"
                             {% if current_url == 'demo' %}aria-current="page"{% endif %}
