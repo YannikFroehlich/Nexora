@@ -304,6 +304,80 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
                 self.assertLessEqual(canvas_box["y"] + canvas_box["height"], height + 0.5)
                 source_context.close()
 
+    def test_twitch_goal_editor_uses_eight_direction_resize_handles(self):
+        page = self.context.new_page()
+        page.goto(self.live_server_url + reverse("twitch_goal_manage", args=[self.goal.pk]))
+
+        selected = page.locator(".twitch-goal-element.is-selected")
+        expect(selected).to_be_visible()
+        handles = selected.locator(".goal-resize-handle")
+        self.assertEqual(handles.count(), 8)
+        self.assertEqual(
+            set(handles.evaluate_all("nodes => nodes.map((node) => node.dataset.resizeHandle)")),
+            {"n", "ne", "e", "se", "s", "sw", "w", "nw"},
+        )
+        expect(selected).to_have_css("overflow", "visible")
+
+        elements_input = page.locator("[data-elements-input]")
+        selected_id = selected.get_attribute("data-element-id")
+        before = next(
+            element
+            for element in json.loads(elements_input.input_value())
+            if element["id"] == selected_id
+        )
+        northwest = selected.locator(".goal-resize-handle--nw")
+        handle_box = northwest.bounding_box()
+        self.assertIsNotNone(handle_box)
+        page.mouse.move(
+            handle_box["x"] + handle_box["width"] / 2,
+            handle_box["y"] + handle_box["height"] / 2,
+        )
+        page.mouse.down()
+        page.mouse.move(
+            handle_box["x"] + handle_box["width"] / 2 + 18,
+            handle_box["y"] + handle_box["height"] / 2 + 18,
+            steps=5,
+        )
+        page.mouse.up()
+
+        page.wait_for_function(
+            """
+            ([elementId, oldX, oldY]) => {
+                const input = document.querySelector('[data-elements-input]');
+                const element = JSON.parse(input.value).find((item) => item.id === elementId);
+                return element.x > oldX && element.y > oldY;
+            }
+            """,
+            arg=[selected_id, before["x"], before["y"]],
+        )
+        after = next(
+            element
+            for element in json.loads(elements_input.input_value())
+            if element["id"] == selected_id
+        )
+        self.assertGreater(after["x"], before["x"])
+        self.assertGreater(after["y"], before["y"])
+        self.assertLess(after["width"], before["width"])
+        self.assertLess(after["height"], before["height"])
+
+    def test_twitch_goal_grid_toggle_matches_the_editor_switch_pattern(self):
+        page = self.context.new_page()
+        page.goto(self.live_server_url + reverse("twitch_goal_manage", args=[self.goal.pk]))
+
+        toggle = page.locator(".goal-grid-toggle")
+        checkbox = toggle.locator("[data-grid-toggle]")
+        control = toggle.locator(".goal-grid-toggle__control")
+        knob = control.locator("i")
+        expect(toggle).to_be_visible()
+        expect(control).to_have_css("width", "39px")
+        expect(control).to_have_css("height", "22px")
+        expect(control).to_have_css("background-color", "rgb(148, 163, 184)")
+
+        control.click()
+        expect(checkbox).to_be_checked()
+        expect(control).to_have_css("background-color", "rgb(92, 22, 197)")
+        expect(knob).to_have_css("transform", "matrix(1, 0, 0, 1, 17, 0)")
+
     def test_twitch_goal_celebration_replays_once_and_respects_reduced_motion(self):
         editor = self.context.new_page()
         editor.goto(self.live_server_url + reverse("twitch_goal_manage", args=[self.goal.pk]))

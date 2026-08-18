@@ -192,7 +192,17 @@
         </div>
 
         <aside class="goal-preview-panel">
-            <div class="goal-preview-heading"><div><small>{% translate "Responsive preview" %}</small><h2>{% translate "Drag and resize elements" %}</h2></div><label><input type="checkbox" data-grid-toggle> {% translate "Snap 10 px" %}</label></div>
+            <div class="goal-preview-heading">
+                <div><small>{% translate "Responsive preview" %}</small><h2>{% translate "Drag and resize elements" %}</h2></div>
+                <label class="goal-grid-toggle">
+                    <input type="checkbox" data-grid-toggle>
+                    <span class="goal-grid-toggle__control" aria-hidden="true"><i></i></span>
+                    <span>
+                        <strong>{% translate "Snap to grid" %}</strong>
+                        <small>{% translate "Show a grid and align movements to it." %}</small>
+                    </span>
+                </label>
+            </div>
             <div class="goal-preview-modes" role="group" aria-label="{% translate 'Preview data' %}">
                 <button type="button" class="is-active" data-preview-mode="sample">{% translate "Sample data" %}</button>
                 {% if not is_create %}<button type="button" data-preview-mode="live">{% translate "Live Twitch data" %}</button>{% endif %}
