@@ -29,6 +29,7 @@ from app.models import (
     SpotifyConnection,
     SpotifyOverlay,
     TimerOverlay,
+    TwitchConnection,
     TwitchGoalOverlay,
     WinChallenge,
     WinChallengeGame,
@@ -2436,6 +2437,7 @@ class AccessControlTests(TestCase):
         protected_urls = (
             reverse("overlay_dashboard"),
             reverse("overlay_import"),
+            reverse("account_settings"),
             reverse("spotify_list"),
             reverse("spotify_create"),
             reverse("spotify_autosave", args=[self.owner_spotify.pk]),
@@ -2636,3 +2638,105 @@ class SignUpTests(TestCase):
         )
 
         self.assertRedirects(response, reverse("home"))
+
+
+class AccountSettingsTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="account-owner", password="Old-Password-2026!"
+        )
+        self.client.force_login(self.user)
+
+    def test_get_renders_all_three_forms(self):
+        response = self.client.get(reverse("account_settings"))
+
+        self.assertContains(response, reverse("account_email_update"))
+        self.assertContains(response, reverse("account_password_change"))
+        self.assertContains(response, reverse("account_delete"))
+
+    def test_email_can_be_updated(self):
+        response = self.client.post(reverse("account_email_update"), {"email": "owner@example.com"})
+
+        self.user.refresh_from_db()
+        self.assertRedirects(response, reverse("account_settings"))
+        self.assertEqual(self.user.email, "owner@example.com")
+
+    def test_email_update_rejects_case_insensitive_duplicate(self):
+        User.objects.create_user(username="other", email="Taken@Example.com")
+
+        response = self.client.post(reverse("account_email_update"), {"email": "taken@example.com"})
+
+        self.user.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("email", response.context["email_form"].errors)
+        self.assertEqual(self.user.email, "")
+
+    def test_password_change_keeps_the_session_authenticated(self):
+        response = self.client.post(
+            reverse("account_password_change"),
+            {
+                "old_password": "Old-Password-2026!",
+                "new_password1": "New-Password-2026!",
+                "new_password2": "New-Password-2026!",
+            },
+        )
+
+        self.assertRedirects(response, reverse("account_settings"))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("New-Password-2026!"))
+        # A logged-out session would be redirected to login instead of getting the page directly.
+        self.assertEqual(self.client.get(reverse("account_settings")).status_code, 200)
+
+    def test_password_change_rejects_wrong_current_password(self):
+        response = self.client.post(
+            reverse("account_password_change"),
+            {
+                "old_password": "wrong-password",
+                "new_password1": "New-Password-2026!",
+                "new_password2": "New-Password-2026!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("Old-Password-2026!"))
+
+    def test_delete_rejects_wrong_password(self):
+        response = self.client.post(reverse("account_delete"), {"password": "wrong-password"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(User.objects.filter(pk=self.user.pk).exists())
+
+    def test_delete_removes_owned_data_and_logs_out(self):
+        SpotifyOverlay.objects.create(owner=self.user, name="Owner Spotify")
+        ScoreOverlay.objects.create(owner=self.user, name="Owner Score")
+        TimerOverlay.objects.create(owner=self.user, name="Owner Timer")
+        WinChallenge.objects.create(owner=self.user, title="Owner Challenge")
+        OverlayPreset.objects.create(owner=self.user, name="Preset", style={})
+        TwitchConnection.objects.create(
+            owner=self.user, access_token="secret", refresh_token="secret"
+        )
+        SpotifyConnection.objects.create(owner=self.user)
+        asset = OverlayAsset.objects.create(
+            owner=self.user, kind="image", name="Logo", file=uploaded_png()
+        )
+
+        with patch("app.views.account.twitch_api.disconnect") as mock_disconnect:
+            response = self.client.post(
+                reverse("account_delete"), {"password": "Old-Password-2026!"}
+            )
+
+        mock_disconnect.assert_called_once()
+        # user.delete() clears the in-memory pk afterwards, so compare by username instead.
+        self.assertEqual(mock_disconnect.call_args.args[0].username, self.user.username)
+        self.assertRedirects(response, reverse("home"))
+        self.assertFalse(User.objects.filter(pk=self.user.pk).exists())
+        self.assertFalse(SpotifyOverlay.objects.filter(owner_id=self.user.pk).exists())
+        self.assertFalse(ScoreOverlay.objects.filter(owner_id=self.user.pk).exists())
+        self.assertFalse(TimerOverlay.objects.filter(owner_id=self.user.pk).exists())
+        self.assertFalse(WinChallenge.objects.filter(owner_id=self.user.pk).exists())
+        self.assertFalse(OverlayPreset.objects.filter(owner_id=self.user.pk).exists())
+        self.assertFalse(TwitchConnection.objects.filter(owner_id=self.user.pk).exists())
+        self.assertFalse(SpotifyConnection.objects.filter(owner_id=self.user.pk).exists())
+        self.assertFalse(OverlayAsset.objects.filter(pk=asset.pk).exists())
+        self.assertEqual(self.client.get(reverse("account_settings")).status_code, 302)

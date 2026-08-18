@@ -100,6 +100,9 @@
                             <span class="account-user" title="{% translate 'Signed in as' %} {{ user.get_username }}">
                                 {{ user.get_username }}
                             </span>
+                            <a class="btn glass-design account-button" href="{% url 'account_settings' %}">
+                                {% translate "Account" %}
+                            </a>
                             <form class="account-logout" action="{% url 'logout' %}" method="post">
                                 {% csrf_token %}
                                 <button class="btn glass-design account-button" type="submit">

@@ -4,6 +4,12 @@
 from django.utils import timezone
 
 from app import spotify_api
+from app.views.account import (
+    account_delete,
+    account_email_update,
+    account_password_change,
+    account_settings,
+)
 from app.views.common import overlay_asset_file
 from app.views.dashboard import (
     overlay_asset_upload,
@@ -95,6 +101,10 @@ from app.views.winchallenge import (
 
 __all__ = [
     "about",
+    "account_delete",
+    "account_email_update",
+    "account_password_change",
+    "account_settings",
     "demo",
     "home",
     "overlay_asset_file",

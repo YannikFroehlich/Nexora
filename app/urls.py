@@ -24,6 +24,18 @@ urlpatterns = [
         name="logout",
     ),
     path("accounts/signup/", views.signup, name="signup"),
+    path("accounts/settings/", views.account_settings, name="account_settings"),
+    path(
+        "accounts/settings/email/",
+        views.account_email_update,
+        name="account_email_update",
+    ),
+    path(
+        "accounts/settings/password/",
+        views.account_password_change,
+        name="account_password_change",
+    ),
+    path("accounts/delete/", views.account_delete, name="account_delete"),
     path("overlays/", views.overlay_dashboard, name="overlay_dashboard"),
     path("overlays/import/", views.overlay_import, name="overlay_import"),
     path("overlays/assets/upload/", views.overlay_asset_upload, name="overlay_asset_upload"),

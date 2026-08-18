@@ -3,7 +3,7 @@ import re
 
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, UserCreationForm
 from django.utils.translation import gettext_lazy as _
 
 from app.models import (
@@ -167,6 +167,91 @@ class SignUpForm(UserCreationForm):
             }
         )
         _prepare_accessible_auth_fields(self)
+
+
+class AccountEmailForm(forms.ModelForm):
+    """Update the email address on the signed-in user's account."""
+
+    class Meta:
+        model = get_user_model()
+        fields = ("email",)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].required = False
+        self.fields["email"].widget.attrs.update(
+            {
+                "class": BASE_INPUT_CLASS,
+                "autocomplete": "email",
+            }
+        )
+        _prepare_accessible_auth_fields(self)
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        if not email:
+            return email
+        exists = (
+            get_user_model()
+            .objects.exclude(pk=self.instance.pk)
+            .filter(email__iexact=email)
+            .exists()
+        )
+        if exists:
+            raise forms.ValidationError(_("This email address is already in use."))
+        return email
+
+
+class AccountPasswordChangeForm(PasswordChangeForm):
+    """Styled password-change form for the account settings page."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["old_password"].widget.attrs.update(
+            {
+                "class": BASE_INPUT_CLASS,
+                "autocomplete": "current-password",
+            }
+        )
+        self.fields["new_password1"].widget.attrs.update(
+            {
+                "class": BASE_INPUT_CLASS,
+                "autocomplete": "new-password",
+            }
+        )
+        self.fields["new_password2"].widget.attrs.update(
+            {
+                "class": BASE_INPUT_CLASS,
+                "autocomplete": "new-password",
+            }
+        )
+        _prepare_accessible_auth_fields(self)
+
+
+class AccountDeleteForm(forms.Form):
+    """Confirm the current password before permanently deleting an account."""
+
+    password = forms.CharField(
+        label=_("Password"),
+        strip=False,
+        widget=forms.PasswordInput(
+            attrs={
+                "class": BASE_INPUT_CLASS,
+                "autocomplete": "current-password",
+            }
+        ),
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+        _prepare_accessible_auth_fields(self)
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+        if not self.user.check_password(password):
+            raise forms.ValidationError(_("This password is incorrect."))
+        return password
 
 
 class OverlayImportForm(forms.Form):

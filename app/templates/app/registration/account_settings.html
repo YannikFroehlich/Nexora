@@ -1,0 +1,164 @@
+{% extends "app/base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% translate "Account settings" %} · Nexora{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li aria-current="page">{% translate "Account settings" %}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <section class="settings-page" aria-labelledby="account-settings-title">
+        <div class="settings-header">
+            <p class="auth-kicker">{% translate "Nexora account" %}</p>
+            <h1 id="account-settings-title">{% translate "Account settings" %}</h1>
+            <p>{% translate "Update your email address, change your password or permanently delete your account." %}</p>
+        </div>
+
+        {% if messages %}
+            <div class="auth-messages" role="status" aria-live="polite" aria-atomic="true">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="settings-cards">
+            <div class="auth-card glass-design card">
+                <h2>{% translate "Email address" %}</h2>
+                <p>{% translate "Used to identify your account. Sign-in still uses your username." %}</p>
+                <form class="auth-form" method="post" action="{% url 'account_email_update' %}">
+                    {% csrf_token %}
+
+                    {% if email_form.errors %}
+                        <div class="auth-error-summary" role="alert" tabindex="-1" data-error-summary>
+                            <h2>{% translate "Check your entries" %}</h2>
+                            <ul>
+                                {% for field in email_form %}
+                                    {% for error in field.errors %}
+                                        <li><a href="#{{ field.auto_id }}">{{ field.label }}: {{ error }}</a></li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in email_form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% for field in email_form %}
+                        <div class="auth-field">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="auth-field__errors" id="{{ field.auto_id }}_error">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <button class="btn action-button auth-submit" type="submit">
+                        {% translate "Save email" %}
+                    </button>
+                </form>
+            </div>
+
+            <div class="auth-card glass-design card">
+                <h2>{% translate "Change password" %}</h2>
+                <form class="auth-form" method="post" action="{% url 'account_password_change' %}">
+                    {% csrf_token %}
+
+                    {% if password_form.errors %}
+                        <div class="auth-error-summary" role="alert" tabindex="-1" data-error-summary>
+                            <h2>{% translate "Check your entries" %}</h2>
+                            <ul>
+                                {% for field in password_form %}
+                                    {% for error in field.errors %}
+                                        <li><a href="#{{ field.auto_id }}">{{ field.label }}: {{ error }}</a></li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in password_form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% for field in password_form %}
+                        <div class="auth-field">
+                            <label for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                                <span class="auth-required" aria-hidden="true">*</span><span class="sr-only">{% translate "Required" %}</span>
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="auth-help" id="{{ field.auto_id }}_helptext">{{ field.help_text|safe }}</div>
+                            {% endif %}
+                            {% if field.errors %}
+                                <div class="auth-field__errors" id="{{ field.auto_id }}_error">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <button class="btn action-button auth-submit" type="submit">
+                        {% translate "Change password" %}
+                    </button>
+                </form>
+            </div>
+
+            <div class="auth-card glass-design card auth-card--danger">
+                <h2>{% translate "Delete account" %}</h2>
+                <p>
+                    {% translate "This permanently deletes your account together with all overlays, templates, uploaded assets, saved versions and connected Spotify/Twitch data. This cannot be undone." %}
+                </p>
+                <p>
+                    {% translate "Twitch access is revoked automatically. Spotify cannot be revoked from here — remove Nexora from your Spotify account's connected apps as well." %}
+                </p>
+                <form
+                    class="auth-form"
+                    method="post"
+                    action="{% url 'account_delete' %}"
+                    data-confirm-action="{% translate 'Delete your account permanently? This cannot be undone.' %}"
+                >
+                    {% csrf_token %}
+
+                    {% if delete_form.errors %}
+                        <div class="auth-error-summary" role="alert" tabindex="-1" data-error-summary>
+                            <h2>{% translate "Check your entries" %}</h2>
+                            <ul>
+                                {% for field in delete_form %}
+                                    {% for error in field.errors %}
+                                        <li><a href="#{{ field.auto_id }}">{{ field.label }}: {{ error }}</a></li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in delete_form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% for field in delete_form %}
+                        <div class="auth-field">
+                            <label for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                                <span class="auth-required" aria-hidden="true">*</span><span class="sr-only">{% translate "Required" %}</span>
+                            </label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="auth-field__errors" id="{{ field.auto_id }}_error">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <button class="btn auth-danger-button auth-submit" type="submit">
+                        {% translate "Delete my account" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+{% endblock %}
