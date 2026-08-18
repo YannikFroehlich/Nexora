@@ -6,7 +6,12 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from app import overlay_transfer
-from app.forms import ScoreOverlayForm, SpotifyOverlayForm, TimerOverlayForm
+from app.forms import (
+    ScoreOverlayForm,
+    SpotifyOverlayForm,
+    TimerOverlayForm,
+    TwitchGoalOverlayForm,
+)
 from app.models import (
     OverlayAsset,
     OverlayVersion,
@@ -14,6 +19,7 @@ from app.models import (
     ScoreParticipant,
     SpotifyOverlay,
     TimerOverlay,
+    TwitchGoalOverlay,
     WinChallenge,
     WinChallengeGame,
 )
@@ -35,6 +41,8 @@ def overlay_type_for(overlay):
         return overlay_transfer.SCORE_TYPE
     if isinstance(overlay, WinChallenge):
         return overlay_transfer.WINCHALLENGE_TYPE
+    if isinstance(overlay, TwitchGoalOverlay):
+        return overlay_transfer.TWITCH_GOAL_TYPE
     raise TypeError("Unsupported overlay model")
 
 
@@ -233,8 +241,6 @@ def _restore_winchallenge(overlay, payload, assets):
 
 
 def _restore_score(overlay, payload, assets):
-    overlay_data = copy.deepcopy(payload["overlay"])
-    overlay_data.setdefault("font_family", overlay.FONT_SYSTEM)
     participants_data = payload["participants"]
     if (
         not isinstance(participants_data, list)
@@ -244,6 +250,10 @@ def _restore_score(overlay, payload, assets):
     ):
         raise OverlayVersionError("Invalid Score HUD version")
 
+    overlay_data = overlay_transfer._score_layout_mode_with_defaults(
+        payload["overlay"],
+        participants_data,
+    )
     form_data = copy.deepcopy(overlay_data)
     form_data["elements"] = json.dumps(
         form_data["elements"],
@@ -278,6 +288,25 @@ def _restore_score(overlay, payload, assets):
     return restored
 
 
+def _restore_twitch_goal(overlay, payload, assets):
+    form_data = copy.deepcopy(payload["overlay"])
+    form_data.setdefault("font_family", overlay.FONT_SYSTEM)
+    form_data["elements"] = json.dumps(
+        form_data["elements"],
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    form_data.update(_branding_data(overlay.owner, assets))
+    form = TwitchGoalOverlayForm(
+        data=form_data,
+        instance=overlay,
+        asset_owner=overlay.owner,
+    )
+    if not form.is_valid():
+        raise OverlayVersionError("Invalid Twitch goal version")
+    return form.save()
+
+
 @transaction.atomic
 def restore_version(overlay, version):
     overlay_type = overlay_type_for(overlay)
@@ -302,6 +331,8 @@ def restore_version(overlay, version):
         restored = _restore_timer(overlay, payload, assets)
     elif isinstance(overlay, WinChallenge):
         restored = _restore_winchallenge(overlay, payload, assets)
+    elif isinstance(overlay, TwitchGoalOverlay):
+        restored = _restore_twitch_goal(overlay, payload, assets)
     else:
         restored = _restore_score(overlay, payload, assets)
 

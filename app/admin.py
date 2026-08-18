@@ -8,6 +8,8 @@ from app.models import (
     SpotifyConnection,
     SpotifyOverlay,
     TimerOverlay,
+    TwitchConnection,
+    TwitchGoalOverlay,
     WinChallenge,
     WinChallengeGame,
 )
@@ -81,8 +83,15 @@ class ScoreParticipantInline(admin.TabularInline):
 @admin.register(ScoreOverlay)
 class ScoreOverlayAdmin(admin.ModelAdmin):
     inlines = (ScoreParticipantInline,)
-    list_display = ("display_name", "owner", "canvas_size", "participant_count", "updated_at")
-    list_filter = ("allow_negative_scores", "background_opacity", "owner")
+    list_display = (
+        "display_name",
+        "owner",
+        "layout_mode",
+        "canvas_size",
+        "participant_count",
+        "updated_at",
+    )
+    list_filter = ("layout_mode", "allow_negative_scores", "background_opacity", "owner")
     search_fields = ("name", "public_token", "owner__username")
     readonly_fields = ("public_token", "created_at", "updated_at")
 
@@ -139,6 +148,79 @@ class SpotifyConnectionAdmin(admin.ModelAdmin):
 
     @admin.display(boolean=True, description="Spotify connected")
     def spotify_connected(self, obj):
+        return obj.is_connected
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(TwitchGoalOverlay)
+class TwitchGoalOverlayAdmin(admin.ModelAdmin):
+    list_display = (
+        "display_name",
+        "owner",
+        "goal_type",
+        "progress_mode",
+        "target_value",
+        "twitch_connected",
+        "updated_at",
+    )
+    list_select_related = ("connection",)
+    list_filter = ("goal_type", "progress_mode", "layout_mode", "animation_type", "owner")
+    search_fields = ("name", "title", "public_token", "owner__username")
+    readonly_fields = (
+        "public_token",
+        "connection",
+        "campaign_baseline",
+        "goal_revision",
+        "celebrated_revision",
+        "last_observed_progress",
+        "celebration_sequence",
+        "completed_at",
+        "created_at",
+        "updated_at",
+    )
+
+    @admin.display(boolean=True, description="Twitch connected")
+    def twitch_connected(self, obj):
+        return bool(obj.connection_id and obj.connection.is_connected)
+
+
+@admin.register(TwitchConnection)
+class TwitchConnectionAdmin(admin.ModelAdmin):
+    list_display = (
+        "owner",
+        "display_name",
+        "twitch_connected",
+        "validated_at",
+        "follower_cached_at",
+        "subscription_cached_at",
+    )
+    search_fields = ("owner__username", "twitch_login", "display_name", "twitch_user_id")
+    exclude = ("access_token", "refresh_token")
+    readonly_fields = (
+        "owner",
+        "token_expires_at",
+        "scopes",
+        "twitch_user_id",
+        "twitch_login",
+        "display_name",
+        "profile_image_url",
+        "connected_at",
+        "validated_at",
+        "follower_count",
+        "follower_cached_at",
+        "subscription_count",
+        "subscription_points",
+        "subscription_cached_at",
+        "last_error",
+        "needs_reconnect",
+        "created_at",
+        "updated_at",
+    )
+
+    @admin.display(boolean=True, description="Twitch connected")
+    def twitch_connected(self, obj):
         return obj.is_connected
 
     def has_add_permission(self, request):

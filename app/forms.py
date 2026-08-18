@@ -7,11 +7,13 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.utils.translation import gettext_lazy as _
 
 from app.models import (
+    GOAL_LAYOUT_DIMENSIONS,
     OverlayAsset,
     ScoreOverlay,
     ScoreParticipant,
     SpotifyOverlay,
     TimerOverlay,
+    TwitchGoalOverlay,
     WinChallenge,
     WinChallengeGame,
 )
@@ -704,6 +706,7 @@ class ScoreOverlayForm(forms.ModelForm):
         model = ScoreOverlay
         fields = (
             "name",
+            "layout_mode",
             "canvas_width",
             "canvas_height",
             "background_color",
@@ -737,6 +740,7 @@ class ScoreOverlayForm(forms.ModelForm):
             "name": forms.TextInput(
                 attrs={"class": BASE_INPUT_CLASS, "placeholder": _("Score HUD")}
             ),
+            "layout_mode": forms.HiddenInput(attrs={"data-layout-mode-input": ""}),
             "canvas_width": forms.NumberInput(
                 attrs={"class": BASE_INPUT_CLASS, "min": 320, "max": 1920, "step": 1}
             ),
@@ -896,6 +900,7 @@ class ScoreOverlayCreateForm(ScoreOverlayForm):
             "name",
             "player_one_name",
             "player_two_name",
+            "layout_mode",
             "canvas_width",
             "canvas_height",
             "background_color",
@@ -956,6 +961,276 @@ class ScoreParticipantForm(forms.ModelForm):
 
     def clean_name(self):
         return self.cleaned_data["name"].strip()
+
+
+class TwitchGoalOverlayForm(forms.ModelForm):
+    """Twitch goal settings and the JSON layout maintained by the canvas editor."""
+
+    ALLOWED_ELEMENT_TYPES = {
+        "title",
+        "channel_name",
+        "channel_avatar",
+        "current",
+        "target",
+        "progress_text",
+        "percentage",
+        "remaining",
+        "progress_bar",
+        "progress_ring",
+        "logo",
+        "icon",
+    }
+    ELEMENT_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+    elements = forms.CharField(widget=forms.HiddenInput(attrs={"data-elements-input": ""}))
+
+    class Meta:
+        model = TwitchGoalOverlay
+        fields = (
+            "name",
+            "title",
+            "goal_type",
+            "subscription_metric",
+            "progress_mode",
+            "target_value",
+            "layout_mode",
+            "canvas_width",
+            "canvas_height",
+            "background_color",
+            "background_opacity",
+            "text_color",
+            "accent_color",
+            "secondary_color",
+            "track_color",
+            "border_color",
+            "border_width",
+            "corner_radius",
+            "use_gradient",
+            "shadow_enabled",
+            "number_prefix",
+            "number_suffix",
+            "elements",
+            "animation_type",
+            "animation_duration",
+            "animation_intensity",
+            "animation_primary_color",
+            "animation_secondary_color",
+            "sound_type",
+            "sound_volume",
+            "font_family",
+            "font_asset",
+            "logo_asset",
+            "background_asset",
+        )
+        labels = {
+            "name": _("Overlay name"),
+            "title": _("Goal title"),
+            "goal_type": _("Goal type"),
+            "subscription_metric": _("Subscription value"),
+            "progress_mode": _("Counting mode"),
+            "target_value": _("Target value"),
+            "layout_mode": _("Layout"),
+            "canvas_width": _("Canvas width"),
+            "canvas_height": _("Canvas height"),
+            "background_color": _("Background color"),
+            "background_opacity": _("Background opacity"),
+            "text_color": _("Text color"),
+            "accent_color": _("Accent color"),
+            "secondary_color": _("Secondary color"),
+            "track_color": _("Progress track color"),
+            "border_color": _("Border color"),
+            "border_width": _("Border width"),
+            "corner_radius": _("Corner radius"),
+            "use_gradient": _("Use progress gradient"),
+            "shadow_enabled": _("Show shadow"),
+            "number_prefix": _("Number prefix"),
+            "number_suffix": _("Number suffix"),
+            "animation_type": _("Goal animation"),
+            "animation_duration": _("Animation duration"),
+            "animation_intensity": _("Animation intensity"),
+            "animation_primary_color": _("Animation primary color"),
+            "animation_secondary_color": _("Animation secondary color"),
+            "sound_type": _("Celebration sound"),
+            "sound_volume": _("Sound volume"),
+        }
+        widgets = {
+            "name": forms.TextInput(attrs={"class": BASE_INPUT_CLASS}),
+            "title": forms.TextInput(attrs={"class": BASE_INPUT_CLASS}),
+            "goal_type": forms.Select(attrs={"class": BASE_INPUT_CLASS, "data-goal-type": ""}),
+            "subscription_metric": forms.Select(
+                attrs={"class": BASE_INPUT_CLASS, "data-subscription-metric": ""}
+            ),
+            "progress_mode": forms.Select(
+                attrs={"class": BASE_INPUT_CLASS, "data-progress-mode": ""}
+            ),
+            "target_value": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 1, "max": 999999999999}
+            ),
+            "layout_mode": forms.Select(attrs={"class": BASE_INPUT_CLASS, "data-layout-mode": ""}),
+            "canvas_width": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 240, "max": 1920}
+            ),
+            "canvas_height": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 100, "max": 1080}
+            ),
+            "background_color": ColorInput(attrs={"class": "color-control"}),
+            "background_opacity": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 100}
+            ),
+            "text_color": ColorInput(attrs={"class": "color-control"}),
+            "accent_color": ColorInput(attrs={"class": "color-control"}),
+            "secondary_color": ColorInput(attrs={"class": "color-control"}),
+            "track_color": ColorInput(attrs={"class": "color-control"}),
+            "border_color": ColorInput(attrs={"class": "color-control"}),
+            "border_width": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 24}
+            ),
+            "corner_radius": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 100}
+            ),
+            "use_gradient": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "shadow_enabled": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "number_prefix": forms.TextInput(attrs={"class": BASE_INPUT_CLASS}),
+            "number_suffix": forms.TextInput(attrs={"class": BASE_INPUT_CLASS}),
+            "animation_type": forms.Select(
+                attrs={"class": BASE_INPUT_CLASS, "data-animation-type": ""}
+            ),
+            "animation_duration": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 1, "max": 10}
+            ),
+            "animation_intensity": forms.Select(attrs={"class": BASE_INPUT_CLASS}),
+            "animation_primary_color": ColorInput(attrs={"class": "color-control"}),
+            "animation_secondary_color": ColorInput(attrs={"class": "color-control"}),
+            "sound_type": forms.Select(attrs={"class": BASE_INPUT_CLASS, "data-sound-type": ""}),
+            "sound_volume": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 100}
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        asset_owner = kwargs.pop("asset_owner", None)
+        super().__init__(*args, **kwargs)
+        _configure_branding_fields(self, asset_owner)
+        self.fields["name"].required = False
+        self.fields["title"].required = False
+        self.fields["number_prefix"].required = False
+        self.fields["number_suffix"].required = False
+        self._original_definition = (
+            (
+                self.instance.goal_type,
+                self.instance.subscription_metric,
+                self.instance.progress_mode,
+                self.instance.target_value,
+            )
+            if self.instance.pk
+            else None
+        )
+        if not self.is_bound:
+            self.initial["elements"] = json.dumps(
+                self.instance.elements,
+                ensure_ascii=False,
+                separators=(",", ":"),
+            )
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip() or "Twitch Goal"
+
+    def clean_title(self):
+        return self.cleaned_data["title"].strip()
+
+    def clean_number_prefix(self):
+        return self.cleaned_data["number_prefix"].strip()
+
+    def clean_number_suffix(self):
+        return self.cleaned_data["number_suffix"].strip()
+
+    def clean_font_family(self):
+        return _selected_font_family(self)
+
+    @staticmethod
+    def _integer(element, field, minimum, maximum, default):
+        try:
+            value = int(element.get(field, default))
+        except (TypeError, ValueError):
+            value = default
+        return max(minimum, min(value, maximum))
+
+    def clean_elements(self):
+        try:
+            raw_elements = json.loads(self.cleaned_data["elements"])
+        except (TypeError, ValueError, json.JSONDecodeError) as error:
+            raise forms.ValidationError(_("The element layout is invalid.")) from error
+        if not isinstance(raw_elements, list) or len(raw_elements) > 30:
+            raise forms.ValidationError(_("The element layout must contain at most 30 items."))
+        normalized = []
+        used_ids = set()
+        for raw in raw_elements:
+            if not isinstance(raw, dict):
+                raise forms.ValidationError(_("Every overlay element must be an object."))
+            element_id = str(raw.get("id", ""))
+            element_type = str(raw.get("type", ""))
+            if not self.ELEMENT_ID_PATTERN.fullmatch(element_id) or element_id in used_ids:
+                raise forms.ValidationError(_("Every overlay element needs a unique valid ID."))
+            if element_type not in self.ALLOWED_ELEMENT_TYPES:
+                raise forms.ValidationError(_("An unknown goal element was submitted."))
+            used_ids.add(element_id)
+            normalized.append(
+                {
+                    "id": element_id,
+                    "type": element_type,
+                    "x": self._integer(raw, "x", 0, 1920, 0),
+                    "y": self._integer(raw, "y", 0, 1080, 0),
+                    "width": self._integer(raw, "width", 20, 1920, 120),
+                    "height": self._integer(raw, "height", 16, 1080, 40),
+                    "font_size": self._integer(raw, "font_size", 8, 160, 20),
+                    "font_weight": self._integer(raw, "font_weight", 100, 900, 700),
+                    "color": self._normalize_color(raw.get("color"), "#ffffff"),
+                    "background_color": self._normalize_color(
+                        raw.get("background_color"), "#27213f"
+                    ),
+                    "border_radius": self._integer(raw, "border_radius", 0, 999, 12),
+                    "text_align": raw.get("text_align")
+                    if raw.get("text_align") in {"left", "center", "right"}
+                    else "left",
+                    "z_index": self._integer(raw, "z_index", 0, 100, 1),
+                    "visible": raw.get("visible", True) is not False,
+                    "stroke_width": self._integer(raw, "stroke_width", 2, 30, 9),
+                }
+            )
+        return normalized
+
+    @staticmethod
+    def _normalize_color(value, default):
+        value = str(value or "")
+        return value.lower() if re.fullmatch(r"#[0-9A-Fa-f]{6}", value) else default
+
+    def clean(self):
+        cleaned = super().clean()
+        layout = cleaned.get("layout_mode")
+        if layout in GOAL_LAYOUT_DIMENSIONS and layout != TwitchGoalOverlay.LAYOUT_CUSTOM:
+            width, height = GOAL_LAYOUT_DIMENSIONS[layout]
+            cleaned["canvas_width"] = width
+            cleaned["canvas_height"] = height
+        if cleaned.get("goal_type") == TwitchGoalOverlay.GOAL_FOLLOWERS:
+            cleaned["subscription_metric"] = TwitchGoalOverlay.METRIC_SUBSCRIPTIONS
+        return cleaned
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        new_definition = (
+            instance.goal_type,
+            instance.subscription_metric,
+            instance.progress_mode,
+            instance.target_value,
+        )
+        if self._original_definition is not None and new_definition != self._original_definition:
+            instance.goal_revision += 1
+            instance.campaign_baseline = None
+            instance.last_observed_progress = None
+            instance.completed_at = None
+        if commit:
+            instance.save()
+            self._save_m2m()
+        return instance
 
 
 class TimerOverlayForm(forms.ModelForm):

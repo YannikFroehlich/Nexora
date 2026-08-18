@@ -7,7 +7,7 @@
 }
 
 .score-page {
-    width: min(1180px, calc(100% - 48px));
+    width: min(1600px, calc(100% - 48px));
     margin: 0 auto;
     padding: 58px 0 100px;
 }
@@ -21,7 +21,6 @@
     align-items: flex-end;
     justify-content: space-between;
     gap: 32px;
-    max-width: 1020px;
     margin-bottom: 42px;
 }
 
@@ -72,6 +71,9 @@
 }
 
 .danger-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     border: 1px solid rgba(185, 28, 28, 0.3);
     background: rgba(254, 242, 242, 0.82);
     color: #b91c1c;
@@ -85,7 +87,7 @@
 
 .score-editor-layout {
     display: grid;
-    grid-template-columns: minmax(410px, 560px) minmax(0, 1fr);
+    grid-template-columns: minmax(390px, 500px) minmax(0, 1fr);
     align-items: start;
     gap: 22px;
 }
@@ -112,6 +114,8 @@
     position: sticky;
     top: 26px;
     min-width: 0;
+    max-height: calc(100vh - 52px);
+    overflow: auto;
     padding: 28px;
 }
 
@@ -254,15 +258,15 @@
 
 .score-participant-list {
     display: grid;
-    gap: 10px;
+    gap: 12px;
     margin-bottom: 16px;
 }
 
 .score-participant-row {
     display: grid;
-    grid-template-columns: 42px minmax(0, 1fr) 58px auto;
+    grid-template-columns: 42px minmax(0, 1fr) 58px;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     padding: 11px;
     border: 1px solid rgba(100, 116, 139, 0.18);
     border-radius: 15px;
@@ -302,22 +306,48 @@
 
 .score-participant-row__actions {
     display: flex;
-    gap: 5px;
+    flex-wrap: wrap;
+    grid-column: 2 / 4;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 .score-icon-button {
-    display: grid;
-    width: 32px;
-    height: 32px;
+    display: inline-grid;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
     place-items: center;
     border: 1px solid rgba(2, 132, 199, 0.24);
-    border-radius: 10px;
+    border-radius: 12px;
     background: rgba(240, 249, 255, 0.8);
     color: var(--score-accent-strong);
     font: inherit;
-    font-size: 0.78rem;
     font-weight: 900;
     cursor: pointer;
+    transition:
+        border-color 160ms ease,
+        background 160ms ease,
+        color 160ms ease,
+        transform 160ms ease;
+}
+
+.score-icon-button:hover,
+.score-icon-button:focus-visible {
+    border-color: rgba(2, 132, 199, 0.52);
+    background: rgba(224, 242, 254, 0.96);
+    transform: translateY(-1px);
+}
+
+.score-icon-button__icon,
+.score-button-icon {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
 }
 
 .score-icon-button--delete {
@@ -325,18 +355,29 @@
     color: #b91c1c;
 }
 
+.score-icon-button--delete:hover,
+.score-icon-button--delete:focus-visible {
+    border-color: rgba(185, 28, 28, 0.48);
+    background: rgba(254, 226, 226, 0.96);
+}
+
 .score-add-form {
     display: grid;
     gap: 12px;
     margin-top: 14px;
+    margin-bottom: 22px;
     padding-top: 14px;
     border-top: 1px solid rgba(100, 116, 139, 0.18);
+}
+
+.score-add-form + [data-reset-all] {
+    justify-self: start;
 }
 
 .obs-copy {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 9px;
+    gap: 12px;
     margin-bottom: 10px;
 }
 
@@ -353,7 +394,7 @@
 .score-save-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 9px;
+    gap: 12px;
 }
 
 .selected-element-empty {
@@ -376,7 +417,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
+    gap: 12px 14px;
     margin-bottom: 14px;
 }
 
@@ -532,20 +573,42 @@
 }
 
 .score-overlay-canvas {
+    --score-preview-scale: 1;
+    --score-handle-size: 15px;
+    --score-handle-offset: -12px;
+    --score-handle-corner-offset: -12px;
+    --score-handle-border-width: 2px;
+    --score-handle-shadow-y: 2px;
+    --score-handle-shadow-blur: 7px;
+    --score-outline-width: 2px;
+    --score-outline-offset: 3px;
+    --score-outline-glow: 7px;
     position: absolute;
     width: var(--score-canvas-width);
     height: var(--score-canvas-height);
     overflow: hidden;
     border-radius: var(--score-canvas-radius);
-    background: var(--score-canvas-background);
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background-color: var(--score-canvas-background);
+    box-shadow: none;
+    font-family: var(--nexora-overlay-font, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     transform-origin: top left;
+}
+
+.score-overlay-canvas[data-score-layout-mode="broadcast_duel"],
+.score-overlay-canvas[data-score-layout-mode="broadcast_list"] {
+    overflow: visible !important;
+}
+
+.score-overlay-elements {
+    position: absolute;
+    z-index: 5;
+    inset: 0;
+    pointer-events: none;
 }
 
 .score-overlay-canvas::after {
     position: absolute;
-    z-index: 20;
+    z-index: 30;
     inset: 0;
     box-sizing: border-box;
     border: var(--score-canvas-border-width) solid var(--score-canvas-border-color);
@@ -554,8 +617,49 @@
     content: "";
 }
 
+.score-overlay-canvas .overlay-custom-logo {
+    z-index: 35;
+}
+
+.score-overlay-versus {
+    position: absolute;
+    left: 50%;
+    top: 100px;
+    z-index: 4;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04)),
+        rgba(8, 13, 26, 0.94);
+    color: rgba(255, 255, 255, 0.84);
+    font-size: 0.74rem;
+    font-weight: 950;
+    letter-spacing: 0;
+    line-height: 1;
+    box-shadow:
+        0 14px 32px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.score-overlay-canvas[data-score-layout-mode="broadcast_duel"] .score-overlay-versus {
+    display: flex;
+}
+
+.score-overlay-canvas[data-score-layout-mode="broadcast_list"] .score-overlay-versus,
+.score-overlay-canvas[data-score-layout-mode="custom"] .score-overlay-versus {
+    display: none;
+}
+
 .score-overlay-canvas--editor {
     --score-grid-size: 10px;
+    overflow: visible;
     user-select: none;
 }
 
@@ -581,9 +685,12 @@
     padding: 0 10px;
     line-height: 1.08;
     white-space: nowrap;
+    pointer-events: auto;
 }
 
-.score-overlay-element > span {
+.score-overlay-element__text {
+    position: relative;
+    z-index: 1;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -593,10 +700,14 @@
     justify-content: center;
     padding: 0;
     background:
-        radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.28), transparent 34%),
-        var(--score-participant-accent);
+        radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.4), transparent 34%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.12), transparent 42%),
+        var(--score-participant-accent, var(--score-element-background));
     font-weight: 950;
     letter-spacing: 0;
+    box-shadow:
+        0 18px 34px rgba(0, 0, 0, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .score-overlay-element--participant_image img {
@@ -606,13 +717,69 @@
 }
 
 .score-overlay-element--participant_name {
+    isolation: isolate;
+    padding-inline: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 42%),
+        rgba(7, 12, 24, 0.94);
+    box-shadow:
+        0 16px 32px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.09);
     font-weight: 850;
 }
 
+.score-overlay-element--participant_name::before {
+    position: absolute;
+    left: 0;
+    top: 9px;
+    bottom: 9px;
+    z-index: 0;
+    width: 5px;
+    border-radius: 999px;
+    background: var(--score-participant-accent, var(--score-element-background));
+    box-shadow: 0 0 18px var(--score-participant-accent, var(--score-element-background));
+    content: "";
+}
+
+.score-overlay-element--participant_name[data-text-align="right"]::before {
+    right: 0;
+    left: auto;
+}
+
 .score-overlay-element--participant_score {
+    justify-content: center;
+    padding-inline: 8px;
+    background:
+        radial-gradient(circle at 50% 6%, rgba(255, 255, 255, 0.38), transparent 38%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.16), transparent 42%),
+        var(--score-participant-accent, var(--score-element-background));
+    box-shadow:
+        0 20px 38px rgba(0, 0, 0, 0.34),
+        0 0 28px color-mix(in srgb, var(--score-participant-accent, #38bdf8) 30%, transparent),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
     font-weight: 950;
     letter-spacing: 0;
     text-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+}
+
+.score-overlay-element--participant_score.is-score-updated {
+    animation: scorePulse 620ms cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+@keyframes scorePulse {
+    0% {
+        filter: brightness(1);
+        transform: scale(1);
+    }
+    36% {
+        filter: brightness(1.28);
+        transform: scale(1.14);
+    }
+    100% {
+        filter: brightness(1);
+        transform: scale(1);
+    }
 }
 
 .score-overlay-canvas--editor .score-overlay-element {
@@ -627,21 +794,21 @@
 
 .score-overlay-canvas--editor .score-overlay-element.is-selected {
     overflow: visible;
-    outline: 2px solid var(--score-accent);
-    outline-offset: 3px;
-    box-shadow: 0 0 0 7px rgba(56, 189, 248, 0.13);
+    outline: var(--score-outline-width) solid var(--score-accent);
+    outline-offset: var(--score-outline-offset);
+    box-shadow: 0 0 0 var(--score-outline-glow) rgba(56, 189, 248, 0.13);
 }
 
 .score-resize-handle {
     position: absolute;
     z-index: 5;
-    width: 12px;
-    height: 12px;
+    width: var(--score-handle-size);
+    height: var(--score-handle-size);
     box-sizing: border-box;
-    border: 2px solid var(--score-ink);
+    border: var(--score-handle-border-width) solid var(--score-ink);
     border-radius: 50%;
     background: var(--score-accent);
-    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.28);
+    box-shadow: 0 var(--score-handle-shadow-y) var(--score-handle-shadow-blur) rgba(0, 0, 0, 0.28);
     pointer-events: auto;
 }
 
@@ -652,8 +819,8 @@
     transform: translateX(-50%);
 }
 
-.score-resize-handle--n { top: -8px; }
-.score-resize-handle--s { bottom: -8px; }
+.score-resize-handle--n { top: var(--score-handle-offset); }
+.score-resize-handle--s { bottom: var(--score-handle-offset); }
 
 .score-resize-handle--e,
 .score-resize-handle--w {
@@ -662,16 +829,16 @@
     transform: translateY(-50%);
 }
 
-.score-resize-handle--e { right: -8px; }
-.score-resize-handle--w { left: -8px; }
+.score-resize-handle--e { right: var(--score-handle-offset); }
+.score-resize-handle--w { left: var(--score-handle-offset); }
 .score-resize-handle--ne,
 .score-resize-handle--sw { cursor: nesw-resize; }
 .score-resize-handle--nw,
 .score-resize-handle--se { cursor: nwse-resize; }
-.score-resize-handle--ne { top: -9px; right: -9px; }
-.score-resize-handle--nw { top: -9px; left: -9px; }
-.score-resize-handle--se { right: -9px; bottom: -9px; }
-.score-resize-handle--sw { bottom: -9px; left: -9px; }
+.score-resize-handle--ne { top: var(--score-handle-corner-offset); right: var(--score-handle-corner-offset); }
+.score-resize-handle--nw { top: var(--score-handle-corner-offset); left: var(--score-handle-corner-offset); }
+.score-resize-handle--se { right: var(--score-handle-corner-offset); bottom: var(--score-handle-corner-offset); }
+.score-resize-handle--sw { bottom: var(--score-handle-corner-offset); left: var(--score-handle-corner-offset); }
 
 .copy-toast {
     position: fixed;
@@ -711,7 +878,13 @@ body.score-overlay-source {
     top: auto !important;
     left: auto !important;
     transform: none !important;
-    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42);
+    box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .score-overlay-element--participant_score.is-score-updated {
+        animation: none;
+    }
 }
 
 body.theme-dark .score-panel,
@@ -736,7 +909,7 @@ body.theme-dark .score-background-settings {
         rgba(15, 23, 42, 0.76);
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 1280px) {
     .score-editor-layout {
         grid-template-columns: 1fr;
     }

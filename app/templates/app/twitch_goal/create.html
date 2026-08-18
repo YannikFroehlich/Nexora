@@ -1,0 +1,226 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% if is_create %}{% translate "Create Twitch Goal" %}{% else %}{{ overlay.display_name }}{% endif %}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/twitch-goal.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li><a href="{% url 'overlay_dashboard' %}#twitch-goal-overlays">{% translate "My overlays" %}</a></li>
+            <li aria-current="page">{% if is_create %}{% translate "Create" %}{% else %}{% translate "Edit" %}{% endif %}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<div
+    class="goal-page"
+    data-twitch-goal-editor
+    data-overlay-branding-editor
+    data-editor-state
+    data-editor-create="{{ is_create|yesno:'true,false' }}"
+    data-editor-draft-key="nexora:draft:twitch-goal:{{ user.pk }}:{% if is_create %}new{% else %}{{ overlay.pk }}{% endif %}"
+    {% if not is_create %}data-state-url="{% url 'twitch_goal_overlay_state' overlay.public_token %}"{% endif %}
+    data-status-saved="{% if is_create %}{% translate 'No unsaved changes' %}{% else %}{% translate 'All changes saved' %}{% endif %}"
+    data-status-unsaved="{% translate 'Unsaved changes' %}"
+    data-status-saving="{% translate 'Saving changes...' %}"
+    data-status-failed="{% translate 'Autosave failed. Use the save button to try again.' %}"
+    data-status-draft-saved="{% translate 'Draft saved locally' %}"
+    data-status-draft-restored="{% translate 'Local draft restored' %}"
+>
+    <section class="goal-hero">
+        <div>
+            <p class="goal-kicker">Nexora · Twitch Goals</p>
+            <h1>{% if is_create %}{% translate "Create a Twitch goal" %}{% else %}{% translate "Edit Twitch goal" %}{% endif %}</h1>
+            <p>{% translate "Build a responsive follower or subscription goal and celebrate the milestone live in OBS." %}</p>
+        </div>
+        <a class="btn glass-design" href="{% url 'overlay_dashboard' %}#twitch-goal-overlays">{% translate "Back to my overlays" %}</a>
+    </section>
+
+    {% include "app/partials/_editor_state_toolbar.html" %}
+
+    {% if messages %}<div class="message-stack" role="status">{% for message in messages %}<p class="message-stack__item message-stack__item--{{ message.tags }}">{{ message }}</p>{% endfor %}</div>{% endif %}
+
+    <form
+        class="goal-editor-layout"
+        method="post"
+        novalidate
+        data-goal-form
+        data-editor-state-form
+        data-editor-form-key="twitch-goal"
+        {% if not is_create %}data-autosave-url="{% url 'twitch_goal_autosave' overlay.pk %}"{% endif %}
+    >
+        {% csrf_token %}
+        {{ form.elements }}
+        <div class="goal-editor-sidebar">
+            {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+            {{ form.elements.errors }}
+
+            <section class="goal-panel">
+                <div class="goal-panel__heading"><span>01</span><div><small>{% translate "Goal" %}</small><h2>{% translate "Goal settings" %}</h2></div></div>
+                <div class="goal-field-grid">
+                    <div class="form-field goal-field-wide"><label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>{{ form.name }}{{ form.name.errors }}</div>
+                    <div class="form-field goal-field-wide"><label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>{{ form.title }}{{ form.title.errors }}</div>
+                    <div class="form-field"><label for="{{ form.goal_type.id_for_label }}">{{ form.goal_type.label }}</label>{{ form.goal_type }}{{ form.goal_type.errors }}</div>
+                    <div class="form-field" data-subscription-metric-field><label for="{{ form.subscription_metric.id_for_label }}">{{ form.subscription_metric.label }}</label>{{ form.subscription_metric }}{{ form.subscription_metric.errors }}</div>
+                    <div class="form-field"><label for="{{ form.progress_mode.id_for_label }}">{{ form.progress_mode.label }}</label>{{ form.progress_mode }}{{ form.progress_mode.errors }}</div>
+                    <div class="form-field"><label for="{{ form.target_value.id_for_label }}">{{ form.target_value.label }}</label>{{ form.target_value }}{{ form.target_value.errors }}</div>
+                    <div class="form-field"><label for="{{ form.number_prefix.id_for_label }}">{{ form.number_prefix.label }}</label>{{ form.number_prefix }}</div>
+                    <div class="form-field"><label for="{{ form.number_suffix.id_for_label }}">{{ form.number_suffix.label }}</label>{{ form.number_suffix }}</div>
+                </div>
+                {% if not is_create %}
+                    <div data-campaign-reset-container{% if overlay.progress_mode != "campaign" %} hidden{% endif %}>
+                        <button class="btn glass-design" type="button" data-campaign-reset-url="{% url 'twitch_goal_campaign_reset' overlay.pk %}" data-campaign-reset>{% translate "Start / reset campaign here" %}</button>
+                    </div>
+                {% endif %}
+            </section>
+
+            {% if not is_create %}
+            <section class="goal-panel">
+                <div class="goal-panel__heading"><span>02</span><div><small>{% translate "Live data" %}</small><h2>{% translate "Twitch connection" %}</h2></div></div>
+                {% if twitch_connection and twitch_connection.is_connected %}
+                    <div class="goal-connection{% if not twitch_connection.needs_reconnect %} is-connected{% endif %}"><i></i><div><strong>{{ twitch_connection.display_name|default:twitch_connection.twitch_login }}</strong><small>{% if twitch_connection.needs_reconnect %}{% translate "Reconnect required" %}{% elif has_required_scope %}{% translate "Ready for this goal" %}{% else %}{% translate "Additional permission required" %}{% endif %}</small></div></div>
+                    {% if twitch_connection.last_error %}<div class="goal-stale-warning" role="status"><strong>{% translate "Last known value is being shown" %}</strong><span>{{ twitch_connection.last_error }}</span></div>{% endif %}
+                    {% if twitch_connection.needs_reconnect %}<a class="btn goal-twitch-button" href="{% url 'twitch_connect' overlay.pk %}">{% translate "Reconnect Twitch" %}</a>{% elif not has_required_scope %}<a class="btn goal-twitch-button" href="{% url 'twitch_connect' overlay.pk %}">{% translate "Extend Twitch permission" %}</a>{% endif %}
+                    <button class="btn glass-design" type="submit" form="twitch-disconnect-form">{% translate "Disconnect Twitch" %}</button>
+                {% elif twitch_configured %}
+                    <div class="goal-connection"><i></i><div><strong>{% translate "Not connected" %}</strong><small>{% translate "Connect the broadcaster whose goal should be shown." %}</small></div></div>
+                    <a class="btn goal-twitch-button" href="{% url 'twitch_connect' overlay.pk %}">{% translate "Connect with Twitch" %}</a>
+                {% else %}
+                    <div class="config-hint"><strong>{% translate "Twitch credentials are missing" %}</strong><p>TWITCH_CLIENT_ID · TWITCH_CLIENT_SECRET · TWITCH_REDIRECT_URI</p></div>
+                {% endif %}
+            </section>
+            {% endif %}
+
+            <section class="goal-panel">
+                <div class="goal-panel__heading"><span>03</span><div><small>{% translate "Layout" %}</small><h2>{% translate "Responsive canvas" %}</h2></div></div>
+                <div class="goal-field-grid">
+                    <div class="form-field goal-field-wide"><label for="{{ form.layout_mode.id_for_label }}">{{ form.layout_mode.label }}</label>{{ form.layout_mode }}{{ form.layout_mode.errors }}</div>
+                    <div class="form-field"><label for="{{ form.canvas_width.id_for_label }}">{{ form.canvas_width.label }}</label>{{ form.canvas_width }}</div>
+                    <div class="form-field"><label for="{{ form.canvas_height.id_for_label }}">{{ form.canvas_height.label }}</label>{{ form.canvas_height }}</div>
+                </div>
+                <div class="goal-preset-row">
+                    <button type="button" data-apply-layout="horizontal">{% translate "Horizontal" %}</button>
+                    <button type="button" data-apply-layout="compact">{% translate "Compact" %}</button>
+                    <button type="button" data-apply-layout="card">{% translate "Card" %}</button>
+                    <button type="button" data-apply-layout="radial">{% translate "Radial" %}</button>
+                </div>
+            </section>
+
+            <section class="goal-panel">
+                <div class="goal-panel__heading"><span>04</span><div><small>{% translate "Style" %}</small><h2>{% translate "Colors and surface" %}</h2></div></div>
+                <div class="goal-field-grid goal-color-grid">
+                    {% for field in form %}{% if field.name == "background_color" or field.name == "text_color" or field.name == "accent_color" or field.name == "secondary_color" or field.name == "track_color" or field.name == "border_color" %}<div class="form-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endif %}{% endfor %}
+                    <div class="form-field"><label for="{{ form.background_opacity.id_for_label }}">{{ form.background_opacity.label }}</label>{{ form.background_opacity }}</div>
+                    <div class="form-field"><label for="{{ form.border_width.id_for_label }}">{{ form.border_width.label }}</label>{{ form.border_width }}</div>
+                    <div class="form-field"><label for="{{ form.corner_radius.id_for_label }}">{{ form.corner_radius.label }}</label>{{ form.corner_radius }}</div>
+                </div>
+                <div class="goal-toggle-row"><label>{{ form.use_gradient }}<span>{{ form.use_gradient.label }}</span></label><label>{{ form.shadow_enabled }}<span>{{ form.shadow_enabled.label }}</span></label></div>
+            </section>
+
+            {% include "app/partials/_overlay_branding_controls.html" with branding_form=form %}
+
+            <section class="goal-panel">
+                <div class="goal-panel__heading"><span>05</span><div><small>{% translate "Elements" %}</small><h2>{% translate "Canvas elements" %}</h2></div></div>
+                <div class="goal-element-palette">
+                    <button type="button" data-add-element="title">{% translate "Title" %}</button>
+                    <button type="button" data-add-element="channel_name">{% translate "Channel" %}</button>
+                    <button type="button" data-add-element="channel_avatar">{% translate "Avatar" %}</button>
+                    <button type="button" data-add-element="current">{% translate "Current" %}</button>
+                    <button type="button" data-add-element="target">{% translate "Target" %}</button>
+                    <button type="button" data-add-element="progress_text">{% translate "Progress text" %}</button>
+                    <button type="button" data-add-element="percentage">%</button>
+                    <button type="button" data-add-element="remaining">{% translate "Remaining" %}</button>
+                    <button type="button" data-add-element="progress_bar">{% translate "Bar" %}</button>
+                    <button type="button" data-add-element="progress_ring">{% translate "Ring" %}</button>
+                    <button type="button" data-add-element="logo">{% translate "Logo" %}</button>
+                    <button type="button" data-add-element="icon">{% translate "Icon" %}</button>
+                </div>
+                <div class="goal-element-list" data-element-list></div>
+                <div class="goal-selected-controls" data-selected-controls hidden>
+                    <h3 data-selected-title>{% translate "Selected element" %}</h3>
+                    <div class="goal-field-grid goal-geometry-grid">
+                        <label>X<input class="form-control" type="number" data-element-property="x"></label>
+                        <label>Y<input class="form-control" type="number" data-element-property="y"></label>
+                        <label>W<input class="form-control" type="number" data-element-property="width"></label>
+                        <label>H<input class="form-control" type="number" data-element-property="height"></label>
+                        <label>{% translate "Text" %}<input class="form-control" type="number" data-element-property="font_size"></label>
+                        <label>{% translate "Weight" %}<input class="form-control" type="number" min="100" max="900" step="100" data-element-property="font_weight"></label>
+                        <label>{% translate "Color" %}<input class="color-control" type="color" data-element-property="color"></label>
+                        <label>{% translate "Track" %}<input class="color-control" type="color" data-element-property="background_color"></label>
+                        <label>{% translate "Radius" %}<input class="form-control" type="number" data-element-property="border_radius"></label>
+                        <label>{% translate "Layer" %}<input class="form-control" type="number" min="0" max="100" data-element-property="z_index"></label>
+                        <label>{% translate "Ring width" %}<input class="form-control" type="number" min="2" max="30" data-element-property="stroke_width"></label>
+                        <label>{% translate "Align" %}<select class="form-control" data-element-property="text_align"><option value="left">{% translate "Left" %}</option><option value="center">{% translate "Center" %}</option><option value="right">{% translate "Right" %}</option></select></label>
+                        <label class="goal-visible-control"><input type="checkbox" data-element-property="visible"> {% translate "Visible" %}</label>
+                    </div>
+                    <div class="goal-selected-actions"><button class="btn glass-design" type="button" data-layer-up>{% translate "Bring forward" %}</button><button class="btn glass-design" type="button" data-layer-down>{% translate "Send backward" %}</button><button class="btn danger-button" type="button" data-delete-element>{% translate "Remove" %}</button></div>
+                </div>
+            </section>
+
+            <section class="goal-panel">
+                <div class="goal-panel__heading"><span>06</span><div><small>{% translate "Celebration" %}</small><h2>{% translate "Animation and sound" %}</h2></div></div>
+                <div class="goal-field-grid">
+                    <div class="form-field"><label for="{{ form.animation_type.id_for_label }}">{{ form.animation_type.label }}</label>{{ form.animation_type }}</div>
+                    <div class="form-field"><label for="{{ form.animation_intensity.id_for_label }}">{{ form.animation_intensity.label }}</label>{{ form.animation_intensity }}</div>
+                    <div class="form-field"><label for="{{ form.animation_duration.id_for_label }}">{{ form.animation_duration.label }}</label>{{ form.animation_duration }}</div>
+                    <div class="form-field"><label for="{{ form.sound_type.id_for_label }}">{{ form.sound_type.label }}</label>{{ form.sound_type }}</div>
+                    <div class="form-field"><label for="{{ form.sound_volume.id_for_label }}">{{ form.sound_volume.label }}</label>{{ form.sound_volume }}</div>
+                    <div class="form-field"><label for="{{ form.animation_primary_color.id_for_label }}">{{ form.animation_primary_color.label }}</label>{{ form.animation_primary_color }}</div>
+                    <div class="form-field"><label for="{{ form.animation_secondary_color.id_for_label }}">{{ form.animation_secondary_color.label }}</label>{{ form.animation_secondary_color }}</div>
+                </div>
+                <div class="goal-action-row"><button class="btn glass-design" type="button" data-test-celebration>{% translate "Preview celebration" %}</button>{% if not is_create %}<button class="btn goal-twitch-button" type="button" data-replay-url="{% url 'twitch_goal_replay' overlay.pk %}" data-replay-obs>{% translate "Play in OBS" %}</button>{% endif %}</div>
+            </section>
+
+            {% if not is_create %}
+            <section class="goal-panel">
+                <div class="goal-panel__heading"><span>07</span><div><small>OBS</small><h2>{% translate "Browser source" %}</h2></div></div>
+                <div class="goal-obs-copy"><input class="form-control" value="{{ obs_url }}" readonly><button class="btn action-button" type="button" data-copy-url="{{ obs_url }}">{% translate "Copy link" %}</button></div>
+                <p>{% translate "Recommended source size" %}: <strong><span data-source-width>{{ overlay.browser_source_width }}</span> × <span data-source-height>{{ overlay.browser_source_height }}</span> px</strong></p>
+                <button class="btn glass-design" type="submit" form="goal-renew-form">{% translate "Renew OBS link" %}</button>
+            </section>
+            {% endif %}
+
+            <div class="goal-save-row"><button class="btn action-button" type="submit">{% if is_create %}{% translate "Create overlay" %}{% else %}{% translate "Save changes" %}{% endif %}</button>{% if not is_create %}<button class="btn danger-button" type="submit" form="goal-delete-form">{% translate "Delete overlay" %}</button>{% endif %}</div>
+        </div>
+
+        <aside class="goal-preview-panel">
+            <div class="goal-preview-heading"><div><small>{% translate "Responsive preview" %}</small><h2>{% translate "Drag and resize elements" %}</h2></div><label><input type="checkbox" data-grid-toggle> {% translate "Snap 10 px" %}</label></div>
+            <div class="goal-preview-modes" role="group" aria-label="{% translate 'Preview data' %}">
+                <button type="button" class="is-active" data-preview-mode="sample">{% translate "Sample data" %}</button>
+                {% if not is_create %}<button type="button" data-preview-mode="live">{% translate "Live Twitch data" %}</button>{% endif %}
+                <span data-preview-status aria-live="polite"></span>
+            </div>
+            <div class="goal-preview-stage" data-goal-preview data-goal-scale-shell>
+                {% include "app/twitch_goal/_overlay.html" with state=sample_state is_editor=True %}
+                <canvas class="twitch-celebration-canvas" data-celebration-canvas aria-hidden="true"></canvas>
+            </div>
+            <p class="goal-preview-meta"><span data-preview-width>{{ overlay.canvas_width }}</span> × <span data-preview-height>{{ overlay.canvas_height }}</span> px</p>
+        </aside>
+    </form>
+
+    <form id="overlay-asset-upload-form" action="{% url 'overlay_asset_upload' %}" method="post" enctype="multipart/form-data">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"></form>
+    {% if not is_create %}
+        {% include "app/partials/_overlay_version_history.html" %}
+        <form id="twitch-disconnect-form" action="{% url 'twitch_disconnect' %}" method="post">{% csrf_token %}<input type="hidden" name="next" value="{% url 'twitch_goal_manage' overlay.pk %}"></form>
+        <form id="goal-renew-form" action="{% url 'twitch_goal_renew_obs_link' overlay.pk %}" method="post" data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'twitch_goal_manage' overlay.pk %}"></form>
+        <form id="goal-delete-form" action="{% url 'twitch_goal_delete' overlay.pk %}" method="post" data-confirm-message="{% translate 'Delete this Twitch goal overlay?' %}">{% csrf_token %}</form>
+    {% endif %}
+    {{ sample_state|json_script:"twitch-goal-sample-state" }}
+    {{ layout_templates|json_script:"twitch-goal-layout-templates" }}
+    <p class="copy-toast" data-copy-toast role="status" hidden>{% translate "OBS link copied" %}</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/twitch-goal.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
+{% endblock %}

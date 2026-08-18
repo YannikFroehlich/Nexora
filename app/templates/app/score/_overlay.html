@@ -1,8 +1,14 @@
 {% load i18n %}
 
+{% if overlay.font_asset_id %}
+    <style>@font-face { font-family: "NexoraUploadedOverlayFont"; src: url("{{ overlay.font_asset.public_url }}"); font-display: swap; }</style>
+{% endif %}
+
 <div
     class="score-overlay-canvas{% if is_editor %} score-overlay-canvas--editor{% endif %}"
     data-score-canvas
+    data-score-layout-mode="{{ overlay.layout_mode }}"
+    data-overlay-branding-root
     data-fallback-image-label="{% translate 'No image' %}"
     style="
         --score-canvas-width: {{ overlay.canvas_width }}px;
@@ -11,5 +17,13 @@
         --score-canvas-border-color: {{ overlay.border_color }};
         --score-canvas-border-width: {{ overlay.border_width }}px;
         --score-canvas-radius: {{ overlay.corner_radius }}px;
+        --nexora-overlay-font: {% if overlay.font_asset_id %}'NexoraUploadedOverlayFont'{% else %}{{ overlay.font_css_stack }}{% endif %};
+        {% if overlay.background_asset_id %}--nexora-overlay-background-image: url("{{ overlay.background_asset.public_url }}");{% endif %}
     "
-></div>
+>
+    {% if overlay.logo_asset_id %}
+        <img class="overlay-custom-logo" src="{{ overlay.logo_asset.public_url }}" alt="" data-overlay-custom-logo>
+    {% endif %}
+    <span class="score-overlay-versus" data-score-versus aria-hidden="true">VS</span>
+    <div class="score-overlay-elements" data-score-elements-layer></div>
+</div>

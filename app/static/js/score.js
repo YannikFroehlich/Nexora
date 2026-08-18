@@ -7,17 +7,31 @@
     const resizeDirections = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
     const sourceExtraWidth = 80;
     const sourceExtraHeight = 96;
+    const layoutModes = Object.freeze({
+        duel: "broadcast_duel",
+        list: "broadcast_list",
+        custom: "custom",
+    });
+    const iconPaths = Object.freeze({
+        minus: ["M5 12h14"],
+        plus: ["M12 5v14", "M5 12h14"],
+        reset: ["M3 12a9 9 0 1 0 3-6.7", "M3 5v6h6"],
+        save: ["M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z", "M17 21v-8H7v8", "M7 3v5h8"],
+        delete: ["M3 6h18", "M8 6V4h8v2", "M19 6l-1 14H6L5 6", "M10 11v6", "M14 11v6"],
+    });
 
     const defaultState = () => ({
         name: "Score HUD",
+        layout_mode: layoutModes.duel,
         canvas_width: 960,
-        canvas_height: 240,
+        canvas_height: 200,
         background_color: "#0f172a",
-        background_opacity: 72,
+        background_opacity: 0,
         border_color: "#38bdf8",
-        border_width: 1,
-        corner_radius: 28,
+        border_width: 0,
+        corner_radius: 0,
         elements: [],
+        layout_templates: {},
         participants: [
             {id: "slot-1", name: "Player 1", score: 0, accent_color: "#38bdf8", initials: "P1", image_url: ""},
             {id: "slot-2", name: "Player 2", score: 0, accent_color: "#fb7185", initials: "P2", image_url: ""},
@@ -40,12 +54,18 @@
         }
     };
 
+    const normalizeLayoutMode = (mode) => {
+        if (mode === "duel") return layoutModes.duel;
+        if (mode === "list") return layoutModes.list;
+        return Object.values(layoutModes).includes(mode) ? mode : layoutModes.custom;
+    };
+
     const hexToRgba = (hex, opacity) => {
         const normalized = /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : "#0f172a";
         const red = Number.parseInt(normalized.slice(1, 3), 16);
         const green = Number.parseInt(normalized.slice(3, 5), 16);
         const blue = Number.parseInt(normalized.slice(5, 7), 16);
-        return `rgba(${red}, ${green}, ${blue}, ${clamp(number(opacity, 72), 0, 100) / 100})`;
+        return `rgba(${red}, ${green}, ${blue}, ${clamp(number(opacity, 0), 0, 100) / 100})`;
     };
 
     const participantMap = (participants) => new Map(participants.map((participant) => [
@@ -63,6 +83,20 @@
         return `${participant?.name || "Participant"} - ${typeLabels[element.type] || element.type}`;
     };
 
+    const createIcon = (iconName) => {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.classList.add("score-icon-button__icon");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("aria-hidden", "true");
+        svg.setAttribute("focusable", "false");
+        (iconPaths[iconName] || []).forEach((pathData) => {
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", pathData);
+            svg.append(path);
+        });
+        return svg;
+    };
+
     const createElementContent = (node, element, participant) => {
         if (element.type === "participant_image") {
             if (participant?.image_url) {
@@ -72,6 +106,7 @@
                 node.append(image);
             } else {
                 const initials = document.createElement("span");
+                initials.className = "score-overlay-element__text";
                 initials.textContent = participant?.initials || "?";
                 node.append(initials);
             }
@@ -79,15 +114,30 @@
         }
 
         const text = document.createElement("span");
+        text.className = "score-overlay-element__text";
         text.textContent = element.type === "participant_score"
             ? String(participant?.score ?? 0)
             : (participant?.name || "");
         node.append(text);
     };
 
-    const renderElements = (canvas, elements, participants, editor = false, selectedId = null) => {
+    const scoreFontSize = (baseSize, score) => {
+        const base = number(baseSize, 42);
+        const length = String(score ?? 0).length;
+        return clamp(base - Math.max(length - 3, 0) * 6, 24, base);
+    };
+
+    const renderElements = (
+        canvas,
+        elements,
+        participants,
+        editor = false,
+        selectedId = null,
+        changedParticipantIds = new Set(),
+    ) => {
         const participantsById = participantMap(participants);
-        canvas.replaceChildren();
+        const layer = canvas.querySelector("[data-score-elements-layer]") || canvas;
+        layer.replaceChildren();
 
         elements.forEach((element) => {
             const participant = participantsById.get(String(element.participant_id));
@@ -95,16 +145,27 @@
 
             const node = document.createElement("div");
             node.className = `score-overlay-element score-overlay-element--${element.type}`;
+            if (
+                element.type === "participant_score"
+                && changedParticipantIds.has(String(participant.id))
+            ) {
+                node.classList.add("is-score-updated");
+            }
             node.dataset.scoreElement = "";
             node.dataset.elementId = element.id;
             node.dataset.elementType = element.type;
+            node.dataset.participantId = String(participant.id);
+            node.dataset.textAlign = element.text_align || "center";
             node.style.left = `${element.x}px`;
             node.style.top = `${element.y}px`;
             node.style.width = `${element.width}px`;
             node.style.height = `${element.height}px`;
             node.style.color = element.color;
             node.style.backgroundColor = element.background_color;
-            node.style.fontSize = `${element.font_size}px`;
+            node.style.setProperty("--score-element-background", element.background_color);
+            node.style.fontSize = `${element.type === "participant_score"
+                ? scoreFontSize(element.font_size, participant.score)
+                : element.font_size}px`;
             node.style.borderRadius = `${element.border_radius}px`;
             node.style.textAlign = element.text_align || "center";
             node.style.justifyContent = {
@@ -133,13 +194,14 @@
                 });
             }
 
-            canvas.append(node);
+            layer.append(node);
         });
     };
 
     const applyCanvasDesign = (canvas, design) => {
+        canvas.dataset.scoreLayoutMode = normalizeLayoutMode(design.layout_mode);
         canvas.style.setProperty("--score-canvas-width", `${number(design.canvas_width, 960)}px`);
-        canvas.style.setProperty("--score-canvas-height", `${number(design.canvas_height, 240)}px`);
+        canvas.style.setProperty("--score-canvas-height", `${number(design.canvas_height, 200)}px`);
         canvas.style.setProperty(
             "--score-canvas-background",
             design.background_rgba || hexToRgba(design.background_color, design.background_opacity),
@@ -157,13 +219,25 @@
         const height = number(getComputedStyle(canvas).getPropertyValue("--score-canvas-height"), canvas.offsetHeight);
         const padding = 26;
         const availableWidth = Math.max(shell.clientWidth - (padding * 2), 1);
-        const scale = Math.min(availableWidth / width, 620 / height, 1);
+        const maxPreviewHeight = clamp(window.innerHeight - 430, 360, 680);
+        const scale = Math.min(availableWidth / width, maxPreviewHeight / height, 1);
         const renderedWidth = width * scale;
         const renderedHeight = height * scale;
 
         canvas.style.left = `${Math.max((shell.clientWidth - renderedWidth) / 2, 0)}px`;
         canvas.style.top = `${padding}px`;
         canvas.style.transform = `scale(${scale})`;
+        canvas.style.setProperty("--score-preview-scale", scale.toFixed(4));
+        const inverseScale = 1 / Math.max(scale, 0.01);
+        canvas.style.setProperty("--score-handle-size", `${15 * inverseScale}px`);
+        canvas.style.setProperty("--score-handle-offset", `${-12 * inverseScale}px`);
+        canvas.style.setProperty("--score-handle-corner-offset", `${-12 * inverseScale}px`);
+        canvas.style.setProperty("--score-handle-border-width", `${2 * inverseScale}px`);
+        canvas.style.setProperty("--score-outline-width", `${2 * inverseScale}px`);
+        canvas.style.setProperty("--score-outline-offset", `${3 * inverseScale}px`);
+        canvas.style.setProperty("--score-outline-glow", `${7 * inverseScale}px`);
+        canvas.style.setProperty("--score-handle-shadow-y", `${2 * inverseScale}px`);
+        canvas.style.setProperty("--score-handle-shadow-blur", `${7 * inverseScale}px`);
         canvas._scoreScale = scale;
         shell.style.height = `${renderedHeight + (padding * 2)}px`;
     };
@@ -218,6 +292,7 @@
     const initializeEditor = (editor) => {
         const form = editor.querySelector("[data-score-form]");
         const elementsInput = editor.querySelector("[data-elements-input]");
+        const layoutModeInput = editor.querySelector("[data-layout-mode-input]");
         const canvas = editor.querySelector("[data-score-canvas]");
         const list = editor.querySelector("[data-element-list]");
         const count = editor.querySelector("[data-element-count]");
@@ -252,23 +327,39 @@
         if (!elements.length) elements = state.elements || [];
         let participants = state.participants || defaultState().participants;
         let selectedId = elements[0]?.id || null;
+        let layoutMode = normalizeLayoutMode(layoutModeInput?.value || state.layout_mode || layoutModes.duel);
         let gridEnabled = false;
         let gridSize = 10;
 
+        const cloneElements = (items = []) => items.map((item) => ({...item}));
+        const templateFor = (mode) => state.layout_templates?.[normalizeLayoutMode(mode)] || null;
+        if (!elements.length && templateFor(layoutMode)) {
+            elements = cloneElements(templateFor(layoutMode).elements || []);
+            selectedId = elements[0]?.id || null;
+        }
+
         const design = () => ({
+            layout_mode: layoutMode,
             canvas_width: clamp(number(widthInput.value, 960), 320, 1920),
-            canvas_height: clamp(number(heightInput.value, 240), 140, 1080),
+            canvas_height: clamp(number(heightInput.value, 200), 140, 1080),
             background_color: backgroundInput.value || "#0f172a",
-            background_opacity: clamp(number(opacityInput.value, 72), 0, 100),
+            background_opacity: clamp(number(opacityInput.value, 0), 0, 100),
             border_color: borderColorInput.value || "#38bdf8",
             border_width: clamp(number(borderWidthInput.value), 0, 24),
-            corner_radius: clamp(number(radiusInput.value, 28), 0, 80),
+            corner_radius: clamp(number(radiusInput.value, 0), 0, 80),
         });
 
         const selectedElement = () => elements.find((element) => element.id === selectedId) || null;
         const notifyEditorChange = () => form.dispatchEvent(new CustomEvent("nexora:editor-change", {bubbles: true}));
         const syncElements = () => {
             elementsInput.value = JSON.stringify(elements);
+            if (layoutModeInput) layoutModeInput.value = layoutMode;
+        };
+        const setCustomLayout = () => {
+            if (layoutMode !== layoutModes.custom) {
+                layoutMode = layoutModes.custom;
+                syncElements();
+            }
         };
         const snapToGrid = (value) => gridEnabled
             ? Math.round(value / gridSize) * gridSize
@@ -292,6 +383,7 @@
         };
 
         const ensureParticipantElements = () => {
+            if (layoutMode !== layoutModes.custom) return;
             participants.forEach((participant, index) => {
                 const existingTypes = new Set(
                     elements
@@ -349,108 +441,29 @@
         };
 
         const applyLayout = (mode) => {
-            const currentDesign = design();
-            elements = [];
-            participants.forEach((participant, index) => {
-                if (mode === "duel" && participants.length === 2) {
-                    const left = index === 0;
-                    const imageX = left ? 34 : currentDesign.canvas_width - 154;
-                    const nameX = left ? 142 : currentDesign.canvas_width - 402;
-                    const scoreX = left ? 302 : currentDesign.canvas_width - 502;
-                    elements.push(
-                        {
-                            id: `participant-${participant.id}-image`,
-                            type: "participant_image",
-                            participant_id: String(participant.id),
-                            x: imageX,
-                            y: 50,
-                            width: 120,
-                            height: 120,
-                            font_size: 38,
-                            color: "#ffffff",
-                            background_color: participant.accent_color,
-                            border_radius: 24,
-                            text_align: "center",
-                        },
-                        {
-                            id: `participant-${participant.id}-name`,
-                            type: "participant_name",
-                            participant_id: String(participant.id),
-                            x: nameX,
-                            y: 62,
-                            width: 240,
-                            height: 40,
-                            font_size: 28,
-                            color: "#ffffff",
-                            background_color: "#111827",
-                            border_radius: 10,
-                            text_align: left ? "left" : "right",
-                        },
-                        {
-                            id: `participant-${participant.id}-score`,
-                            type: "participant_score",
-                            participant_id: String(participant.id),
-                            x: scoreX,
-                            y: 103,
-                            width: 140,
-                            height: 78,
-                            font_size: 62,
-                            color: "#ffffff",
-                            background_color: participant.accent_color,
-                            border_radius: 18,
-                            text_align: "center",
-                        },
-                    );
-                    return;
-                }
+            let nextMode = normalizeLayoutMode(mode);
+            if (nextMode === layoutModes.duel && participants.length !== 2) {
+                nextMode = layoutModes.list;
+            }
+            const template = templateFor(nextMode);
+            if (!template) return;
+            if (
+                layoutMode === layoutModes.custom
+                && !window.confirm(editor.dataset.scorePresetConfirm || "Replace custom layout?")
+            ) {
+                return;
+            }
 
-                const rowHeight = Math.max(Math.floor((currentDesign.canvas_height - 34) / participants.length), 54);
-                const y = 18 + (index * rowHeight);
-                elements.push(
-                    {
-                        id: `participant-${participant.id}-image`,
-                        type: "participant_image",
-                        participant_id: String(participant.id),
-                        x: 24,
-                        y,
-                        width: Math.min(rowHeight - 8, 70),
-                        height: Math.min(rowHeight - 8, 70),
-                        font_size: 22,
-                        color: "#ffffff",
-                        background_color: participant.accent_color,
-                        border_radius: 14,
-                        text_align: "center",
-                    },
-                    {
-                        id: `participant-${participant.id}-name`,
-                        type: "participant_name",
-                        participant_id: String(participant.id),
-                        x: 100,
-                        y: y + 8,
-                        width: Math.max(currentDesign.canvas_width - 280, 180),
-                        height: Math.min(rowHeight - 16, 42),
-                        font_size: 24,
-                        color: "#ffffff",
-                        background_color: "#111827",
-                        border_radius: 9,
-                        text_align: "left",
-                    },
-                    {
-                        id: `participant-${participant.id}-score`,
-                        type: "participant_score",
-                        participant_id: String(participant.id),
-                        x: Math.max(currentDesign.canvas_width - 150, 170),
-                        y,
-                        width: 120,
-                        height: Math.min(rowHeight - 8, 70),
-                        font_size: 42,
-                        color: "#ffffff",
-                        background_color: participant.accent_color,
-                        border_radius: 14,
-                        text_align: "center",
-                    },
-                );
-            });
+            layoutMode = nextMode;
+            elements = cloneElements(template.elements || []);
+            selectedId = elements[0]?.id || null;
+            if (widthInput) widthInput.value = template.canvas_width ?? 960;
+            if (heightInput) heightInput.value = template.canvas_height ?? 200;
+            if (backgroundInput) backgroundInput.value = template.background_color || "#0f172a";
+            if (opacityInput) opacityInput.value = template.background_opacity ?? 0;
+            if (borderColorInput) borderColorInput.value = template.border_color || "#38bdf8";
+            if (borderWidthInput) borderWidthInput.value = template.border_width ?? 0;
+            if (radiusInput) radiusInput.value = template.corner_radius ?? 0;
             selectedId = elements[0]?.id || null;
             render();
             notifyEditorChange();
@@ -531,17 +544,17 @@
                 const actions = document.createElement("div");
                 actions.className = "score-participant-row__actions";
                 [
-                    ["-1", "minus", participantList.dataset.minusLabel],
-                    ["+1", "plus", participantList.dataset.plusLabel],
+                    ["-1", "minus", participantList.dataset.minusLabel, "minus"],
+                    ["+1", "plus", participantList.dataset.plusLabel, "plus"],
                     ["reset", "reset", participantList.dataset.resetLabel],
                     ["save", "save", participantList.dataset.saveLabel],
                     ["delete", "delete", participantList.dataset.deleteLabel],
-                ].forEach(([action, className, label]) => {
+                ].forEach(([action, className, label, iconName]) => {
                     const button = document.createElement("button");
                     button.type = "button";
                     button.className = `score-icon-button score-icon-button--${className}`;
                     button.dataset.participantAction = action;
-                    button.textContent = action === "+1" ? "+" : action === "-1" ? "-" : action[0].toUpperCase();
+                    button.append(createIcon(iconName || className));
                     button.setAttribute("aria-label", label || action);
                     button.title = label || action;
                     actions.append(button);
@@ -552,12 +565,39 @@
             });
         };
 
+        const applyReturnedState = (nextState) => {
+            if (!nextState) return;
+            state = {...state, ...nextState};
+            participants = nextState.participants || participants;
+            elements = nextState.elements ? cloneElements(nextState.elements) : elements;
+            layoutMode = normalizeLayoutMode(nextState.layout_mode || layoutMode);
+            if (widthInput && nextState.canvas_width) widthInput.value = nextState.canvas_width;
+            if (heightInput && nextState.canvas_height) heightInput.value = nextState.canvas_height;
+            if (backgroundInput && nextState.background_color) {
+                backgroundInput.value = nextState.background_color;
+            }
+            if (opacityInput && nextState.background_opacity !== undefined) {
+                opacityInput.value = nextState.background_opacity;
+            }
+            if (borderColorInput && nextState.border_color) {
+                borderColorInput.value = nextState.border_color;
+            }
+            if (borderWidthInput && nextState.border_width !== undefined) {
+                borderWidthInput.value = nextState.border_width;
+            }
+            if (radiusInput && nextState.corner_radius !== undefined) {
+                radiusInput.value = nextState.corner_radius;
+            }
+            selectedId = elements.some((element) => element.id === selectedId)
+                ? selectedId
+                : elements[0]?.id || null;
+        };
+
         const render = () => {
             ensureParticipantElements();
             const currentDesign = design();
             elements.forEach(fitElementToCanvas);
             applyCanvasDesign(canvas, currentDesign);
-            window.NexoraBranding?.apply(canvas, currentDesign);
             applyGridState();
             renderElements(canvas, elements, participants, true, selectedId);
             renderList();
@@ -618,8 +658,7 @@
                         accent_color: wrap.querySelector("[name=accent_color]")?.value,
                         image_asset: wrap.querySelector("[name=image_asset]")?.value,
                     });
-                    participants = nextState.participants || participants;
-                    elements = nextState.elements || elements;
+                    applyReturnedState(nextState);
                     wrap.querySelector("[name=name]").value = "";
                     render();
                 } catch (error) {
@@ -657,8 +696,7 @@
                         nextState = await postForm(templateUrl(editor.dataset.scoreDeleteTemplate), {});
                     }
                     if (nextState) {
-                        participants = nextState.participants || participants;
-                        elements = nextState.elements || elements;
+                        applyReturnedState(nextState);
                         render();
                     }
                 } catch (error) {
@@ -670,7 +708,7 @@
             if (resetAllButton && editor.dataset.scoreResetAllUrl) {
                 try {
                     const nextState = await postForm(editor.dataset.scoreResetAllUrl, {});
-                    participants = nextState.participants || participants;
+                    applyReturnedState(nextState);
                     render();
                 } catch (error) {
                     window.alert(error.message);
@@ -682,11 +720,13 @@
             input.addEventListener("input", () => {
                 const element = selectedElement();
                 if (!element) return;
+                setCustomLayout();
                 const property = input.dataset.elementProperty;
                 element[property] = input.type === "color" || input.tagName === "SELECT"
                     ? input.value
                     : number(input.value, element[property]);
                 fitElementToCanvas(element);
+                applyCanvasDesign(canvas, design());
                 renderElements(canvas, elements, participants, true, selectedId);
                 renderList();
                 syncElements();
@@ -697,6 +737,7 @@
         [widthInput, heightInput, backgroundInput, opacityInput, borderColorInput, borderWidthInput, radiusInput]
             .forEach((input) => {
                 input?.addEventListener("input", () => {
+                    if (input === widthInput || input === heightInput) setCustomLayout();
                     render();
                     notifyEditorChange();
                 });
@@ -738,6 +779,7 @@
             if (event.key === "ArrowRight") element.x += step;
             if (event.key === "ArrowUp") element.y -= step;
             if (event.key === "ArrowDown") element.y += step;
+            setCustomLayout();
             fitElementToCanvas(element);
             render();
             notifyEditorChange();
@@ -809,6 +851,7 @@
             const end = () => {
                 window.removeEventListener("pointermove", move);
                 window.removeEventListener("pointerup", end);
+                if (changed) setCustomLayout();
                 render();
                 if (changed) notifyEditorChange();
             };
@@ -822,6 +865,7 @@
             } catch {
                 elements = [];
             }
+            layoutMode = normalizeLayoutMode(layoutModeInput?.value || layoutMode);
             selectedId = elements[0]?.id || null;
             render();
         });
@@ -834,10 +878,29 @@
         const stateUrl = body.dataset.stateUrl;
         if (!canvas) return;
 
+        const lastScores = new Map();
+        let hasRendered = false;
         const applyState = (state) => {
+            const changedParticipantIds = new Set();
+            (state.participants || []).forEach((participant) => {
+                const participantId = String(participant.id);
+                const score = number(participant.score, 0);
+                if (hasRendered && lastScores.get(participantId) !== score) {
+                    changedParticipantIds.add(participantId);
+                }
+                lastScores.set(participantId, score);
+            });
             applyCanvasDesign(canvas, state);
             window.NexoraBranding?.apply(canvas, state);
-            renderElements(canvas, state.elements || [], state.participants || [], false);
+            renderElements(
+                canvas,
+                state.elements || [],
+                state.participants || [],
+                false,
+                null,
+                changedParticipantIds,
+            );
+            hasRendered = true;
         };
 
         applyState(readInitialState());

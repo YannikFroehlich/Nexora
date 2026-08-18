@@ -28,8 +28,10 @@ from app.models import (
     SpotifyConnection,
     SpotifyOverlay,
     TimerOverlay,
+    TwitchGoalOverlay,
     WinChallenge,
     WinChallengeGame,
+    score_elements_for_layout,
 )
 
 User = get_user_model()
@@ -178,7 +180,7 @@ class DemoViewTests(TestCase):
 
         self.assertContains(response, 'class="breadcrumbs"')
         self.assertContains(response, 'aria-current="page">Interaktive Demo')
-        self.assertContains(response, "interaktive Spotify- und Win-Challenge-Overlay-Demo")
+        self.assertContains(response, "Twitch-Ziel")
 
 
 class DiscoverabilityTests(TestCase):
@@ -190,6 +192,7 @@ class DiscoverabilityTests(TestCase):
         self.assertEqual(response["Content-Type"], "text/plain; charset=utf-8")
         self.assertIn("Disallow: /accounts/", content)
         self.assertIn("Disallow: /overlays/", content)
+        self.assertIn("Disallow: /goals/", content)
         self.assertIn("Disallow: /scores/", content)
         self.assertIn("Disallow: /spotify/", content)
         self.assertIn("Disallow: /timers/", content)
@@ -237,11 +240,12 @@ class AboutViewTests(TestCase):
         response = self.client.get(reverse("about"))
 
         self.assertContains(response, "Tools für Streams mit deiner Handschrift")
-        self.assertContains(response, "Drei Tools, ein einheitlicher Workflow")
+        self.assertContains(response, "Vier Tools, ein einheitlicher Workflow")
         dashboard_url = reverse("overlay_dashboard")
         self.assertContains(response, f'href="{dashboard_url}#spotify-overlays"')
         self.assertContains(response, f'href="{dashboard_url}#winchallenge-overlays"')
         self.assertContains(response, f'href="{dashboard_url}#timer-overlays"')
+        self.assertContains(response, f'href="{dashboard_url}#twitch-goal-overlays"')
 
     def test_about_page_is_available_in_english(self):
         self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = "en"
@@ -268,17 +272,20 @@ class OverlayDashboardTests(TestCase):
         self.assertContains(response, 'id="winchallenge-overlays"')
         self.assertContains(response, 'id="score-overlays"')
         self.assertContains(response, 'id="timer-overlays"')
-        self.assertContains(response, 'class="dashboard-empty"', count=4)
+        self.assertContains(response, 'id="twitch-goal-overlays"')
+        self.assertContains(response, 'class="dashboard-empty"', count=5)
         self.assertEqual(content.count(f'href="{reverse("spotify_create")}"'), 1)
         self.assertEqual(content.count(f'href="{reverse("winchallenge_create")}"'), 1)
         self.assertEqual(content.count(f'href="{reverse("score_create")}"'), 1)
         self.assertEqual(content.count(f'href="{reverse("timer_create")}"'), 1)
+        self.assertEqual(content.count(f'href="{reverse("twitch_goal_create")}"'), 1)
 
     def test_dashboard_shows_saved_overlays_from_all_tools(self):
         spotify_overlay = SpotifyOverlay.objects.create(owner=self.user, name="Stream Music")
         challenge = WinChallenge.objects.create(owner=self.user, title="Road to Diamond")
         score_overlay = ScoreOverlay.objects.create(owner=self.user, name="Match Score")
         timer = TimerOverlay.objects.create(owner=self.user, name="Starting Soon")
+        goal = TwitchGoalOverlay.objects.create(owner=self.user, name="Road to Partner")
 
         response = self.client.get(reverse("overlay_dashboard"))
 
@@ -286,10 +293,12 @@ class OverlayDashboardTests(TestCase):
         self.assertContains(response, challenge.display_title)
         self.assertContains(response, score_overlay.display_name)
         self.assertContains(response, timer.display_name)
+        self.assertContains(response, goal.display_name)
         self.assertContains(response, "spotify-dashboard-preview")
         self.assertContains(response, "challenge-dashboard-preview")
         self.assertContains(response, "score-dashboard-preview")
         self.assertContains(response, "timer-dashboard-preview")
+        self.assertContains(response, "goal-dashboard-preview")
         self.assertContains(response, reverse("spotify_duplicate", args=[spotify_overlay.pk]))
         self.assertContains(response, reverse("spotify_export", args=[spotify_overlay.pk]))
         self.assertContains(response, reverse("spotify_renew_obs_link", args=[spotify_overlay.pk]))
@@ -302,10 +311,13 @@ class OverlayDashboardTests(TestCase):
         self.assertContains(response, reverse("timer_duplicate", args=[timer.pk]))
         self.assertContains(response, reverse("timer_export", args=[timer.pk]))
         self.assertContains(response, reverse("timer_renew_obs_link", args=[timer.pk]))
-        self.assertContains(response, "OBS-Link erneuern", count=4)
+        self.assertContains(response, reverse("twitch_goal_duplicate", args=[goal.pk]))
+        self.assertContains(response, reverse("twitch_goal_export", args=[goal.pk]))
+        self.assertContains(response, reverse("twitch_goal_renew_obs_link", args=[goal.pk]))
+        self.assertContains(response, "OBS-Link erneuern", count=5)
         self.assertContains(response, reverse("overlay_import"))
         self.assertContains(response, 'enctype="multipart/form-data"')
-        self.assertEqual(response.context["overlay_count"], 4)
+        self.assertEqual(response.context["overlay_count"], 5)
 
     def test_legacy_overview_urls_redirect_to_dashboard_sections(self):
         self.assertRedirects(
@@ -326,6 +338,11 @@ class OverlayDashboardTests(TestCase):
         self.assertRedirects(
             self.client.get(reverse("score_list")),
             f"{reverse('overlay_dashboard')}#score-overlays",
+            fetch_redirect_response=False,
+        )
+        self.assertRedirects(
+            self.client.get(reverse("twitch_goal_list")),
+            f"{reverse('overlay_dashboard')}#twitch-goal-overlays",
             fetch_redirect_response=False,
         )
 
@@ -1807,6 +1824,7 @@ class ScoreOverlayEndpointTests(TestCase):
             accent_color="#fb7185",
             sort_order=1,
         )
+        self.overlay.layout_mode = ScoreOverlay.LAYOUT_CUSTOM
         self.overlay.elements = [
             {
                 "id": f"participant-{self.player_one.public_id}-name",
@@ -1842,6 +1860,7 @@ class ScoreOverlayEndpointTests(TestCase):
     def score_form_data(self, **updates):
         data = {
             "name": self.overlay.name,
+            "layout_mode": self.overlay.layout_mode,
             "canvas_width": self.overlay.canvas_width,
             "canvas_height": self.overlay.canvas_height,
             "background_color": self.overlay.background_color,
@@ -1865,6 +1884,7 @@ class ScoreOverlayEndpointTests(TestCase):
                 "name": "Grand Final",
                 "player_one_name": "Team Blue",
                 "player_two_name": "Team Red",
+                "layout_mode": candidate.layout_mode,
                 "canvas_width": candidate.canvas_width,
                 "canvas_height": candidate.canvas_height,
                 "background_color": candidate.background_color,
@@ -1881,15 +1901,30 @@ class ScoreOverlayEndpointTests(TestCase):
         participants = list(created.ordered_participants)
         self.assertRedirects(response, reverse("score_manage", args=[created.pk]))
         self.assertEqual(created.owner, self.user)
-        self.assertEqual([participant.name for participant in participants], ["Team Blue", "Team Red"])
+        self.assertEqual(
+            [participant.name for participant in participants], ["Team Blue", "Team Red"]
+        )
         self.assertEqual([participant.score for participant in participants], [0, 0])
+        self.assertEqual(created.layout_mode, ScoreOverlay.LAYOUT_BROADCAST_DUEL)
+        self.assertEqual(created.canvas_height, 200)
+        self.assertEqual(created.background_opacity, 0)
         self.assertEqual(len(created.elements), 6)
+        left_name = next(
+            element for element in created.elements if element["id"] == "participant-1-name"
+        )
+        left_score = next(
+            element for element in created.elements if element["id"] == "participant-1-score"
+        )
+        self.assertLessEqual(left_name["x"] + left_name["width"], left_score["x"])
 
     def test_manage_page_contains_canvas_controls_and_obs_url(self):
         response = self.client.get(reverse("score_manage", args=[self.overlay.pk]))
 
         self.assertContains(response, "data-score-editor")
-        self.assertContains(response, "data-layout-template=\"duel\"")
+        self.assertContains(response, 'data-layout-template="broadcast_duel"')
+        self.assertContains(response, 'data-layout-template="broadcast_list"')
+        self.assertContains(response, "data-overlay-branding-root")
+        self.assertContains(response, "data-score-elements-layer")
         self.assertContains(response, reverse("score_overlay", args=[self.overlay.public_token]))
         self.assertContains(response, "data-editor-state")
         self.assertContains(response, reverse("score_autosave", args=[self.overlay.pk]))
@@ -1982,6 +2017,39 @@ class ScoreOverlayEndpointTests(TestCase):
         self.assertEqual(delete_response.status_code, 200)
         self.assertFalse(ScoreParticipant.objects.filter(pk=created.pk).exists())
 
+    def test_structured_participant_add_switches_duel_to_list_layout(self):
+        self.overlay.layout_mode = ScoreOverlay.LAYOUT_BROADCAST_DUEL
+        self.overlay.elements = score_elements_for_layout(
+            [self.player_one, self.player_two],
+            ScoreOverlay.LAYOUT_BROADCAST_DUEL,
+        )
+        self.overlay.save(update_fields=["layout_mode", "elements", "updated_at"])
+
+        response = self.client.post(
+            reverse("score_participant_add", args=[self.overlay.pk]),
+            {
+                "name": "Carol",
+                "accent_color": "#22c55e",
+                "image_asset": "",
+            },
+        )
+
+        self.overlay.refresh_from_db()
+        payload = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.overlay.layout_mode, ScoreOverlay.LAYOUT_BROADCAST_LIST)
+        self.assertEqual(self.overlay.canvas_width, 960)
+        self.assertEqual(self.overlay.canvas_height, 248)
+        self.assertEqual(payload["layout_mode"], ScoreOverlay.LAYOUT_BROADCAST_LIST)
+        self.assertEqual(len(payload["elements"]), 9)
+        self.assertTrue(
+            all(
+                element["x"] + element["width"] <= payload["canvas_width"]
+                and element["y"] + element["height"] <= payload["canvas_height"]
+                for element in payload["elements"]
+            )
+        )
+
     def test_public_state_does_not_expose_owner_or_public_token(self):
         self.client.logout()
         response = self.client.get(reverse("score_overlay_state", args=[self.overlay.public_token]))
@@ -1989,6 +2057,8 @@ class ScoreOverlayEndpointTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(payload["name"], "Finals")
+        self.assertEqual(payload["layout_mode"], ScoreOverlay.LAYOUT_CUSTOM)
+        self.assertIn("layout_templates", payload)
         self.assertIn("participants", payload)
         self.assertEqual(payload["participants"][0]["name"], "Alice")
         self.assertNotIn("owner", payload)
@@ -2016,6 +2086,7 @@ class ScoreOverlayEndpointTests(TestCase):
         export_response = self.client.get(reverse("score_export", args=[self.overlay.pk]))
         payload = json.loads(export_response.content)
         self.assertEqual(payload["type"], "score")
+        self.assertEqual(payload["overlay"]["layout_mode"], ScoreOverlay.LAYOUT_CUSTOM)
         self.assertEqual(payload["participants"][0]["score"], 3)
 
         upload = SimpleUploadedFile(
@@ -2030,6 +2101,26 @@ class ScoreOverlayEndpointTests(TestCase):
             fetch_redirect_response=False,
         )
         self.assertEqual(ScoreOverlay.objects.filter(name=self.overlay.name).count(), 2)
+
+    def test_legacy_score_export_without_layout_mode_still_imports(self):
+        export_response = self.client.get(reverse("score_export", args=[self.overlay.pk]))
+        payload = json.loads(export_response.content)
+        payload["overlay"].pop("layout_mode")
+
+        upload = SimpleUploadedFile(
+            "legacy-score.json",
+            json.dumps(payload).encode("utf-8"),
+            content_type="application/json",
+        )
+        response = self.client.post(reverse("overlay_import"), {"overlay_file": upload})
+        imported = ScoreOverlay.objects.exclude(pk=self.overlay.pk).get()
+
+        self.assertRedirects(
+            response,
+            f"{reverse('overlay_dashboard')}#score-overlays",
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(imported.layout_mode, ScoreOverlay.LAYOUT_CUSTOM)
 
 
 class PublicStateConditionalRequestTests(TestCase):

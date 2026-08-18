@@ -1,3 +1,5 @@
+import copy
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -17,7 +19,14 @@ from app.forms import (
     ScoreOverlayForm,
     ScoreParticipantForm,
 )
-from app.models import OverlayVersion, ScoreOverlay, ScoreParticipant, default_score_elements
+from app.models import (
+    OverlayVersion,
+    ScoreOverlay,
+    ScoreParticipant,
+    score_elements_for_layout,
+    score_layout_dimensions,
+    score_layout_mode_for_participant_count,
+)
 from app.views.common import (
     conditional_state_response,
     json_export_response,
@@ -38,7 +47,7 @@ def score_obs_url(request, overlay):
 
 def touch_score_overlay(overlay):
     ScoreOverlay.objects.filter(pk=overlay.pk).update(updated_at=timezone.now())
-    overlay._prefetched_objects_cache.pop("participants", None)
+    getattr(overlay, "_prefetched_objects_cache", {}).pop("participants", None)
 
 
 def fresh_score_overlay(overlay):
@@ -54,6 +63,30 @@ def fresh_score_overlay(overlay):
 
 def state_response(overlay):
     return no_store(JsonResponse(fresh_score_overlay(overlay).state_payload()))
+
+
+def apply_structured_score_layout(overlay, participants):
+    participant_count = len(participants)
+    overlay.layout_mode = score_layout_mode_for_participant_count(participant_count)
+    overlay.canvas_width, overlay.canvas_height = score_layout_dimensions(
+        overlay.layout_mode,
+        participant_count,
+    )
+    overlay.elements = score_elements_for_layout(participants, overlay.layout_mode)
+
+
+def remap_created_score_elements(elements, participants):
+    participant_ids = [str(participant.public_id) for participant in participants]
+    slot_map = {
+        f"slot-{index + 1}": participant_id for index, participant_id in enumerate(participant_ids)
+    }
+    remapped = []
+    for element in elements:
+        next_element = copy.deepcopy(element)
+        participant_id = str(next_element.get("participant_id", ""))
+        next_element["participant_id"] = slot_map.get(participant_id, participant_id)
+        remapped.append(next_element)
+    return remapped
 
 
 def score_editor_context(request, form, overlay, is_create):
@@ -153,8 +186,17 @@ def score_create(request):
                     sort_order=1,
                 ),
             ]
-            overlay.elements = default_score_elements(participants)
-            overlay.save(update_fields=["elements", "updated_at"])
+            if overlay.layout_mode in ScoreOverlay.STRUCTURED_LAYOUTS:
+                overlay.canvas_width, overlay.canvas_height = score_layout_dimensions(
+                    overlay.layout_mode,
+                    len(participants),
+                )
+                overlay.elements = score_elements_for_layout(participants, overlay.layout_mode)
+                update_fields = ["canvas_width", "canvas_height", "elements", "updated_at"]
+            else:
+                overlay.elements = remap_created_score_elements(overlay.elements, participants)
+                update_fields = ["elements", "updated_at"]
+            overlay.save(update_fields=update_fields)
             overlay_versions.record_version(overlay, OverlayVersion.REASON_CREATED)
             messages.success(request, _("Score HUD created."))
             return redirect("score_manage", pk=overlay.pk)
@@ -232,7 +274,9 @@ def score_duplicate(request, pk):
     overlay = get_manageable_score_overlay(request, pk)
     duplicate = overlay_transfer.duplicate_overlay(overlay, request.user, _("Copy"))
     overlay_versions.record_version(duplicate, OverlayVersion.REASON_CREATED)
-    messages.success(request, _("Score HUD duplicated: %(name)s") % {"name": duplicate.display_name})
+    messages.success(
+        request, _("Score HUD duplicated: %(name)s") % {"name": duplicate.display_name}
+    )
     return redirect(f"{reverse('overlay_dashboard')}#score-overlays")
 
 
@@ -278,11 +322,17 @@ def score_participant_add(request, pk):
     participant.overlay = overlay
     participant.sort_order = 0 if max_order is None else max_order + 1
     participant.save()
-    overlay.elements = [
-        *overlay.elements,
-        *score_elements_for_participant(participant, overlay.participants.count() - 1, overlay),
-    ]
-    overlay.save(update_fields=["elements", "updated_at"])
+    participants = list(overlay.participants.order_by("sort_order", "created_at", "pk"))
+    if overlay.layout_mode in ScoreOverlay.STRUCTURED_LAYOUTS:
+        apply_structured_score_layout(overlay, participants)
+        update_fields = ["layout_mode", "canvas_width", "canvas_height", "elements", "updated_at"]
+    else:
+        overlay.elements = [
+            *overlay.elements,
+            *score_elements_for_participant(participant, len(participants) - 1, overlay),
+        ]
+        update_fields = ["elements", "updated_at"]
+    overlay.save(update_fields=update_fields)
     overlay_versions.record_version(overlay, OverlayVersion.REASON_AUTOSAVE)
     return state_response(overlay)
 
@@ -298,7 +348,14 @@ def score_participant_update(request, pk, participant_id):
         return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
     form.save()
-    touch_score_overlay(overlay)
+    if overlay.layout_mode in ScoreOverlay.STRUCTURED_LAYOUTS:
+        overlay.elements = score_elements_for_layout(
+            overlay.participants.order_by("sort_order", "created_at", "pk"),
+            overlay.layout_mode,
+        )
+        overlay.save(update_fields=["elements", "updated_at"])
+    else:
+        touch_score_overlay(overlay)
     overlay_versions.record_version(overlay, OverlayVersion.REASON_AUTOSAVE)
     return state_response(overlay)
 
@@ -317,12 +374,18 @@ def score_participant_delete(request, pk, participant_id):
     participant = get_object_or_404(ScoreParticipant, public_id=participant_id, overlay=overlay)
     participant_id = str(participant.public_id)
     participant.delete()
-    overlay.elements = [
-        element
-        for element in overlay.elements
-        if str(element.get("participant_id")) != participant_id
-    ]
-    overlay.save(update_fields=["elements", "updated_at"])
+    participants = list(overlay.participants.order_by("sort_order", "created_at", "pk"))
+    if overlay.layout_mode in ScoreOverlay.STRUCTURED_LAYOUTS:
+        apply_structured_score_layout(overlay, participants)
+        update_fields = ["layout_mode", "canvas_width", "canvas_height", "elements", "updated_at"]
+    else:
+        overlay.elements = [
+            element
+            for element in overlay.elements
+            if str(element.get("participant_id")) != participant_id
+        ]
+        update_fields = ["elements", "updated_at"]
+    overlay.save(update_fields=update_fields)
     overlay_versions.record_version(overlay, OverlayVersion.REASON_AUTOSAVE)
     return state_response(overlay)
 

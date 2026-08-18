@@ -31,6 +31,7 @@ def robots_txt(request):
             "Disallow: /accounts/",
             "Disallow: /admin/",
             "Disallow: /overlays/",
+            "Disallow: /goals/",
             "Disallow: /scores/",
             "Disallow: /spotify/",
             "Disallow: /timers/",

@@ -6,7 +6,12 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.translation import gettext as _
 
-from app.forms import ScoreOverlayForm, SpotifyOverlayForm, TimerOverlayForm
+from app.forms import (
+    ScoreOverlayForm,
+    SpotifyOverlayForm,
+    TimerOverlayForm,
+    TwitchGoalOverlayForm,
+)
 from app.models import (
     OverlayBrandingMixin,
     ScoreOverlay,
@@ -14,8 +19,11 @@ from app.models import (
     SpotifyConnection,
     SpotifyOverlay,
     TimerOverlay,
+    TwitchConnection,
+    TwitchGoalOverlay,
     WinChallenge,
     WinChallengeGame,
+    score_elements_for_layout,
 )
 
 FORMAT_NAME = "nexora-overlay"
@@ -26,6 +34,7 @@ SPOTIFY_TYPE = "spotify"
 TIMER_TYPE = "timer"
 WINCHALLENGE_TYPE = "winchallenge"
 SCORE_TYPE = "score"
+TWITCH_GOAL_TYPE = "twitch_goal"
 
 SPOTIFY_FIELDS = (
     "name",
@@ -93,6 +102,7 @@ TIMER_FIELDS = (
 
 SCORE_FIELDS = (
     "name",
+    "layout_mode",
     "canvas_width",
     "canvas_height",
     "background_color",
@@ -110,6 +120,40 @@ SCORE_PARTICIPANT_FIELDS = (
     "name",
     "score",
     "accent_color",
+)
+
+TWITCH_GOAL_FIELDS = (
+    "name",
+    "title",
+    "goal_type",
+    "subscription_metric",
+    "progress_mode",
+    "target_value",
+    "layout_mode",
+    "canvas_width",
+    "canvas_height",
+    "background_color",
+    "background_opacity",
+    "text_color",
+    "accent_color",
+    "secondary_color",
+    "track_color",
+    "border_color",
+    "border_width",
+    "corner_radius",
+    "use_gradient",
+    "shadow_enabled",
+    "number_prefix",
+    "number_suffix",
+    "elements",
+    "animation_type",
+    "animation_duration",
+    "animation_intensity",
+    "animation_primary_color",
+    "animation_secondary_color",
+    "sound_type",
+    "sound_volume",
+    "font_family",
 )
 
 
@@ -165,6 +209,15 @@ def score_export_payload(overlay):
     }
 
 
+def twitch_goal_export_payload(overlay):
+    return {
+        "format": FORMAT_NAME,
+        "version": FORMAT_VERSION,
+        "type": TWITCH_GOAL_TYPE,
+        "overlay": _model_fields(overlay, TWITCH_GOAL_FIELDS),
+    }
+
+
 def export_payload(overlay):
     if isinstance(overlay, SpotifyOverlay):
         return spotify_export_payload(overlay)
@@ -177,6 +230,9 @@ def export_payload(overlay):
 
     if isinstance(overlay, ScoreOverlay):
         return score_export_payload(overlay)
+
+    if isinstance(overlay, TwitchGoalOverlay):
+        return twitch_goal_export_payload(overlay)
 
     raise TypeError("Unsupported overlay model")
 
@@ -211,6 +267,102 @@ def _overlay_data_with_defaults(data):
     return normalized
 
 
+def _legacy_duel_score_elements(participants_data):
+    participant_keys = [
+        str(participant_data["public_id"]) for participant_data in participants_data[:2]
+    ]
+    elements = []
+    positions = (
+        {
+            "image_x": 34,
+            "name_x": 142,
+            "score_x": 302,
+            "align": "left",
+            "accent": "#38bdf8",
+        },
+        {
+            "image_x": 806,
+            "name_x": 560,
+            "score_x": 458,
+            "align": "right",
+            "accent": "#fb7185",
+        },
+    )
+    for index, participant_key in enumerate(participant_keys):
+        position = positions[index]
+        prefix = f"participant-{index + 1}"
+        elements.extend(
+            [
+                {
+                    "id": f"{prefix}-image",
+                    "type": "participant_image",
+                    "participant_id": participant_key,
+                    "x": position["image_x"],
+                    "y": 50,
+                    "width": 120,
+                    "height": 120,
+                    "font_size": 38,
+                    "color": "#ffffff",
+                    "background_color": position["accent"],
+                    "border_radius": 24,
+                    "text_align": "center",
+                },
+                {
+                    "id": f"{prefix}-name",
+                    "type": "participant_name",
+                    "participant_id": participant_key,
+                    "x": position["name_x"],
+                    "y": 62,
+                    "width": 240,
+                    "height": 40,
+                    "font_size": 28,
+                    "color": "#ffffff",
+                    "background_color": "#111827",
+                    "border_radius": 10,
+                    "text_align": position["align"],
+                },
+                {
+                    "id": f"{prefix}-score",
+                    "type": "participant_score",
+                    "participant_id": participant_key,
+                    "x": position["score_x"],
+                    "y": 103,
+                    "width": 140,
+                    "height": 78,
+                    "font_size": 62,
+                    "color": "#ffffff",
+                    "background_color": position["accent"],
+                    "border_radius": 18,
+                    "text_align": "center",
+                },
+            ]
+        )
+    return elements
+
+
+def _score_layout_mode_with_defaults(data, participants_data):
+    normalized = _overlay_data_with_defaults(data)
+    if "layout_mode" in normalized:
+        return normalized
+
+    elements = normalized.get("elements")
+    try:
+        if len(participants_data) == 2 and elements in (
+            score_elements_for_layout(participants_data, ScoreOverlay.LAYOUT_BROADCAST_DUEL),
+            _legacy_duel_score_elements(participants_data),
+        ):
+            normalized["layout_mode"] = ScoreOverlay.LAYOUT_BROADCAST_DUEL
+        elif elements == score_elements_for_layout(
+            participants_data, ScoreOverlay.LAYOUT_BROADCAST_LIST
+        ):
+            normalized["layout_mode"] = ScoreOverlay.LAYOUT_BROADCAST_LIST
+        else:
+            normalized["layout_mode"] = ScoreOverlay.LAYOUT_CUSTOM
+    except (KeyError, TypeError):
+        normalized["layout_mode"] = ScoreOverlay.LAYOUT_CUSTOM
+    return normalized
+
+
 def _validate_envelope(payload):
     overlay_type = payload.get("type")
     expected_root_keys = {"format", "version", "type", "overlay"}
@@ -228,7 +380,13 @@ def _validate_envelope(payload):
     if payload["version"] != FORMAT_VERSION:
         raise OverlayTransferError(_("This overlay export version is not supported."))
 
-    if overlay_type not in {SPOTIFY_TYPE, TIMER_TYPE, WINCHALLENGE_TYPE, SCORE_TYPE}:
+    if overlay_type not in {
+        SPOTIFY_TYPE,
+        TIMER_TYPE,
+        WINCHALLENGE_TYPE,
+        SCORE_TYPE,
+        TWITCH_GOAL_TYPE,
+    }:
         raise OverlayTransferError(_("The overlay type is not supported."))
 
     return overlay_type
@@ -317,10 +475,7 @@ def _validated_score_participant(participant_data, overlay, sort_order):
 
 
 def _import_score(payload, owner):
-    overlay_data = _overlay_data_with_defaults(payload["overlay"])
     participants_data = copy.deepcopy(payload["participants"])
-    _require_exact_keys(overlay_data, SCORE_FIELDS)
-
     if (
         not isinstance(participants_data, list)
         or not ScoreOverlay.MIN_PARTICIPANTS
@@ -328,6 +483,9 @@ def _import_score(payload, owner):
         <= ScoreOverlay.MAX_PARTICIPANTS
     ):
         raise OverlayTransferError(_("The score participant list is invalid."))
+
+    overlay_data = _score_layout_mode_with_defaults(payload["overlay"], participants_data)
+    _require_exact_keys(overlay_data, SCORE_FIELDS)
 
     participant_id_map = {
         str(participant_data["public_id"]): str(uuid.uuid4())
@@ -359,6 +517,29 @@ def _import_score(payload, owner):
         for sort_order, participant_data in enumerate(participants_data)
     ]
     ScoreParticipant.objects.bulk_create(participants)
+    return overlay
+
+
+def _import_twitch_goal(payload, owner):
+    overlay_data = _overlay_data_with_defaults(payload["overlay"])
+    _require_exact_keys(overlay_data, TWITCH_GOAL_FIELDS)
+    form_data = copy.deepcopy(overlay_data)
+    form_data["elements"] = json.dumps(
+        form_data["elements"],
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    form = TwitchGoalOverlayForm(data=form_data, asset_owner=owner)
+    if not form.is_valid():
+        raise OverlayTransferError(_("The Twitch goal overlay data is invalid."))
+    overlay = form.save(commit=False)
+    overlay.owner = owner
+    overlay.connection, _created = TwitchConnection.objects.get_or_create(owner=owner)
+    overlay.campaign_baseline = None
+    overlay.last_observed_progress = None
+    overlay.celebration_sequence = 0
+    overlay.celebrated_revision = 0
+    overlay.save()
     return overlay
 
 
@@ -398,6 +579,9 @@ def import_payload(payload, owner):
 
     if overlay_type == SCORE_TYPE:
         return _import_score(payload, owner)
+
+    if overlay_type == TWITCH_GOAL_TYPE:
+        return _import_twitch_goal(payload, owner)
 
     return _import_winchallenge(payload, owner)
 

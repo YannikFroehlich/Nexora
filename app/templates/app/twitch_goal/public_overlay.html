@@ -1,0 +1,30 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'de' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="{% static 'css/twitch-goal.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
+    <title>{{ overlay.display_name }}</title>
+</head>
+<body
+    class="twitch-goal-source"
+    data-twitch-goal-source
+    data-state-url="{% url 'twitch_goal_overlay_state' overlay.public_token %}"
+    data-source-width="{{ overlay.browser_source_width }}"
+    data-source-height="{{ overlay.browser_source_height }}"
+    data-initial-sequence="{{ initial_state.celebration_sequence }}"
+>
+    <main class="twitch-goal-source__frame" data-goal-scale-shell>
+        {% include "app/twitch_goal/_overlay.html" with state=initial_state %}
+    </main>
+    <canvas class="twitch-celebration-canvas" data-celebration-canvas aria-hidden="true"></canvas>
+    {{ initial_state|json_script:"twitch-goal-state" }}
+    <script src="{% static 'js/polling.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/twitch-goal.js' %}?v={{ APP_VERSION }}"></script>
+</body>
+</html>
