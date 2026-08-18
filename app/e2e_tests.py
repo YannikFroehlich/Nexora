@@ -6,7 +6,13 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.urls import reverse
 from playwright.sync_api import expect, sync_playwright
 
-from app.models import SpotifyOverlay, TimerOverlay, WinChallenge, WinChallengeGame
+from app.models import (
+    SpotifyOverlay,
+    TimerOverlay,
+    TwitchGoalOverlay,
+    WinChallenge,
+    WinChallengeGame,
+)
 
 
 class OverlayEditorBrowserTests(StaticLiveServerTestCase):
@@ -24,6 +30,10 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
         self.timer = TimerOverlay.objects.create(
             owner=self.user,
             name="Browser Timer",
+        )
+        self.goal = TwitchGoalOverlay.objects.create(
+            owner=self.user,
+            name="Browser Twitch Goal",
         )
         self.challenge = WinChallenge.objects.create(
             owner=self.user,
@@ -147,6 +157,11 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
                 "[data-overlay-source]",
                 "[data-winchallenge-overlay]",
             ),
+            (
+                reverse("twitch_goal_overlay", args=[self.goal.public_token]),
+                "[data-twitch-goal-source]",
+                "[data-twitch-goal-canvas]",
+            ),
         )
 
         for path, source_selector, overlay_selector in sources:
@@ -217,6 +232,10 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
                 reverse("winchallenge_manage", args=[self.challenge.pk]),
                 ".editor-panel--surface",
             ),
+            (
+                reverse("twitch_goal_manage", args=[self.goal.pk]),
+                ".goal-panel",
+            ),
         )
 
         for path, panel_selector in editor_pages:
@@ -248,3 +267,125 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
         self.assertIsNotNone(box)
         self.assertLessEqual(box["height"], 48)
         timer_page.close()
+
+    def test_twitch_goal_editor_and_public_source_scale_without_horizontal_clipping(self):
+        page = self.context.new_page()
+        editor_url = self.live_server_url + reverse("twitch_goal_manage", args=[self.goal.pk])
+
+        for width in (1440, 760, 390):
+            with self.subTest(width=width):
+                page.set_viewport_size({"width": width, "height": 960})
+                page.goto(editor_url)
+                expect(page.locator("[data-twitch-goal-editor]")).to_be_visible()
+                expect(page.locator("[data-twitch-goal-canvas]")).to_be_visible()
+                has_horizontal_overflow = page.evaluate(
+                    "document.documentElement.scrollWidth > document.documentElement.clientWidth + 1"
+                )
+                self.assertFalse(has_horizontal_overflow)
+
+        page.close()
+
+        for width, height in ((900, 160), (450, 80), (1920, 1080)):
+            with self.subTest(source=(width, height)):
+                source_context = self.browser.new_context(
+                    viewport={"width": width, "height": height},
+                    device_scale_factor=1,
+                )
+                source = source_context.new_page()
+                source.goto(
+                    self.live_server_url
+                    + reverse("twitch_goal_overlay", args=[self.goal.public_token])
+                )
+                canvas_box = source.locator("[data-twitch-goal-canvas]").bounding_box()
+                self.assertIsNotNone(canvas_box)
+                self.assertGreaterEqual(canvas_box["x"], -0.5)
+                self.assertGreaterEqual(canvas_box["y"], -0.5)
+                self.assertLessEqual(canvas_box["x"] + canvas_box["width"], width + 0.5)
+                self.assertLessEqual(canvas_box["y"] + canvas_box["height"], height + 0.5)
+                source_context.close()
+
+    def test_twitch_goal_celebration_replays_once_and_respects_reduced_motion(self):
+        editor = self.context.new_page()
+        editor.goto(self.live_server_url + reverse("twitch_goal_manage", args=[self.goal.pk]))
+        editor.locator("#id_animation_type").select_option("neon")
+        editor.locator("#id_animation_duration").fill("3")
+        editor.locator("#id_sound_type").select_option("chime")
+        expect(editor.locator("[data-editor-save-status]")).to_have_attribute(
+            "data-state",
+            "saved",
+            timeout=7_000,
+        )
+
+        fake_audio_context = """
+            window.__goalSoundPlayCount = 0;
+            window.AudioContext = class {
+                constructor() {
+                    window.__goalSoundPlayCount += 1;
+                    this.currentTime = 0;
+                    this.destination = {};
+                }
+                createOscillator() {
+                    return {
+                        type: 'sine', frequency: {value: 0},
+                        connect(target) { return target; }, start() {}, stop() {},
+                    };
+                }
+                createGain() {
+                    return {
+                        gain: {
+                            setValueAtTime() {},
+                            exponentialRampToValueAtTime() {},
+                        },
+                        connect(target) { return target; },
+                    };
+                }
+                close() { return Promise.resolve(); }
+            };
+        """
+        public = self.context.new_page()
+        public.add_init_script(fake_audio_context)
+        public.goto(
+            self.live_server_url + reverse("twitch_goal_overlay", args=[self.goal.public_token])
+        )
+
+        editor.locator("[data-replay-obs]").click()
+        public.wait_for_function(
+            "document.querySelector('[data-twitch-goal-canvas]').classList.contains('is-celebrating-neon')",
+            timeout=6_000,
+        )
+        self.assertEqual(public.evaluate("window.__goalSoundPlayCount"), 1)
+
+        public.reload()
+        public.wait_for_timeout(2_300)
+        self.assertFalse(
+            public.locator("[data-twitch-goal-canvas]").evaluate(
+                "node => node.classList.contains('is-celebrating-neon')"
+            )
+        )
+        self.assertEqual(public.evaluate("window.__goalSoundPlayCount"), 0)
+
+        expect(editor.locator("[data-replay-obs]")).to_be_enabled(timeout=5_000)
+        editor.locator("[data-replay-obs]").click()
+        public.wait_for_function("window.__goalSoundPlayCount === 1", timeout=6_000)
+        self.assertEqual(public.evaluate("window.__goalSoundPlayCount"), 1)
+
+        reduced_context = self.browser.new_context(
+            viewport={"width": 900, "height": 160},
+            reduced_motion="reduce",
+        )
+        reduced = reduced_context.new_page()
+        reduced.goto(
+            self.live_server_url + reverse("twitch_goal_overlay", args=[self.goal.public_token])
+        )
+        expect(editor.locator("[data-replay-obs]")).to_be_enabled(timeout=5_000)
+        editor.locator("[data-replay-obs]").click()
+        reduced.wait_for_function(
+            "document.querySelector('[data-twitch-goal-canvas]').classList.contains('is-goal-flash')",
+            timeout=6_000,
+        )
+        self.assertFalse(
+            reduced.locator("[data-twitch-goal-canvas]").evaluate(
+                "node => node.classList.contains('is-celebrating-neon')"
+            )
+        )
+        reduced_context.close()

@@ -7,7 +7,14 @@ from django.views.decorators.http import require_POST
 
 from app import overlay_transfer, overlay_versions
 from app.forms import OverlayAssetUploadForm, OverlayImportForm
-from app.models import OverlayVersion, SpotifyOverlay, TimerOverlay, WinChallenge
+from app.models import (
+    OverlayVersion,
+    ScoreOverlay,
+    SpotifyOverlay,
+    TimerOverlay,
+    TwitchGoalOverlay,
+    WinChallenge,
+)
 from app.views.pages import safe_next_url
 
 
@@ -32,8 +39,29 @@ def manageable_winchallenges(request):
     )
 
 
+def manageable_score_overlays(request):
+    return (
+        ScoreOverlay.objects.select_related(
+            "font_asset",
+            "logo_asset",
+            "background_asset",
+        )
+        .prefetch_related("participants__image_asset")
+        .filter(owner=request.user)
+    )
+
+
 def manageable_timer_overlays(request):
     return TimerOverlay.objects.select_related(
+        "font_asset",
+        "logo_asset",
+        "background_asset",
+    ).filter(owner=request.user)
+
+
+def manageable_twitch_goal_overlays(request):
+    return TwitchGoalOverlay.objects.select_related(
+        "connection",
         "font_asset",
         "logo_asset",
         "background_asset",
@@ -43,15 +71,27 @@ def manageable_timer_overlays(request):
 def overlay_dashboard_context(request, import_form=None):
     spotify_overlays = list(manageable_spotify_overlays(request))
     win_challenges = list(manageable_winchallenges(request))
+    score_overlays = list(manageable_score_overlays(request))
     timer_overlays = list(manageable_timer_overlays(request))
+    twitch_goal_overlays = list(manageable_twitch_goal_overlays(request))
     return {
         "spotify_overlays": spotify_overlays,
         "win_challenges": win_challenges,
+        "score_overlays": score_overlays,
         "timer_overlays": timer_overlays,
+        "twitch_goal_overlays": twitch_goal_overlays,
         "spotify_count": len(spotify_overlays),
         "winchallenge_count": len(win_challenges),
+        "score_count": len(score_overlays),
         "timer_count": len(timer_overlays),
-        "overlay_count": len(spotify_overlays) + len(win_challenges) + len(timer_overlays),
+        "twitch_goal_count": len(twitch_goal_overlays),
+        "overlay_count": (
+            len(spotify_overlays)
+            + len(win_challenges)
+            + len(score_overlays)
+            + len(timer_overlays)
+            + len(twitch_goal_overlays)
+        ),
         "import_form": import_form or OverlayImportForm(),
     }
 
@@ -79,9 +119,7 @@ def overlay_import(request):
         else:
             overlay_versions.record_version(overlay, OverlayVersion.REASON_CREATED)
             display_name = (
-                overlay.display_name
-                if isinstance(overlay, (SpotifyOverlay, TimerOverlay))
-                else overlay.display_title
+                overlay.display_title if isinstance(overlay, WinChallenge) else overlay.display_name
             )
             messages.success(
                 request,
@@ -89,10 +127,14 @@ def overlay_import(request):
             )
             if isinstance(overlay, SpotifyOverlay):
                 section = "spotify-overlays"
-            elif isinstance(overlay, TimerOverlay):
-                section = "timer-overlays"
-            else:
+            elif isinstance(overlay, WinChallenge):
                 section = "winchallenge-overlays"
+            elif isinstance(overlay, ScoreOverlay):
+                section = "score-overlays"
+            elif isinstance(overlay, TwitchGoalOverlay):
+                section = "twitch-goal-overlays"
+            else:
+                section = "timer-overlays"
             return redirect(f"{reverse('overlay_dashboard')}#{section}")
 
     return render(
@@ -136,6 +178,8 @@ def overlay_version_restore(request, overlay_type, pk, version_pk):
         overlay_transfer.SPOTIFY_TYPE: (SpotifyOverlay, "spotify_manage"),
         overlay_transfer.TIMER_TYPE: (TimerOverlay, "timer_manage"),
         overlay_transfer.WINCHALLENGE_TYPE: (WinChallenge, "winchallenge_manage"),
+        overlay_transfer.SCORE_TYPE: (ScoreOverlay, "score_manage"),
+        overlay_transfer.TWITCH_GOAL_TYPE: (TwitchGoalOverlay, "twitch_goal_manage"),
     }
     model_config = model_and_redirect.get(overlay_type)
     if model_config is None:

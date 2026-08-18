@@ -71,6 +71,20 @@ Manage challenges for one or more games and display their progress live on strea
 - Flexible overlay width and optional fixed height
 - Public browser-source URL with live updates
 
+### 🎯 Score HUD overlay
+
+Track and display live scores for two or more players or teams during a stream.
+
+- Drag-and-drop visual editor
+- Two to eight participants per HUD
+- Broadcast duel and broadcast list layout presets plus a freely arranged custom canvas
+- Per-participant name, accent color, and optional image
+- One-click score increment and decrement per participant, with optional negative scores
+- Reset a single participant or the whole scoreboard at once
+- Configurable canvas size, background, opacity, border, and corner radius
+- Public browser-source URL with live updates
+- Duplicate and JSON import/export support
+
 ### ⏱️ Stream Timer overlay
 
 Create a persistent countdown or stopwatch and control it live without replacing the OBS browser source.
@@ -87,6 +101,22 @@ Create a persistent countdown or stopwatch and control it live without replacing
 - Configurable colors, opacity, borders, sizes, and shadows
 - Public OBS browser-source URL with smooth local time updates
 - Duplicate and JSON import/export support
+
+### 💜 Twitch Goal overlay
+
+Show one live Twitch milestone per overlay and celebrate it automatically when it is reached.
+
+- Follower goals through `moderator:read:followers`
+- Active subscription or subscription-point goals through `channel:read:subscriptions`
+- Absolute totals and resettable campaign growth goals
+- One encrypted Twitch OAuth connection shared by all overlays of an account
+- Four responsive presets plus a freely arranged custom canvas
+- Drag, resize, layer, show and hide title, channel, avatar, values, bar/ring, logo and icon
+- Confetti, fireworks, neon burst, bounce/pulse and particle-rain celebrations
+- Built-in, royalty-free Web Audio chime, fanfare, arcade-win and sparkle sounds
+- Shared 15-second metric cache while public OBS sources poll Nexora every two seconds
+- Last-known-good display during temporary Twitch failures
+- Public browser-source URL with proportional scaling at any viewport size
 
 ### 🌍 Platform
 
@@ -132,6 +162,7 @@ Management pages require an authenticated account. Public UUID-based overlay URL
 - `pip`
 - Git when cloning the repository
 - A Spotify Developer app when using the Spotify overlay
+- A Twitch Developer application when using Twitch Goal overlays
 
 ### 1. Prepare the project
 
@@ -196,6 +227,12 @@ SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
 SPOTIFY_REDIRECT_URI=http://127.0.0.1:8000/spotify/callback/
 SPOTIFY_TOKEN_ENCRYPTION_KEY=
 SPOTIFY_PLAYBACK_CACHE_SECONDS=8
+
+NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY=
+TWITCH_CLIENT_ID=your-twitch-client-id
+TWITCH_CLIENT_SECRET=your-twitch-client-secret
+TWITCH_REDIRECT_URI=http://localhost:8000/goals/twitch/callback/
+TWITCH_METRIC_CACHE_SECONDS=15
 ```
 
 > `.env` contains sensitive credentials and must never be committed to Git.
@@ -264,6 +301,31 @@ to reconnect Spotify:
 python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 ```
 
+`NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY` is the preferred shared key for new
+installations. It falls back to `SPOTIFY_TOKEN_ENCRYPTION_KEY` for existing
+deployments. If both variables are set, they must contain the same value so
+stored Spotify tokens remain readable.
+
+## 💜 Twitch setup
+
+1. Create an application in the [Twitch Developer Console](https://dev.twitch.tv/console/apps).
+2. Add `http://localhost:8000/goals/twitch/callback/` as an OAuth redirect URL.
+3. Put the Client ID, Client Secret and exact redirect URL into `.env`.
+4. Restart Nexora, create a Twitch Goal and select **Connect Twitch**.
+
+Nexora asks only for the scope required by the selected metric and extends an
+existing authorization when another goal needs an additional scope. In
+production, run the required token validation once per hour, for example from
+cron or a scheduler:
+
+```bash
+python manage.py validate_twitch_tokens
+```
+
+The editor also validates actively used connections at least hourly. Revoked or
+invalid credentials are marked for reconnection; public overlays never expose
+tokens, scopes or internal Twitch errors.
+
 ## 🎥 Add an overlay to OBS
 
 1. Create or open an overlay in Nexora.
@@ -287,21 +349,25 @@ random token URLs that work in OBS without exposing the media directory itself.
 ```text
 Nexora/
 ├── app/
+│   ├── management/          # Custom manage.py commands (e.g. validate_twitch_tokens)
 │   ├── migrations/          # Database migrations
 │   ├── static/              # CSS, JavaScript, images, and icons
 │   ├── templates/           # Pages, editors, authentication, and overlays
 │   ├── forms.py             # Forms and input validation
-│   ├── models.py            # Spotify, timer, and Win Challenge models
+│   ├── models.py            # Overlay, OAuth connection, and runtime models
 │   ├── overlay_versions.py  # Version snapshots, retention, and restore logic
 │   ├── spotify_api.py       # Spotify OAuth and playback API client
+│   ├── twitch_api.py        # Twitch OAuth, Helix cache, and goal state client
 │   ├── upload_validators.py # Image and font upload validation
 │   ├── urls.py              # Application routes
 │   ├── views/               # Feature-oriented HTTP views
 │   │   ├── common.py        # Shared OBS, ETag, export, and response helpers
 │   │   ├── dashboard.py     # Shared overlay dashboard and imports
 │   │   ├── pages.py         # Public pages and authentication
+│   │   ├── score.py         # Score HUD management and overlay views
 │   │   ├── spotify.py       # Spotify management and public overlay views
 │   │   ├── timer.py         # Timer management and public overlay views
+│   │   ├── twitch_goal.py   # Twitch Goal editor, OAuth, and public views
 │   │   └── winchallenge.py  # Win Challenge management and overlay views
 │   └── e2e_tests.py         # Playwright editor and OBS browser tests
 ├── locale/                  # German and English translations
@@ -329,6 +395,10 @@ Nexora/
 | Create account | `/accounts/signup/` | Public |
 | Spotify overlays | `/spotify/` | Authenticated |
 | New Spotify overlay | `/spotify/new/` | Authenticated |
+| Twitch Goal overlays | `/goals/` | Authenticated |
+| New Twitch Goal | `/goals/new/` | Authenticated |
+| Score HUDs | `/scores/` | Authenticated |
+| New Score HUD | `/scores/new/` | Authenticated |
 | Stream timers | `/timers/` | Authenticated |
 | New stream timer | `/timers/new/` | Authenticated |
 | Win Challenges | `/winchallenges/` | Authenticated |
@@ -607,7 +677,7 @@ described above. Before exposing Nexora publicly, at minimum:
 
 ## 🗺️ Possible next steps
 
-- Additional overlay types such as counters, goals, lower thirds, and social alerts
+- Additional overlay types such as counters, lower thirds, and social alerts
 - Account recovery and profile management
 - Template gallery and reusable personal presets
 - WebSocket- or Server-Sent Events-based live updates

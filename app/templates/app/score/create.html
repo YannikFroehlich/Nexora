@@ -1,0 +1,403 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% if is_create %}{% translate "Create Score HUD" %}{% else %}{{ overlay.display_name }}{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/score.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li><a href="{% url 'overlay_dashboard' %}#score-overlays">{% translate "My overlays" %}</a></li>
+            <li aria-current="page">
+                {% if is_create %}{% translate "Create" %}{% else %}{% translate "Edit" %}{% endif %}
+            </li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <div
+        class="score-page"
+        data-score-editor
+        data-overlay-branding-editor
+        data-editor-state
+        data-editor-create="{{ is_create|yesno:'true,false' }}"
+        data-editor-draft-key="nexora:draft:score:{{ user.pk }}:{% if is_create %}new{% else %}{{ overlay.pk }}{% endif %}"
+        data-status-saved="{% if is_create %}{% translate 'No unsaved changes' %}{% else %}{% translate 'All changes saved' %}{% endif %}"
+        data-status-unsaved="{% translate 'Unsaved changes' %}"
+        data-status-saving="{% translate 'Saving changes...' %}"
+        data-status-failed="{% translate 'Autosave failed. Use the save button to try again.' %}"
+        data-status-draft-saved="{% translate 'Draft saved locally' %}"
+        data-status-draft-restored="{% translate 'Local draft restored' %}"
+        data-score-preset-confirm="{% translate 'This replaces the current custom element positions with the selected broadcast preset. Continue?' %}"
+        {% if not is_create %}
+            data-score-state-url="{% url 'score_overlay_state' overlay.public_token %}"
+            data-score-add-url="{% url 'score_participant_add' overlay.pk %}"
+            data-score-update-template="{% url 'score_participant_update' overlay.pk '00000000-0000-0000-0000-000000000000' %}"
+            data-score-delete-template="{% url 'score_participant_delete' overlay.pk '00000000-0000-0000-0000-000000000000' %}"
+            data-score-score-template="{% url 'score_participant_score' overlay.pk '00000000-0000-0000-0000-000000000000' %}"
+            data-score-reset-template="{% url 'score_participant_reset' overlay.pk '00000000-0000-0000-0000-000000000000' %}"
+            data-score-reset-all-url="{% url 'score_reset_all' overlay.pk %}"
+        {% endif %}
+    >
+        <section class="score-hero" aria-labelledby="score-editor-title">
+            <div>
+                <p class="section-label"><span>Nexora</span> {% translate "Score HUD" %}</p>
+                <h1 id="score-editor-title">
+                    {% if is_create %}
+                        {% translate "Create a Score HUD" %}
+                    {% else %}
+                        {% translate "Edit Score HUD" %}
+                    {% endif %}
+                </h1>
+                <p>{% translate "Place player images, names and scores freely on a clean OBS overlay." %}</p>
+            </div>
+            <a class="btn glass-design" href="{% url 'overlay_dashboard' %}#score-overlays">{% translate "Back to my overlays" %}</a>
+        </section>
+
+        {% include "app/partials/_editor_state_toolbar.html" %}
+
+        {% if messages %}
+            <div class="message-stack" role="status" aria-live="polite" aria-atomic="true">
+                {% for message in messages %}
+                    <p class="message-stack__item{% if message.tags %} message-stack__item--{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form
+            class="score-editor-layout"
+            method="post"
+            novalidate
+            data-score-form
+            data-editor-state-form
+            data-editor-form-key="score"
+            {% if not is_create %}data-autosave-url="{% url 'score_autosave' overlay.pk %}"{% endif %}
+        >
+            {% csrf_token %}
+            {{ form.layout_mode }}
+            {{ form.elements }}
+
+            <div class="score-editor-sidebar">
+                {% if form.non_field_errors %}
+                    <div class="form-errors" role="alert">{{ form.non_field_errors }}</div>
+                {% endif %}
+                {{ form.elements.errors }}
+
+                <section class="score-panel" aria-labelledby="score-general-title">
+                    <div class="panel-heading panel-heading--numbered">
+                        <span class="panel-heading__number" aria-hidden="true">01</span>
+                        <div>
+                            <p class="section-label">{% translate "General" %}</p>
+                            <h2 id="score-general-title">{% translate "HUD settings" %}</h2>
+                        </div>
+                    </div>
+
+                    <div class="form-field form-field--wide">
+                        <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                        {{ form.name }}
+                        {{ form.name.errors }}
+                    </div>
+
+                    {% if is_create %}
+                        <div class="score-field-grid">
+                            <div class="form-field">
+                                <label for="{{ form.player_one_name.id_for_label }}">{{ form.player_one_name.label }}</label>
+                                {{ form.player_one_name }}
+                                {{ form.player_one_name.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.player_two_name.id_for_label }}">{{ form.player_two_name.label }}</label>
+                                {{ form.player_two_name }}
+                                {{ form.player_two_name.errors }}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="score-field-grid">
+                        <div class="form-field">
+                            <label for="{{ form.canvas_width.id_for_label }}">{{ form.canvas_width.label }}</label>
+                            {{ form.canvas_width }}
+                            {{ form.canvas_width.errors }}
+                        </div>
+                        <div class="form-field">
+                            <label for="{{ form.canvas_height.id_for_label }}">{{ form.canvas_height.label }}</label>
+                            {{ form.canvas_height }}
+                            {{ form.canvas_height.errors }}
+                        </div>
+                    </div>
+
+                    <div class="score-background-settings">
+                        <div class="score-field-grid">
+                            <div class="form-field">
+                                <label for="{{ form.background_color.id_for_label }}">{{ form.background_color.label }}</label>
+                                {{ form.background_color }}
+                                {{ form.background_color.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.background_opacity.id_for_label }}">{{ form.background_opacity.label }}</label>
+                                {{ form.background_opacity }}
+                                {{ form.background_opacity.errors }}
+                                <small>{{ form.background_opacity.help_text }}</small>
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.border_color.id_for_label }}">{{ form.border_color.label }}</label>
+                                {{ form.border_color }}
+                                {{ form.border_color.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.border_width.id_for_label }}">{{ form.border_width.label }}</label>
+                                {{ form.border_width }}
+                                {{ form.border_width.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.corner_radius.id_for_label }}">{{ form.corner_radius.label }}</label>
+                                {{ form.corner_radius }}
+                                {{ form.corner_radius.errors }}
+                            </div>
+                            <label class="score-toggle">
+                                {{ form.allow_negative_scores }}
+                                <span>
+                                    <strong>{{ form.allow_negative_scores.label }}</strong>
+                                    <small>{{ form.allow_negative_scores.help_text }}</small>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                {% include "app/partials/_overlay_branding_controls.html" with branding_form=form %}
+
+                {% if not is_create %}
+                    <section class="score-panel" aria-labelledby="score-participants-title">
+                        <div class="panel-heading panel-heading--numbered">
+                            <span class="panel-heading__number" aria-hidden="true">02</span>
+                            <div>
+                                <p class="section-label">{% translate "Control" %}</p>
+                                <h2 id="score-participants-title">{% translate "Participants and scores" %}</h2>
+                            </div>
+                        </div>
+
+                        <div
+                            class="score-participant-list"
+                            data-participant-list
+                            data-score-label="{% translate 'Score' %}"
+                            data-minus-label="{% translate 'Minus one' %}"
+                            data-plus-label="{% translate 'Plus one' %}"
+                            data-reset-label="{% translate 'Reset score' %}"
+                            data-save-label="{% translate 'Save participant' %}"
+                            data-delete-label="{% translate 'Delete participant' %}"
+                            data-delete-confirm="{% translate 'Delete this participant?' %}"
+                        ></div>
+
+                        <div class="score-add-form" data-participant-add-form data-action="{% url 'score_participant_add' overlay.pk %}">
+                            <div class="score-field-grid">
+                                <div class="form-field">
+                                    <label for="{{ participant_form.name.id_for_label }}">{{ participant_form.name.label }}</label>
+                                    {{ participant_form.name }}
+                                </div>
+                                <div class="form-field">
+                                    <label for="{{ participant_form.accent_color.id_for_label }}">{{ participant_form.accent_color.label }}</label>
+                                    {{ participant_form.accent_color }}
+                                </div>
+                                <div class="form-field form-field--wide">
+                                    <label for="{{ participant_form.image_asset.id_for_label }}">{{ participant_form.image_asset.label }}</label>
+                                    {{ participant_form.image_asset }}
+                                </div>
+                            </div>
+                            <button class="btn action-button" type="button" data-add-participant>{% translate "Add participant" %}</button>
+                        </div>
+
+                        <button class="btn glass-design" type="button" data-reset-all>
+                            {% translate "Reset all scores" %}
+                        </button>
+                    </section>
+
+                    <section class="score-panel" aria-labelledby="score-obs-title">
+                        <div class="panel-heading">
+                            <p class="section-label">{% translate "Browser source" %}</p>
+                            <h2 id="score-obs-title">{% translate "OBS link" %}</h2>
+                        </div>
+                        <div class="obs-copy">
+                            <input class="form-control" type="text" value="{{ obs_url }}" readonly data-obs-url>
+                            <button class="btn action-button" type="button" data-copy-url="{{ obs_url }}">
+                                {% translate "Copy link" %}
+                            </button>
+                        </div>
+                        <button class="btn glass-design" type="submit" form="score-renew-obs-link-form">
+                            {% translate "Renew OBS link" %}
+                        </button>
+                        <p class="score-panel-note score-source-dimensions">
+                            <span>{% translate "Recommended source size:" %}</span>
+                            <strong>
+                                <b data-source-width>{{ overlay.browser_source_width }}</b>
+                                x
+                                <b data-source-height>{{ overlay.browser_source_height }}</b> px
+                            </strong>
+                        </p>
+                    </section>
+                {% endif %}
+
+                <section class="score-panel selected-element-panel" aria-labelledby="selected-element-title">
+                    <div class="panel-heading">
+                        <p class="section-label">{% translate "Selected element" %}</p>
+                        <h2 id="selected-element-title" data-selected-element-title>{% translate "Select an element" %}</h2>
+                    </div>
+                    <p class="selected-element-empty" data-selected-empty>
+                        {% translate "Click an element in the preview or in the list to edit it." %}
+                    </p>
+
+                    <div data-selected-controls hidden>
+                        <div class="score-field-grid score-field-grid--four">
+                            <div class="form-field">
+                                <label for="score-element-x">X</label>
+                                <input class="form-control" id="score-element-x" type="number" min="0" max="1920" data-element-property="x">
+                            </div>
+                            <div class="form-field">
+                                <label for="score-element-y">Y</label>
+                                <input class="form-control" id="score-element-y" type="number" min="0" max="1080" data-element-property="y">
+                            </div>
+                            <div class="form-field">
+                                <label for="score-element-width">{% translate "Width" %}</label>
+                                <input class="form-control" id="score-element-width" type="number" min="24" max="1920" data-element-property="width">
+                            </div>
+                            <div class="form-field">
+                                <label for="score-element-height">{% translate "Height" %}</label>
+                                <input class="form-control" id="score-element-height" type="number" min="8" max="1080" data-element-property="height">
+                            </div>
+                        </div>
+
+                        <div class="score-field-grid">
+                            <div class="form-field">
+                                <label for="score-element-font-size">{% translate "Text size" %}</label>
+                                <input class="form-control" id="score-element-font-size" type="number" min="8" max="160" data-element-property="font_size">
+                            </div>
+                            <div class="form-field">
+                                <label for="score-element-color">{% translate "Text color" %}</label>
+                                <input class="color-control" id="score-element-color" type="color" data-element-property="color">
+                            </div>
+                            <div class="form-field">
+                                <label for="score-element-background">{% translate "Background" %}</label>
+                                <input class="color-control" id="score-element-background" type="color" data-element-property="background_color">
+                            </div>
+                            <div class="form-field">
+                                <label for="score-element-radius">{% translate "Corner radius" %}</label>
+                                <input class="form-control" id="score-element-radius" type="number" min="0" max="200" data-element-property="border_radius">
+                            </div>
+                            <div class="form-field">
+                                <label for="score-element-align">{% translate "Alignment" %}</label>
+                                <select class="form-control" id="score-element-align" data-element-property="text_align">
+                                    <option value="left">{% translate "Left" %}</option>
+                                    <option value="center">{% translate "Center" %}</option>
+                                    <option value="right">{% translate "Right" %}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="score-save-row">
+                    <button class="btn action-button" type="submit">
+                        {% if is_create %}{% translate "Create HUD" %}{% else %}{% translate "Save changes" %}{% endif %}
+                    </button>
+                    {% if not is_create %}
+                        <button class="btn danger-button" type="submit" form="score-delete-form">
+                            <svg class="score-button-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path d="M3 6h18"></path>
+                                <path d="M8 6V4h8v2"></path>
+                                <path d="M19 6l-1 14H6L5 6"></path>
+                                <path d="M10 11v6"></path>
+                                <path d="M14 11v6"></path>
+                            </svg>
+                            {% translate "Delete HUD" %}
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <aside class="score-preview-panel" aria-labelledby="score-preview-title">
+                <div class="panel-heading">
+                    <p class="section-label">{% translate "Live preview" %}</p>
+                    <h2 id="score-preview-title">{% translate "Drag the HUD into shape" %}</h2>
+                </div>
+                <div class="score-preview-tools" aria-label="{% translate 'Layout tools' %}">
+                    <button class="btn glass-design" type="button" data-layout-template="broadcast_duel">{% translate "Broadcast Duel" %}</button>
+                    <button class="btn glass-design" type="button" data-layout-template="broadcast_list">{% translate "Broadcast List" %}</button>
+                    <label class="score-grid-toggle">
+                        <input type="checkbox" data-grid-toggle>
+                        <span class="score-grid-toggle__control" aria-hidden="true"><i></i></span>
+                        <span>{% translate "Grid" %}</span>
+                    </label>
+                    <select class="form-control" data-grid-size disabled aria-label="{% translate 'Grid size' %}">
+                        <option value="5">5 px</option>
+                        <option value="10" selected>10 px</option>
+                        <option value="20">20 px</option>
+                        <option value="40">40 px</option>
+                    </select>
+                </div>
+                <div class="score-preview-stage" data-score-scale-shell>
+                    {% include "app/score/_overlay.html" with is_editor=True %}
+                </div>
+                <div class="score-element-list-heading">
+                    <h3>{% translate "Elements" %}</h3>
+                    <span data-element-count>0</span>
+                </div>
+                <div class="score-element-list" data-element-list></div>
+                <div class="score-preview-meta">
+                    <span><b data-preview-width>{{ overlay.canvas_width }}</b> x <b data-preview-height>{{ overlay.canvas_height }}</b> px</span>
+                    <span>
+                        {% translate "OBS browser source" %}:
+                        <b data-source-width>{{ overlay.browser_source_width }}</b>
+                        x
+                        <b data-source-height>{{ overlay.browser_source_height }}</b> px
+                    </span>
+                </div>
+            </aside>
+        </form>
+
+        <form id="overlay-asset-upload-form" action="{% url 'overlay_asset_upload' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        </form>
+
+        {% if not is_create %}
+            {% include "app/partials/_overlay_version_history.html" %}
+            <form
+                id="score-renew-obs-link-form"
+                action="{% url 'score_renew_obs_link' overlay.pk %}"
+                method="post"
+                data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+            >
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'score_manage' overlay.pk %}">
+            </form>
+            <form
+                id="score-delete-form"
+                action="{% url 'score_delete' overlay.pk %}"
+                method="post"
+                data-confirm-message="{% translate 'Delete this Score HUD?' %}"
+            >
+                {% csrf_token %}
+            </form>
+        {% endif %}
+
+        <p class="copy-toast" data-copy-toast role="status" aria-live="polite" aria-atomic="true" hidden>{% translate "OBS link copied" %}</p>
+    </div>
+    {{ overlay.state_payload|json_script:"score-state" }}
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/score.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
+{% endblock %}

@@ -41,8 +41,27 @@
         preview.style.setProperty("--demo-accent", accent);
     };
 
+    const updateTwitchGoal = (card) => {
+        const preview = card.querySelector("[data-demo-preview]");
+        const target = Math.max(1, Math.round(numberValue(card, "target", 1000)));
+        const current = Math.max(0, Math.round(numberValue(card, "current", 842)));
+        const progress = Math.min((current / target) * 100, 100);
+
+        card.querySelector('[data-demo-output="title"]').textContent = textValue(card, "title", "Road to 1,000");
+        card.querySelector('[data-demo-output="score"]').textContent = `${current.toLocaleString()} / ${target.toLocaleString()}`;
+        card.querySelector("[data-demo-progress]").style.width = `${progress}%`;
+        preview.style.setProperty(
+            "--demo-accent",
+            card.querySelector('[data-demo-field="accent"]')?.value || "#9146ff",
+        );
+    };
+
     cards.forEach((card) => {
-        const update = card.dataset.demoCard === "spotify" ? updateSpotify : updateWinChallenge;
+        const update = {
+            spotify: updateSpotify,
+            "twitch-goal": updateTwitchGoal,
+            winchallenge: updateWinChallenge,
+        }[card.dataset.demoCard];
         const preview = card.querySelector("[data-demo-preview]");
 
         card.addEventListener("input", () => update(card));

@@ -4,7 +4,7 @@
 
 {% block title %}{% translate "Interactive demo" %} · Nexora{% endblock %}
 
-{% block meta_description %}{% translate "Try Nexora's interactive Spotify and Win Challenge overlay demo without creating an account." %}{% endblock %}
+{% block meta_description %}{% translate "Try Nexora's interactive Spotify, Twitch Goal and Win Challenge overlay demos without creating an account." %}{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/demo.css' %}?v={{ APP_VERSION }}">
@@ -22,6 +22,7 @@
 {% block content %}
     {% url 'spotify_create' as spotify_create_url %}
     {% url 'winchallenge_create' as winchallenge_create_url %}
+    {% url 'twitch_goal_create' as twitch_goal_create_url %}
 
     <div class="demo-page" data-demo-page>
         <section class="demo-hero" aria-labelledby="demo-title">
@@ -39,7 +40,7 @@
                 {% endif %}
             </div>
             <p class="demo-hero__note">
-                {% translate "An account is only required when you want to save an overlay, connect Spotify or use its OBS link." %}
+                {% translate "An account is only required when you want to save an overlay, connect a service or use its OBS link." %}
             </p>
         </section>
 
@@ -103,6 +104,17 @@
                             {% translate "Create and save Spotify overlay" %}
                         </a>
                     </div>
+                </article>
+                <article class="demo-card" id="twitch-goal-demo" data-demo-card="twitch-goal">
+                    <header class="demo-card__header"><div class="demo-card__icon demo-card__icon--goal">♥</div><div><p class="demo-label">{% translate "Community goal demo" %}</p><h2>{% translate "Twitch Goal" %}</h2></div></header>
+                    <div class="demo-stage demo-stage--goal"><div class="demo-overlay demo-overlay--goal" data-demo-preview data-style="glass"><span>♥</span><div><strong data-demo-output="title">{% translate "Road to 1,000" %}</strong><i><b data-demo-progress></b></i><small data-demo-output="score">842 / 1,000</small></div></div></div>
+                    <div class="demo-controls">
+                        <label class="demo-field demo-field--wide"><span>{% translate "Title" %}</span><input type="text" value="{% translate 'Road to 1,000' %}" data-demo-field="title"></label>
+                        <label class="demo-field"><span>{% translate "Current" %}</span><input type="number" value="842" min="0" data-demo-field="current"></label>
+                        <label class="demo-field"><span>{% translate "Target" %}</span><input type="number" value="1000" min="1" data-demo-field="target"></label>
+                        <label class="demo-field demo-field--color"><span>{% translate "Accent color" %}</span><input type="color" value="#9146ff" data-demo-field="accent"></label>
+                    </div>
+                    <div class="demo-card__actions"><a class="btn action-button" href="{% if user.is_authenticated %}{{ twitch_goal_create_url }}{% else %}{% url 'signup' %}?next={{ twitch_goal_create_url|urlencode }}{% endif %}">{% translate "Create and save Twitch Goal" %}</a></div>
                 </article>
 
                 <article class="demo-card" id="winchallenge-demo" data-demo-card="winchallenge">

@@ -11,14 +11,17 @@ ENCRYPTED_VALUE_PREFIX = "fernet$"
 
 
 def _encryption_key():
-    configured_key = settings.SPOTIFY_TOKEN_ENCRYPTION_KEY.strip()
+    configured_key = (
+        settings.NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY.strip()
+        or settings.SPOTIFY_TOKEN_ENCRYPTION_KEY.strip()
+    )
 
     if configured_key:
         try:
             return configured_key.encode("ascii")
         except UnicodeEncodeError as error:
             raise ImproperlyConfigured(
-                "SPOTIFY_TOKEN_ENCRYPTION_KEY must be a valid Fernet key."
+                "NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY must be a valid Fernet key."
             ) from error
 
     digest = hashlib.sha256(settings.SECRET_KEY.encode("utf-8")).digest()
@@ -31,7 +34,7 @@ def _fernet(key):
         return Fernet(key)
     except (TypeError, ValueError) as error:
         raise ImproperlyConfigured(
-            "SPOTIFY_TOKEN_ENCRYPTION_KEY must be a valid Fernet key."
+            "NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY must be a valid Fernet key."
         ) from error
 
 
@@ -67,5 +70,5 @@ class EncryptedTextField(models.TextField):
             )
         except (InvalidToken, UnicodeDecodeError, ValueError) as error:
             raise ImproperlyConfigured(
-                "A Spotify token could not be decrypted. Check the token encryption key."
+                "An OAuth token could not be decrypted. Check the token encryption key."
             ) from error

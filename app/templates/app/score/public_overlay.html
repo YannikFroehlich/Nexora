@@ -1,0 +1,29 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'de' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="{% static 'css/score.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
+    <title>{{ overlay.display_name }}</title>
+</head>
+<body
+    class="score-overlay-source"
+    data-score-overlay-source
+    data-state-url="{% url 'score_overlay_state' overlay.public_token %}"
+    data-source-width="{{ overlay.browser_source_width }}"
+    data-source-height="{{ overlay.browser_source_height }}"
+>
+    <main class="score-overlay-source__frame">
+        {% include "app/score/_overlay.html" %}
+    </main>
+    {{ overlay.state_payload|json_script:"score-state" }}
+    <script src="{% static 'js/polling.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/score.js' %}?v={{ APP_VERSION }}"></script>
+</body>
+</html>

@@ -232,7 +232,7 @@
 
 .about-tools__grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px;
 }
 
@@ -269,6 +269,13 @@
 .about-tool--timer .about-tool__icon {
     color: #7c3aed;
     background: rgba(139, 92, 246, 0.12);
+    font-size: 1.7rem;
+    font-weight: 850;
+}
+
+.about-tool--goal .about-tool__icon {
+    color: #9146ff;
+    background: rgba(145, 70, 255, 0.12);
     font-size: 1.7rem;
     font-weight: 850;
 }

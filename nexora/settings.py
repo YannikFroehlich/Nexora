@@ -146,9 +146,30 @@ SPOTIFY_TOKEN_ENCRYPTION_KEY = os.environ.get(
     "SPOTIFY_TOKEN_ENCRYPTION_KEY",
     "",
 ).strip()
+NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY = os.environ.get(
+    "NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY",
+    "",
+).strip()
+if (
+    NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY
+    and SPOTIFY_TOKEN_ENCRYPTION_KEY
+    and NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY != SPOTIFY_TOKEN_ENCRYPTION_KEY
+):
+    raise ImproperlyConfigured(
+        "NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY and SPOTIFY_TOKEN_ENCRYPTION_KEY must "
+        "match while both are configured."
+    )
 SPOTIFY_PLAYBACK_CACHE_SECONDS = _environment_non_negative_int(
     "SPOTIFY_PLAYBACK_CACHE_SECONDS",
     default=8,
+)
+
+TWITCH_CLIENT_ID = os.environ.get("TWITCH_CLIENT_ID", "").strip()
+TWITCH_CLIENT_SECRET = os.environ.get("TWITCH_CLIENT_SECRET", "").strip()
+TWITCH_REDIRECT_URI = os.environ.get("TWITCH_REDIRECT_URI", "").strip()
+TWITCH_METRIC_CACHE_SECONDS = _environment_non_negative_int(
+    "TWITCH_METRIC_CACHE_SECONDS",
+    default=15,
 )
 
 

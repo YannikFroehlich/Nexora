@@ -6,12 +6,20 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from app import overlay_transfer
-from app.forms import SpotifyOverlayForm, TimerOverlayForm
+from app.forms import (
+    ScoreOverlayForm,
+    SpotifyOverlayForm,
+    TimerOverlayForm,
+    TwitchGoalOverlayForm,
+)
 from app.models import (
     OverlayAsset,
     OverlayVersion,
+    ScoreOverlay,
+    ScoreParticipant,
     SpotifyOverlay,
     TimerOverlay,
+    TwitchGoalOverlay,
     WinChallenge,
     WinChallengeGame,
 )
@@ -29,8 +37,12 @@ def overlay_type_for(overlay):
         return overlay_transfer.SPOTIFY_TYPE
     if isinstance(overlay, TimerOverlay):
         return overlay_transfer.TIMER_TYPE
+    if isinstance(overlay, ScoreOverlay):
+        return overlay_transfer.SCORE_TYPE
     if isinstance(overlay, WinChallenge):
         return overlay_transfer.WINCHALLENGE_TYPE
+    if isinstance(overlay, TwitchGoalOverlay):
+        return overlay_transfer.TWITCH_GOAL_TYPE
     raise TypeError("Unsupported overlay model")
 
 
@@ -228,6 +240,73 @@ def _restore_winchallenge(overlay, payload, assets):
     return overlay
 
 
+def _restore_score(overlay, payload, assets):
+    participants_data = payload["participants"]
+    if (
+        not isinstance(participants_data, list)
+        or not ScoreOverlay.MIN_PARTICIPANTS
+        <= len(participants_data)
+        <= ScoreOverlay.MAX_PARTICIPANTS
+    ):
+        raise OverlayVersionError("Invalid Score HUD version")
+
+    overlay_data = overlay_transfer._score_layout_mode_with_defaults(
+        payload["overlay"],
+        participants_data,
+    )
+    form_data = copy.deepcopy(overlay_data)
+    form_data["elements"] = json.dumps(
+        form_data["elements"],
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    form_data.update(_branding_data(overlay.owner, assets))
+    form = ScoreOverlayForm(
+        data=form_data,
+        instance=overlay,
+        asset_owner=overlay.owner,
+    )
+    if not form.is_valid():
+        raise OverlayVersionError("Invalid Score HUD version")
+    restored = form.save()
+
+    participants = []
+    for sort_order, participant_data in enumerate(participants_data):
+        participant = ScoreParticipant(
+            overlay=restored,
+            sort_order=sort_order,
+            **participant_data,
+        )
+        try:
+            participant.full_clean(exclude=("overlay",))
+        except ValidationError as error:
+            raise OverlayVersionError("Invalid Score HUD version") from error
+        participants.append(participant)
+
+    restored.participants.all().delete()
+    ScoreParticipant.objects.bulk_create(participants)
+    return restored
+
+
+def _restore_twitch_goal(overlay, payload, assets):
+    form_data = copy.deepcopy(payload["overlay"])
+    form_data.setdefault("font_family", overlay.FONT_SYSTEM)
+    form_data["elements"] = json.dumps(
+        form_data["elements"],
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    form_data.update(_branding_data(overlay.owner, assets))
+    form = TwitchGoalOverlayForm(
+        data=form_data,
+        instance=overlay,
+        asset_owner=overlay.owner,
+    )
+    if not form.is_valid():
+        raise OverlayVersionError("Invalid Twitch goal version")
+    return form.save()
+
+
 @transaction.atomic
 def restore_version(overlay, version):
     overlay_type = overlay_type_for(overlay)
@@ -250,8 +329,12 @@ def restore_version(overlay, version):
         restored = _restore_spotify(overlay, payload, assets)
     elif isinstance(overlay, TimerOverlay):
         restored = _restore_timer(overlay, payload, assets)
-    else:
+    elif isinstance(overlay, WinChallenge):
         restored = _restore_winchallenge(overlay, payload, assets)
+    elif isinstance(overlay, TwitchGoalOverlay):
+        restored = _restore_twitch_goal(overlay, payload, assets)
+    else:
+        restored = _restore_score(overlay, payload, assets)
 
     record_version(restored, OverlayVersion.REASON_RESTORE)
     return restored

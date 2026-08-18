@@ -16,6 +16,7 @@
     {% url 'spotify_create' as spotify_create_url %}
     {% url 'timer_create' as timer_create_url %}
     {% url 'winchallenge_create' as winchallenge_create_url %}
+    {% url 'twitch_goal_create' as twitch_goal_create_url %}
     <div class="home-page">
         <section class="hero" aria-labelledby="hero-title">
             <div class="hero__copy">
@@ -211,6 +212,22 @@
                         {% if not user.is_authenticated %}
                             <small class="overlay-card__account-note">{% translate "Free account required to save and use in OBS." %}</small>
                         {% endif %}
+                    </div>
+                </article>
+
+                <article class="overlay-card overlay-card--goal">
+                    <div class="overlay-card__preview" aria-hidden="true">
+                        <div class="home-goal-widget"><span>♥</span><div><small>{% translate "Follower goal" %}</small><strong>{% translate "Road to 1,000" %}</strong><i><b></b></i><em>842 / 1,000</em></div></div>
+                    </div>
+                    <div class="overlay-card__content">
+                        <div class="overlay-card__title"><div class="overlay-card__icon overlay-card__icon--goal" aria-hidden="true">♥</div><h3>{% translate "Twitch Goal" %}</h3></div>
+                        <p>{% translate "Show a live follower or subscription milestone and celebrate it automatically." %}</p>
+                        <ul class="feature-list"><li>{% translate "Follower, subscription and sub-point goals" %}</li><li>{% translate "Responsive presets and free canvas" %}</li><li>{% translate "Animations and celebration sounds" %}</li></ul>
+                        <div class="overlay-card__actions">
+                            <a href="{% if user.is_authenticated %}{{ twitch_goal_create_url }}{% else %}{% url 'signup' %}?next={{ twitch_goal_create_url|urlencode }}{% endif %}" class="btn action-button overlay-card__action">{% translate "Create Twitch Goal" %}</a>
+                            <a href="{% url 'demo' %}#twitch-goal-demo" class="btn glass-design overlay-card__action overlay-card__action--secondary">{% translate "Try demo" %}</a>
+                        </div>
+                        {% if not user.is_authenticated %}<small class="overlay-card__account-note">{% translate "Free account required to save and use in OBS." %}</small>{% endif %}
                     </div>
                 </article>
             </div>

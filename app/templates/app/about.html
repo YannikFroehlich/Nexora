@@ -87,7 +87,7 @@
         <section class="about-tools" aria-labelledby="tools-title">
             <div class="about-section-heading">
                 <p class="about-label">{% translate "Available now" %}</p>
-                <h2 id="tools-title">{% translate "Three tools, one consistent workflow" %}</h2>
+                <h2 id="tools-title">{% translate "Four tools, one consistent workflow" %}</h2>
             </div>
 
             <div class="about-tools__grid">
@@ -127,6 +127,18 @@
                         <p>{% translate "Control a synchronized countdown or stopwatch without replacing the browser source in OBS." %}</p>
                         <a href="{% url 'overlay_dashboard' %}#timer-overlays">
                             {% translate "Open stream timers" %}<span aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="about-tool about-tool--goal">
+                    <div class="about-tool__icon about-tool__icon--goal" aria-hidden="true">&#9829;</div>
+                    <div class="about-tool__content">
+                        <p class="about-tool__type">{% translate "Community" %}</p>
+                        <h3>{% translate "Twitch Goal" %}</h3>
+                        <p>{% translate "Track followers, active subscriptions or sub points live and celebrate milestones in OBS." %}</p>
+                        <a href="{% url 'overlay_dashboard' %}#twitch-goal-overlays">
+                            {% translate "Open Twitch goals" %}<span aria-hidden="true">→</span>
                         </a>
                     </div>
                 </article>

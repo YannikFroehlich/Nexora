@@ -1,0 +1,68 @@
+{% load i18n %}
+{% if overlay.font_asset_id %}
+    <style>@font-face { font-family: "NexoraUploadedGoalFont"; src: url("{{ overlay.font_asset.public_url }}"); font-display: swap; }</style>
+{% endif %}
+<div
+    class="twitch-goal-canvas{% if is_editor %} twitch-goal-canvas--editor{% endif %}"
+    data-twitch-goal-canvas
+    data-overlay-branding-root
+    style="
+        --goal-canvas-width: {{ overlay.canvas_width }}px;
+        --goal-canvas-height: {{ overlay.canvas_height }}px;
+        --goal-background: {{ overlay.background_rgba }};
+        --goal-text: {{ overlay.text_color }};
+        --goal-accent: {{ overlay.accent_color }};
+        --goal-secondary: {{ overlay.secondary_color }};
+        --goal-fill: {% if overlay.use_gradient %}linear-gradient(90deg, {{ overlay.accent_color }}, {{ overlay.secondary_color }}){% else %}{{ overlay.accent_color }}{% endif %};
+        --goal-track: {{ overlay.track_color }};
+        --goal-border: {{ overlay.border_color }};
+        --goal-border-width: {{ overlay.border_width }}px;
+        --goal-radius: {{ overlay.corner_radius }}px;
+        --goal-shadow: {{ overlay.shadow_css }};
+        --nexora-overlay-font: {% if overlay.font_asset_id %}'NexoraUploadedGoalFont'{% else %}{{ overlay.font_css_stack }}{% endif %};
+        {% if overlay.background_asset_id %}--nexora-overlay-background-image: url('{{ overlay.background_asset.public_url }}');{% endif %}
+    "
+>
+    {% for element in overlay.elements %}
+        <div
+            class="twitch-goal-element twitch-goal-element--{{ element.type }}"
+            data-goal-element
+            data-element-id="{{ element.id }}"
+            data-element-type="{{ element.type }}"
+            {% if is_editor %}tabindex="0" role="button" aria-label="{% translate 'Move overlay element' %}"{% endif %}
+            style="left:{{ element.x }}px;top:{{ element.y }}px;width:{{ element.width }}px;height:{{ element.height }}px;color:{{ element.color }};font-size:{{ element.font_size }}px;font-weight:{{ element.font_weight }};border-radius:{{ element.border_radius }}px;text-align:{{ element.text_align }};z-index:{{ element.z_index }};--element-color:{{ element.color }};--element-background:{{ element.background_color }};--goal-ring-width:{{ element.stroke_width|default:9 }};{% if element.visible == False %}display:none;{% endif %}"
+        >
+            {% if element.type == "title" %}
+                <span data-goal-title>{{ state.title|default:overlay.display_title }}</span>
+            {% elif element.type == "channel_name" %}
+                <span data-channel-name>{{ state.channel.display_name|default:"NexoraCreator" }}</span>
+            {% elif element.type == "channel_avatar" %}
+                <span class="twitch-goal-avatar">
+                    <img data-channel-avatar src="{{ state.channel.avatar_url }}" alt=""{% if not state.channel.avatar_url %} hidden{% endif %}>
+                    <b data-channel-avatar-fallback{% if state.channel.avatar_url %} hidden{% endif %}>N</b>
+                </span>
+            {% elif element.type == "current" %}
+                <span data-current-value>{{ state.goal.current_value|default_if_none:"—" }}</span>
+            {% elif element.type == "target" %}
+                <span data-target-value>{{ state.goal.target_value|default:overlay.target_value }}</span>
+            {% elif element.type == "progress_text" %}
+                <span data-progress-text>{{ state.goal.current_value|default_if_none:"—" }} / {{ state.goal.target_value|default:overlay.target_value }}</span>
+            {% elif element.type == "percentage" %}
+                <span data-percentage>{{ state.goal.progress_percent|default:0 }}%</span>
+            {% elif element.type == "remaining" %}
+                <span data-remaining>{% blocktranslate with value=state.goal.remaining|default:overlay.target_value %}{{ value }} remaining{% endblocktranslate %}</span>
+            {% elif element.type == "progress_bar" %}
+                <span class="twitch-goal-progress" aria-hidden="true"><i data-progress-fill style="width:{{ state.goal.progress_percent|default:0 }}%;"></i></span>
+            {% elif element.type == "progress_ring" %}
+                <svg class="twitch-goal-ring" viewBox="0 0 120 120" aria-hidden="true">
+                    <circle class="twitch-goal-ring__track" cx="60" cy="60" r="52"></circle>
+                    <circle class="twitch-goal-ring__fill" cx="60" cy="60" r="52" pathLength="100" data-progress-ring style="stroke-dashoffset:100;"></circle>
+                </svg>
+            {% elif element.type == "logo" %}
+                {% if overlay.logo_asset_id %}<img class="twitch-goal-logo" src="{{ overlay.logo_asset.public_url }}" alt="" data-overlay-custom-logo>{% else %}<span>N</span>{% endif %}
+            {% elif element.type == "icon" %}
+                <span class="twitch-goal-icon" aria-hidden="true">{% if overlay.goal_type == "followers" %}♥{% else %}★{% endif %}</span>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>

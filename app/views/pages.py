@@ -7,7 +7,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 
 from app import spotify_api
 from app.forms import SignUpForm
-from app.models import SpotifyOverlay, TimerOverlay, WinChallenge
+from app.models import ScoreOverlay, SpotifyOverlay, TimerOverlay, WinChallenge
 
 
 def home(request):
@@ -31,6 +31,8 @@ def robots_txt(request):
             "Disallow: /accounts/",
             "Disallow: /admin/",
             "Disallow: /overlays/",
+            "Disallow: /goals/",
+            "Disallow: /scores/",
             "Disallow: /spotify/",
             "Disallow: /timers/",
             "Disallow: /winchallenges/",
@@ -82,6 +84,7 @@ def signup(request):
 
                 if is_first_user:
                     SpotifyOverlay.objects.filter(owner__isnull=True).update(owner=user)
+                    ScoreOverlay.objects.filter(owner__isnull=True).update(owner=user)
                     TimerOverlay.objects.filter(owner__isnull=True).update(owner=user)
                     WinChallenge.objects.filter(owner__isnull=True).update(owner=user)
                     spotify_api.adopt_connections(user)
