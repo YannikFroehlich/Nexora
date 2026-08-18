@@ -295,22 +295,16 @@ msgid "Score HUD"
 msgstr "Score HUD"
 
 #: .\app\forms.py:806
-#, fuzzy
-#| msgid "A maximum of 30 elements is allowed."
 msgid "A maximum of 24 elements is allowed."
-msgstr "Es sind maximal 30 Elemente erlaubt."
+msgstr "Es sind maximal 24 Elemente erlaubt."
 
 #: .\app\forms.py:823
-#, fuzzy
-#| msgid "An unknown Spotify element was submitted."
 msgid "An unknown score element was submitted."
-msgstr "Es wurde ein unbekanntes Spotify-Element übermittelt."
+msgstr "Es wurde ein unbekanntes Score-Element übermittelt."
 
 #: .\app\forms.py:826
-#, fuzzy
-#| msgid "Every overlay element needs a unique valid ID."
 msgid "Every score element needs a participant."
-msgstr "Jedes Overlay-Element benötigt eine eindeutige gültige ID."
+msgstr "Jedes Score-Element benötigt einen Teilnehmer."
 
 #: .\app\forms.py:876 .\app\forms.py:881
 msgid "Player 1"
@@ -338,16 +332,12 @@ msgid "Player or team"
 msgstr "Spieler oder Team"
 
 #: .\app\forms.py:956 .\app\templates\app\score\_overlay.html:12
-#, fuzzy
-#| msgid "Image"
 msgid "No image"
-msgstr "Bild"
+msgstr "Kein Bild"
 
 #: .\app\forms.py:1026
-#, fuzzy
-#| msgid "Overlay title"
 msgid "Goal title"
-msgstr "Overlay-Titel"
+msgstr "Zieltitel"
 
 #: .\app\forms.py:1027
 msgid "Goal type"
@@ -362,10 +352,8 @@ msgid "Counting mode"
 msgstr "Zählmodus"
 
 #: .\app\forms.py:1030
-#, fuzzy
-#| msgid "Increase value"
 msgid "Target value"
-msgstr "Wert erhöhen"
+msgstr "Zielwert"
 
 #: .\app\forms.py:1031 .\app\templates\app\twitch_goal\create.html:103
 #: .\app\templates\app\winchallenge\create.html:187
@@ -373,28 +361,20 @@ msgid "Layout"
 msgstr "Layout"
 
 #: .\app\forms.py:1032
-#, fuzzy
-#| msgid "Overlay width"
 msgid "Canvas width"
-msgstr "Overlay-Breite"
+msgstr "Canvas-Breite"
 
 #: .\app\forms.py:1033
-#, fuzzy
-#| msgid "Overlay height"
 msgid "Canvas height"
-msgstr "Overlay-Höhe"
+msgstr "Canvas-Höhe"
 
 #: .\app\forms.py:1038
-#, fuzzy
-#| msgid "Border color"
 msgid "Secondary color"
-msgstr "Rahmenfarbe"
+msgstr "Sekundärfarbe"
 
 #: .\app\forms.py:1039
-#, fuzzy
-#| msgid "Progress bar"
 msgid "Progress track color"
-msgstr "Fortschrittsbalken"
+msgstr "Farbe der Fortschrittsleiste"
 
 #: .\app\forms.py:1043
 msgid "Use progress gradient"
@@ -409,10 +389,8 @@ msgid "Number suffix"
 msgstr "Zahlensuffix"
 
 #: .\app\forms.py:1047
-#, fuzzy
-#| msgid "Main navigation"
 msgid "Goal animation"
-msgstr "Hauptnavigation"
+msgstr "Animationsart"
 
 #: .\app\forms.py:1048
 msgid "Animation duration"
@@ -439,16 +417,12 @@ msgid "Sound volume"
 msgstr "Lautstärke"
 
 #: .\app\forms.py:1163
-#, fuzzy
-#| msgid "The element layout must be a list."
 msgid "The element layout must contain at most 30 items."
-msgstr "Das Element-Layout muss eine Liste sein."
+msgstr "Das Element-Layout darf höchstens 30 Einträge enthalten."
 
 #: .\app\forms.py:1174
-#, fuzzy
-#| msgid "An unknown Spotify element was submitted."
 msgid "An unknown goal element was submitted."
-msgstr "Es wurde ein unbekanntes Spotify-Element übermittelt."
+msgstr "Es wurde ein unbekanntes Ziel-Element übermittelt."
 
 #: .\app\forms.py:1240
 msgid "Hours"
@@ -562,10 +536,8 @@ msgid "Radial goal"
 msgstr "Kreisförmiges Ziel"
 
 #: .\app\models.py:559 .\app\models.py:838
-#, fuzzy
-#| msgid "Customize"
 msgid "Custom"
-msgstr "Anpassen"
+msgstr "Benutzerdefiniert"
 
 #: .\app\models.py:836
 msgid "Broadcast duel"
@@ -597,10 +569,8 @@ msgid "Subscription points"
 msgstr "Abo-Punkte"
 
 #: .\app\models.py:1278
-#, fuzzy
-#| msgid "Total wins"
 msgid "Total count"
-msgstr "Wins gesamt"
+msgstr "Gesamtzahl"
 
 #: .\app\models.py:1279
 msgid "Campaign growth"
@@ -647,10 +617,8 @@ msgid "Fanfare"
 msgstr "Fanfare"
 
 #: .\app\models.py:1322
-#, fuzzy
-#| msgid "Increase wins"
 msgid "Arcade win"
-msgstr "Wins erhöhen"
+msgstr "Arcade-Sieg"
 
 #: .\app\models.py:1323
 msgid "Sparkle"
@@ -707,22 +675,16 @@ msgid "The timer overlay data is invalid."
 msgstr "Die Daten des Timer-Overlays sind ungültig."
 
 #: .\app\overlay_transfer.py:472
-#, fuzzy
-#| msgid "The timer overlay data is invalid."
 msgid "The score participant data is invalid."
-msgstr "Die Daten des Timer-Overlays sind ungültig."
+msgstr "Die Teilnehmerdaten sind ungültig."
 
 #: .\app\overlay_transfer.py:485
-#, fuzzy
-#| msgid "The element layout is invalid."
 msgid "The score participant list is invalid."
-msgstr "Das Element-Layout ist ungültig."
+msgstr "Die Teilnehmerliste ist ungültig."
 
 #: .\app\overlay_transfer.py:510
-#, fuzzy
-#| msgid "The timer overlay data is invalid."
 msgid "The score overlay data is invalid."
-msgstr "Die Daten des Timer-Overlays sind ungültig."
+msgstr "Die Score-HUD-Daten sind ungültig."
 
 #: .\app\overlay_transfer.py:534
 msgid "The Twitch goal overlay data is invalid."
@@ -1193,17 +1155,10 @@ msgid "Interactive demo"
 msgstr "Interaktive Demo"
 
 #: .\app\templates\app\demo.html:7
-#, fuzzy
-#| msgid ""
-#| "Try Nexora's interactive Spotify and Win Challenge overlay demo without "
-#| "creating an account."
 msgid ""
 "Try Nexora's interactive Spotify, Twitch Goal and Win Challenge overlay "
 "demos without creating an account."
-msgstr ""
-"Probiere Nexoras interaktive Demos für Spotify-, Twitch-Ziel- und Win-"
-"Challenge-Overlays ohne Konto aus.Probiere Nexoras interaktive Spotify- und "
-"Win-Challenge-Overlay-Demo aus, ohne ein Konto zu erstellen."
+msgstr "Probiere Nexoras interaktive Demos für Spotify-, Twitch-Ziel- und Win-Challenge-Overlays aus, ganz ohne Konto."
 
 #: .\app\templates\app\demo.html:29
 msgid "Try Nexora before you sign up"
@@ -1234,16 +1189,10 @@ msgid "Create free account"
 msgstr "Kostenloses Konto erstellen"
 
 #: .\app\templates\app\demo.html:43
-#, fuzzy
-#| msgid ""
-#| "An account is only required when you want to save an overlay, connect "
-#| "Spotify or use its OBS link."
 msgid ""
 "An account is only required when you want to save an overlay, connect a "
 "service or use its OBS link."
-msgstr ""
-"Ein Konto brauchst du erst, wenn du ein Overlay speichern, Spotify verbinden "
-"oder den OBS-Link verwenden möchtest."
+msgstr "Ein Konto brauchst du nur, wenn du ein Overlay speichern, einen Dienst verbinden oder dessen OBS-Link verwenden möchtest."
 
 #: .\app\templates\app\demo.html:49
 msgid "Overlay playground"
@@ -1313,10 +1262,8 @@ msgstr "Aktuell"
 #: .\app\templates\app\demo.html:114
 #: .\app\templates\app\overlay_dashboard.html:444
 #: .\app\templates\app\twitch_goal\create.html:137
-#, fuzzy
-#| msgid "Target wins"
 msgid "Target"
-msgstr "Ziel-Wins"
+msgstr "Ziel"
 
 #: .\app\templates\app\demo.html:117
 msgid "Create and save Twitch Goal"
@@ -1599,34 +1546,20 @@ msgid "Get started"
 msgstr "Jetzt starten"
 
 #: .\app\templates\app\overlay_dashboard.html:7
-#, fuzzy
-#| msgid "Manage your Spotify, timer and Win Challenge overlays in one place."
 msgid ""
 "Manage your Twitch goals, Spotify, score, timer and Win Challenge overlays "
 "in one place."
-msgstr ""
-"Verwalte deine Twitch-Ziele, Spotify-, Punkte-, Timer- und Win-Challenge-"
-"Overlays an einem Ort.Verwalte deine Spotify-, Timer- und Win-Challenge-"
-"Overlays an einem Ort."
+msgstr "Verwalte deine Twitch-Ziele, Spotify-, Score-, Timer- und Win-Challenge-Overlays an einem Ort."
 
 #: .\app\templates\app\overlay_dashboard.html:26
 msgid "Overlay dashboard"
 msgstr "Overlay-Dashboard"
 
 #: .\app\templates\app\overlay_dashboard.html:28
-#, fuzzy
-#| msgid ""
-#| "Manage Spotify, timer and Win Challenge overlays together, open previews "
-#| "and copy OBS links without switching pages."
 msgid ""
 "Manage Twitch goals, Spotify, score, timer and Win Challenge overlays "
 "together, open previews and copy OBS links without switching pages."
-msgstr ""
-"Verwalte Twitch-Ziele, Spotify-, Punkte-, Timer- und Win-Challenge-Overlays "
-"gemeinsam, öffne Vorschauen und kopiere OBS-Links ohne "
-"Seitenwechsel.Verwalte Spotify-, Timer- und Win-Challenge-Overlays "
-"gemeinsam, öffne Vorschauen und kopiere OBS-Links, ohne zwischen Seiten zu "
-"wechseln."
+msgstr "Verwalte Twitch-Ziele, Spotify-, Score-, Timer- und Win-Challenge-Overlays gemeinsam, öffne Vorschauen und kopiere OBS-Links, ohne die Seite zu wechseln."
 
 #: .\app\templates\app\overlay_dashboard.html:29
 msgid "Overlay categories"
@@ -1920,23 +1853,17 @@ msgstr ""
 "dem Laufenden."
 
 #: .\app\templates\app\overlay_dashboard.html:328
-#, fuzzy
-#| msgid "Wins and match counters"
 msgid "Scores and matchups"
-msgstr "Siege- und Match-Zähler"
+msgstr "Punktzahlen und Matchups"
 
 #: .\app\templates\app\overlay_dashboard.html:332
 #: .\app\templates\app\score\create.html:6
-#, fuzzy
-#| msgid "Create Stream Timer"
 msgid "Create Score HUD"
-msgstr "Stream-Timer erstellen"
+msgstr "Score HUD erstellen"
 
 #: .\app\templates\app\overlay_dashboard.html:352
-#, fuzzy
-#| msgid "Add your first game in the editor."
 msgid "Add players in the editor."
-msgstr "Füge dein erstes Spiel im Editor hinzu."
+msgstr "Füge Spieler im Editor hinzu."
 
 #: .\app\templates\app\overlay_dashboard.html:367
 msgid "Participants"
@@ -1944,16 +1871,12 @@ msgstr "Teilnehmer"
 
 #: .\app\templates\app\overlay_dashboard.html:395
 #: .\app\templates\app\score\create.html:388
-#, fuzzy
-#| msgid "Delete this game?"
 msgid "Delete this Score HUD?"
-msgstr "Dieses Spiel löschen?"
+msgstr "Dieses Score HUD löschen?"
 
 #: .\app\templates\app\overlay_dashboard.html:408
-#, fuzzy
-#| msgid "No overlays yet"
 msgid "No Score HUDs yet"
-msgstr "Noch keine Overlays"
+msgstr "Noch keine Score HUDs"
 
 #: .\app\templates\app\overlay_dashboard.html:409
 msgid ""
@@ -2268,10 +2191,8 @@ msgid ""
 msgstr "Dies ersetzt die aktuellen benutzerdefinierten Elementpositionen durch das gewählte Broadcast-Preset. Fortfahren?"
 
 #: .\app\templates\app\score\create.html:56
-#, fuzzy
-#| msgid "Create an overlay"
 msgid "Create a Score HUD"
-msgstr "Overlay erstellen"
+msgstr "Score HUD erstellen"
 
 #: .\app\templates\app\score\create.html:58
 msgid "Edit Score HUD"
@@ -2294,10 +2215,8 @@ msgid "General"
 msgstr "Allgemein"
 
 #: .\app\templates\app\score\create.html:102
-#, fuzzy
-#| msgid "Save settings"
 msgid "HUD settings"
-msgstr "Einstellungen speichern"
+msgstr "HUD-Einstellungen"
 
 #: .\app\templates\app\score\create.html:187
 msgid "Participants and scores"
@@ -2308,20 +2227,16 @@ msgid "Score"
 msgstr "Punktzahl"
 
 #: .\app\templates\app\score\create.html:195
-#, fuzzy
-#| msgid "Minutes"
 msgid "Minus one"
-msgstr "Minuten"
+msgstr "Minus eins"
 
 #: .\app\templates\app\score\create.html:196
 msgid "Plus one"
 msgstr "Plus eins"
 
 #: .\app\templates\app\score\create.html:197
-#, fuzzy
-#| msgid "Reset"
 msgid "Reset score"
-msgstr "Zurücksetzen"
+msgstr "Punktzahl zurücksetzen"
 
 #: .\app\templates\app\score\create.html:198
 msgid "Save participant"
@@ -2332,10 +2247,8 @@ msgid "Delete participant"
 msgstr "Teilnehmer löschen"
 
 #: .\app\templates\app\score\create.html:200
-#, fuzzy
-#| msgid "Delete this game?"
 msgid "Delete this participant?"
-msgstr "Dieses Spiel löschen?"
+msgstr "Diesen Teilnehmer löschen?"
 
 #: .\app\templates\app\score\create.html:218
 msgid "Add participant"
@@ -2390,16 +2303,12 @@ msgid "Text size"
 msgstr "Textgröße"
 
 #: .\app\templates\app\score\create.html:290
-#, fuzzy
-#| msgid "Background image"
 msgid "Background"
-msgstr "Hintergrundbild"
+msgstr "Hintergrund"
 
 #: .\app\templates\app\score\create.html:298
-#, fuzzy
-#| msgid "Alignment tools"
 msgid "Alignment"
-msgstr "Ausrichtungswerkzeuge"
+msgstr "Ausrichtung"
 
 #: .\app\templates\app\score\create.html:300
 #: .\app\templates\app\twitch_goal\create.html:161
@@ -2413,16 +2322,12 @@ msgstr "Mitte"
 
 #: .\app\templates\app\score\create.html:302
 #: .\app\templates\app\twitch_goal\create.html:161
-#, fuzzy
-#| msgid "Height"
 msgid "Right"
-msgstr "Höhe"
+msgstr "Rechts"
 
 #: .\app\templates\app\score\create.html:311
-#, fuzzy
-#| msgid "Create"
 msgid "Create HUD"
-msgstr "Erstellen"
+msgstr "HUD erstellen"
 
 #: .\app\templates\app\score\create.html:311
 #: .\app\templates\app\spotify\create.html:353
@@ -2431,10 +2336,8 @@ msgid "Save changes"
 msgstr "Änderungen speichern"
 
 #: .\app\templates\app\score\create.html:322
-#, fuzzy
-#| msgid "Delete"
 msgid "Delete HUD"
-msgstr "Löschen"
+msgstr "HUD löschen"
 
 #: .\app\templates\app\score\create.html:330
 #: .\app\templates\app\spotify\create.html:365
@@ -2452,10 +2355,8 @@ msgid "Drag the HUD into shape"
 msgstr "Das HUD in Form ziehen"
 
 #: .\app\templates\app\score\create.html:333
-#, fuzzy
-#| msgid "Layout"
 msgid "Layout tools"
-msgstr "Layout"
+msgstr "Layout-Werkzeuge"
 
 #: .\app\templates\app\score\create.html:334
 msgid "Broadcast Duel"
@@ -2466,10 +2367,8 @@ msgid "Broadcast List"
 msgstr "Broadcast-Liste"
 
 #: .\app\templates\app\score\create.html:339
-#, fuzzy
-#| msgid "Grid size"
 msgid "Grid"
-msgstr "Rastergröße"
+msgstr "Raster"
 
 #: .\app\templates\app\score\create.html:341
 #: .\app\templates\app\spotify\create.html:382
@@ -2884,10 +2783,8 @@ msgid "Horizontal"
 msgstr "Horizontal"
 
 #: .\app\templates\app\twitch_goal\create.html:111
-#, fuzzy
-#| msgid "Complete"
 msgid "Compact"
-msgstr "Fertig"
+msgstr "Kompakt"
 
 #: .\app\templates\app\twitch_goal\create.html:112
 msgid "Card"
@@ -2902,10 +2799,8 @@ msgid "Colors and surface"
 msgstr "Farben und Oberfläche"
 
 #: .\app\templates\app\twitch_goal\create.html:131
-#, fuzzy
-#| msgid "Add elements"
 msgid "Canvas elements"
-msgstr "Elemente hinzufügen"
+msgstr "Canvas-Elemente"
 
 #: .\app\templates\app\twitch_goal\create.html:134
 msgid "Channel"
@@ -2916,16 +2811,12 @@ msgid "Avatar"
 msgstr "Avatar"
 
 #: .\app\templates\app\twitch_goal\create.html:138
-#, fuzzy
-#| msgid "Progress demo"
 msgid "Progress text"
-msgstr "Fortschritts-Demo"
+msgstr "Fortschrittstext"
 
 #: .\app\templates\app\twitch_goal\create.html:140
-#, fuzzy
-#| msgid "Running"
 msgid "Remaining"
-msgstr "Läuft"
+msgstr "Verbleibend"
 
 #: .\app\templates\app\twitch_goal\create.html:141
 msgid "Bar"
@@ -2940,22 +2831,16 @@ msgid "Icon"
 msgstr "Icon"
 
 #: .\app\templates\app\twitch_goal\create.html:154
-#, fuzzy
-#| msgid "Text size"
 msgid "Text"
-msgstr "Textgröße"
+msgstr "Text"
 
 #: .\app\templates\app\twitch_goal\create.html:155
-#, fuzzy
-#| msgid "Height"
 msgid "Weight"
-msgstr "Höhe"
+msgstr "Stärke"
 
 #: .\app\templates\app\twitch_goal\create.html:157
-#, fuzzy
-#| msgid "Track color"
 msgid "Track"
-msgstr "Leistenfarbe"
+msgstr "Leiste"
 
 #: .\app\templates\app\twitch_goal\create.html:158
 msgid "Radius"
@@ -2986,16 +2871,12 @@ msgid "Send backward"
 msgstr "Nach hinten"
 
 #: .\app\templates\app\twitch_goal\create.html:164
-#, fuzzy
-#| msgid "Remove element"
 msgid "Remove"
-msgstr "Element entfernen"
+msgstr "Entfernen"
 
 #: .\app\templates\app\twitch_goal\create.html:169
-#, fuzzy
-#| msgid "Duration"
 msgid "Celebration"
-msgstr "Dauer"
+msgstr "Feier"
 
 #: .\app\templates\app\twitch_goal\create.html:169
 msgid "Animation and sound"
@@ -3014,10 +2895,8 @@ msgid "Recommended source size"
 msgstr "Empfohlene Quellgröße"
 
 #: .\app\templates\app\twitch_goal\create.html:195
-#, fuzzy
-#| msgid "Live preview"
 msgid "Responsive preview"
-msgstr "Live-Vorschau"
+msgstr "Responsive Vorschau"
 
 #: .\app\templates\app\twitch_goal\create.html:195
 msgid "Drag and resize elements"
@@ -3355,10 +3234,9 @@ msgid "Score HUD saved."
 msgstr "Score HUD gespeichert."
 
 #: .\app\views\score.py:267
-#, fuzzy, python-format
-#| msgid "Spotify overlay deleted: %(name)s"
+#, python-format
 msgid "Score HUD deleted: %(name)s"
-msgstr "Spotify-Overlay gelöscht: %(name)s"
+msgstr "Score HUD gelöscht: %(name)s"
 
 #: .\app\views\score.py:275 .\app\views\spotify.py:160 .\app\views\timer.py:190
 #: .\app\views\twitch_goal.py:172 .\app\views\winchallenge.py:209
@@ -3366,26 +3244,21 @@ msgid "Copy"
 msgstr "Kopie"
 
 #: .\app\views\score.py:278
-#, fuzzy, python-format
-#| msgid "Spotify overlay duplicated: %(name)s"
+#, python-format
 msgid "Score HUD duplicated: %(name)s"
-msgstr "Spotify-Overlay dupliziert: %(name)s"
+msgstr "Score HUD dupliziert: %(name)s"
 
 #: .\app\views\score.py:312
-#, fuzzy
-#| msgid "A maximum of 30 elements is allowed."
 msgid "A maximum of 8 participants is allowed."
-msgstr "Es sind maximal 30 Elemente erlaubt."
+msgstr "Es sind maximal 8 Teilnehmer erlaubt."
 
 #: .\app\views\score.py:370
 msgid "At least two participants are required."
 msgstr "Es sind mindestens zwei Teilnehmer erforderlich."
 
 #: .\app\views\score.py:401 .\app\views\score.py:404
-#, fuzzy
-#| msgid "Invalid win change."
 msgid "Invalid score change."
-msgstr "Ungültige Win-Änderung."
+msgstr "Ungültige Punktzahländerung."
 
 #: .\app\views\spotify.py:78
 msgid "Spotify overlay created."
