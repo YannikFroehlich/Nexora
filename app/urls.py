@@ -10,6 +10,8 @@ urlpatterns = [
     path("sitemap.xml", views.sitemap, name="sitemap"),
     path("demo/", views.demo, name="demo"),
     path("about/", views.about, name="about"),
+    path("imprint/", views.imprint, name="imprint"),
+    path("privacy/", views.privacy_policy, name="privacy_policy"),
     path(
         "accounts/login/",
         auth_views.LoginView.as_view(

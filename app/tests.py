@@ -69,6 +69,12 @@ class HomeViewTests(TestCase):
         self.assertContains(response, "data-close-label=")
         self.assertContains(response, 'class="header-menu" id="header-menu"')
 
+    def test_footer_links_to_imprint_and_privacy_policy(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(response, f'href="{reverse("imprint")}"')
+        self.assertContains(response, f'href="{reverse("privacy_policy")}"')
+
     def test_page_exposes_skip_link_landmarks_and_public_indexing(self):
         response = self.client.get(reverse("home"))
 
@@ -145,6 +151,21 @@ class HomeViewTests(TestCase):
         response = self.client.get(reverse("home"))
 
         self.assertContains(response, "Version 9.8.7-test")
+
+
+class LegalPagesTests(TestCase):
+    def test_imprint_is_publicly_accessible(self):
+        response = self.client.get(reverse("imprint"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "DDG")
+
+    def test_privacy_policy_is_publicly_accessible(self):
+        response = self.client.get(reverse("privacy_policy"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "sessionid")
+        self.assertContains(response, "csrftoken")
 
 
 class DemoViewTests(TestCase):

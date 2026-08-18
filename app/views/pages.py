@@ -22,6 +22,14 @@ def about(request):
     return render(request, "app/about.html")
 
 
+def imprint(request):
+    return render(request, "app/imprint.html")
+
+
+def privacy_policy(request):
+    return render(request, "app/privacy.html")
+
+
 def robots_txt(request):
     sitemap_url = request.build_absolute_uri(reverse("sitemap"))
     content = "\n".join(

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-18 12:23+0200\n"
+"POT-Creation-Date: 2026-08-18 14:20+0200\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: English\n"
@@ -788,8 +788,9 @@ msgid ""
 msgstr ""
 
 #: .\app\templates\app\about.html:14 .\app\templates\app\demo.html:14
+#: .\app\templates\app\imprint.html:12
 #: .\app\templates\app\overlay_dashboard.html:14
-#: .\app\templates\app\presets\list.html:14
+#: .\app\templates\app\presets\list.html:14 .\app\templates\app\privacy.html:12
 #: .\app\templates\app\registration\account_settings.html:12
 #: .\app\templates\app\registration\login.html:12
 #: .\app\templates\app\registration\signup.html:12
@@ -806,8 +807,9 @@ msgstr ""
 
 #: .\app\templates\app\about.html:16 .\app\templates\app\base.html:173
 #: .\app\templates\app\demo.html:16 .\app\templates\app\home.html:6
+#: .\app\templates\app\imprint.html:14
 #: .\app\templates\app\overlay_dashboard.html:16
-#: .\app\templates\app\presets\list.html:16
+#: .\app\templates\app\presets\list.html:16 .\app\templates\app\privacy.html:14
 #: .\app\templates\app\registration\account_settings.html:14
 #: .\app\templates\app\registration\login.html:14
 #: .\app\templates\app\registration\signup.html:14
@@ -1168,7 +1170,17 @@ msgstr ""
 msgid "Footer navigation"
 msgstr ""
 
-#: .\app\templates\app\base.html:180
+#: .\app\templates\app\base.html:176 .\app\templates\app\imprint.html:5
+#: .\app\templates\app\imprint.html:15 .\app\templates\app\imprint.html:23
+msgid "Legal notice"
+msgstr ""
+
+#: .\app\templates\app\base.html:177 .\app\templates\app\privacy.html:5
+#: .\app\templates\app\privacy.html:15 .\app\templates\app\privacy.html:23
+msgid "Privacy policy"
+msgstr ""
+
+#: .\app\templates\app\base.html:182
 msgid "Version"
 msgstr ""
 
@@ -1553,6 +1565,104 @@ msgstr ""
 
 #: .\app\templates\app\home.html:285
 msgid "Get started"
+msgstr ""
+
+#: .\app\templates\app\imprint.html:24
+msgid ""
+"Information pursuant to Sec. 5 of the German Digital Services Act (DDG)."
+msgstr ""
+
+#: .\app\templates\app\imprint.html:29 .\app\templates\app\privacy.html:29
+msgid ""
+"This page currently contains placeholder information. Replace every "
+"bracketed placeholder below with real details before this site is published."
+msgstr ""
+
+#: .\app\templates\app\imprint.html:35
+msgid "Information pursuant to Sec. 5 DDG"
+msgstr ""
+
+#: .\app\templates\app\imprint.html:36 .\app\templates\app\privacy.html:39
+msgid "Full name"
+msgstr ""
+
+#: .\app\templates\app\imprint.html:37 .\app\templates\app\privacy.html:40
+msgid "Street and house number"
+msgstr ""
+
+#: .\app\templates\app\imprint.html:38 .\app\templates\app\privacy.html:40
+msgid "Postal code and city"
+msgstr ""
+
+#: .\app\templates\app\imprint.html:39 .\app\templates\app\privacy.html:40
+msgid "Country"
+msgstr ""
+
+#: .\app\templates\app\imprint.html:43
+msgid "Contact"
+msgstr ""
+
+#: .\app\templates\app\imprint.html:44 .\app\templates\app\privacy.html:41
+msgid "Email"
+msgstr ""
+
+#: .\app\templates\app\imprint.html:44 .\app\templates\app\privacy.html:41
+msgid "email address"
+msgstr ""
+
+#: .\app\templates\app\imprint.html:45
+msgid "Phone (optional)"
+msgstr ""
+
+#: .\app\templates\app\imprint.html:45
+msgid "phone number"
+msgstr ""
+
+#: .\app\templates\app\imprint.html:49
+msgid "Responsible for content pursuant to Sec. 18(2) MStV"
+msgstr ""
+
+#: .\app\templates\app\imprint.html:50
+msgid "Same name and address as above."
+msgstr ""
+
+#: .\app\templates\app\imprint.html:54
+msgid "Liability for content"
+msgstr ""
+
+#: .\app\templates\app\imprint.html:56
+msgid ""
+"As the operator of this site, we are responsible for our own content on "
+"these pages in accordance with general legislation. We are, however, not "
+"obliged to monitor transmitted or stored third-party information or to "
+"investigate circumstances that indicate illegal activity. Obligations to "
+"remove or block the use of information under general law remain unaffected."
+msgstr ""
+
+#: .\app\templates\app\imprint.html:61
+msgid "Liability for links"
+msgstr ""
+
+#: .\app\templates\app\imprint.html:63
+msgid ""
+"This site contains links to external third-party websites over whose content "
+"we have no influence. We therefore cannot accept any liability for this "
+"third-party content. The respective provider or operator of the linked pages "
+"is always responsible for their content. If we become aware of any legal "
+"violations, we will remove such links without delay."
+msgstr ""
+
+#: .\app\templates\app\imprint.html:68
+msgid "Copyright"
+msgstr ""
+
+#: .\app\templates\app\imprint.html:70
+msgid ""
+"The content and works created by the site operator on these pages are "
+"subject to copyright law. Duplication, processing, distribution or any form "
+"of commercialization beyond the scope of copyright law requires the prior "
+"written consent of the respective author. If you become aware of a copyright "
+"infringement, please let us know so we can remove the content in question."
 msgstr ""
 
 #: .\app\templates\app\overlay_dashboard.html:7
@@ -2168,6 +2278,232 @@ msgstr "Spotify Overlay"
 msgid ""
 "Open any overlay you already styled and save it as a template from its "
 "Branding section."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:24
+msgid ""
+"An overview of what data Nexora processes, why, and what rights you have "
+"over it."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:35
+msgid "1. Controller"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:37
+msgid ""
+"The controller responsible for data processing on this site within the "
+"meaning of the GDPR is:"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:45
+msgid "2. Hosting and server log files"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:47
+msgid "This site is hosted by"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:47
+msgid "name of the hosting provider"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:47
+msgid ", an EU-based hosting provider."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:50
+msgid ""
+"The hosting provider's web server automatically records access data for "
+"every page request in log files, including the requesting IP address, date "
+"and time, the requested page, the amount of data transferred, and the "
+"browser's user agent. This data is processed to operate the site reliably "
+"and securely (Art. 6(1)(f) GDPR) and is not merged with other data sources."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:55
+msgid "3. Cookies"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:56
+msgid ""
+"Nexora only uses technically necessary cookies. No analytics, advertising or "
+"tracking cookies are set."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:58
+msgid ""
+"sessionid – keeps you signed in; expires after about two weeks of inactivity."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:59
+msgid ""
+"csrftoken – protects forms against cross-site request forgery; a standard "
+"security cookie."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:60
+msgid ""
+"django_language – remembers your chosen interface language for the current "
+"browser session."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:65
+msgid "4. Registration and user account"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:67
+msgid ""
+"If you create an account, we store your username and a securely hashed "
+"password to let you sign in and manage your own overlays (Art. 6(1)(b) "
+"GDPR). An email address is only stored if you choose to add one in your "
+"account settings."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:72
+msgid "5. Spotify connection (optional)"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:74
+msgid ""
+"If you choose to connect a Spotify account to a Spotify overlay, Nexora "
+"requests the limited \"currently playing\" permission and receives an access "
+"and refresh token from Spotify, which we store encrypted. We use this to "
+"display your currently playing track title, artist, album artwork and "
+"playback progress. No other Spotify profile data is requested. This "
+"processing is based on your consent (Art. 6(1)(a) GDPR) and can be withdrawn "
+"at any time by disconnecting Spotify in the overlay settings."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:79
+msgid "6. Twitch connection (optional)"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:81
+msgid ""
+"If you choose to connect a Twitch account to a Twitch Goal overlay, Nexora "
+"requests permission to read your follower and/or subscriber counts and "
+"receives an access and refresh token, which we store encrypted, along with "
+"your Twitch user ID, login name, display name, profile image and cached "
+"follower/subscriber counts. This processing is based on your consent (Art. "
+"6(1)(a) GDPR). Disconnecting Twitch, or deleting your account, revokes the "
+"token directly with Twitch."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:86
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "7. Uploaded images and fonts"
+msgstr "Spotify Overlay"
+
+#: .\app\templates\app\privacy.html:88
+msgid ""
+"Images and fonts you upload for your overlays are stored as provided. "
+"Uploaded image files are not automatically stripped of embedded metadata "
+"(such as EXIF data, which can include the device used or a GPS location) — "
+"please remove any sensitive metadata yourself before uploading an image if "
+"this matters to you."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:93
+msgid "8. No analytics or tracking"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:94
+msgid ""
+"Nexora does not use any analytics, advertising or third-party tracking tools."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:98
+msgid "9. Email communication"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:99
+msgid ""
+"Nexora does not currently send any emails. Should this change in the future, "
+"this policy will be updated accordingly."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:103
+msgid "10. Storage duration and deletion"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:105
+msgid ""
+"Your data is stored for as long as your account exists. From your account "
+"settings you can permanently delete your account at any time; this removes "
+"your overlays, templates and uploaded files, revokes the Twitch connection, "
+"and deletes your account. Spotify access cannot be revoked through Spotify's "
+"API from within Nexora — please also remove Nexora from the connected-apps "
+"settings of your Spotify account."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:110
+msgid "11. Your rights"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:111
+msgid "Subject to the legal requirements, you have the right to:"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:113
+msgid ""
+"request information about the personal data we process about you (Art. 15 "
+"GDPR);"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:114
+msgid "request the correction of inaccurate data (Art. 16 GDPR);"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:115
+msgid "request the erasure of your data (Art. 17 GDPR);"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:116
+msgid "request the restriction of processing (Art. 18 GDPR);"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:117
+msgid ""
+"receive your data in a structured, machine-readable format (Art. 20 GDPR);"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:118
+msgid "object to processing based on legitimate interest (Art. 21 GDPR);"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:119
+msgid ""
+"withdraw any consent you have given at any time, with effect for the future "
+"(Art. 7(3) GDPR); and"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:120
+msgid ""
+"lodge a complaint with a data protection supervisory authority (Art. 77 "
+"GDPR)."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:125
+msgid "12. Encryption"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:127
+msgid ""
+"If this site is served over HTTPS, all data transmitted between your browser "
+"and our servers is encrypted in transit."
+msgstr ""
+
+#: .\app\templates\app\privacy.html:132
+msgid "13. Changes to this policy"
+msgstr ""
+
+#: .\app\templates\app\privacy.html:134
+msgid ""
+"We may update this privacy policy from time to time to reflect changes to "
+"the service or to legal requirements. Please check back occasionally to stay "
+"informed."
 msgstr ""
 
 #: .\app\templates\app\registration\account_settings.html:5
