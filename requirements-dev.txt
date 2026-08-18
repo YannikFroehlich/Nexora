@@ -1,6 +1,6 @@
 -r requirements.txt
 
-coverage==7.15.2
+coverage==7.15.4
 pip-audit==2.10.1
 playwright==1.62.0
 ruff==0.16.2
