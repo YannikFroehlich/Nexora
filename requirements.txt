@@ -1,6 +1,6 @@
 asgiref==3.12.1
-cryptography==49.0.0
-Django==6.0.7
+cryptography==50.0.0
+Django==6.1
 Pillow==12.3.0
 sqlparse==0.6.0
 tzdata==2026.3
