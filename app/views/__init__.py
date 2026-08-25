@@ -18,6 +18,7 @@ from app.views.dashboard import (
     overlay_version_restore,
 )
 from app.views.pages import (
+    RateLimitedPasswordResetView,
     about,
     demo,
     home,
@@ -109,6 +110,7 @@ from app.views.winchallenge import (
 )
 
 __all__ = [
+    "RateLimitedPasswordResetView",
     "about",
     "account_delete",
     "account_email_update",

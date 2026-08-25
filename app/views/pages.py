@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model, login
+from django.contrib.auth import views as auth_views
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -8,6 +10,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from app import spotify_api
 from app.forms import SignUpForm
 from app.models import ScoreOverlay, SpotifyOverlay, TimerOverlay, WinChallenge
+from app.rate_limit import register_attempt
 
 
 def home(request):
@@ -78,12 +81,30 @@ def safe_next_url(request, fallback="home"):
     return reverse(fallback)
 
 
+class RateLimitedPasswordResetView(auth_views.PasswordResetView):
+    """Skip sending a reset email once too many requests arrive from one IP.
+
+    Still redirects to the normal success page so a throttled request looks
+    identical to a real one, keeping the existing no-enumeration behavior.
+    """
+
+    def post(self, request, *args, **kwargs):
+        if register_attempt(
+            request,
+            "password_reset",
+            settings.PASSWORD_RESET_RATE_LIMIT_ATTEMPTS,
+            settings.PASSWORD_RESET_RATE_LIMIT_WINDOW_SECONDS,
+        ):
+            return redirect(self.get_success_url())
+        return super().post(request, *args, **kwargs)
+
+
 def signup(request):
     if request.user.is_authenticated:
         return redirect(safe_next_url(request))
 
     if request.method == "POST":
-        form = SignUpForm(request.POST)
+        form = SignUpForm(request.POST, request=request)
 
         if form.is_valid():
             with transaction.atomic():

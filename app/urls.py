@@ -1,8 +1,8 @@
 from django.contrib.auth import views as auth_views
-from django.urls import path
+from django.urls import path, reverse_lazy
 
 from app import views
-from app.forms import LoginForm
+from app.forms import LoginForm, NexoraPasswordResetForm, NexoraSetPasswordForm
 
 urlpatterns = [
     path("", views.home, name="home"),
@@ -24,6 +24,40 @@ urlpatterns = [
         "accounts/logout/",
         auth_views.LogoutView.as_view(),
         name="logout",
+    ),
+    path(
+        "accounts/password-reset/",
+        views.RateLimitedPasswordResetView.as_view(
+            template_name="app/registration/password_reset.html",
+            email_template_name="app/registration/password_reset_email.txt",
+            subject_template_name="app/registration/password_reset_subject.txt",
+            form_class=NexoraPasswordResetForm,
+            success_url=reverse_lazy("password_reset_done"),
+        ),
+        name="password_reset",
+    ),
+    path(
+        "accounts/password-reset/done/",
+        auth_views.PasswordResetDoneView.as_view(
+            template_name="app/registration/password_reset_done.html",
+        ),
+        name="password_reset_done",
+    ),
+    path(
+        "accounts/reset/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name="app/registration/password_reset_confirm.html",
+            form_class=NexoraSetPasswordForm,
+            success_url=reverse_lazy("password_reset_complete"),
+        ),
+        name="password_reset_confirm",
+    ),
+    path(
+        "accounts/reset/done/",
+        auth_views.PasswordResetCompleteView.as_view(
+            template_name="app/registration/password_reset_complete.html",
+        ),
+        name="password_reset_complete",
     ),
     path("accounts/signup/", views.signup, name="signup"),
     path("accounts/settings/", views.account_settings, name="account_settings"),

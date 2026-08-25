@@ -5,11 +5,16 @@ from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.core import mail
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection as database_connection
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from PIL import Image
 
 from app import overlay_presets, overlay_versions
@@ -2655,6 +2660,161 @@ class SignUpTests(TestCase):
                 "password1": "Strong-Password-2026!",
                 "password2": "Strong-Password-2026!",
                 "next": "https://example.com/phishing",
+            },
+        )
+
+        self.assertRedirects(response, reverse("home"))
+
+
+class PasswordResetTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="reset-user",
+            password="Old-Password-2026!",
+            email="reset-user@example.com",
+        )
+
+    def test_request_with_known_email_sends_reset_link(self):
+        response = self.client.post(reverse("password_reset"), {"email": "reset-user@example.com"})
+
+        self.assertRedirects(response, reverse("password_reset_done"))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("reset-user@example.com", mail.outbox[0].to)
+        self.assertIn("/accounts/reset/", mail.outbox[0].body)
+
+    def test_request_with_unknown_email_does_not_leak_account_existence(self):
+        response = self.client.post(reverse("password_reset"), {"email": "nobody@example.com"})
+
+        self.assertRedirects(response, reverse("password_reset_done"))
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_confirm_link_sets_a_new_password(self):
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        token = default_token_generator.make_token(self.user)
+
+        initial_response = self.client.get(
+            reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": token}),
+            follow=True,
+        )
+        self.assertEqual(initial_response.status_code, 200)
+        self.assertContains(initial_response, 'name="new_password1"')
+
+        confirm_url = initial_response.redirect_chain[-1][0]
+        response = self.client.post(
+            confirm_url,
+            {
+                "new_password1": "Brand-New-Password-2026!",
+                "new_password2": "Brand-New-Password-2026!",
+            },
+        )
+
+        self.assertRedirects(response, reverse("password_reset_complete"))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("Brand-New-Password-2026!"))
+        self.assertFalse(self.user.check_password("Old-Password-2026!"))
+
+    def test_confirm_with_invalid_token_does_not_show_the_password_form(self):
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+
+        response = self.client.get(
+            reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": "invalid-token"}),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'name="new_password1"')
+        self.assertContains(response, reverse("password_reset"))
+
+
+class RateLimitTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.addCleanup(cache.clear)
+        self.user = User.objects.create_user(
+            username="throttle-user",
+            password="Correct-Password-2026!",
+            email="throttle-user@example.com",
+        )
+
+    @override_settings(LOGIN_RATE_LIMIT_ATTEMPTS=2, LOGIN_RATE_LIMIT_WINDOW_SECONDS=300)
+    def test_login_is_blocked_after_too_many_attempts(self):
+        for _ in range(2):
+            self.client.post(reverse("login"), {"username": "throttle-user", "password": "wrong"})
+
+        response = self.client.post(
+            reverse("login"),
+            {"username": "throttle-user", "password": "Correct-Password-2026!"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="auth-error-summary"')
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    @override_settings(LOGIN_RATE_LIMIT_ATTEMPTS=0)
+    def test_login_rate_limit_can_be_disabled(self):
+        for _ in range(5):
+            self.client.post(reverse("login"), {"username": "throttle-user", "password": "wrong"})
+
+        response = self.client.post(
+            reverse("login"),
+            {"username": "throttle-user", "password": "Correct-Password-2026!"},
+        )
+
+        self.assertRedirects(response, reverse("home"))
+
+    @override_settings(
+        PASSWORD_RESET_RATE_LIMIT_ATTEMPTS=2,
+        PASSWORD_RESET_RATE_LIMIT_WINDOW_SECONDS=300,
+    )
+    def test_password_reset_requests_are_throttled_without_leaking_state(self):
+        for _ in range(2):
+            self.client.post(reverse("password_reset"), {"email": "throttle-user@example.com"})
+
+        response = self.client.post(
+            reverse("password_reset"), {"email": "throttle-user@example.com"}
+        )
+
+        self.assertRedirects(response, reverse("password_reset_done"))
+        self.assertEqual(len(mail.outbox), 2)
+
+    @override_settings(SIGNUP_RATE_LIMIT_ATTEMPTS=2, SIGNUP_RATE_LIMIT_WINDOW_SECONDS=300)
+    def test_signup_is_blocked_after_too_many_attempts(self):
+        invalid_payload = {
+            "username": "throttled-signup",
+            "password1": "Strong-Password-2026!",
+            "password2": "Different-Password-2026!",
+        }
+        for _ in range(2):
+            self.client.post(reverse("signup"), invalid_payload)
+
+        response = self.client.post(
+            reverse("signup"),
+            {
+                "username": "throttled-signup",
+                "password1": "Strong-Password-2026!",
+                "password2": "Strong-Password-2026!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="auth-error-summary"')
+        self.assertFalse(User.objects.filter(username="throttled-signup").exists())
+
+    @override_settings(SIGNUP_RATE_LIMIT_ATTEMPTS=0)
+    def test_signup_rate_limit_can_be_disabled(self):
+        invalid_payload = {
+            "username": "unthrottled-signup",
+            "password1": "Strong-Password-2026!",
+            "password2": "Different-Password-2026!",
+        }
+        for _ in range(5):
+            self.client.post(reverse("signup"), invalid_payload)
+
+        response = self.client.post(
+            reverse("signup"),
+            {
+                "username": "unthrottled-signup",
+                "password1": "Strong-Password-2026!",
+                "password2": "Strong-Password-2026!",
             },
         )
 

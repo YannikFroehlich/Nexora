@@ -172,6 +172,23 @@ TWITCH_METRIC_CACHE_SECONDS = _environment_non_negative_int(
     default=15,
 )
 
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DJANGO_DEFAULT_FROM_EMAIL",
+    "Nexora <noreply@nexora.local>",
+).strip()
+EMAIL_BACKEND = os.environ.get(
+    "DJANGO_EMAIL_BACKEND",
+    "django.core.mail.backends.console.EmailBackend"
+    if DEBUG
+    else "django.core.mail.backends.smtp.EmailBackend",
+).strip()
+EMAIL_HOST = os.environ.get("DJANGO_EMAIL_HOST", "").strip()
+EMAIL_PORT = _environment_non_negative_int("DJANGO_EMAIL_PORT", default=587)
+EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER", "").strip()
+EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = _environment_bool("DJANGO_EMAIL_USE_TLS", default=True)
+EMAIL_USE_SSL = _environment_bool("DJANGO_EMAIL_USE_SSL", default=False)
+
 
 # Application definition
 
@@ -252,6 +269,31 @@ AUTH_PASSWORD_VALIDATORS = [
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
+
+LOGIN_RATE_LIMIT_ATTEMPTS = _environment_non_negative_int(
+    "DJANGO_LOGIN_RATE_LIMIT_ATTEMPTS",
+    default=10,
+)
+LOGIN_RATE_LIMIT_WINDOW_SECONDS = _environment_non_negative_int(
+    "DJANGO_LOGIN_RATE_LIMIT_WINDOW_SECONDS",
+    default=300,
+)
+SIGNUP_RATE_LIMIT_ATTEMPTS = _environment_non_negative_int(
+    "DJANGO_SIGNUP_RATE_LIMIT_ATTEMPTS",
+    default=10,
+)
+SIGNUP_RATE_LIMIT_WINDOW_SECONDS = _environment_non_negative_int(
+    "DJANGO_SIGNUP_RATE_LIMIT_WINDOW_SECONDS",
+    default=300,
+)
+PASSWORD_RESET_RATE_LIMIT_ATTEMPTS = _environment_non_negative_int(
+    "DJANGO_PASSWORD_RESET_RATE_LIMIT_ATTEMPTS",
+    default=5,
+)
+PASSWORD_RESET_RATE_LIMIT_WINDOW_SECONDS = _environment_non_negative_int(
+    "DJANGO_PASSWORD_RESET_RATE_LIMIT_WINDOW_SECONDS",
+    default=300,
+)
 
 
 # Internationalization

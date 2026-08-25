@@ -326,6 +326,55 @@ The editor also validates actively used connections at least hourly. Revoked or
 invalid credentials are marked for reconnection; public overlays never expose
 tokens, scopes or internal Twitch errors.
 
+## 📧 Email setup (password reset)
+
+Nexora sends password reset links by email. For local development, no
+configuration is required: `DJANGO_EMAIL_BACKEND` defaults to Django's console
+backend while `DJANGO_DEBUG=true`, so reset emails are printed to the
+`runserver` console instead of being sent.
+
+For production, configure an SMTP provider in `.env`:
+
+```env
+DJANGO_EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+DJANGO_EMAIL_HOST=smtp.example.com
+DJANGO_EMAIL_PORT=587
+DJANGO_EMAIL_HOST_USER=your-smtp-username
+DJANGO_EMAIL_HOST_PASSWORD=your-smtp-password
+DJANGO_EMAIL_USE_TLS=true
+DJANGO_EMAIL_USE_SSL=false
+DJANGO_DEFAULT_FROM_EMAIL=Nexora <noreply@your-domain.example>
+```
+
+`DJANGO_EMAIL_USE_TLS` and `DJANGO_EMAIL_USE_SSL` must not both be `true`. A
+user only receives a reset email if an email address was added under
+**Account settings**; requesting a reset for an unknown or missing address
+shows the same confirmation message so existing accounts cannot be discovered
+through the form.
+
+## 🛡️ Rate limiting
+
+Sign-in, account creation, and password reset requests are throttled per
+client IP address using Django's cache framework, with no extra service
+required:
+
+```env
+DJANGO_LOGIN_RATE_LIMIT_ATTEMPTS=10
+DJANGO_LOGIN_RATE_LIMIT_WINDOW_SECONDS=300
+DJANGO_SIGNUP_RATE_LIMIT_ATTEMPTS=10
+DJANGO_SIGNUP_RATE_LIMIT_WINDOW_SECONDS=300
+DJANGO_PASSWORD_RESET_RATE_LIMIT_ATTEMPTS=5
+DJANGO_PASSWORD_RESET_RATE_LIMIT_WINDOW_SECONDS=300
+```
+
+Set an `_ATTEMPTS` value to `0` to disable that limit. Once the limit is hit,
+login and signup show a generic form error and password reset silently
+redirects to the same "check your email" page as a real request, so none of
+the three endpoints reveals that it is throttled. The counters live in
+Django's default in-process cache (`LocMemCache`), so they are per worker
+process — the Docker deployment runs Gunicorn with 3 workers, so the
+effective limit is up to roughly 3× the configured value there.
+
 ## 🎥 Add an overlay to OBS
 
 1. Create or open an overlay in Nexora.
@@ -674,11 +723,11 @@ described above. Before exposing Nexora publicly, at minimum:
 - Keep Spotify credentials outside the repository
 - Keep `SPOTIFY_TOKEN_ENCRYPTION_KEY` stable and outside the repository
 - Protect open registration with invitations, email verification, or rate limiting when required
+- Configure a real SMTP backend so password reset emails are actually delivered
 
 ## 🗺️ Possible next steps
 
 - Additional overlay types such as counters, lower thirds, and social alerts
-- Account recovery and profile management
 - Template gallery and reusable personal presets
 - WebSocket- or Server-Sent Events-based live updates
 - Visual regression snapshots for multiple overlay themes and resolutions

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-18 14:20+0200\n"
+"POT-Creation-Date: 2026-08-25 21:36+0200\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: German\n"
@@ -17,204 +17,221 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: .\app\forms.py:37
+#: .\app\forms.py:45
 msgid "Preset font"
 msgstr "Voreingestellte Schriftart"
 
-#: .\app\forms.py:52
+#: .\app\forms.py:60
 msgid "Custom font"
 msgstr "Eigene Schriftart"
 
-#: .\app\forms.py:53 .\app\templates\app\twitch_goal\create.html:143
+#: .\app\forms.py:61 .\app\templates\app\twitch_goal\create.html:143
 msgid "Logo"
 msgstr "Logo"
 
-#: .\app\forms.py:54
+#: .\app\forms.py:62
 msgid "Background image"
 msgstr "Hintergrundbild"
 
-#: .\app\forms.py:64 .\app\models.py:1316 .\app\models.py:1339
+#: .\app\forms.py:72 .\app\models.py:1316 .\app\models.py:1339
 msgid "None"
 msgstr "Keine"
 
-#: .\app\forms.py:116
+#: .\app\forms.py:124
 msgid "Username"
 msgstr "Benutzername"
 
-#: .\app\forms.py:126 .\app\forms.py:235
+#: .\app\forms.py:134 .\app\forms.py:311
 msgid "Password"
 msgstr "Passwort"
 
+#: .\app\forms.py:156
+msgid "Too many sign-in attempts. Please wait a few minutes and try again."
+msgstr ""
+"Zu viele Anmeldeversuche. Bitte warte ein paar Minuten und versuche es "
+"erneut."
+
 #: .\app\forms.py:201
+msgid ""
+"Too many account creation attempts. Please wait a few minutes and try again."
+msgstr ""
+"Zu viele Registrierungsversuche. Bitte warte ein paar Minuten und versuche "
+"es erneut."
+
+#: .\app\forms.py:211 .\app\templates\app\registration\account_settings.html:38
+msgid "Email address"
+msgstr "E-Mail-Adresse"
+
+#: .\app\forms.py:277
 msgid "This email address is already in use."
 msgstr "Diese E-Mail-Adresse wird bereits verwendet."
 
-#: .\app\forms.py:253
+#: .\app\forms.py:329
 msgid "This password is incorrect."
 msgstr "Dieses Passwort ist falsch."
 
-#: .\app\forms.py:259
+#: .\app\forms.py:335
 msgid "Overlay export file"
 msgstr "Overlay-Exportdatei"
 
-#: .\app\forms.py:260
+#: .\app\forms.py:336
 msgid "Select a JSON file previously exported from Nexora."
 msgstr "Wähle eine JSON-Datei aus, die zuvor aus Nexora exportiert wurde."
 
-#: .\app\forms.py:283 .\app\overlay_transfer.py:244
+#: .\app\forms.py:359 .\app\overlay_transfer.py:244
 msgid "The import file is too large."
 msgstr "Die Importdatei ist zu groß."
 
-#: .\app\forms.py:286
+#: .\app\forms.py:362
 msgid "Select a JSON file."
 msgstr "Wähle eine JSON-Datei aus."
 
-#: .\app\forms.py:296
+#: .\app\forms.py:372
 msgid "Asset name"
 msgstr "Dateiname"
 
-#: .\app\forms.py:297
+#: .\app\forms.py:373
 msgid "Asset type"
 msgstr "Dateityp"
 
-#: .\app\forms.py:298
+#: .\app\forms.py:374
 msgid "File"
 msgstr "Datei"
 
-#: .\app\forms.py:304
+#: .\app\forms.py:380
 msgid "My logo or font"
 msgstr "Mein Logo oder meine Schriftart"
 
-#: .\app\forms.py:376 .\app\forms.py:515
+#: .\app\forms.py:452 .\app\forms.py:591
 msgid "Overlay title"
 msgstr "Overlay-Titel"
 
-#: .\app\forms.py:377 .\app\forms.py:1375
+#: .\app\forms.py:453 .\app\forms.py:1451
 msgid "Design template"
 msgstr "Design-Vorlage"
 
-#: .\app\forms.py:378 .\app\forms.py:647 .\app\forms.py:813 .\app\forms.py:1119
-#: .\app\forms.py:1376
+#: .\app\forms.py:454 .\app\forms.py:723 .\app\forms.py:889 .\app\forms.py:1195
+#: .\app\forms.py:1452
 msgid "Background color"
 msgstr "Hintergrundfarbe"
 
-#: .\app\forms.py:379 .\app\forms.py:648 .\app\forms.py:814 .\app\forms.py:1120
-#: .\app\forms.py:1377
+#: .\app\forms.py:455 .\app\forms.py:724 .\app\forms.py:890 .\app\forms.py:1196
+#: .\app\forms.py:1453
 msgid "Background opacity"
 msgstr "Hintergrundtransparenz"
 
-#: .\app\forms.py:380 .\app\forms.py:1121 .\app\forms.py:1378
+#: .\app\forms.py:456 .\app\forms.py:1197 .\app\forms.py:1454
 #: .\app\templates\app\score\create.html:286
 msgid "Text color"
 msgstr "Textfarbe"
 
-#: .\app\forms.py:381 .\app\forms.py:1122 .\app\forms.py:1379
+#: .\app\forms.py:457 .\app\forms.py:1198 .\app\forms.py:1455
 #: .\app\templates\app\demo.html:88 .\app\templates\app\demo.html:115
 #: .\app\templates\app\demo.html:168
 msgid "Accent color"
 msgstr "Akzentfarbe"
 
-#: .\app\forms.py:382 .\app\forms.py:649 .\app\forms.py:815 .\app\forms.py:1125
-#: .\app\forms.py:1380
+#: .\app\forms.py:458 .\app\forms.py:725 .\app\forms.py:891 .\app\forms.py:1201
+#: .\app\forms.py:1456
 msgid "Border color"
 msgstr "Rahmenfarbe"
 
-#: .\app\forms.py:383 .\app\forms.py:650 .\app\forms.py:816 .\app\forms.py:1126
-#: .\app\forms.py:1381
+#: .\app\forms.py:459 .\app\forms.py:726 .\app\forms.py:892 .\app\forms.py:1202
+#: .\app\forms.py:1457
 msgid "Border width"
 msgstr "Rahmenbreite"
 
-#: .\app\forms.py:384 .\app\forms.py:651 .\app\forms.py:817 .\app\forms.py:1127
-#: .\app\forms.py:1382 .\app\templates\app\score\create.html:294
+#: .\app\forms.py:460 .\app\forms.py:727 .\app\forms.py:893 .\app\forms.py:1203
+#: .\app\forms.py:1458 .\app\templates\app\score\create.html:294
 #: .\app\templates\app\spotify\create.html:270
 msgid "Corner radius"
 msgstr "Eckenradius"
 
-#: .\app\forms.py:385
+#: .\app\forms.py:461
 msgid "Padding"
 msgstr "Innenabstand"
 
-#: .\app\forms.py:386 .\app\forms.py:1383
+#: .\app\forms.py:462 .\app\forms.py:1459
 #: .\app\templates\app\score\create.html:271
 #: .\app\templates\app\spotify\create.html:247
 msgid "Width"
 msgstr "Breite"
 
-#: .\app\forms.py:387 .\app\forms.py:1384
+#: .\app\forms.py:463 .\app\forms.py:1460
 #: .\app\templates\app\score\create.html:275
 #: .\app\templates\app\spotify\create.html:251
 msgid "Height"
 msgstr "Höhe"
 
-#: .\app\forms.py:388 .\app\forms.py:1385
+#: .\app\forms.py:464 .\app\forms.py:1461
 msgid "Label text size"
 msgstr "Schriftgröße Label"
 
-#: .\app\forms.py:389
+#: .\app\forms.py:465
 msgid "Title text size"
 msgstr "Schriftgröße Titel"
 
-#: .\app\forms.py:390
+#: .\app\forms.py:466
 msgid "Total wins text size"
 msgstr "Schriftgröße Gesamt-Wins"
 
-#: .\app\forms.py:391
+#: .\app\forms.py:467
 msgid "Game name text size"
 msgstr "Schriftgröße Spielname"
 
-#: .\app\forms.py:392
+#: .\app\forms.py:468
 msgid "Game score text size"
 msgstr "Schriftgröße Spielstand"
 
-#: .\app\forms.py:393
+#: .\app\forms.py:469
 msgid "Page indicator text size"
 msgstr "Schriftgröße Seitenanzeige"
 
-#: .\app\forms.py:394
+#: .\app\forms.py:470
 msgid "Page interval"
 msgstr "Seitenwechsel-Intervall"
 
-#: .\app\forms.py:395
+#: .\app\forms.py:471
 msgid "Element spacing"
 msgstr "Elementabstand"
 
-#: .\app\forms.py:396 .\app\forms.py:1129 .\app\forms.py:1388
+#: .\app\forms.py:472 .\app\forms.py:1205 .\app\forms.py:1464
 msgid "Show shadow"
 msgstr "Schatten anzeigen"
 
-#: .\app\forms.py:397
+#: .\app\forms.py:473
 msgid "Show games list"
 msgstr "Spieleliste anzeigen"
 
-#: .\app\forms.py:400 .\app\forms.py:821 .\app\forms.py:1391
+#: .\app\forms.py:476 .\app\forms.py:897 .\app\forms.py:1467
 #: .\app\templates\app\spotify\create.html:157
 msgid "0 is transparent, 100 is fully opaque."
 msgstr "0 ist transparent, 100 ist vollständig deckend."
 
-#: .\app\forms.py:401
+#: .\app\forms.py:477
 msgid "0 keeps automatic height."
 msgstr "0 behält die automatische Höhe bei."
 
-#: .\app\forms.py:402
+#: .\app\forms.py:478
 msgid "Seconds before switching to the next page."
 msgstr "Sekunden bis zur nächsten Seite."
 
-#: .\app\forms.py:406 .\app\templates\app\demo.html:134
+#: .\app\forms.py:482 .\app\templates\app\demo.html:134
 #: .\app\templates\app\demo.html:153 .\app\templates\app\home.html:74
 #: .\app\templates\app\home.html:139
 #: .\app\templates\app\winchallenge\list.html:142
 msgid "Road to Diamond"
 msgstr "Road to Diamond"
 
-#: .\app\forms.py:507 .\app\models.py:204
+#: .\app\forms.py:583 .\app\models.py:204
 msgid "Winchallenge"
 msgstr "Winchallenge"
 
-#: .\app\forms.py:565 .\app\templates\app\demo.html:156
+#: .\app\forms.py:641 .\app\templates\app\demo.html:156
 msgid "Game name"
 msgstr "Name des Spiels"
 
-#: .\app\forms.py:566 .\app\templates\app\demo.html:160
+#: .\app\forms.py:642 .\app\templates\app\demo.html:160
 #: .\app\templates\app\overlay_dashboard.html:248
 #: .\app\templates\app\overlay_dashboard.html:274
 #: .\app\templates\app\partials\_winchallenge_overlay.html:46
@@ -226,258 +243,258 @@ msgstr "Name des Spiels"
 msgid "Wins"
 msgstr "Wins"
 
-#: .\app\forms.py:567 .\app\templates\app\demo.html:164
+#: .\app\forms.py:643 .\app\templates\app\demo.html:164
 #: .\app\templates\app\winchallenge\manage.html:162
 msgid "Target wins"
 msgstr "Ziel-Wins"
 
-#: .\app\forms.py:573
+#: .\app\forms.py:649
 msgid "Rocket League"
 msgstr "Rocket League"
 
-#: .\app\forms.py:644 .\app\forms.py:810 .\app\forms.py:1110
-#: .\app\forms.py:1372
+#: .\app\forms.py:720 .\app\forms.py:886 .\app\forms.py:1186
+#: .\app\forms.py:1448
 msgid "Overlay name"
 msgstr "Overlay-Name"
 
-#: .\app\forms.py:645 .\app\forms.py:811
+#: .\app\forms.py:721 .\app\forms.py:887
 msgid "Overlay width"
 msgstr "Overlay-Breite"
 
-#: .\app\forms.py:646 .\app\forms.py:812
+#: .\app\forms.py:722 .\app\forms.py:888
 msgid "Overlay height"
 msgstr "Overlay-Höhe"
 
-#: .\app\forms.py:655 .\app\models.py:1121
+#: .\app\forms.py:731 .\app\models.py:1121
 msgid "Spotify-Overlay"
 msgstr "Spotify-Overlay"
 
-#: .\app\forms.py:712 .\app\forms.py:885 .\app\forms.py:1246
+#: .\app\forms.py:788 .\app\forms.py:961 .\app\forms.py:1322
 msgid "The element layout is invalid."
 msgstr "Das Element-Layout ist ungültig."
 
-#: .\app\forms.py:715 .\app\forms.py:888
+#: .\app\forms.py:791 .\app\forms.py:964
 msgid "The element layout must be a list."
 msgstr "Das Element-Layout muss eine Liste sein."
 
-#: .\app\forms.py:718
+#: .\app\forms.py:794
 msgid "A maximum of 30 elements is allowed."
 msgstr "Es sind maximal 30 Elemente erlaubt."
 
-#: .\app\forms.py:725 .\app\forms.py:898 .\app\forms.py:1253
+#: .\app\forms.py:801 .\app\forms.py:974 .\app\forms.py:1329
 msgid "Every overlay element must be an object."
 msgstr "Jedes Overlay-Element muss ein Objekt sein."
 
-#: .\app\forms.py:731 .\app\forms.py:905 .\app\forms.py:1257
+#: .\app\forms.py:807 .\app\forms.py:981 .\app\forms.py:1333
 msgid "Every overlay element needs a unique valid ID."
 msgstr "Jedes Overlay-Element benötigt eine eindeutige gültige ID."
 
-#: .\app\forms.py:734
+#: .\app\forms.py:810
 msgid "An unknown Spotify element was submitted."
 msgstr "Es wurde ein unbekanntes Spotify-Element übermittelt."
 
-#: .\app\forms.py:758 .\app\forms.py:938
+#: .\app\forms.py:834 .\app\forms.py:1014
 msgid "Element values must be whole numbers."
 msgstr "Elementwerte müssen ganze Zahlen sein."
 
-#: .\app\forms.py:762 .\app\forms.py:941
+#: .\app\forms.py:838 .\app\forms.py:1017
 msgid "An element value is outside the allowed range."
 msgstr "Ein Elementwert liegt außerhalb des erlaubten Bereichs."
 
-#: .\app\forms.py:772 .\app\forms.py:950
+#: .\app\forms.py:848 .\app\forms.py:1026
 msgid "Every element color must be a valid hex color."
 msgstr "Jede Elementfarbe muss eine gültige Hex-Farbe sein."
 
-#: .\app\forms.py:818
+#: .\app\forms.py:894
 msgid "Allow negative scores"
 msgstr "Negative Punktzahlen erlauben"
 
-#: .\app\forms.py:822
+#: .\app\forms.py:898
 msgid "When disabled, minus buttons stop at 0."
 msgstr "Wenn deaktiviert, stoppen die Minus-Schaltflächen bei 0."
 
-#: .\app\forms.py:826 .\app\models.py:1584
+#: .\app\forms.py:902 .\app\models.py:1584
 #: .\app\templates\app\overlay_dashboard.html:360
 #: .\app\templates\app\score\create.html:53
 msgid "Score HUD"
 msgstr "Score HUD"
 
-#: .\app\forms.py:891
+#: .\app\forms.py:967
 msgid "A maximum of 24 elements is allowed."
 msgstr "Es sind maximal 24 Elemente erlaubt."
 
-#: .\app\forms.py:908
+#: .\app\forms.py:984
 msgid "An unknown score element was submitted."
 msgstr "Es wurde ein unbekanntes Score-Element übermittelt."
 
-#: .\app\forms.py:911
+#: .\app\forms.py:987
 msgid "Every score element needs a participant."
 msgstr "Jedes Score-Element benötigt einen Teilnehmer."
 
-#: .\app\forms.py:961 .\app\forms.py:966
+#: .\app\forms.py:1037 .\app\forms.py:1042
 msgid "Player 1"
 msgstr "Spieler 1"
 
-#: .\app\forms.py:972 .\app\forms.py:977
+#: .\app\forms.py:1048 .\app\forms.py:1053
 msgid "Player 2"
 msgstr "Spieler 2"
 
-#: .\app\forms.py:1016
+#: .\app\forms.py:1092
 msgid "Name"
 msgstr "Name"
 
-#: .\app\forms.py:1017 .\app\templates\app\spotify\create.html:262
+#: .\app\forms.py:1093 .\app\templates\app\spotify\create.html:262
 #: .\app\templates\app\twitch_goal\create.html:156
 msgid "Color"
 msgstr "Farbe"
 
-#: .\app\forms.py:1018 .\app\models.py:30
+#: .\app\forms.py:1094 .\app\models.py:30
 msgid "Image"
 msgstr "Bild"
 
-#: .\app\forms.py:1024
+#: .\app\forms.py:1100
 msgid "Player or team"
 msgstr "Spieler oder Team"
 
-#: .\app\forms.py:1041 .\app\templates\app\score\_overlay.html:12
+#: .\app\forms.py:1117 .\app\templates\app\score\_overlay.html:12
 msgid "No image"
 msgstr "Kein Bild"
 
-#: .\app\forms.py:1111
+#: .\app\forms.py:1187
 msgid "Goal title"
 msgstr "Zieltitel"
 
-#: .\app\forms.py:1112
+#: .\app\forms.py:1188
 msgid "Goal type"
 msgstr "Zieltyp"
 
-#: .\app\forms.py:1113
+#: .\app\forms.py:1189
 msgid "Subscription value"
 msgstr "Abo-Kennzahl"
 
-#: .\app\forms.py:1114
+#: .\app\forms.py:1190
 msgid "Counting mode"
 msgstr "Zählmodus"
 
-#: .\app\forms.py:1115
+#: .\app\forms.py:1191
 msgid "Target value"
 msgstr "Zielwert"
 
-#: .\app\forms.py:1116 .\app\templates\app\twitch_goal\create.html:103
+#: .\app\forms.py:1192 .\app\templates\app\twitch_goal\create.html:103
 #: .\app\templates\app\winchallenge\create.html:187
 msgid "Layout"
 msgstr "Layout"
 
-#: .\app\forms.py:1117
+#: .\app\forms.py:1193
 msgid "Canvas width"
 msgstr "Canvas-Breite"
 
-#: .\app\forms.py:1118
+#: .\app\forms.py:1194
 msgid "Canvas height"
 msgstr "Canvas-Höhe"
 
-#: .\app\forms.py:1123
+#: .\app\forms.py:1199
 msgid "Secondary color"
 msgstr "Sekundärfarbe"
 
-#: .\app\forms.py:1124
+#: .\app\forms.py:1200
 msgid "Progress track color"
 msgstr "Farbe der Fortschrittsleiste"
 
-#: .\app\forms.py:1128
+#: .\app\forms.py:1204
 msgid "Use progress gradient"
 msgstr "Farbverlauf für Fortschritt verwenden"
 
-#: .\app\forms.py:1130
+#: .\app\forms.py:1206
 msgid "Number prefix"
 msgstr "Zahlenpräfix"
 
-#: .\app\forms.py:1131
+#: .\app\forms.py:1207
 msgid "Number suffix"
 msgstr "Zahlensuffix"
 
-#: .\app\forms.py:1132
+#: .\app\forms.py:1208
 msgid "Goal animation"
 msgstr "Animationsart"
 
-#: .\app\forms.py:1133
+#: .\app\forms.py:1209
 msgid "Animation duration"
 msgstr "Animationsdauer"
 
-#: .\app\forms.py:1134
+#: .\app\forms.py:1210
 msgid "Animation intensity"
 msgstr "Animationsintensität"
 
-#: .\app\forms.py:1135
+#: .\app\forms.py:1211
 msgid "Animation primary color"
 msgstr "Primäre Animationsfarbe"
 
-#: .\app\forms.py:1136
+#: .\app\forms.py:1212
 msgid "Animation secondary color"
 msgstr "Sekundäre Animationsfarbe"
 
-#: .\app\forms.py:1137
+#: .\app\forms.py:1213
 msgid "Celebration sound"
 msgstr "Feier-Sound"
 
-#: .\app\forms.py:1138
+#: .\app\forms.py:1214
 msgid "Sound volume"
 msgstr "Lautstärke"
 
-#: .\app\forms.py:1248
+#: .\app\forms.py:1324
 msgid "The element layout must contain at most 30 items."
 msgstr "Das Element-Layout darf höchstens 30 Einträge enthalten."
 
-#: .\app\forms.py:1259
+#: .\app\forms.py:1335
 msgid "An unknown goal element was submitted."
 msgstr "Es wurde ein unbekanntes Ziel-Element übermittelt."
 
-#: .\app\forms.py:1325
+#: .\app\forms.py:1401
 msgid "Hours"
 msgstr "Stunden"
 
-#: .\app\forms.py:1331
+#: .\app\forms.py:1407
 msgid "Minutes"
 msgstr "Minuten"
 
-#: .\app\forms.py:1337
+#: .\app\forms.py:1413
 msgid "Seconds"
 msgstr "Sekunden"
 
-#: .\app\forms.py:1373
+#: .\app\forms.py:1449
 msgid "Label"
 msgstr "Beschriftung"
 
-#: .\app\forms.py:1374
+#: .\app\forms.py:1450
 msgid "Timer type"
 msgstr "Timer-Typ"
 
-#: .\app\forms.py:1386
+#: .\app\forms.py:1462
 msgid "Timer text size"
 msgstr "Timer-Schriftgröße"
 
-#: .\app\forms.py:1387
+#: .\app\forms.py:1463
 msgid "Show progress bar"
 msgstr "Fortschrittsbalken anzeigen"
 
-#: .\app\forms.py:1392
+#: .\app\forms.py:1468
 msgid "Optional text displayed above the time."
 msgstr "Optionaler Text, der über der Zeit angezeigt wird."
 
-#: .\app\forms.py:1396 .\app\forms.py:1450 .\app\models.py:1833
+#: .\app\forms.py:1472 .\app\forms.py:1526 .\app\models.py:1833
 #: .\app\templates\app\about.html:126 .\app\templates\app\home.html:193
 msgid "Stream Timer"
 msgstr "Stream-Timer"
 
-#: .\app\forms.py:1399 .\app\forms.py:1451 .\app\templates\app\home.html:180
+#: .\app\forms.py:1475 .\app\forms.py:1527 .\app\templates\app\home.html:180
 msgid "Starting soon"
 msgstr "Gleich geht's los"
 
-#: .\app\forms.py:1479
+#: .\app\forms.py:1555
 msgid "The timer duration must be at least one second."
 msgstr "Die Timer-Dauer muss mindestens eine Sekunde betragen."
 
-#: .\app\forms.py:1484
+#: .\app\forms.py:1560
 msgid "The timer duration must be shorter than 100 hours."
 msgstr "Die Timer-Dauer muss kürzer als 100 Stunden sein."
 
@@ -779,6 +796,10 @@ msgstr ""
 #: .\app\templates\app\presets\list.html:14 .\app\templates\app\privacy.html:12
 #: .\app\templates\app\registration\account_settings.html:12
 #: .\app\templates\app\registration\login.html:12
+#: .\app\templates\app\registration\password_reset.html:12
+#: .\app\templates\app\registration\password_reset_complete.html:12
+#: .\app\templates\app\registration\password_reset_confirm.html:12
+#: .\app\templates\app\registration\password_reset_done.html:12
 #: .\app\templates\app\registration\signup.html:12
 #: .\app\templates\app\score\create.html:15
 #: .\app\templates\app\spotify\create.html:15
@@ -798,6 +819,10 @@ msgstr "Brotkrümelnavigation"
 #: .\app\templates\app\presets\list.html:16 .\app\templates\app\privacy.html:14
 #: .\app\templates\app\registration\account_settings.html:14
 #: .\app\templates\app\registration\login.html:14
+#: .\app\templates\app\registration\password_reset.html:14
+#: .\app\templates\app\registration\password_reset_complete.html:14
+#: .\app\templates\app\registration\password_reset_confirm.html:14
+#: .\app\templates\app\registration\password_reset_done.html:14
 #: .\app\templates\app\registration\signup.html:14
 #: .\app\templates\app\score\create.html:17
 #: .\app\templates\app\spotify\create.html:17
@@ -1134,7 +1159,7 @@ msgid "Sign out"
 msgstr "Abmelden"
 
 #: .\app\templates\app\base.html:114
-#: .\app\templates\app\registration\login.html:71
+#: .\app\templates\app\registration\login.html:75
 #: .\app\templates\app\registration\signup.html:5
 #: .\app\templates\app\registration\signup.html:15
 #: .\app\templates\app\registration\signup.html:24
@@ -1146,7 +1171,9 @@ msgstr "Konto erstellen"
 #: .\app\templates\app\registration\login.html:5
 #: .\app\templates\app\registration\login.html:15
 #: .\app\templates\app\registration\login.html:24
-#: .\app\templates\app\registration\login.html:64
+#: .\app\templates\app\registration\login.html:68
+#: .\app\templates\app\registration\password_reset.html:15
+#: .\app\templates\app\registration\password_reset_complete.html:30
 #: .\app\templates\app\registration\signup.html:74
 msgid "Sign in"
 msgstr "Anmelden"
@@ -1593,7 +1620,8 @@ msgstr "Angaben gemäß § 5 des Digitale-Dienste-Gesetzes (DDG)."
 msgid ""
 "This page currently contains placeholder information. Replace every "
 "bracketed placeholder below with real details before this site is published."
-msgstr "Diese Seite enthält aktuell Platzhalter-Angaben. Ersetze alle eckigen "
+msgstr ""
+"Diese Seite enthält aktuell Platzhalter-Angaben. Ersetze alle eckigen "
 "Klammern unten durch echte Angaben, bevor diese Seite veröffentlicht wird."
 
 #: .\app\templates\app\imprint.html:35
@@ -1655,7 +1683,8 @@ msgid ""
 "obliged to monitor transmitted or stored third-party information or to "
 "investigate circumstances that indicate illegal activity. Obligations to "
 "remove or block the use of information under general law remain unaffected."
-msgstr "Als Betreiber dieser Seite sind wir gemäß den allgemeinen Gesetzen für "
+msgstr ""
+"Als Betreiber dieser Seite sind wir gemäß den allgemeinen Gesetzen für "
 "eigene Inhalte auf diesen Seiten verantwortlich. Wir sind jedoch nicht "
 "verpflichtet, übermittelte oder gespeicherte fremde Informationen zu "
 "überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige "
@@ -1674,7 +1703,8 @@ msgid ""
 "third-party content. The respective provider or operator of the linked pages "
 "is always responsible for their content. If we become aware of any legal "
 "violations, we will remove such links without delay."
-msgstr "Diese Seite enthält Links zu externen Websites Dritter, auf deren Inhalte "
+msgstr ""
+"Diese Seite enthält Links zu externen Websites Dritter, auf deren Inhalte "
 "wir keinen Einfluss haben. Für diese fremden Inhalte können wir daher keine "
 "Haftung übernehmen. Für die Inhalte der verlinkten Seiten ist stets der "
 "jeweilige Anbieter oder Betreiber der Seiten verantwortlich. Sollten uns "
@@ -1691,13 +1721,13 @@ msgid ""
 "of commercialization beyond the scope of copyright law requires the prior "
 "written consent of the respective author. If you become aware of a copyright "
 "infringement, please let us know so we can remove the content in question."
-msgstr "Die durch den Seitenbetreiber erstellten Inhalte und Werke auf diesen "
-"Seiten unterliegen dem Urheberrecht. Vervielfältigung, Bearbeitung, "
-"Verbreitung und jede Art der Verwertung außerhalb der Grenzen des "
-"Urheberrechts bedürfen der vorherigen schriftlichen Zustimmung des "
-"jeweiligen Autors. Solltest du eine Urheberrechtsverletzung bemerken, "
-"bitten wir um einen entsprechenden Hinweis, damit wir die betreffenden "
-"Inhalte entfernen können."
+msgstr ""
+"Die durch den Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten "
+"unterliegen dem Urheberrecht. Vervielfältigung, Bearbeitung, Verbreitung und "
+"jede Art der Verwertung außerhalb der Grenzen des Urheberrechts bedürfen der "
+"vorherigen schriftlichen Zustimmung des jeweiligen Autors. Solltest du eine "
+"Urheberrechtsverletzung bemerken, bitten wir um einen entsprechenden "
+"Hinweis, damit wir die betreffenden Inhalte entfernen können."
 
 #: .\app\templates\app\overlay_dashboard.html:7
 msgid ""
@@ -2318,7 +2348,8 @@ msgstr ""
 msgid ""
 "An overview of what data Nexora processes, why, and what rights you have "
 "over it."
-msgstr "Ein Überblick darüber, welche Daten Nexora verarbeitet, warum, und welche "
+msgstr ""
+"Ein Überblick darüber, welche Daten Nexora verarbeitet, warum, und welche "
 "Rechte du dabei hast."
 
 #: .\app\templates\app\privacy.html:35
@@ -2329,8 +2360,9 @@ msgstr "1. Verantwortlicher"
 msgid ""
 "The controller responsible for data processing on this site within the "
 "meaning of the GDPR is:"
-msgstr "Verantwortlich für die Datenverarbeitung auf dieser Seite im Sinne der "
-"DSGVO ist:"
+msgstr ""
+"Verantwortlich für die Datenverarbeitung auf dieser Seite im Sinne der DSGVO "
+"ist:"
 
 #: .\app\templates\app\privacy.html:45
 msgid "2. Hosting and server log files"
@@ -2355,13 +2387,13 @@ msgid ""
 "and time, the requested page, the amount of data transferred, and the "
 "browser's user agent. This data is processed to operate the site reliably "
 "and securely (Art. 6(1)(f) GDPR) and is not merged with other data sources."
-msgstr "Der Webserver des Hosting-Anbieters erfasst bei jedem Seitenaufruf "
-"automatisch Zugriffsdaten in Logdateien, darunter die anfragende "
-"IP-Adresse, Datum und Uhrzeit, die aufgerufene Seite, die übertragene "
-"Datenmenge und den User-Agent des Browsers. Diese Daten werden verarbeitet, "
-"um den Betrieb der Seite zuverlässig und sicher zu gewährleisten (Art. 6 "
-"Abs. 1 lit. f DSGVO), und werden nicht mit anderen Datenquellen "
-"zusammengeführt."
+msgstr ""
+"Der Webserver des Hosting-Anbieters erfasst bei jedem Seitenaufruf "
+"automatisch Zugriffsdaten in Logdateien, darunter die anfragende IP-Adresse, "
+"Datum und Uhrzeit, die aufgerufene Seite, die übertragene Datenmenge und den "
+"User-Agent des Browsers. Diese Daten werden verarbeitet, um den Betrieb der "
+"Seite zuverlässig und sicher zu gewährleisten (Art. 6 Abs. 1 lit. f DSGVO), "
+"und werden nicht mit anderen Datenquellen zusammengeführt."
 
 #: .\app\templates\app\privacy.html:55
 msgid "3. Cookies"
@@ -2371,27 +2403,30 @@ msgstr "3. Cookies"
 msgid ""
 "Nexora only uses technically necessary cookies. No analytics, advertising or "
 "tracking cookies are set."
-msgstr "Nexora verwendet ausschließlich technisch notwendige Cookies. Es werden "
+msgstr ""
+"Nexora verwendet ausschließlich technisch notwendige Cookies. Es werden "
 "keine Analyse-, Werbe- oder Tracking-Cookies gesetzt."
 
 #: .\app\templates\app\privacy.html:58
 msgid ""
 "sessionid – keeps you signed in; expires after about two weeks of inactivity."
-msgstr "sessionid – hält dich angemeldet; läuft nach etwa zwei Wochen Inaktivität "
-"ab."
+msgstr ""
+"sessionid – hält dich angemeldet; läuft nach etwa zwei Wochen Inaktivität ab."
 
 #: .\app\templates\app\privacy.html:59
 msgid ""
 "csrftoken – protects forms against cross-site request forgery; a standard "
 "security cookie."
-msgstr "csrftoken – schützt Formulare vor Cross-Site-Request-Forgery; ein übliches "
+msgstr ""
+"csrftoken – schützt Formulare vor Cross-Site-Request-Forgery; ein übliches "
 "Sicherheits-Cookie."
 
 #: .\app\templates\app\privacy.html:60
 msgid ""
 "django_language – remembers your chosen interface language for the current "
 "browser session."
-msgstr "django_language – merkt sich die gewählte Oberflächensprache für die "
+msgstr ""
+"django_language – merkt sich die gewählte Oberflächensprache für die "
 "aktuelle Browser-Sitzung."
 
 #: .\app\templates\app\privacy.html:65
@@ -2404,11 +2439,11 @@ msgid ""
 "password to let you sign in and manage your own overlays (Art. 6(1)(b) "
 "GDPR). An email address is only stored if you choose to add one in your "
 "account settings."
-msgstr "Wenn du ein Konto erstellst, speichern wir deinen Benutzernamen und ein "
-"sicher gehashtes Passwort, damit du dich anmelden und deine eigenen "
-"Overlays verwalten kannst (Art. 6 Abs. 1 lit. b DSGVO). Eine E-Mail-Adresse "
-"wird nur gespeichert, wenn du sie freiwillig in deinen Kontoeinstellungen "
-"hinterlegst."
+msgstr ""
+"Wenn du ein Konto erstellst, speichern wir deinen Benutzernamen und ein "
+"sicher gehashtes Passwort, damit du dich anmelden und deine eigenen Overlays "
+"verwalten kannst (Art. 6 Abs. 1 lit. b DSGVO). Eine E-Mail-Adresse wird nur "
+"gespeichert, wenn du sie freiwillig in deinen Kontoeinstellungen hinterlegst."
 
 #: .\app\templates\app\privacy.html:72
 msgid "5. Spotify connection (optional)"
@@ -2423,15 +2458,15 @@ msgid ""
 "playback progress. No other Spotify profile data is requested. This "
 "processing is based on your consent (Art. 6(1)(a) GDPR) and can be withdrawn "
 "at any time by disconnecting Spotify in the overlay settings."
-msgstr "Wenn du ein Spotify-Konto mit einem Spotify-Overlay verbindest, fordert "
+msgstr ""
+"Wenn du ein Spotify-Konto mit einem Spotify-Overlay verbindest, fordert "
 "Nexora die eingeschränkte Berechtigung „aktuell wiedergegebener Titel“ an "
 "und erhält von Spotify einen Zugriffs- und einen Refresh-Token, die wir "
 "verschlüsselt speichern. Damit zeigen wir Titel, Künstler, Album-Cover und "
 "Wiedergabefortschritt deines aktuell gespielten Songs an. Es werden keine "
-"weiteren Spotify-Profildaten angefragt. Diese Verarbeitung beruht auf "
-"deiner Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) und kann jederzeit durch "
-"Trennen der Spotify-Verbindung in den Overlay-Einstellungen widerrufen "
-"werden."
+"weiteren Spotify-Profildaten angefragt. Diese Verarbeitung beruht auf deiner "
+"Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) und kann jederzeit durch Trennen "
+"der Spotify-Verbindung in den Overlay-Einstellungen widerrufen werden."
 
 #: .\app\templates\app\privacy.html:79
 msgid "6. Twitch connection (optional)"
@@ -2446,15 +2481,15 @@ msgid ""
 "follower/subscriber counts. This processing is based on your consent (Art. "
 "6(1)(a) GDPR). Disconnecting Twitch, or deleting your account, revokes the "
 "token directly with Twitch."
-msgstr "Wenn du ein Twitch-Konto mit einem Twitch-Ziel-Overlay verbindest, fordert "
+msgstr ""
+"Wenn du ein Twitch-Konto mit einem Twitch-Ziel-Overlay verbindest, fordert "
 "Nexora die Berechtigung an, deine Follower- und/oder Abonnentenzahl zu "
 "lesen, und erhält einen Zugriffs- und einen Refresh-Token, die wir "
-"verschlüsselt speichern, zusammen mit deiner Twitch-Nutzer-ID, deinem "
-"Login-Namen, Anzeigenamen, Profilbild und den zwischengespeicherten "
-"Follower-/Abonnentenzahlen. Diese Verarbeitung beruht auf deiner "
-"Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Das Trennen der "
-"Twitch-Verbindung oder das Löschen deines Kontos widerruft den Token direkt "
-"bei Twitch."
+"verschlüsselt speichern, zusammen mit deiner Twitch-Nutzer-ID, deinem Login-"
+"Namen, Anzeigenamen, Profilbild und den zwischengespeicherten Follower-/"
+"Abonnentenzahlen. Diese Verarbeitung beruht auf deiner Einwilligung (Art. 6 "
+"Abs. 1 lit. a DSGVO). Das Trennen der Twitch-Verbindung oder das Löschen "
+"deines Kontos widerruft den Token direkt bei Twitch."
 
 #: .\app\templates\app\privacy.html:86
 msgid "7. Uploaded images and fonts"
@@ -2467,12 +2502,12 @@ msgid ""
 "(such as EXIF data, which can include the device used or a GPS location) — "
 "please remove any sensitive metadata yourself before uploading an image if "
 "this matters to you."
-msgstr "Bilder und Schriftarten, die du für deine Overlays hochlädst, werden so "
+msgstr ""
+"Bilder und Schriftarten, die du für deine Overlays hochlädst, werden so "
 "gespeichert, wie sie hochgeladen wurden. Hochgeladene Bilddateien werden "
-"nicht automatisch von eingebetteten Metadaten befreit (z. B. EXIF-Daten, "
-"die das verwendete Gerät oder einen GPS-Standort enthalten können) – "
-"entferne sensible Metadaten bei Bedarf bitte selbst vor dem Hochladen eines "
-"Bildes."
+"nicht automatisch von eingebetteten Metadaten befreit (z. B. EXIF-Daten, die "
+"das verwendete Gerät oder einen GPS-Standort enthalten können) – entferne "
+"sensible Metadaten bei Bedarf bitte selbst vor dem Hochladen eines Bildes."
 
 #: .\app\templates\app\privacy.html:93
 msgid "8. No analytics or tracking"
@@ -2481,7 +2516,8 @@ msgstr "8. Keine Analyse- oder Tracking-Tools"
 #: .\app\templates\app\privacy.html:94
 msgid ""
 "Nexora does not use any analytics, advertising or third-party tracking tools."
-msgstr "Nexora verwendet keine Analyse-, Werbe- oder Tracking-Tools von "
+msgstr ""
+"Nexora verwendet keine Analyse-, Werbe- oder Tracking-Tools von "
 "Drittanbietern."
 
 #: .\app\templates\app\privacy.html:98
@@ -2492,7 +2528,8 @@ msgstr "9. E-Mail-Kommunikation"
 msgid ""
 "Nexora does not currently send any emails. Should this change in the future, "
 "this policy will be updated accordingly."
-msgstr "Nexora versendet derzeit keine E-Mails. Sollte sich das zukünftig ändern, "
+msgstr ""
+"Nexora versendet derzeit keine E-Mails. Sollte sich das zukünftig ändern, "
 "wird diese Erklärung entsprechend aktualisiert."
 
 #: .\app\templates\app\privacy.html:103
@@ -2507,12 +2544,13 @@ msgid ""
 "and deletes your account. Spotify access cannot be revoked through Spotify's "
 "API from within Nexora — please also remove Nexora from the connected-apps "
 "settings of your Spotify account."
-msgstr "Deine Daten werden gespeichert, solange dein Konto besteht. In deinen "
+msgstr ""
+"Deine Daten werden gespeichert, solange dein Konto besteht. In deinen "
 "Kontoeinstellungen kannst du dein Konto jederzeit endgültig löschen; dabei "
 "werden deine Overlays, Vorlagen und hochgeladenen Dateien entfernt, die "
 "Twitch-Verbindung widerrufen und dein Konto gelöscht. Der Spotify-Zugriff "
-"kann über die Spotify-API nicht direkt aus Nexora heraus widerrufen werden "
-"– bitte entferne Nexora zusätzlich in den Einstellungen für verbundene Apps "
+"kann über die Spotify-API nicht direkt aus Nexora heraus widerrufen werden – "
+"bitte entferne Nexora zusätzlich in den Einstellungen für verbundene Apps "
 "deines Spotify-Kontos."
 
 #: .\app\templates\app\privacy.html:110
@@ -2527,8 +2565,9 @@ msgstr "Vorbehaltlich der gesetzlichen Voraussetzungen hast du das Recht,"
 msgid ""
 "request information about the personal data we process about you (Art. 15 "
 "GDPR);"
-msgstr "Auskunft über die von uns über dich verarbeiteten personenbezogenen Daten "
-"zu verlangen (Art. 15 DSGVO);"
+msgstr ""
+"Auskunft über die von uns über dich verarbeiteten personenbezogenen Daten zu "
+"verlangen (Art. 15 DSGVO);"
 
 #: .\app\templates\app\privacy.html:114
 msgid "request the correction of inaccurate data (Art. 16 GDPR);"
@@ -2545,26 +2584,30 @@ msgstr "die Einschränkung der Verarbeitung zu verlangen (Art. 18 DSGVO);"
 #: .\app\templates\app\privacy.html:117
 msgid ""
 "receive your data in a structured, machine-readable format (Art. 20 GDPR);"
-msgstr "deine Daten in einem strukturierten, maschinenlesbaren Format zu erhalten "
+msgstr ""
+"deine Daten in einem strukturierten, maschinenlesbaren Format zu erhalten "
 "(Art. 20 DSGVO);"
 
 #: .\app\templates\app\privacy.html:118
 msgid "object to processing based on legitimate interest (Art. 21 GDPR);"
-msgstr "der Verarbeitung, die auf berechtigtem Interesse beruht, zu widersprechen "
+msgstr ""
+"der Verarbeitung, die auf berechtigtem Interesse beruht, zu widersprechen "
 "(Art. 21 DSGVO);"
 
 #: .\app\templates\app\privacy.html:119
 msgid ""
 "withdraw any consent you have given at any time, with effect for the future "
 "(Art. 7(3) GDPR); and"
-msgstr "eine erteilte Einwilligung jederzeit mit Wirkung für die Zukunft zu "
+msgstr ""
+"eine erteilte Einwilligung jederzeit mit Wirkung für die Zukunft zu "
 "widerrufen (Art. 7 Abs. 3 DSGVO); sowie"
 
 #: .\app\templates\app\privacy.html:120
 msgid ""
 "lodge a complaint with a data protection supervisory authority (Art. 77 "
 "GDPR)."
-msgstr "dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren (Art. 77 DSGVO)."
+msgstr ""
+"dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren (Art. 77 DSGVO)."
 
 #: .\app\templates\app\privacy.html:125
 msgid "12. Encryption"
@@ -2574,9 +2617,9 @@ msgstr "12. Verschlüsselung"
 msgid ""
 "If this site is served over HTTPS, all data transmitted between your browser "
 "and our servers is encrypted in transit."
-msgstr "Sofern diese Seite über HTTPS ausgeliefert wird, werden alle zwischen "
-"deinem Browser und unseren Servern übertragenen Daten verschlüsselt "
-"übertragen."
+msgstr ""
+"Sofern diese Seite über HTTPS ausgeliefert wird, werden alle zwischen deinem "
+"Browser und unseren Servern übertragenen Daten verschlüsselt übertragen."
 
 #: .\app\templates\app\privacy.html:132
 msgid "13. Changes to this policy"
@@ -2587,7 +2630,8 @@ msgid ""
 "We may update this privacy policy from time to time to reflect changes to "
 "the service or to legal requirements. Please check back occasionally to stay "
 "informed."
-msgstr "Wir können diese Datenschutzerklärung von Zeit zu Zeit aktualisieren, um "
+msgstr ""
+"Wir können diese Datenschutzerklärung von Zeit zu Zeit aktualisieren, um "
 "Änderungen am Dienst oder an rechtlichen Anforderungen widerzuspiegeln. "
 "Bitte informiere dich gelegentlich erneut."
 
@@ -2599,6 +2643,10 @@ msgstr "Kontoeinstellungen"
 
 #: .\app\templates\app\registration\account_settings.html:23
 #: .\app\templates\app\registration\login.html:23
+#: .\app\templates\app\registration\password_reset.html:24
+#: .\app\templates\app\registration\password_reset_complete.html:23
+#: .\app\templates\app\registration\password_reset_confirm.html:23
+#: .\app\templates\app\registration\password_reset_done.html:23
 #: .\app\templates\app\registration\signup.html:23
 msgid "Nexora account"
 msgstr "Nexora-Konto"
@@ -2611,10 +2659,6 @@ msgstr ""
 "Aktualisiere deine E-Mail-Adresse, ändere dein Passwort oder lösche dein "
 "Konto endgültig."
 
-#: .\app\templates\app\registration\account_settings.html:38
-msgid "Email address"
-msgstr "E-Mail-Adresse"
-
 #: .\app\templates\app\registration\account_settings.html:39
 msgid "Used to identify your account. Sign-in still uses your username."
 msgstr ""
@@ -2625,6 +2669,8 @@ msgstr ""
 #: .\app\templates\app\registration\account_settings.html:80
 #: .\app\templates\app\registration\account_settings.html:132
 #: .\app\templates\app\registration\login.html:34
+#: .\app\templates\app\registration\password_reset.html:35
+#: .\app\templates\app\registration\password_reset_confirm.html:34
 #: .\app\templates\app\registration\signup.html:34
 msgid "Check your entries"
 msgstr "Überprüfe deine Eingaben"
@@ -2641,6 +2687,8 @@ msgstr "Passwort ändern"
 #: .\app\templates\app\registration\account_settings.html:96
 #: .\app\templates\app\registration\account_settings.html:148
 #: .\app\templates\app\registration\login.html:50
+#: .\app\templates\app\registration\password_reset.html:51
+#: .\app\templates\app\registration\password_reset_confirm.html:50
 #: .\app\templates\app\registration\signup.html:50
 msgid "Required"
 msgstr "Pflichtfeld"
@@ -2681,9 +2729,108 @@ msgstr "Mein Konto endgültig löschen"
 msgid "Sign in to manage your private overlay library."
 msgstr "Melde dich an, um deine private Overlay-Bibliothek zu verwalten."
 
-#: .\app\templates\app\registration\login.html:69
+#: .\app\templates\app\registration\login.html:64
+msgid "Forgot your password?"
+msgstr "Passwort vergessen?"
+
+#: .\app\templates\app\registration\login.html:73
 msgid "No account yet?"
 msgstr "Noch kein Konto?"
+
+#: .\app\templates\app\registration\password_reset.html:5
+#: .\app\templates\app\registration\password_reset.html:16
+#: .\app\templates\app\registration\password_reset.html:25
+msgid "Reset password"
+msgstr "Passwort zurücksetzen"
+
+#: .\app\templates\app\registration\password_reset.html:26
+msgid ""
+"Enter the email address on your account and we will send you a link to set a "
+"new password."
+msgstr ""
+"Gib die E-Mail-Adresse deines Kontos ein. Wir senden dir einen Link, um ein "
+"neues Passwort festzulegen."
+
+#: .\app\templates\app\registration\password_reset.html:61
+msgid "Send reset link"
+msgstr "Reset-Link senden"
+
+#: .\app\templates\app\registration\password_reset.html:66
+#: .\app\templates\app\registration\password_reset_done.html:32
+msgid "Back to sign in"
+msgstr "Zurück zur Anmeldung"
+
+#: .\app\templates\app\registration\password_reset_complete.html:5
+#: .\app\templates\app\registration\password_reset_complete.html:15
+#: .\app\templates\app\registration\password_reset_complete.html:24
+msgid "Password reset complete"
+msgstr "Passwort erfolgreich zurückgesetzt"
+
+#: .\app\templates\app\registration\password_reset_complete.html:28
+msgid ""
+"Your password has been changed. You can now sign in with your new password."
+msgstr ""
+"Dein Passwort wurde geändert. Du kannst dich jetzt mit deinem neuen Passwort "
+"anmelden."
+
+#: .\app\templates\app\registration\password_reset_confirm.html:5
+#: .\app\templates\app\registration\password_reset_confirm.html:15
+#: .\app\templates\app\registration\password_reset_confirm.html:24
+#: .\app\templates\app\registration\password_reset_confirm.html:63
+msgid "Set new password"
+msgstr "Neues Passwort festlegen"
+
+#: .\app\templates\app\registration\password_reset_confirm.html:68
+msgid ""
+"This password reset link is invalid or has already been used. Request a new "
+"one."
+msgstr ""
+"Dieser Link zum Zurücksetzen des Passworts ist ungültig oder wurde bereits "
+"verwendet. Fordere einen neuen an."
+
+#: .\app\templates\app\registration\password_reset_confirm.html:71
+msgid "Request a new link"
+msgstr "Neuen Link anfordern"
+
+#: .\app\templates\app\registration\password_reset_done.html:5
+#: .\app\templates\app\registration\password_reset_done.html:15
+#: .\app\templates\app\registration\password_reset_done.html:24
+msgid "Check your email"
+msgstr "Überprüfe deine E-Mails"
+
+#: .\app\templates\app\registration\password_reset_done.html:29
+msgid ""
+"If an account exists for the email address you entered, a message with a "
+"password reset link is on its way. The link stays valid for a few days."
+msgstr ""
+"Falls ein Konto zu der eingegebenen E-Mail-Adresse existiert, ist eine "
+"Nachricht mit einem Link zum Zurücksetzen des Passworts unterwegs. Der Link "
+"bleibt einige Tage gültig."
+
+#: .\app\templates\app\registration\password_reset_email.txt:1
+#, python-format
+msgid ""
+"You're receiving this email because you requested a password reset for your "
+"Nexora account at %(site_name)s."
+msgstr ""
+"Du erhältst diese E-Mail, weil für dein Nexora-Konto bei %(site_name)s ein "
+"Zurücksetzen des Passworts angefordert wurde."
+
+#: .\app\templates\app\registration\password_reset_email.txt:3
+msgid "Set a new password:"
+msgstr "Neues Passwort festlegen:"
+
+#: .\app\templates\app\registration\password_reset_email.txt:6
+msgid "If you did not request this, you can safely ignore this email."
+msgstr "Wenn du das nicht angefordert hast, kannst du diese E-Mail ignorieren."
+
+#: .\app\templates\app\registration\password_reset_email.txt:8
+msgid "Nexora"
+msgstr "Nexora"
+
+#: .\app\templates\app\registration\password_reset_subject.txt:1
+msgid "Reset your Nexora password"
+msgstr "Nexora-Passwort zurücksetzen"
 
 #: .\app\templates\app\registration\signup.html:25
 msgid ""
