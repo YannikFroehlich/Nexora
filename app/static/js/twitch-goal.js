@@ -4,6 +4,7 @@
         return Number.isFinite(parsed) ? parsed : fallback;
     };
     const clamp = (value, min, max) => Math.min(Math.max(number(value, min), min), max);
+    const resizeDirections = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
     const clone = (value) => JSON.parse(JSON.stringify(value));
     const parseScript = (id, fallback = {}) => {
         try { return JSON.parse(document.getElementById(id)?.textContent || ""); }
@@ -105,15 +106,18 @@
                 node.setAttribute("role", "button");
                 node.classList.toggle("is-selected", element.id === selectedId);
                 node.classList.toggle("is-hidden-element", !visible);
-                if (element.id === selectedId) {
-                    const handle = document.createElement("span");
-                    handle.className = "goal-resize-handle";
-                    handle.dataset.resizeHandle = "";
-                    node.append(handle);
-                }
             }
             if (!editor && !visible) node.hidden = true;
             createContent(node, element, state);
+            if (editor && element.id === selectedId) {
+                resizeDirections.forEach((direction) => {
+                    const handle = document.createElement("span");
+                    handle.className = `goal-resize-handle goal-resize-handle--${direction}`;
+                    handle.dataset.resizeHandle = direction;
+                    handle.setAttribute("aria-hidden", "true");
+                    node.append(handle);
+                });
+            }
             canvas.append(node);
         });
     };
@@ -387,25 +391,71 @@
 
         canvas.addEventListener("pointerdown", (event) => {
             const node = event.target.closest("[data-goal-element]");
-            if (!node) return;
+            if (!node || event.button !== 0) return;
             const item = elements.find((candidate) => candidate.id === node.dataset.elementId);
             if (!item) return;
             selectedId = item.id;
-            const resizing = Boolean(event.target.closest("[data-resize-handle]"));
-            const start = {x: event.clientX, y: event.clientY, left: item.x, top: item.y, width: item.width, height: item.height};
+            const resizeHandle = event.target.closest("[data-resize-handle]");
+            const resizeDirection = resizeHandle?.dataset.resizeHandle || "";
+            const start = {
+                x: event.clientX,
+                y: event.clientY,
+                left: number(item.x),
+                top: number(item.y),
+                width: number(item.width, 120),
+                height: number(item.height, 40),
+            };
+            start.right = start.left + start.width;
+            start.bottom = start.top + start.height;
+            const currentState = state();
             let changed = false;
             const move = (moveEvent) => {
                 const scale = canvas._goalScale || 1;
                 const dx = (moveEvent.clientX - start.x) / scale;
                 const dy = (moveEvent.clientY - start.y) / scale;
-                if (resizing) {
-                    item.width = Math.max(20, Math.round((start.width + dx) / (grid ? 10 : 1)) * (grid ? 10 : 1));
-                    item.height = Math.max(16, Math.round((start.height + dy) / (grid ? 10 : 1)) * (grid ? 10 : 1));
+                const gridSize = grid ? 10 : 1;
+                const snap = (value) => Math.round(value / gridSize) * gridSize;
+                if (resizeDirection) {
+                    if (resizeDirection.includes("e")) {
+                        const right = clamp(
+                            snap(start.right + dx),
+                            start.left + 20,
+                            currentState.canvas_width,
+                        );
+                        item.width = right - start.left;
+                    }
+                    if (resizeDirection.includes("w")) {
+                        const left = clamp(snap(start.left + dx), 0, start.right - 20);
+                        item.x = left;
+                        item.width = start.right - left;
+                    }
+                    if (resizeDirection.includes("s")) {
+                        const bottom = clamp(
+                            snap(start.bottom + dy),
+                            start.top + 16,
+                            currentState.canvas_height,
+                        );
+                        item.height = bottom - start.top;
+                    }
+                    if (resizeDirection.includes("n")) {
+                        const top = clamp(snap(start.top + dy), 0, start.bottom - 16);
+                        item.y = top;
+                        item.height = start.bottom - top;
+                    }
                 } else {
-                    item.x = Math.max(0, Math.round((start.left + dx) / (grid ? 10 : 1)) * (grid ? 10 : 1));
-                    item.y = Math.max(0, Math.round((start.top + dy) / (grid ? 10 : 1)) * (grid ? 10 : 1));
+                    item.x = clamp(
+                        snap(start.left + dx),
+                        0,
+                        Math.max(currentState.canvas_width - start.width, 0),
+                    );
+                    item.y = clamp(
+                        snap(start.top + dy),
+                        0,
+                        Math.max(currentState.canvas_height - start.height, 0),
+                    );
                 }
-                changed = true; setCustom(); render();
+                if (dx || dy) changed = true;
+                setCustom(); render();
             };
             const end = () => {
                 window.removeEventListener("pointermove", move);

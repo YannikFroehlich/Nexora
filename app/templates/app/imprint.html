@@ -1,0 +1,75 @@
+{% extends "app/base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% translate "Legal notice" %} · Nexora{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/legal.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li aria-current="page">{% translate "Legal notice" %}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <section class="legal-page" aria-labelledby="imprint-title">
+        <div class="legal-header">
+            <h1 id="imprint-title">{% translate "Legal notice" %}</h1>
+            <p>{% translate "Information pursuant to Sec. 5 of the German Digital Services Act (DDG)." %}</p>
+        </div>
+
+        <div class="legal-notice">
+            <p>
+                {% translate "This page currently contains placeholder information. Replace every bracketed placeholder below with real details before this site is published." %}
+            </p>
+        </div>
+
+        <div class="legal-card glass-design card">
+            <div class="legal-section">
+                <h2>{% translate "Information pursuant to Sec. 5 DDG" %}</h2>
+                <p><span class="legal-placeholder">[{% translate "Full name" %}]</span></p>
+                <p><span class="legal-placeholder">[{% translate "Street and house number" %}]</span></p>
+                <p><span class="legal-placeholder">[{% translate "Postal code and city" %}]</span></p>
+                <p><span class="legal-placeholder">[{% translate "Country" %}]</span></p>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "Contact" %}</h2>
+                <p>{% translate "Email" %}: <span class="legal-placeholder">[{% translate "email address" %}]</span></p>
+                <p>{% translate "Phone (optional)" %}: <span class="legal-placeholder">[{% translate "phone number" %}]</span></p>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "Responsible for content pursuant to Sec. 18(2) MStV" %}</h2>
+                <p>{% translate "Same name and address as above." %}</p>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "Liability for content" %}</h2>
+                <p>
+                    {% translate "As the operator of this site, we are responsible for our own content on these pages in accordance with general legislation. We are, however, not obliged to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity. Obligations to remove or block the use of information under general law remain unaffected." %}
+                </p>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "Liability for links" %}</h2>
+                <p>
+                    {% translate "This site contains links to external third-party websites over whose content we have no influence. We therefore cannot accept any liability for this third-party content. The respective provider or operator of the linked pages is always responsible for their content. If we become aware of any legal violations, we will remove such links without delay." %}
+                </p>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "Copyright" %}</h2>
+                <p>
+                    {% translate "The content and works created by the site operator on these pages are subject to copyright law. Duplication, processing, distribution or any form of commercialization beyond the scope of copyright law requires the prior written consent of the respective author. If you become aware of a copyright infringement, please let us know so we can remove the content in question." %}
+                </p>
+            </div>
+        </div>
+    </section>
+{% endblock %}

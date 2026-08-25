@@ -22,6 +22,7 @@ from app.views.common import (
 )
 from app.views.dashboard import manageable_twitch_goal_overlays
 from app.views.pages import safe_next_url
+from app.views.presets import manageable_presets
 
 
 def get_manageable_twitch_goal(request, pk):
@@ -82,6 +83,7 @@ def twitch_goal_editor_context(request, form, overlay, is_create):
     }
     if not is_create:
         context.update(overlay_versions.editor_version_context(overlay))
+        context["style_presets"] = manageable_presets(request)
     return context
 
 

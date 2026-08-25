@@ -1,0 +1,139 @@
+{% extends "app/base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% translate "Privacy policy" %} · Nexora{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/legal.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li aria-current="page">{% translate "Privacy policy" %}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <section class="legal-page" aria-labelledby="privacy-title">
+        <div class="legal-header">
+            <h1 id="privacy-title">{% translate "Privacy policy" %}</h1>
+            <p>{% translate "An overview of what data Nexora processes, why, and what rights you have over it." %}</p>
+        </div>
+
+        <div class="legal-notice">
+            <p>
+                {% translate "This page currently contains placeholder information. Replace every bracketed placeholder below with real details before this site is published." %}
+            </p>
+        </div>
+
+        <div class="legal-card glass-design card">
+            <div class="legal-section">
+                <h2>{% translate "1. Controller" %}</h2>
+                <p>
+                    {% translate "The controller responsible for data processing on this site within the meaning of the GDPR is:" %}
+                </p>
+                <p><span class="legal-placeholder">[{% translate "Full name" %}]</span></p>
+                <p><span class="legal-placeholder">[{% translate "Street and house number" %}]</span>, <span class="legal-placeholder">[{% translate "Postal code and city" %}]</span>, <span class="legal-placeholder">[{% translate "Country" %}]</span></p>
+                <p>{% translate "Email" %}: <span class="legal-placeholder">[{% translate "email address" %}]</span></p>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "2. Hosting and server log files" %}</h2>
+                <p>
+                    {% translate "This site is hosted by" %} <span class="legal-placeholder">[{% translate "name of the hosting provider" %}]</span>{% translate ", an EU-based hosting provider." %}
+                </p>
+                <p>
+                    {% translate "The hosting provider's web server automatically records access data for every page request in log files, including the requesting IP address, date and time, the requested page, the amount of data transferred, and the browser's user agent. This data is processed to operate the site reliably and securely (Art. 6(1)(f) GDPR) and is not merged with other data sources." %}
+                </p>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "3. Cookies" %}</h2>
+                <p>{% translate "Nexora only uses technically necessary cookies. No analytics, advertising or tracking cookies are set." %}</p>
+                <ul>
+                    <li>{% translate "sessionid – keeps you signed in; expires after about two weeks of inactivity." %}</li>
+                    <li>{% translate "csrftoken – protects forms against cross-site request forgery; a standard security cookie." %}</li>
+                    <li>{% translate "django_language – remembers your chosen interface language for the current browser session." %}</li>
+                </ul>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "4. Registration and user account" %}</h2>
+                <p>
+                    {% translate "If you create an account, we store your username and a securely hashed password to let you sign in and manage your own overlays (Art. 6(1)(b) GDPR). An email address is only stored if you choose to add one in your account settings." %}
+                </p>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "5. Spotify connection (optional)" %}</h2>
+                <p>
+                    {% translate 'If you choose to connect a Spotify account to a Spotify overlay, Nexora requests the limited "currently playing" permission and receives an access and refresh token from Spotify, which we store encrypted. We use this to display your currently playing track title, artist, album artwork and playback progress. No other Spotify profile data is requested. This processing is based on your consent (Art. 6(1)(a) GDPR) and can be withdrawn at any time by disconnecting Spotify in the overlay settings.' %}
+                </p>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "6. Twitch connection (optional)" %}</h2>
+                <p>
+                    {% translate "If you choose to connect a Twitch account to a Twitch Goal overlay, Nexora requests permission to read your follower and/or subscriber counts and receives an access and refresh token, which we store encrypted, along with your Twitch user ID, login name, display name, profile image and cached follower/subscriber counts. This processing is based on your consent (Art. 6(1)(a) GDPR). Disconnecting Twitch, or deleting your account, revokes the token directly with Twitch." %}
+                </p>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "7. Uploaded images and fonts" %}</h2>
+                <p>
+                    {% translate "Images and fonts you upload for your overlays are stored as provided. Uploaded image files are not automatically stripped of embedded metadata (such as EXIF data, which can include the device used or a GPS location) — please remove any sensitive metadata yourself before uploading an image if this matters to you." %}
+                </p>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "8. No analytics or tracking" %}</h2>
+                <p>{% translate "Nexora does not use any analytics, advertising or third-party tracking tools." %}</p>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "9. Email communication" %}</h2>
+                <p>{% translate "Nexora does not currently send any emails. Should this change in the future, this policy will be updated accordingly." %}</p>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "10. Storage duration and deletion" %}</h2>
+                <p>
+                    {% translate "Your data is stored for as long as your account exists. From your account settings you can permanently delete your account at any time; this removes your overlays, templates and uploaded files, revokes the Twitch connection, and deletes your account. Spotify access cannot be revoked through Spotify's API from within Nexora — please also remove Nexora from the connected-apps settings of your Spotify account." %}
+                </p>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "11. Your rights" %}</h2>
+                <p>{% translate "Subject to the legal requirements, you have the right to:" %}</p>
+                <ul>
+                    <li>{% translate "request information about the personal data we process about you (Art. 15 GDPR);" %}</li>
+                    <li>{% translate "request the correction of inaccurate data (Art. 16 GDPR);" %}</li>
+                    <li>{% translate "request the erasure of your data (Art. 17 GDPR);" %}</li>
+                    <li>{% translate "request the restriction of processing (Art. 18 GDPR);" %}</li>
+                    <li>{% translate "receive your data in a structured, machine-readable format (Art. 20 GDPR);" %}</li>
+                    <li>{% translate "object to processing based on legitimate interest (Art. 21 GDPR);" %}</li>
+                    <li>{% translate "withdraw any consent you have given at any time, with effect for the future (Art. 7(3) GDPR); and" %}</li>
+                    <li>{% translate "lodge a complaint with a data protection supervisory authority (Art. 77 GDPR)." %}</li>
+                </ul>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "12. Encryption" %}</h2>
+                <p>
+                    {% translate "If this site is served over HTTPS, all data transmitted between your browser and our servers is encrypted in transit." %}
+                </p>
+            </div>
+
+            <div class="legal-section">
+                <h2>{% translate "13. Changes to this policy" %}</h2>
+                <p>
+                    {% translate "We may update this privacy policy from time to time to reflect changes to the service or to legal requirements. Please check back occasionally to stay informed." %}
+                </p>
+            </div>
+        </div>
+    </section>
+{% endblock %}

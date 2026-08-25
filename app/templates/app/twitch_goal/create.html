@@ -125,7 +125,7 @@
                 <div class="goal-toggle-row"><label>{{ form.use_gradient }}<span>{{ form.use_gradient.label }}</span></label><label>{{ form.shadow_enabled }}<span>{{ form.shadow_enabled.label }}</span></label></div>
             </section>
 
-            {% include "app/partials/_overlay_branding_controls.html" with branding_form=form %}
+            {% include "app/partials/_overlay_branding_controls.html" with branding_form=form overlay_type="twitch_goal" %}
 
             <section class="goal-panel">
                 <div class="goal-panel__heading"><span>05</span><div><small>{% translate "Elements" %}</small><h2>{% translate "Canvas elements" %}</h2></div></div>
@@ -192,7 +192,17 @@
         </div>
 
         <aside class="goal-preview-panel">
-            <div class="goal-preview-heading"><div><small>{% translate "Responsive preview" %}</small><h2>{% translate "Drag and resize elements" %}</h2></div><label><input type="checkbox" data-grid-toggle> {% translate "Snap 10 px" %}</label></div>
+            <div class="goal-preview-heading">
+                <div><small>{% translate "Responsive preview" %}</small><h2>{% translate "Drag and resize elements" %}</h2></div>
+                <label class="goal-grid-toggle">
+                    <input type="checkbox" data-grid-toggle>
+                    <span class="goal-grid-toggle__control" aria-hidden="true"><i></i></span>
+                    <span>
+                        <strong>{% translate "Snap to grid" %}</strong>
+                        <small>{% translate "Show a grid and align movements to it." %}</small>
+                    </span>
+                </label>
+            </div>
             <div class="goal-preview-modes" role="group" aria-label="{% translate 'Preview data' %}">
                 <button type="button" class="is-active" data-preview-mode="sample">{% translate "Sample data" %}</button>
                 {% if not is_create %}<button type="button" data-preview-mode="live">{% translate "Live Twitch data" %}</button>{% endif %}
@@ -212,6 +222,19 @@
         <form id="twitch-disconnect-form" action="{% url 'twitch_disconnect' %}" method="post">{% csrf_token %}<input type="hidden" name="next" value="{% url 'twitch_goal_manage' overlay.pk %}"></form>
         <form id="goal-renew-form" action="{% url 'twitch_goal_renew_obs_link' overlay.pk %}" method="post" data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'twitch_goal_manage' overlay.pk %}"></form>
         <form id="goal-delete-form" action="{% url 'twitch_goal_delete' overlay.pk %}" method="post" data-confirm-message="{% translate 'Delete this Twitch goal overlay?' %}">{% csrf_token %}</form>
+        <form id="overlay-preset-save-form" action="{% url 'preset_save' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="overlay_type" value="twitch_goal">
+            <input type="hidden" name="pk" value="{{ overlay.pk }}">
+        </form>
+        <form
+            id="overlay-preset-apply-form"
+            action="{% url 'preset_apply' overlay_type='twitch_goal' pk=overlay.pk %}"
+            method="post"
+            data-confirm-action="{% translate 'This replaces the current font, images, colors, border and corner radius. Continue?' %}"
+        >
+            {% csrf_token %}
+        </form>
     {% endif %}
     {{ sample_state|json_script:"twitch-goal-sample-state" }}
     {{ layout_templates|json_script:"twitch-goal-layout-templates" }}

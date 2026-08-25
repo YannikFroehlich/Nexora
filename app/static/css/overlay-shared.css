@@ -129,6 +129,36 @@
     justify-self: start;
 }
 
+.overlay-preset-controls {
+    display: grid;
+    gap: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--color-box-border);
+}
+
+.overlay-preset-save,
+.overlay-preset-apply {
+    display: grid;
+    gap: 8px;
+}
+
+.overlay-preset-save-form,
+.overlay-preset-apply-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.overlay-preset-save-form .form-control,
+.overlay-preset-apply-form .form-control {
+    flex: 1 1 200px;
+}
+
+.overlay-preset-save-form .btn,
+.overlay-preset-apply-form .btn {
+    flex: 0 0 auto;
+}
+
 .overlay-version-list {
     display: grid;
     gap: 8px;

@@ -4,6 +4,12 @@
 from django.utils import timezone
 
 from app import spotify_api
+from app.views.account import (
+    account_delete,
+    account_email_update,
+    account_password_change,
+    account_settings,
+)
 from app.views.common import overlay_asset_file
 from app.views.dashboard import (
     overlay_asset_upload,
@@ -11,7 +17,18 @@ from app.views.dashboard import (
     overlay_import,
     overlay_version_restore,
 )
-from app.views.pages import about, demo, home, robots_txt, signup, sitemap
+from app.views.pages import (
+    RateLimitedPasswordResetView,
+    about,
+    demo,
+    home,
+    imprint,
+    privacy_policy,
+    robots_txt,
+    signup,
+    sitemap,
+)
+from app.views.presets import preset_apply, preset_delete, preset_list, preset_save
 from app.views.score import (
     score_autosave,
     score_create,
@@ -93,14 +110,25 @@ from app.views.winchallenge import (
 )
 
 __all__ = [
+    "RateLimitedPasswordResetView",
     "about",
+    "account_delete",
+    "account_email_update",
+    "account_password_change",
+    "account_settings",
     "demo",
     "home",
+    "imprint",
     "overlay_asset_file",
     "overlay_asset_upload",
     "overlay_dashboard",
     "overlay_import",
     "overlay_version_restore",
+    "preset_apply",
+    "preset_delete",
+    "preset_list",
+    "preset_save",
+    "privacy_policy",
     "robots_txt",
     "score_autosave",
     "score_create",

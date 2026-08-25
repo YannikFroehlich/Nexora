@@ -86,6 +86,12 @@ Each has a view module in [app/views/](app/views/), a template dir under
 - [app/overlay_transfer.py](app/overlay_transfer.py) — JSON export/import (`nexora-overlay`
   envelope, `FORMAT_VERSION`) and `duplicate_overlay()`. Explicit per-type field tuples plus
   `<type>_export_payload` / `_import_<type>` functions; import validates envelope keys strictly.
+- [app/overlay_presets.py](app/overlay_presets.py) — `OverlayPreset` (the "template gallery"): a
+  named, cross-type snapshot of the 9 identically-shaped branding/style fields every overlay type
+  shares (font, logo/background assets, background/border color, opacity, border width, corner
+  radius). `apply_style()` clamps numeric fields to the *target* type's own validators before
+  saving, since max bounds differ per type (e.g. `corner_radius` maxes out at 64/80/100 depending on
+  the overlay). Applying records a version snapshot first, so it stays reversible.
 - [app/encrypted_fields.py](app/encrypted_fields.py) — `EncryptedTextField` (Fernet, `fernet$`
   prefix) used for all OAuth tokens. The key comes from `NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY`, falls
   back to `SPOTIFY_TOKEN_ENCRYPTION_KEY`, then to a digest of `DJANGO_SECRET_KEY`. Changing the

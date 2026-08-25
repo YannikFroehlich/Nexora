@@ -5,14 +5,19 @@ from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.core import mail
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection as database_connection
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from PIL import Image
 
-from app import overlay_versions
+from app import overlay_presets, overlay_versions
 from app.forms import (
     ScoreOverlayForm,
     SpotifyOverlayForm,
@@ -22,12 +27,14 @@ from app.forms import (
 )
 from app.models import (
     OverlayAsset,
+    OverlayPreset,
     OverlayVersion,
     ScoreOverlay,
     ScoreParticipant,
     SpotifyConnection,
     SpotifyOverlay,
     TimerOverlay,
+    TwitchConnection,
     TwitchGoalOverlay,
     WinChallenge,
     WinChallengeGame,
@@ -66,6 +73,12 @@ class HomeViewTests(TestCase):
         self.assertContains(response, "data-open-label=")
         self.assertContains(response, "data-close-label=")
         self.assertContains(response, 'class="header-menu" id="header-menu"')
+
+    def test_footer_links_to_imprint_and_privacy_policy(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(response, f'href="{reverse("imprint")}"')
+        self.assertContains(response, f'href="{reverse("privacy_policy")}"')
 
     def test_page_exposes_skip_link_landmarks_and_public_indexing(self):
         response = self.client.get(reverse("home"))
@@ -143,6 +156,21 @@ class HomeViewTests(TestCase):
         response = self.client.get(reverse("home"))
 
         self.assertContains(response, "Version 9.8.7-test")
+
+
+class LegalPagesTests(TestCase):
+    def test_imprint_is_publicly_accessible(self):
+        response = self.client.get(reverse("imprint"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "DDG")
+
+    def test_privacy_policy_is_publicly_accessible(self):
+        response = self.client.get(reverse("privacy_policy"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "sessionid")
+        self.assertContains(response, "csrftoken")
 
 
 class DemoViewTests(TestCase):
@@ -695,6 +723,128 @@ class OverlayVersionTests(TestCase):
         versions = overlay_versions.versions_for(self.spotify)
         self.assertEqual(versions.count(), 30)
         self.assertEqual(versions.first().snapshot["payload"]["overlay"]["name"], "Version 34")
+
+
+class OverlayPresetTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="preset-owner")
+        self.other_user = User.objects.create_user(username="preset-other")
+        self.client.force_login(self.user)
+        self.goal = TwitchGoalOverlay.objects.create(
+            owner=self.user,
+            name="Goal",
+            background_color="#111111",
+            border_color="#222222",
+            background_opacity=50,
+            border_width=24,
+            corner_radius=100,
+            font_family=TwitchGoalOverlay.FONT_GEORGIA,
+        )
+
+    def score_with_participants(self, name="Target"):
+        score = ScoreOverlay.objects.create(owner=self.user, name=name)
+        ScoreParticipant.objects.create(overlay=score, name="Alice", sort_order=0)
+        ScoreParticipant.objects.create(overlay=score, name="Bob", sort_order=1)
+        return score
+
+    def test_preset_applies_across_overlay_types(self):
+        self.client.post(
+            reverse("preset_save"),
+            {"overlay_type": "twitch_goal", "pk": self.goal.pk, "name": "My Style"},
+        )
+        preset = OverlayPreset.objects.get(owner=self.user, name="My Style")
+        score = self.score_with_participants()
+
+        response = self.client.post(
+            reverse("preset_apply", args=["score", score.pk]),
+            {"preset_id": preset.pk},
+        )
+
+        score.refresh_from_db()
+        self.assertRedirects(response, reverse("score_manage", args=[score.pk]))
+        self.assertEqual(score.background_color, "#111111")
+        self.assertEqual(score.border_color, "#222222")
+        self.assertEqual(score.background_opacity, 50)
+        self.assertEqual(score.font_family, TwitchGoalOverlay.FONT_GEORGIA)
+        # Score allows up to 24/80, so the TwitchGoal source values fit unclamped.
+        self.assertEqual(score.border_width, 24)
+        self.assertEqual(score.corner_radius, 80)
+
+    def test_apply_clamps_values_to_the_target_types_own_bounds(self):
+        preset = OverlayPreset.objects.create(
+            owner=self.user,
+            name="Bold",
+            style=overlay_presets.capture_style(self.goal),
+        )
+        challenge = WinChallenge.objects.create(owner=self.user, title="Target Challenge")
+
+        self.client.post(
+            reverse("preset_apply", args=["winchallenge", challenge.pk]),
+            {"preset_id": preset.pk},
+        )
+
+        challenge.refresh_from_db()
+        # WinChallenge caps border_width at 12 and corner_radius at 64.
+        self.assertEqual(challenge.border_width, 12)
+        self.assertEqual(challenge.corner_radius, 64)
+
+    def test_apply_records_a_pre_apply_version_for_recovery(self):
+        preset = OverlayPreset.objects.create(
+            owner=self.user,
+            name="Bold",
+            style=overlay_presets.capture_style(self.goal),
+        )
+        score = self.score_with_participants()
+        original_color = score.background_color
+
+        self.client.post(
+            reverse("preset_apply", args=["score", score.pk]),
+            {"preset_id": preset.pk},
+        )
+
+        versions = overlay_versions.versions_for(score)
+        self.assertEqual(versions.count(), 2)
+        pre_apply_version = versions.last()
+        self.assertEqual(
+            pre_apply_version.snapshot["payload"]["overlay"]["background_color"],
+            original_color,
+        )
+
+    def test_another_users_preset_or_overlay_returns_404(self):
+        foreign_preset = OverlayPreset.objects.create(
+            owner=self.other_user,
+            name="Foreign",
+            style=overlay_presets.capture_style(self.goal),
+        )
+        foreign_score = ScoreOverlay.objects.create(owner=self.other_user, name="Foreign Score")
+        own_score = ScoreOverlay.objects.create(owner=self.user, name="Own Score")
+
+        apply_on_foreign_overlay = self.client.post(
+            reverse("preset_apply", args=["score", foreign_score.pk]),
+            {"preset_id": foreign_preset.pk},
+        )
+        apply_foreign_preset = self.client.post(
+            reverse("preset_apply", args=["score", own_score.pk]),
+            {"preset_id": foreign_preset.pk},
+        )
+        delete_foreign_preset = self.client.post(reverse("preset_delete", args=[foreign_preset.pk]))
+
+        self.assertEqual(apply_on_foreign_overlay.status_code, 404)
+        self.assertEqual(apply_foreign_preset.status_code, 404)
+        self.assertEqual(delete_foreign_preset.status_code, 404)
+        self.assertTrue(OverlayPreset.objects.filter(pk=foreign_preset.pk).exists())
+
+    def test_preset_delete_removes_it_from_the_gallery(self):
+        preset = OverlayPreset.objects.create(
+            owner=self.user,
+            name="Bold",
+            style=overlay_presets.capture_style(self.goal),
+        )
+
+        response = self.client.post(reverse("preset_delete", args=[preset.pk]))
+
+        self.assertRedirects(response, reverse("preset_list"))
+        self.assertFalse(OverlayPreset.objects.filter(pk=preset.pk).exists())
 
 
 class OverlayTransferTests(TestCase):
@@ -2313,6 +2463,7 @@ class AccessControlTests(TestCase):
         protected_urls = (
             reverse("overlay_dashboard"),
             reverse("overlay_import"),
+            reverse("account_settings"),
             reverse("spotify_list"),
             reverse("spotify_create"),
             reverse("spotify_autosave", args=[self.owner_spotify.pk]),
@@ -2513,3 +2664,260 @@ class SignUpTests(TestCase):
         )
 
         self.assertRedirects(response, reverse("home"))
+
+
+class PasswordResetTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="reset-user",
+            password="Old-Password-2026!",
+            email="reset-user@example.com",
+        )
+
+    def test_request_with_known_email_sends_reset_link(self):
+        response = self.client.post(reverse("password_reset"), {"email": "reset-user@example.com"})
+
+        self.assertRedirects(response, reverse("password_reset_done"))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("reset-user@example.com", mail.outbox[0].to)
+        self.assertIn("/accounts/reset/", mail.outbox[0].body)
+
+    def test_request_with_unknown_email_does_not_leak_account_existence(self):
+        response = self.client.post(reverse("password_reset"), {"email": "nobody@example.com"})
+
+        self.assertRedirects(response, reverse("password_reset_done"))
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_confirm_link_sets_a_new_password(self):
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        token = default_token_generator.make_token(self.user)
+
+        initial_response = self.client.get(
+            reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": token}),
+            follow=True,
+        )
+        self.assertEqual(initial_response.status_code, 200)
+        self.assertContains(initial_response, 'name="new_password1"')
+
+        confirm_url = initial_response.redirect_chain[-1][0]
+        response = self.client.post(
+            confirm_url,
+            {
+                "new_password1": "Brand-New-Password-2026!",
+                "new_password2": "Brand-New-Password-2026!",
+            },
+        )
+
+        self.assertRedirects(response, reverse("password_reset_complete"))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("Brand-New-Password-2026!"))
+        self.assertFalse(self.user.check_password("Old-Password-2026!"))
+
+    def test_confirm_with_invalid_token_does_not_show_the_password_form(self):
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+
+        response = self.client.get(
+            reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": "invalid-token"}),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'name="new_password1"')
+        self.assertContains(response, reverse("password_reset"))
+
+
+class RateLimitTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.addCleanup(cache.clear)
+        self.user = User.objects.create_user(
+            username="throttle-user",
+            password="Correct-Password-2026!",
+            email="throttle-user@example.com",
+        )
+
+    @override_settings(LOGIN_RATE_LIMIT_ATTEMPTS=2, LOGIN_RATE_LIMIT_WINDOW_SECONDS=300)
+    def test_login_is_blocked_after_too_many_attempts(self):
+        for _ in range(2):
+            self.client.post(reverse("login"), {"username": "throttle-user", "password": "wrong"})
+
+        response = self.client.post(
+            reverse("login"),
+            {"username": "throttle-user", "password": "Correct-Password-2026!"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="auth-error-summary"')
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    @override_settings(LOGIN_RATE_LIMIT_ATTEMPTS=0)
+    def test_login_rate_limit_can_be_disabled(self):
+        for _ in range(5):
+            self.client.post(reverse("login"), {"username": "throttle-user", "password": "wrong"})
+
+        response = self.client.post(
+            reverse("login"),
+            {"username": "throttle-user", "password": "Correct-Password-2026!"},
+        )
+
+        self.assertRedirects(response, reverse("home"))
+
+    @override_settings(
+        PASSWORD_RESET_RATE_LIMIT_ATTEMPTS=2,
+        PASSWORD_RESET_RATE_LIMIT_WINDOW_SECONDS=300,
+    )
+    def test_password_reset_requests_are_throttled_without_leaking_state(self):
+        for _ in range(2):
+            self.client.post(reverse("password_reset"), {"email": "throttle-user@example.com"})
+
+        response = self.client.post(
+            reverse("password_reset"), {"email": "throttle-user@example.com"}
+        )
+
+        self.assertRedirects(response, reverse("password_reset_done"))
+        self.assertEqual(len(mail.outbox), 2)
+
+    @override_settings(SIGNUP_RATE_LIMIT_ATTEMPTS=2, SIGNUP_RATE_LIMIT_WINDOW_SECONDS=300)
+    def test_signup_is_blocked_after_too_many_attempts(self):
+        invalid_payload = {
+            "username": "throttled-signup",
+            "password1": "Strong-Password-2026!",
+            "password2": "Different-Password-2026!",
+        }
+        for _ in range(2):
+            self.client.post(reverse("signup"), invalid_payload)
+
+        response = self.client.post(
+            reverse("signup"),
+            {
+                "username": "throttled-signup",
+                "password1": "Strong-Password-2026!",
+                "password2": "Strong-Password-2026!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="auth-error-summary"')
+        self.assertFalse(User.objects.filter(username="throttled-signup").exists())
+
+    @override_settings(SIGNUP_RATE_LIMIT_ATTEMPTS=0)
+    def test_signup_rate_limit_can_be_disabled(self):
+        invalid_payload = {
+            "username": "unthrottled-signup",
+            "password1": "Strong-Password-2026!",
+            "password2": "Different-Password-2026!",
+        }
+        for _ in range(5):
+            self.client.post(reverse("signup"), invalid_payload)
+
+        response = self.client.post(
+            reverse("signup"),
+            {
+                "username": "unthrottled-signup",
+                "password1": "Strong-Password-2026!",
+                "password2": "Strong-Password-2026!",
+            },
+        )
+
+        self.assertRedirects(response, reverse("home"))
+
+
+class AccountSettingsTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="account-owner", password="Old-Password-2026!"
+        )
+        self.client.force_login(self.user)
+
+    def test_get_renders_all_three_forms(self):
+        response = self.client.get(reverse("account_settings"))
+
+        self.assertContains(response, reverse("account_email_update"))
+        self.assertContains(response, reverse("account_password_change"))
+        self.assertContains(response, reverse("account_delete"))
+
+    def test_email_can_be_updated(self):
+        response = self.client.post(reverse("account_email_update"), {"email": "owner@example.com"})
+
+        self.user.refresh_from_db()
+        self.assertRedirects(response, reverse("account_settings"))
+        self.assertEqual(self.user.email, "owner@example.com")
+
+    def test_email_update_rejects_case_insensitive_duplicate(self):
+        User.objects.create_user(username="other", email="Taken@Example.com")
+
+        response = self.client.post(reverse("account_email_update"), {"email": "taken@example.com"})
+
+        self.user.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("email", response.context["email_form"].errors)
+        self.assertEqual(self.user.email, "")
+
+    def test_password_change_keeps_the_session_authenticated(self):
+        response = self.client.post(
+            reverse("account_password_change"),
+            {
+                "old_password": "Old-Password-2026!",
+                "new_password1": "New-Password-2026!",
+                "new_password2": "New-Password-2026!",
+            },
+        )
+
+        self.assertRedirects(response, reverse("account_settings"))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("New-Password-2026!"))
+        # A logged-out session would be redirected to login instead of getting the page directly.
+        self.assertEqual(self.client.get(reverse("account_settings")).status_code, 200)
+
+    def test_password_change_rejects_wrong_current_password(self):
+        response = self.client.post(
+            reverse("account_password_change"),
+            {
+                "old_password": "wrong-password",
+                "new_password1": "New-Password-2026!",
+                "new_password2": "New-Password-2026!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("Old-Password-2026!"))
+
+    def test_delete_rejects_wrong_password(self):
+        response = self.client.post(reverse("account_delete"), {"password": "wrong-password"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(User.objects.filter(pk=self.user.pk).exists())
+
+    def test_delete_removes_owned_data_and_logs_out(self):
+        SpotifyOverlay.objects.create(owner=self.user, name="Owner Spotify")
+        ScoreOverlay.objects.create(owner=self.user, name="Owner Score")
+        TimerOverlay.objects.create(owner=self.user, name="Owner Timer")
+        WinChallenge.objects.create(owner=self.user, title="Owner Challenge")
+        OverlayPreset.objects.create(owner=self.user, name="Preset", style={})
+        TwitchConnection.objects.create(
+            owner=self.user, access_token="secret", refresh_token="secret"
+        )
+        SpotifyConnection.objects.create(owner=self.user)
+        asset = OverlayAsset.objects.create(
+            owner=self.user, kind="image", name="Logo", file=uploaded_png()
+        )
+
+        with patch("app.views.account.twitch_api.disconnect") as mock_disconnect:
+            response = self.client.post(
+                reverse("account_delete"), {"password": "Old-Password-2026!"}
+            )
+
+        mock_disconnect.assert_called_once()
+        # user.delete() clears the in-memory pk afterwards, so compare by username instead.
+        self.assertEqual(mock_disconnect.call_args.args[0].username, self.user.username)
+        self.assertRedirects(response, reverse("home"))
+        self.assertFalse(User.objects.filter(pk=self.user.pk).exists())
+        self.assertFalse(SpotifyOverlay.objects.filter(owner_id=self.user.pk).exists())
+        self.assertFalse(ScoreOverlay.objects.filter(owner_id=self.user.pk).exists())
+        self.assertFalse(TimerOverlay.objects.filter(owner_id=self.user.pk).exists())
+        self.assertFalse(WinChallenge.objects.filter(owner_id=self.user.pk).exists())
+        self.assertFalse(OverlayPreset.objects.filter(owner_id=self.user.pk).exists())
+        self.assertFalse(TwitchConnection.objects.filter(owner_id=self.user.pk).exists())
+        self.assertFalse(SpotifyConnection.objects.filter(owner_id=self.user.pk).exists())
+        self.assertFalse(OverlayAsset.objects.filter(pk=asset.pk).exists())
+        self.assertEqual(self.client.get(reverse("account_settings")).status_code, 302)

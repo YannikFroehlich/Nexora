@@ -121,6 +121,8 @@
 
 .timer-field {
     display: grid;
+    align-content: start;
+    min-width: 0;
     gap: 7px;
     margin-bottom: 16px;
 }
@@ -143,6 +145,7 @@
 .timer-obs-copy .form-control {
     width: 100%;
     min-width: 0;
+    box-sizing: border-box;
     padding: 11px 12px;
     border: 1px solid rgba(148, 163, 184, .38);
     border-radius: 12px;
@@ -229,6 +232,7 @@
 
 .timer-save {
     width: 100%;
+    margin-top: 20px;
 }
 
 .timer-controls {

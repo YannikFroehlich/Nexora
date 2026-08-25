@@ -72,6 +72,13 @@
                             {% trans "My overlays" %}
                         </a>
                         <a
+                            class="btn glass-design header-nav__link{% if current_url == 'preset_list' %} is-active{% endif %}"
+                            href="{% url 'preset_list' %}"
+                            {% if current_url == 'preset_list' %}aria-current="page"{% endif %}
+                        >
+                            {% trans "Templates" %}
+                        </a>
+                        <a
                             class="btn glass-design header-nav__link{% if current_url == 'demo' %} is-active{% endif %}"
                             href="{% url 'demo' %}"
                             {% if current_url == 'demo' %}aria-current="page"{% endif %}
@@ -93,6 +100,9 @@
                             <span class="account-user" title="{% translate 'Signed in as' %} {{ user.get_username }}">
                                 {{ user.get_username }}
                             </span>
+                            <a class="btn glass-design account-button" href="{% url 'account_settings' %}">
+                                {% translate "Account" %}
+                            </a>
                             <form class="account-logout" action="{% url 'logout' %}" method="post">
                                 {% csrf_token %}
                                 <button class="btn glass-design account-button" type="submit">
@@ -163,6 +173,8 @@
                 <a href="{% url 'home' %}">{% translate "Home" %}</a>
                 <a href="{% url 'demo' %}">{% translate "Live demo" %}</a>
                 <a href="{% url 'about' %}">{% translate "About" %}</a>
+                <a href="{% url 'imprint' %}">{% translate "Legal notice" %}</a>
+                <a href="{% url 'privacy_policy' %}">{% translate "Privacy policy" %}</a>
             </nav>
 
             <div class="footer-right">

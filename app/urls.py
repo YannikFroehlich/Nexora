@@ -1,8 +1,8 @@
 from django.contrib.auth import views as auth_views
-from django.urls import path
+from django.urls import path, reverse_lazy
 
 from app import views
-from app.forms import LoginForm
+from app.forms import LoginForm, NexoraPasswordResetForm, NexoraSetPasswordForm
 
 urlpatterns = [
     path("", views.home, name="home"),
@@ -10,6 +10,8 @@ urlpatterns = [
     path("sitemap.xml", views.sitemap, name="sitemap"),
     path("demo/", views.demo, name="demo"),
     path("about/", views.about, name="about"),
+    path("imprint/", views.imprint, name="imprint"),
+    path("privacy/", views.privacy_policy, name="privacy_policy"),
     path(
         "accounts/login/",
         auth_views.LoginView.as_view(
@@ -23,7 +25,53 @@ urlpatterns = [
         auth_views.LogoutView.as_view(),
         name="logout",
     ),
+    path(
+        "accounts/password-reset/",
+        views.RateLimitedPasswordResetView.as_view(
+            template_name="app/registration/password_reset.html",
+            email_template_name="app/registration/password_reset_email.txt",
+            subject_template_name="app/registration/password_reset_subject.txt",
+            form_class=NexoraPasswordResetForm,
+            success_url=reverse_lazy("password_reset_done"),
+        ),
+        name="password_reset",
+    ),
+    path(
+        "accounts/password-reset/done/",
+        auth_views.PasswordResetDoneView.as_view(
+            template_name="app/registration/password_reset_done.html",
+        ),
+        name="password_reset_done",
+    ),
+    path(
+        "accounts/reset/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name="app/registration/password_reset_confirm.html",
+            form_class=NexoraSetPasswordForm,
+            success_url=reverse_lazy("password_reset_complete"),
+        ),
+        name="password_reset_confirm",
+    ),
+    path(
+        "accounts/reset/done/",
+        auth_views.PasswordResetCompleteView.as_view(
+            template_name="app/registration/password_reset_complete.html",
+        ),
+        name="password_reset_complete",
+    ),
     path("accounts/signup/", views.signup, name="signup"),
+    path("accounts/settings/", views.account_settings, name="account_settings"),
+    path(
+        "accounts/settings/email/",
+        views.account_email_update,
+        name="account_email_update",
+    ),
+    path(
+        "accounts/settings/password/",
+        views.account_password_change,
+        name="account_password_change",
+    ),
+    path("accounts/delete/", views.account_delete, name="account_delete"),
     path("overlays/", views.overlay_dashboard, name="overlay_dashboard"),
     path("overlays/import/", views.overlay_import, name="overlay_import"),
     path("overlays/assets/upload/", views.overlay_asset_upload, name="overlay_asset_upload"),
@@ -37,6 +85,14 @@ urlpatterns = [
         views.overlay_version_restore,
         name="overlay_version_restore",
     ),
+    path("presets/", views.preset_list, name="preset_list"),
+    path("presets/save/", views.preset_save, name="preset_save"),
+    path(
+        "presets/apply/<str:overlay_type>/<int:pk>/",
+        views.preset_apply,
+        name="preset_apply",
+    ),
+    path("presets/<int:pk>/delete/", views.preset_delete, name="preset_delete"),
     path("spotify/", views.spotify_list, name="spotify_list"),
     path("spotify/new/", views.spotify_create, name="spotify_create"),
     path("spotify/callback/", views.spotify_callback, name="spotify_callback"),

@@ -180,7 +180,7 @@
                             <label for="{{ form.shadow_enabled.id_for_label }}">{{ form.shadow_enabled }}<span>{{ form.shadow_enabled.label }}</span></label>
                         </div>
 
-                        {% include "app/partials/_overlay_branding_controls.html" with branding_form=form %}
+                        {% include "app/partials/_overlay_branding_controls.html" with branding_form=form overlay=timer overlay_type="timer" %}
 
                         <button class="btn action-button timer-save" type="submit">
                             {% if is_create %}{% translate "Create timer" %}{% else %}{% translate "Save timer" %}{% endif %}
@@ -225,6 +225,19 @@
                             </form>
                         </div>
                     </section>
+                    <form id="overlay-preset-save-form" action="{% url 'preset_save' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="overlay_type" value="timer">
+                        <input type="hidden" name="pk" value="{{ timer.pk }}">
+                    </form>
+                    <form
+                        id="overlay-preset-apply-form"
+                        action="{% url 'preset_apply' overlay_type='timer' pk=timer.pk %}"
+                        method="post"
+                        data-confirm-action="{% translate 'This replaces the current font, images, colors, border and corner radius. Continue?' %}"
+                    >
+                        {% csrf_token %}
+                    </form>
                 {% endif %}
             </div>
 
