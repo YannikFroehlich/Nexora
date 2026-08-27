@@ -695,6 +695,7 @@ class SpotifyOverlayForm(forms.ModelForm):
         "elapsed",
         "duration",
         "status",
+        "queue",
     }
     ELEMENT_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
     elements = forms.CharField(widget=forms.HiddenInput(attrs={"data-elements-input": ""}))

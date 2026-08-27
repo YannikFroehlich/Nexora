@@ -12,6 +12,7 @@
     data-fallback-image="{% static 'imgs/icons/spotify.webp' %}"
     data-playing-label="{% translate 'Now playing' %}"
     data-paused-label="{% translate 'Paused' %}"
+    data-queue-empty-label="{% translate 'Queue unavailable' %}"
     style="
         --spotify-canvas-width: {{ overlay.canvas_width }}px;
         --spotify-canvas-height: {{ overlay.canvas_height }}px;
@@ -70,6 +71,14 @@
                     <i aria-hidden="true"></i>
                     <span>{% if playback.is_playing %}{% translate "Now playing" %}{% else %}{% translate "Paused" %}{% endif %}</span>
                 </span>
+            {% elif element.type == "queue" %}
+                <div class="spotify-queue-list" data-playback-queue>
+                    {% for track in playback.queue %}
+                        <span class="spotify-queue-row">{% if track.artist %}{{ track.title }} — {{ track.artist }}{% else %}{{ track.title }}{% endif %}</span>
+                    {% empty %}
+                        <span class="spotify-queue-empty">{% translate "Queue unavailable" %}</span>
+                    {% endfor %}
+                </div>
             {% endif %}
         </div>
     {% endfor %}

@@ -215,6 +215,9 @@
                         <button type="button" data-add-element="status" data-element-label="{% translate 'Playback status' %}">
                             <span aria-hidden="true">●</span>{% translate "Status" %}
                         </button>
+                        <button type="button" data-add-element="queue" data-element-label="{% translate 'Up next' %}" title="{% translate 'Requires reconnecting Spotify to grant access to the queue.' %}">
+                            <span aria-hidden="true">☰</span>{% translate "Up next" %}
+                        </button>
                     </div>
 
                     <div class="element-list-heading">
@@ -294,6 +297,7 @@
                                 <div>
                                     <strong>{% translate "Connected" %}</strong>
                                     <small>{% translate "Playback data is available to the overlay." %}</small>
+                                    <small>{% translate "Using the 'Up next' element? Reconnect Spotify once to grant it access to your queue." %}</small>
                                 </div>
                             </div>
                             <button class="btn glass-design" type="submit" form="spotify-disconnect-form">
@@ -368,6 +372,7 @@
                 <p class="spotify-preview-help">
                     {% translate "Click and drag elements. Arrow keys move the selected element one pixel; hold Shift for ten pixels." %}
                     <span>{% translate "Press Delete to remove the selection. Drag the green handles to resize it." %}</span>
+                    <span>{% translate "Drag the dashed border around the whole preview to resize the overlay itself." %}</span>
                 </p>
                 <div class="spotify-preview-tools" aria-label="{% translate 'Alignment tools' %}">
                     <label class="spotify-grid-toggle">

@@ -47,6 +47,11 @@ def spotify_editor_context(request, form, overlay, is_create):
             "progress_ms": 102000,
             "duration_ms": 228000,
             "is_playing": True,
+            "queue": [
+                {"title": "Solar Flare", "artist": "Nova Waves"},
+                {"title": "Afterglow", "artist": "Kilo Bloom"},
+                {"title": "Static Bloom", "artist": "Nova Waves"},
+            ],
         },
     }
     if not is_create:

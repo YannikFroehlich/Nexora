@@ -19,7 +19,9 @@ from app.models import SpotifyConnection, SpotifyOverlay
 AUTHORIZE_URL = "https://accounts.spotify.com/authorize"
 TOKEN_URL = "https://accounts.spotify.com/api/token"
 CURRENTLY_PLAYING_URL = "https://api.spotify.com/v1/me/player/currently-playing"
-SCOPES = "user-read-currently-playing"
+QUEUE_URL = "https://api.spotify.com/v1/me/player/queue"
+SCOPES = "user-read-currently-playing user-read-playback-state"
+QUEUE_LIMIT = 3
 
 
 class SpotifyAPIError(Exception):
@@ -294,8 +296,43 @@ def current_playback(connection):
         "progress_ms": min(progress_ms, duration_ms) if duration_ms else progress_ms,
         "duration_ms": duration_ms,
         "is_playing": bool(response.get("is_playing")),
+        "queue": _current_queue(access_token),
         "fetched_at": int(timezone.now().timestamp() * 1000),
     }
+
+
+def _current_queue(access_token):
+    """Best-effort "up next" preview.
+
+    Requires the ``user-read-playback-state`` scope, which connections made
+    before that scope existed don't have yet. Any failure (missing scope,
+    upstream error, ...) degrades to an empty queue instead of breaking the
+    currently-playing state.
+    """
+
+    try:
+        response = _api_request(QUEUE_URL, access_token)
+    except SpotifyAPIError:
+        return []
+
+    if not response:
+        return []
+
+    items = []
+    for entry in (response.get("queue") or [])[:QUEUE_LIMIT]:
+        if entry.get("type") == "episode":
+            show = entry.get("show") or {}
+            artist = show.get("name") or entry.get("publisher") or ""
+        else:
+            artist = ", ".join(
+                artist.get("name", "") for artist in entry.get("artists", []) if artist.get("name")
+            )
+
+        title = entry.get("name") or ""
+        if title:
+            items.append({"title": title, "artist": artist})
+
+    return items
 
 
 def empty_playback():
@@ -307,6 +344,7 @@ def empty_playback():
         "progress_ms": 0,
         "duration_ms": 0,
         "is_playing": False,
+        "queue": [],
         "fetched_at": int(timezone.now().timestamp() * 1000),
     }
 

@@ -802,6 +802,38 @@
     box-shadow: 0 0 0 5px color-mix(in srgb, currentColor 18%, transparent);
 }
 
+.spotify-overlay-element--queue {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 6px;
+    white-space: normal;
+    font-weight: 600;
+}
+
+.spotify-queue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+}
+
+.spotify-queue-row {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0.92;
+}
+
+.spotify-queue-empty {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0.65;
+    font-style: italic;
+}
+
 .spotify-overlay-canvas--editor .spotify-overlay-element {
     z-index: 1;
     cursor: grab;
@@ -817,6 +849,19 @@
     outline: 2px solid var(--spotify-green);
     outline-offset: 3px;
     box-shadow: 0 0 0 7px rgba(30, 215, 96, 0.13);
+}
+
+.spotify-canvas-resize-frame {
+    position: absolute;
+    z-index: 25;
+    pointer-events: none;
+    transform-origin: top left;
+    outline: 2px dashed rgba(30, 215, 96, 0.55);
+    outline-offset: 3px;
+}
+
+.spotify-canvas-resize-frame .spotify-resize-handle {
+    pointer-events: auto;
 }
 
 .spotify-resize-handle {

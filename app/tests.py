@@ -17,7 +17,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from PIL import Image
 
-from app import overlay_presets, overlay_versions
+from app import overlay_presets, overlay_versions, spotify_api
 from app.forms import (
     ScoreOverlayForm,
     SpotifyOverlayForm,
@@ -1464,6 +1464,30 @@ class SpotifyOverlayFormTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("elements", form.errors)
 
+    def test_queue_element_is_accepted(self):
+        data = self.valid_data()
+        elements = json.loads(data["elements"])
+        elements.append(
+            {
+                "id": "queue",
+                "type": "queue",
+                "x": 24,
+                "y": 24,
+                "width": 320,
+                "height": 110,
+                "font_size": 14,
+                "border_radius": 8,
+                "color": "#ffffff",
+                "background_color": "#535353",
+            }
+        )
+        data["elements"] = json.dumps(elements)
+        form = SpotifyOverlayForm(data=data)
+
+        self.assertTrue(form.is_valid(), form.errors)
+        overlay = form.save()
+        self.assertTrue(any(element["type"] == "queue" for element in overlay.elements))
+
 
 class SpotifyOverlayEndpointTests(TestCase):
     def setUp(self):
@@ -1646,7 +1670,88 @@ class SpotifyOverlayEndpointTests(TestCase):
         self.assertEqual(first_response.status_code, 200)
         self.assertEqual(second_response.status_code, 200)
         self.assertEqual(second_response.json()["playback"]["title"], "Night Drive")
-        api_request.assert_called_once()
+        self.assertEqual(api_request.call_count, 2)
+
+    def test_public_state_includes_upcoming_queue_tracks(self):
+        connection = SpotifyConnection.objects.create(
+            owner=self.user,
+            access_token="secret-access-token",
+            refresh_token="secret-refresh-token",
+            token_expires_at=timezone.now() + timedelta(hours=1),
+        )
+        self.overlay.connection = connection
+        self.overlay.save(update_fields=["connection"])
+
+        def fake_api_request(url, access_token):
+            if url == spotify_api.QUEUE_URL:
+                return {
+                    "queue": [
+                        {"type": "track", "name": "Solar Flare", "artists": [{"name": "Nova"}]},
+                        {
+                            "type": "track",
+                            "name": "Afterglow",
+                            "artists": [{"name": "Kilo Bloom"}],
+                        },
+                    ]
+                }
+            return {
+                "is_playing": True,
+                "progress_ms": 1000,
+                "item": {
+                    "type": "track",
+                    "name": "Night Drive",
+                    "duration_ms": 200000,
+                    "artists": [{"name": "Nova"}],
+                    "album": {"name": "Lights", "images": []},
+                },
+            }
+
+        with patch("app.spotify_api._api_request", side_effect=fake_api_request):
+            response = self.client.get(
+                reverse("spotify_overlay_state", args=[self.overlay.public_token])
+            )
+
+        self.assertEqual(
+            response.json()["playback"]["queue"],
+            [
+                {"title": "Solar Flare", "artist": "Nova"},
+                {"title": "Afterglow", "artist": "Kilo Bloom"},
+            ],
+        )
+
+    def test_queue_fetch_failure_does_not_break_currently_playing(self):
+        connection = SpotifyConnection.objects.create(
+            owner=self.user,
+            access_token="secret-access-token",
+            refresh_token="secret-refresh-token",
+            token_expires_at=timezone.now() + timedelta(hours=1),
+        )
+        self.overlay.connection = connection
+        self.overlay.save(update_fields=["connection"])
+
+        def fake_api_request(url, access_token):
+            if url == spotify_api.QUEUE_URL:
+                raise spotify_api.SpotifyAPIError("insufficient scope", status_code=403)
+            return {
+                "is_playing": True,
+                "progress_ms": 1000,
+                "item": {
+                    "type": "track",
+                    "name": "Night Drive",
+                    "duration_ms": 200000,
+                    "artists": [{"name": "Nova"}],
+                    "album": {"name": "Lights", "images": []},
+                },
+            }
+
+        with patch("app.spotify_api._api_request", side_effect=fake_api_request):
+            response = self.client.get(
+                reverse("spotify_overlay_state", args=[self.overlay.public_token])
+            )
+
+        payload = response.json()["playback"]
+        self.assertEqual(payload["title"], "Night Drive")
+        self.assertEqual(payload["queue"], [])
 
     def test_disconnect_clears_the_shared_connection_for_all_overlays(self):
         connection = SpotifyConnection.objects.create(

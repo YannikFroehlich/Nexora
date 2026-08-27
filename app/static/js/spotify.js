@@ -64,6 +64,14 @@
             return;
         }
 
+        if (element.type === "queue") {
+            const list = document.createElement("div");
+            list.className = "spotify-queue-list";
+            list.dataset.playbackQueue = "";
+            node.append(list);
+            return;
+        }
+
         const text = document.createElement("span");
         const propertyNames = {
             title: "playbackTitle",
@@ -110,6 +118,26 @@
                     ? canvas.dataset.playingLabel
                     : canvas.dataset.pausedLabel;
             }
+        });
+
+        canvas.querySelectorAll("[data-playback-queue]").forEach((node) => {
+            node.replaceChildren();
+            const queue = Array.isArray(playback?.queue) ? playback.queue : [];
+
+            if (!queue.length) {
+                const empty = document.createElement("span");
+                empty.className = "spotify-queue-empty";
+                empty.textContent = canvas.dataset.queueEmptyLabel || "";
+                node.append(empty);
+                return;
+            }
+
+            queue.forEach((track) => {
+                const row = document.createElement("span");
+                row.className = "spotify-queue-row";
+                row.textContent = track.artist ? `${track.title} — ${track.artist}` : track.title;
+                node.append(row);
+            });
         });
 
         canvas._spotifyPlayback = playback;
@@ -202,6 +230,15 @@
         canvas.style.transform = `scale(${scale})`;
         canvas._spotifyScale = scale;
         shell.style.height = `${renderedHeight + (padding * 2)}px`;
+
+        const resizeFrame = shell.querySelector(".spotify-canvas-resize-frame");
+        if (resizeFrame) {
+            resizeFrame.style.left = canvas.style.left;
+            resizeFrame.style.top = canvas.style.top;
+            resizeFrame.style.width = `${width}px`;
+            resizeFrame.style.height = `${height}px`;
+            resizeFrame.style.transform = `scale(${scale})`;
+        }
     };
 
     const scaleAllPreviews = () => {
@@ -241,6 +278,17 @@
             return;
         }
 
+        const canvasResizeFrame = document.createElement("div");
+        canvasResizeFrame.className = "spotify-canvas-resize-frame";
+        canvasResizeFrame.setAttribute("aria-hidden", "true");
+        resizeDirections.forEach((direction) => {
+            const handle = document.createElement("span");
+            handle.className = `spotify-resize-handle spotify-resize-handle--${direction}`;
+            handle.dataset.canvasResizeHandle = direction;
+            canvasResizeFrame.append(handle);
+        });
+        canvas.insertAdjacentElement("afterend", canvasResizeFrame);
+
         let elements;
         try {
             elements = JSON.parse(elementsInput.value || "[]");
@@ -277,6 +325,11 @@
             progress_ms: 102000,
             duration_ms: 228000,
             is_playing: true,
+            queue: [
+                {title: "Solar Flare", artist: "Nova Waves"},
+                {title: "Afterglow", artist: "Kilo Bloom"},
+                {title: "Static Bloom", artist: "Nova Waves"},
+            ],
             fetched_at: Date.now(),
         };
 
@@ -462,6 +515,7 @@
             if (type === "progress") Object.assign(base, {width: 360, height: 12, color: "#1ed760", border_radius: 8});
             if (["elapsed", "duration"].includes(type)) Object.assign(base, {width: 70, height: 24, font_size: 13, color: "#b3b3b3"});
             if (type === "status") Object.assign(base, {width: 150, height: 30, font_size: 14, color: "#1ed760"});
+            if (type === "queue") Object.assign(base, {width: 320, height: 110, font_size: 14, color: "#e5e5e5"});
 
             base.width = Math.min(base.width, currentDesign.canvas_width);
             base.height = Math.min(base.height, currentDesign.canvas_height);
@@ -660,6 +714,46 @@
                 window.removeEventListener("pointerup", end);
                 renderList();
                 if (pointerChanged) {
+                    notifyEditorChange();
+                }
+            };
+
+            window.addEventListener("pointermove", move);
+            window.addEventListener("pointerup", end, {once: true});
+        });
+
+        canvasResizeFrame.addEventListener("pointerdown", (event) => {
+            const handle = event.target.closest("[data-canvas-resize-handle]");
+            if (!handle || event.button !== 0) return;
+            event.preventDefault();
+
+            const direction = handle.dataset.canvasResizeHandle;
+            const startX = event.clientX;
+            const startY = event.clientY;
+            const originWidth = design().canvas_width;
+            const originHeight = design().canvas_height;
+            const scale = canvas._spotifyScale || 1;
+            let changed = false;
+
+            const move = (moveEvent) => {
+                const deltaX = Math.round((moveEvent.clientX - startX) / scale);
+                const deltaY = Math.round((moveEvent.clientY - startY) / scale);
+
+                if (deltaX || deltaY) {
+                    changed = true;
+                }
+
+                if (direction.includes("e")) widthInput.value = clamp(originWidth + deltaX, 240, 1920);
+                if (direction.includes("w")) widthInput.value = clamp(originWidth - deltaX, 240, 1920);
+                if (direction.includes("s")) heightInput.value = clamp(originHeight + deltaY, 120, 1080);
+                if (direction.includes("n")) heightInput.value = clamp(originHeight - deltaY, 120, 1080);
+
+                render();
+            };
+            const end = () => {
+                window.removeEventListener("pointermove", move);
+                window.removeEventListener("pointerup", end);
+                if (changed) {
                     notifyEditorChange();
                 }
             };

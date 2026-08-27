@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-25 21:36+0200\n"
+"POT-Creation-Date: 2026-08-27 10:45+0200\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: English\n"
@@ -104,44 +104,44 @@ msgstr ""
 msgid "Overlay title"
 msgstr ""
 
-#: .\app\forms.py:453 .\app\forms.py:1451
+#: .\app\forms.py:453 .\app\forms.py:1452
 msgid "Design template"
 msgstr ""
 
-#: .\app\forms.py:454 .\app\forms.py:723 .\app\forms.py:889 .\app\forms.py:1195
-#: .\app\forms.py:1452
+#: .\app\forms.py:454 .\app\forms.py:724 .\app\forms.py:890 .\app\forms.py:1196
+#: .\app\forms.py:1453
 msgid "Background color"
 msgstr ""
 
-#: .\app\forms.py:455 .\app\forms.py:724 .\app\forms.py:890 .\app\forms.py:1196
-#: .\app\forms.py:1453
+#: .\app\forms.py:455 .\app\forms.py:725 .\app\forms.py:891 .\app\forms.py:1197
+#: .\app\forms.py:1454
 msgid "Background opacity"
 msgstr ""
 
-#: .\app\forms.py:456 .\app\forms.py:1197 .\app\forms.py:1454
+#: .\app\forms.py:456 .\app\forms.py:1198 .\app\forms.py:1455
 #: .\app\templates\app\score\create.html:286
 msgid "Text color"
 msgstr ""
 
-#: .\app\forms.py:457 .\app\forms.py:1198 .\app\forms.py:1455
+#: .\app\forms.py:457 .\app\forms.py:1199 .\app\forms.py:1456
 #: .\app\templates\app\demo.html:88 .\app\templates\app\demo.html:115
 #: .\app\templates\app\demo.html:168
 msgid "Accent color"
 msgstr ""
 
-#: .\app\forms.py:458 .\app\forms.py:725 .\app\forms.py:891 .\app\forms.py:1201
-#: .\app\forms.py:1456
+#: .\app\forms.py:458 .\app\forms.py:726 .\app\forms.py:892 .\app\forms.py:1202
+#: .\app\forms.py:1457
 msgid "Border color"
 msgstr ""
 
-#: .\app\forms.py:459 .\app\forms.py:726 .\app\forms.py:892 .\app\forms.py:1202
-#: .\app\forms.py:1457
+#: .\app\forms.py:459 .\app\forms.py:727 .\app\forms.py:893 .\app\forms.py:1203
+#: .\app\forms.py:1458
 msgid "Border width"
 msgstr ""
 
-#: .\app\forms.py:460 .\app\forms.py:727 .\app\forms.py:893 .\app\forms.py:1203
-#: .\app\forms.py:1458 .\app\templates\app\score\create.html:294
-#: .\app\templates\app\spotify\create.html:270
+#: .\app\forms.py:460 .\app\forms.py:728 .\app\forms.py:894 .\app\forms.py:1204
+#: .\app\forms.py:1459 .\app\templates\app\score\create.html:294
+#: .\app\templates\app\spotify\create.html:273
 msgid "Corner radius"
 msgstr ""
 
@@ -149,19 +149,19 @@ msgstr ""
 msgid "Padding"
 msgstr ""
 
-#: .\app\forms.py:462 .\app\forms.py:1459
+#: .\app\forms.py:462 .\app\forms.py:1460
 #: .\app\templates\app\score\create.html:271
-#: .\app\templates\app\spotify\create.html:247
+#: .\app\templates\app\spotify\create.html:250
 msgid "Width"
 msgstr ""
 
-#: .\app\forms.py:463 .\app\forms.py:1460
+#: .\app\forms.py:463 .\app\forms.py:1461
 #: .\app\templates\app\score\create.html:275
-#: .\app\templates\app\spotify\create.html:251
+#: .\app\templates\app\spotify\create.html:254
 msgid "Height"
 msgstr ""
 
-#: .\app\forms.py:464 .\app\forms.py:1461
+#: .\app\forms.py:464 .\app\forms.py:1462
 msgid "Label text size"
 msgstr ""
 
@@ -193,7 +193,7 @@ msgstr ""
 msgid "Element spacing"
 msgstr ""
 
-#: .\app\forms.py:472 .\app\forms.py:1205 .\app\forms.py:1464
+#: .\app\forms.py:472 .\app\forms.py:1206 .\app\forms.py:1465
 msgid "Show shadow"
 msgstr ""
 
@@ -201,7 +201,7 @@ msgstr ""
 msgid "Show games list"
 msgstr ""
 
-#: .\app\forms.py:476 .\app\forms.py:897 .\app\forms.py:1467
+#: .\app\forms.py:476 .\app\forms.py:898 .\app\forms.py:1468
 #: .\app\templates\app\spotify\create.html:157
 msgid "0 is transparent, 100 is fully opaque."
 msgstr ""
@@ -250,251 +250,251 @@ msgstr ""
 msgid "Rocket League"
 msgstr ""
 
-#: .\app\forms.py:720 .\app\forms.py:886 .\app\forms.py:1186
-#: .\app\forms.py:1448
+#: .\app\forms.py:721 .\app\forms.py:887 .\app\forms.py:1187
+#: .\app\forms.py:1449
 msgid "Overlay name"
 msgstr ""
 
-#: .\app\forms.py:721 .\app\forms.py:887
+#: .\app\forms.py:722 .\app\forms.py:888
 msgid "Overlay width"
 msgstr ""
 
-#: .\app\forms.py:722 .\app\forms.py:888
+#: .\app\forms.py:723 .\app\forms.py:889
 msgid "Overlay height"
 msgstr ""
 
-#: .\app\forms.py:731 .\app\models.py:1121
+#: .\app\forms.py:732 .\app\models.py:1121
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Spotify-Overlay"
 msgstr "Spotify Overlay"
 
-#: .\app\forms.py:788 .\app\forms.py:961 .\app\forms.py:1322
+#: .\app\forms.py:789 .\app\forms.py:962 .\app\forms.py:1323
 msgid "The element layout is invalid."
 msgstr ""
 
-#: .\app\forms.py:791 .\app\forms.py:964
+#: .\app\forms.py:792 .\app\forms.py:965
 msgid "The element layout must be a list."
 msgstr ""
 
-#: .\app\forms.py:794
+#: .\app\forms.py:795
 msgid "A maximum of 30 elements is allowed."
 msgstr ""
 
-#: .\app\forms.py:801 .\app\forms.py:974 .\app\forms.py:1329
+#: .\app\forms.py:802 .\app\forms.py:975 .\app\forms.py:1330
 msgid "Every overlay element must be an object."
 msgstr ""
 
-#: .\app\forms.py:807 .\app\forms.py:981 .\app\forms.py:1333
+#: .\app\forms.py:808 .\app\forms.py:982 .\app\forms.py:1334
 msgid "Every overlay element needs a unique valid ID."
 msgstr ""
 
-#: .\app\forms.py:810
+#: .\app\forms.py:811
 msgid "An unknown Spotify element was submitted."
 msgstr ""
 
-#: .\app\forms.py:834 .\app\forms.py:1014
+#: .\app\forms.py:835 .\app\forms.py:1015
 msgid "Element values must be whole numbers."
 msgstr ""
 
-#: .\app\forms.py:838 .\app\forms.py:1017
+#: .\app\forms.py:839 .\app\forms.py:1018
 msgid "An element value is outside the allowed range."
 msgstr ""
 
-#: .\app\forms.py:848 .\app\forms.py:1026
+#: .\app\forms.py:849 .\app\forms.py:1027
 msgid "Every element color must be a valid hex color."
 msgstr ""
 
-#: .\app\forms.py:894
+#: .\app\forms.py:895
 msgid "Allow negative scores"
 msgstr ""
 
-#: .\app\forms.py:898
+#: .\app\forms.py:899
 msgid "When disabled, minus buttons stop at 0."
 msgstr ""
 
-#: .\app\forms.py:902 .\app\models.py:1584
+#: .\app\forms.py:903 .\app\models.py:1584
 #: .\app\templates\app\overlay_dashboard.html:360
 #: .\app\templates\app\score\create.html:53
 msgid "Score HUD"
 msgstr ""
 
-#: .\app\forms.py:967
+#: .\app\forms.py:968
 msgid "A maximum of 24 elements is allowed."
 msgstr ""
 
-#: .\app\forms.py:984
+#: .\app\forms.py:985
 msgid "An unknown score element was submitted."
 msgstr ""
 
-#: .\app\forms.py:987
+#: .\app\forms.py:988
 msgid "Every score element needs a participant."
 msgstr ""
 
-#: .\app\forms.py:1037 .\app\forms.py:1042
+#: .\app\forms.py:1038 .\app\forms.py:1043
 msgid "Player 1"
 msgstr ""
 
-#: .\app\forms.py:1048 .\app\forms.py:1053
+#: .\app\forms.py:1049 .\app\forms.py:1054
 msgid "Player 2"
 msgstr ""
 
-#: .\app\forms.py:1092
+#: .\app\forms.py:1093
 msgid "Name"
 msgstr ""
 
-#: .\app\forms.py:1093 .\app\templates\app\spotify\create.html:262
+#: .\app\forms.py:1094 .\app\templates\app\spotify\create.html:265
 #: .\app\templates\app\twitch_goal\create.html:156
 msgid "Color"
 msgstr ""
 
-#: .\app\forms.py:1094 .\app\models.py:30
+#: .\app\forms.py:1095 .\app\models.py:30
 msgid "Image"
 msgstr ""
 
-#: .\app\forms.py:1100
+#: .\app\forms.py:1101
 msgid "Player or team"
 msgstr ""
 
-#: .\app\forms.py:1117 .\app\templates\app\score\_overlay.html:12
+#: .\app\forms.py:1118 .\app\templates\app\score\_overlay.html:12
 msgid "No image"
 msgstr ""
 
-#: .\app\forms.py:1187
+#: .\app\forms.py:1188
 msgid "Goal title"
 msgstr ""
 
-#: .\app\forms.py:1188
+#: .\app\forms.py:1189
 msgid "Goal type"
 msgstr ""
 
-#: .\app\forms.py:1189
+#: .\app\forms.py:1190
 msgid "Subscription value"
 msgstr ""
 
-#: .\app\forms.py:1190
+#: .\app\forms.py:1191
 msgid "Counting mode"
 msgstr ""
 
-#: .\app\forms.py:1191
+#: .\app\forms.py:1192
 msgid "Target value"
 msgstr ""
 
-#: .\app\forms.py:1192 .\app\templates\app\twitch_goal\create.html:103
+#: .\app\forms.py:1193 .\app\templates\app\twitch_goal\create.html:103
 #: .\app\templates\app\winchallenge\create.html:187
 msgid "Layout"
 msgstr ""
 
-#: .\app\forms.py:1193
+#: .\app\forms.py:1194
 msgid "Canvas width"
 msgstr ""
 
-#: .\app\forms.py:1194
+#: .\app\forms.py:1195
 msgid "Canvas height"
 msgstr ""
 
-#: .\app\forms.py:1199
+#: .\app\forms.py:1200
 msgid "Secondary color"
 msgstr ""
 
-#: .\app\forms.py:1200
+#: .\app\forms.py:1201
 msgid "Progress track color"
 msgstr ""
 
-#: .\app\forms.py:1204
+#: .\app\forms.py:1205
 msgid "Use progress gradient"
 msgstr ""
 
-#: .\app\forms.py:1206
+#: .\app\forms.py:1207
 msgid "Number prefix"
 msgstr ""
 
-#: .\app\forms.py:1207
+#: .\app\forms.py:1208
 msgid "Number suffix"
 msgstr ""
 
-#: .\app\forms.py:1208
+#: .\app\forms.py:1209
 msgid "Goal animation"
 msgstr ""
 
-#: .\app\forms.py:1209
+#: .\app\forms.py:1210
 msgid "Animation duration"
 msgstr ""
 
-#: .\app\forms.py:1210
+#: .\app\forms.py:1211
 msgid "Animation intensity"
 msgstr ""
 
-#: .\app\forms.py:1211
+#: .\app\forms.py:1212
 msgid "Animation primary color"
 msgstr ""
 
-#: .\app\forms.py:1212
+#: .\app\forms.py:1213
 msgid "Animation secondary color"
 msgstr ""
 
-#: .\app\forms.py:1213
+#: .\app\forms.py:1214
 msgid "Celebration sound"
 msgstr ""
 
-#: .\app\forms.py:1214
+#: .\app\forms.py:1215
 msgid "Sound volume"
 msgstr ""
 
-#: .\app\forms.py:1324
+#: .\app\forms.py:1325
 msgid "The element layout must contain at most 30 items."
 msgstr ""
 
-#: .\app\forms.py:1335
+#: .\app\forms.py:1336
 msgid "An unknown goal element was submitted."
 msgstr ""
 
-#: .\app\forms.py:1401
+#: .\app\forms.py:1402
 msgid "Hours"
 msgstr ""
 
-#: .\app\forms.py:1407
+#: .\app\forms.py:1408
 msgid "Minutes"
 msgstr ""
 
-#: .\app\forms.py:1413
+#: .\app\forms.py:1414
 msgid "Seconds"
 msgstr ""
 
-#: .\app\forms.py:1449
+#: .\app\forms.py:1450
 msgid "Label"
 msgstr ""
 
-#: .\app\forms.py:1450
+#: .\app\forms.py:1451
 msgid "Timer type"
 msgstr ""
 
-#: .\app\forms.py:1462
+#: .\app\forms.py:1463
 msgid "Timer text size"
 msgstr ""
 
-#: .\app\forms.py:1463
+#: .\app\forms.py:1464
 msgid "Show progress bar"
 msgstr ""
 
-#: .\app\forms.py:1468
+#: .\app\forms.py:1469
 msgid "Optional text displayed above the time."
 msgstr ""
 
-#: .\app\forms.py:1472 .\app\forms.py:1526 .\app\models.py:1833
+#: .\app\forms.py:1473 .\app\forms.py:1527 .\app\models.py:1833
 #: .\app\templates\app\about.html:126 .\app\templates\app\home.html:193
 msgid "Stream Timer"
 msgstr ""
 
-#: .\app\forms.py:1475 .\app\forms.py:1527 .\app\templates\app\home.html:180
+#: .\app\forms.py:1476 .\app\forms.py:1528 .\app\templates\app\home.html:180
 msgid "Starting soon"
 msgstr ""
 
-#: .\app\forms.py:1555
+#: .\app\forms.py:1556
 msgid "The timer duration must be at least one second."
 msgstr ""
 
-#: .\app\forms.py:1560
+#: .\app\forms.py:1561
 msgid "The timer duration must be shorter than 100 hours."
 msgstr ""
 
@@ -737,55 +737,55 @@ msgstr ""
 msgid "The Win Challenge overlay data is invalid."
 msgstr ""
 
-#: .\app\spotify_api.py:41 .\app\spotify_api.py:387
+#: .\app\spotify_api.py:43 .\app\spotify_api.py:425
 msgid "Spotify credentials are not configured."
 msgstr ""
 
-#: .\app\spotify_api.py:183
+#: .\app\spotify_api.py:185
 msgid "Spotify is currently unavailable. Please reconnect if this continues."
 msgstr ""
 
-#: .\app\spotify_api.py:274
+#: .\app\spotify_api.py:276
 msgid "Podcast"
 msgstr ""
 
-#: .\app\spotify_api.py:290
+#: .\app\spotify_api.py:292
 msgid "Unknown title"
 msgstr ""
 
-#: .\app\spotify_api.py:291
+#: .\app\spotify_api.py:293
 msgid "Unknown artist"
 msgstr ""
 
-#: .\app\spotify_api.py:303
+#: .\app\spotify_api.py:340
 msgid "Nothing playing"
 msgstr ""
 
-#: .\app\spotify_api.py:304
+#: .\app\spotify_api.py:341
 msgid "Start playback in Spotify"
 msgstr ""
 
-#: .\app\spotify_api.py:330
+#: .\app\spotify_api.py:368
 msgid "Spotify is not connected."
 msgstr ""
 
-#: .\app\spotify_api.py:348
+#: .\app\spotify_api.py:386
 msgid "Spotify returned no access token."
 msgstr ""
 
-#: .\app\spotify_api.py:427
+#: .\app\spotify_api.py:465
 msgid "Spotify request failed."
 msgstr ""
 
-#: .\app\spotify_api.py:431
+#: .\app\spotify_api.py:469
 msgid "Spotify could not be reached."
 msgstr ""
 
-#: .\app\spotify_api.py:436
+#: .\app\spotify_api.py:474
 msgid "Spotify returned an empty response."
 msgstr ""
 
-#: .\app\spotify_api.py:441
+#: .\app\spotify_api.py:479
 msgid "Spotify returned an invalid response."
 msgstr ""
 
@@ -1269,7 +1269,7 @@ msgstr ""
 #: .\app\templates\app\home.html:99
 #: .\app\templates\app\overlay_dashboard.html:153
 #: .\app\templates\app\spotify\_overlay.html:13
-#: .\app\templates\app\spotify\_overlay.html:71
+#: .\app\templates\app\spotify\_overlay.html:72
 #: .\app\templates\app\spotify\list.html:93
 msgid "Now playing"
 msgstr ""
@@ -1823,14 +1823,14 @@ msgstr "Spotify Overlay"
 
 #: .\app\templates\app\overlay_dashboard.html:168
 #: .\app\templates\app\overlay_dashboard.html:441
-#: .\app\templates\app\spotify\create.html:295
+#: .\app\templates\app\spotify\create.html:298
 #: .\app\templates\app\spotify\list.html:66
 msgid "Connected"
 msgstr ""
 
 #: .\app\templates\app\overlay_dashboard.html:168
 #: .\app\templates\app\overlay_dashboard.html:441
-#: .\app\templates\app\spotify\create.html:306
+#: .\app\templates\app\spotify\create.html:310
 #: .\app\templates\app\twitch_goal\create.html:94
 msgid "Not connected"
 msgstr ""
@@ -1908,7 +1908,7 @@ msgstr ""
 #: .\app\templates\app\overlay_dashboard.html:454
 #: .\app\templates\app\overlay_dashboard.html:534
 #: .\app\templates\app\score\create.html:379
-#: .\app\templates\app\spotify\create.html:420
+#: .\app\templates\app\spotify\create.html:425
 #: .\app\templates\app\timer\create.html:213
 #: .\app\templates\app\twitch_goal\create.html:223
 #: .\app\templates\app\winchallenge\manage.html:415
@@ -1921,7 +1921,7 @@ msgstr ""
 #: .\app\templates\app\overlay_dashboard.html:454
 #: .\app\templates\app\overlay_dashboard.html:538
 #: .\app\templates\app\score\create.html:238
-#: .\app\templates\app\spotify\create.html:337
+#: .\app\templates\app\spotify\create.html:341
 #: .\app\templates\app\timer\create.html:217
 #: .\app\templates\app\twitch_goal\create.html:187
 #: .\app\templates\app\winchallenge\manage.html:419
@@ -1929,7 +1929,7 @@ msgid "Renew OBS link"
 msgstr ""
 
 #: .\app\templates\app\overlay_dashboard.html:201
-#: .\app\templates\app\spotify\create.html:432
+#: .\app\templates\app\spotify\create.html:437
 #: .\app\templates\app\spotify\list.html:77
 #, fuzzy
 #| msgid "Spotify Overlay"
@@ -2094,7 +2094,7 @@ msgstr ""
 #: .\app\templates\app\overlay_dashboard.html:490
 #: .\app\templates\app\partials\_timer_overlay.html:49
 #: .\app\templates\app\spotify\_overlay.html:14
-#: .\app\templates\app\spotify\_overlay.html:71
+#: .\app\templates\app\spotify\_overlay.html:72
 #: .\app\templates\app\timer\create.html:39
 #: .\app\templates\app\timer\public_overlay.html:21
 msgid "Paused"
@@ -2138,7 +2138,7 @@ msgstr ""
 
 #: .\app\templates\app\overlay_dashboard.html:560
 #: .\app\templates\app\score\create.html:407
-#: .\app\templates\app\spotify\create.html:451
+#: .\app\templates\app\spotify\create.html:456
 #: .\app\templates\app\spotify\list.html:109
 #: .\app\templates\app\timer\create.html:262
 #: .\app\templates\app\twitch_goal\create.html:241
@@ -2204,15 +2204,15 @@ msgstr ""
 msgid "Template name"
 msgstr ""
 
-#: .\app\templates\app\partials\_overlay_branding_controls.html:70
+#: .\app\templates\app\partials\_overlay_branding_controls.html:71
 msgid "Save as template"
 msgstr ""
 
-#: .\app\templates\app\partials\_overlay_branding_controls.html:77
+#: .\app\templates\app\partials\_overlay_branding_controls.html:78
 msgid "Apply a saved template"
 msgstr ""
 
-#: .\app\templates\app\partials\_overlay_branding_controls.html:85
+#: .\app\templates\app\partials\_overlay_branding_controls.html:86
 msgid "Apply template"
 msgstr ""
 
@@ -2848,7 +2848,7 @@ msgid "Reset all scores"
 msgstr ""
 
 #: .\app\templates\app\score\create.html:228
-#: .\app\templates\app\spotify\create.html:326
+#: .\app\templates\app\spotify\create.html:330
 #: .\app\templates\app\timer\create.html:201
 #: .\app\templates\app\twitch_goal\create.html:184
 #: .\app\templates\app\winchallenge\manage.html:401
@@ -2856,12 +2856,12 @@ msgid "Browser source"
 msgstr ""
 
 #: .\app\templates\app\score\create.html:229
-#: .\app\templates\app\spotify\create.html:327
+#: .\app\templates\app\spotify\create.html:331
 msgid "OBS link"
 msgstr ""
 
 #: .\app\templates\app\score\create.html:234
-#: .\app\templates\app\spotify\create.html:332
+#: .\app\templates\app\spotify\create.html:336
 #: .\app\templates\app\twitch_goal\create.html:185
 msgid "Copy link"
 msgstr ""
@@ -2871,23 +2871,23 @@ msgid "Recommended source size:"
 msgstr ""
 
 #: .\app\templates\app\score\create.html:253
-#: .\app\templates\app\spotify\create.html:229
+#: .\app\templates\app\spotify\create.html:232
 #: .\app\templates\app\twitch_goal\create.html:148
 msgid "Selected element"
 msgstr ""
 
 #: .\app\templates\app\score\create.html:254
-#: .\app\templates\app\spotify\create.html:230
+#: .\app\templates\app\spotify\create.html:233
 msgid "Select an element"
 msgstr ""
 
 #: .\app\templates\app\score\create.html:257
-#: .\app\templates\app\spotify\create.html:233
+#: .\app\templates\app\spotify\create.html:236
 msgid "Click an element in the preview or in the list to edit it."
 msgstr ""
 
 #: .\app\templates\app\score\create.html:282
-#: .\app\templates\app\spotify\create.html:258
+#: .\app\templates\app\spotify\create.html:261
 msgid "Text size"
 msgstr ""
 
@@ -2921,7 +2921,7 @@ msgid "Create HUD"
 msgstr "Spotify Overlay"
 
 #: .\app\templates\app\score\create.html:311
-#: .\app\templates\app\spotify\create.html:353
+#: .\app\templates\app\spotify\create.html:357
 #: .\app\templates\app\twitch_goal\create.html:191
 msgid "Save changes"
 msgstr ""
@@ -2931,7 +2931,7 @@ msgid "Delete HUD"
 msgstr ""
 
 #: .\app\templates\app\score\create.html:330
-#: .\app\templates\app\spotify\create.html:365
+#: .\app\templates\app\spotify\create.html:369
 #: .\app\templates\app\timer\create.html:247
 #: .\app\templates\app\winchallenge\create.html:65
 #: .\app\templates\app\winchallenge\list.html:116
@@ -2962,17 +2962,17 @@ msgid "Grid"
 msgstr ""
 
 #: .\app\templates\app\score\create.html:341
-#: .\app\templates\app\spotify\create.html:382
+#: .\app\templates\app\spotify\create.html:387
 msgid "Grid size"
 msgstr ""
 
 #: .\app\templates\app\score\create.html:359
-#: .\app\templates\app\spotify\create.html:397
+#: .\app\templates\app\spotify\create.html:402
 msgid "OBS browser source"
 msgstr ""
 
 #: .\app\templates\app\score\create.html:401
-#: .\app\templates\app\spotify\create.html:445
+#: .\app\templates\app\spotify\create.html:450
 #: .\app\templates\app\timer\create.html:237
 #: .\app\templates\app\twitch_goal\create.html:234
 #: .\app\templates\app\winchallenge\manage.html:460
@@ -2981,7 +2981,12 @@ msgid ""
 "Continue?"
 msgstr ""
 
-#: .\app\templates\app\spotify\_overlay.html:35
+#: .\app\templates\app\spotify\_overlay.html:15
+#: .\app\templates\app\spotify\_overlay.html:79
+msgid "Queue unavailable"
+msgstr ""
+
+#: .\app\templates\app\spotify\_overlay.html:36
 #: .\app\templates\app\twitch_goal\_overlay.html:32
 msgid "Move overlay element"
 msgstr ""
@@ -3070,96 +3075,116 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:221
+#: .\app\templates\app\spotify\create.html:218
+#: .\app\templates\app\spotify\create.html:219
+msgid "Up next"
+msgstr ""
+
+#: .\app\templates\app\spotify\create.html:218
+msgid "Requires reconnecting Spotify to grant access to the queue."
+msgstr ""
+
+#: .\app\templates\app\spotify\create.html:224
 msgid "Elements in the overlay"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:266
+#: .\app\templates\app\spotify\create.html:269
 msgid "Track color"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:276
+#: .\app\templates\app\spotify\create.html:279
 msgid "Remove element"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:284
+#: .\app\templates\app\spotify\create.html:287
 #: .\app\templates\app\twitch_goal\create.html:87
 msgid "Live data"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:285
+#: .\app\templates\app\spotify\create.html:288
 msgid "Spotify connection"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:288
+#: .\app\templates\app\spotify\create.html:291
 msgid "This Spotify connection is shared by all your Spotify overlays."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:296
+#: .\app\templates\app\spotify\create.html:299
 msgid "Playback data is available to the overlay."
 msgstr ""
 
 #: .\app\templates\app\spotify\create.html:300
+msgid ""
+"Using the 'Up next' element? Reconnect Spotify once to grant it access to "
+"your queue."
+msgstr ""
+
+#: .\app\templates\app\spotify\create.html:304
 msgid "Disconnect Spotify"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:307
+#: .\app\templates\app\spotify\create.html:311
 msgid "Connect the Spotify account whose playback should be shown."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:311
+#: .\app\templates\app\spotify\create.html:315
 msgid "Connect with Spotify"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:315
+#: .\app\templates\app\spotify\create.html:319
 msgid "Spotify credentials are missing"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:317
+#: .\app\templates\app\spotify\create.html:321
 msgid ""
 "Copy .env.example to .env, add your Spotify app credentials and expose those "
 "variables to Django."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:341
+#: .\app\templates\app\spotify\create.html:345
 msgid "Recommended size so the shadow remains fully visible:"
-msgstr ""
-
-#: .\app\templates\app\spotify\create.html:353
-#: .\app\templates\app\twitch_goal\create.html:191
-msgid "Create overlay"
 msgstr ""
 
 #: .\app\templates\app\spotify\create.html:357
 #: .\app\templates\app\twitch_goal\create.html:191
+msgid "Create overlay"
+msgstr ""
+
+#: .\app\templates\app\spotify\create.html:361
+#: .\app\templates\app\twitch_goal\create.html:191
 msgid "Delete overlay"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:366
+#: .\app\templates\app\spotify\create.html:370
 msgid "Drag elements into position"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:369
+#: .\app\templates\app\spotify\create.html:373
 msgid ""
 "Click and drag elements. Arrow keys move the selected element one pixel; "
 "hold Shift for ten pixels."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:370
+#: .\app\templates\app\spotify\create.html:374
 msgid ""
 "Press Delete to remove the selection. Drag the green handles to resize it."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:372
-msgid "Alignment tools"
+#: .\app\templates\app\spotify\create.html:375
+msgid ""
+"Drag the dashed border around the whole preview to resize the overlay itself."
 msgstr ""
 
 #: .\app\templates\app\spotify\create.html:377
+msgid "Alignment tools"
+msgstr ""
+
+#: .\app\templates\app\spotify\create.html:382
 #: .\app\templates\app\twitch_goal\create.html:201
 msgid "Snap to grid"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:378
+#: .\app\templates\app\spotify\create.html:383
 #: .\app\templates\app\twitch_goal\create.html:202
 msgid "Show a grid and align movements to it."
 msgstr ""
@@ -3875,7 +3900,7 @@ msgstr ""
 msgid "Score HUD deleted: %(name)s"
 msgstr "Spotify Overlay"
 
-#: .\app\views\score.py:277 .\app\views\spotify.py:162 .\app\views\timer.py:192
+#: .\app\views\score.py:277 .\app\views\spotify.py:167 .\app\views\timer.py:192
 #: .\app\views\twitch_goal.py:174 .\app\views\winchallenge.py:211
 msgid "Copy"
 msgstr ""
@@ -3898,55 +3923,55 @@ msgstr ""
 msgid "Invalid score change."
 msgstr ""
 
-#: .\app\views\spotify.py:80
+#: .\app\views\spotify.py:85
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Spotify overlay created."
 msgstr "Spotify Overlay"
 
-#: .\app\views\spotify.py:106
+#: .\app\views\spotify.py:111
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Spotify overlay saved."
 msgstr "Spotify Overlay"
 
-#: .\app\views\spotify.py:153
+#: .\app\views\spotify.py:158
 #, python-format
 msgid "Spotify overlay deleted: %(name)s"
 msgstr ""
 
-#: .\app\views\spotify.py:166
+#: .\app\views\spotify.py:171
 #, fuzzy, python-format
 #| msgid "Spotify Overlay"
 msgid "Spotify overlay duplicated: %(name)s"
 msgstr "Spotify Overlay"
 
-#: .\app\views\spotify.py:200
+#: .\app\views\spotify.py:205
 msgid ""
 "Add your Spotify client credentials to the environment before connecting."
 msgstr ""
 
-#: .\app\views\spotify.py:224
+#: .\app\views\spotify.py:229
 msgid "The Spotify connection could not be verified."
 msgstr ""
 
-#: .\app\views\spotify.py:230
+#: .\app\views\spotify.py:235
 msgid "Spotify access was not granted."
 msgstr ""
 
-#: .\app\views\spotify.py:236
+#: .\app\views\spotify.py:241
 msgid "Spotify returned no authorization code."
 msgstr ""
 
-#: .\app\views\spotify.py:244
+#: .\app\views\spotify.py:249
 msgid "Spotify could not be connected. Check your app settings."
 msgstr ""
 
-#: .\app\views\spotify.py:247
+#: .\app\views\spotify.py:252
 msgid "Spotify connected successfully."
 msgstr ""
 
-#: .\app\views\spotify.py:257
+#: .\app\views\spotify.py:262
 msgid "Spotify disconnected from all overlays."
 msgstr ""
 
