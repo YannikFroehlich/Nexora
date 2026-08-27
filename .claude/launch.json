@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "nexora-dev",
-      "runtimeExecutable": "python",
+      "runtimeExecutable": ".venv/Scripts/python.exe",
       "runtimeArgs": ["manage.py", "runserver", "127.0.0.1:8090"],
       "port": 8090
     }
