@@ -4,5 +4,5 @@ Django==6.1
 Pillow==12.3.0
 sqlparse==0.6.0
 tzdata==2026.3
-gunicorn==26.0.0; platform_system != "Windows"
+gunicorn==26.1.0; platform_system != "Windows"
 whitenoise==6.12.0
