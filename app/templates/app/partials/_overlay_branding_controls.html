@@ -65,6 +65,7 @@
                     required
                     placeholder="{% translate 'Template name' %}"
                     form="overlay-preset-save-form"
+                    data-editor-state-ignore
                 >
                 <button class="btn glass-design" type="submit" form="overlay-preset-save-form">
                     {% translate "Save as template" %}
@@ -76,7 +77,7 @@
         <div class="overlay-preset-apply">
             <strong>{% translate "Apply a saved template" %}</strong>
             <div class="overlay-preset-apply-form">
-                <select class="form-control" name="preset_id" required form="overlay-preset-apply-form">
+                <select class="form-control" name="preset_id" required form="overlay-preset-apply-form" data-editor-state-ignore>
                     {% for style_preset in style_presets %}
                         <option value="{{ style_preset.pk }}">{{ style_preset.name }}</option>
                     {% endfor %}

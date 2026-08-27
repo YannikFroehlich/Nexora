@@ -682,6 +682,8 @@ footer .footer-left {
 footer .footer-center {
     justify-self: center;
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 20px;
 }
 
