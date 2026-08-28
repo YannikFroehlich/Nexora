@@ -79,6 +79,17 @@
     border-color: var(--color-focus-ring);
 }
 
+.dashboard-jumps a.is-active {
+    border-color: transparent;
+    color: #ffffff;
+    background: #0f766e;
+}
+
+.dashboard-jumps a.is-active span {
+    color: #0f766e;
+    background: #ffffff;
+}
+
 .dashboard-jumps span {
     display: inline-grid;
     place-items: center;

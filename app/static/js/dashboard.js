@@ -133,4 +133,33 @@
             });
         });
     }
+
+    const jumpLinks = document.querySelectorAll(".dashboard-jumps a");
+
+    if (jumpLinks.length && sections.length && "IntersectionObserver" in window) {
+        const setActiveJumpLink = (id) => {
+            jumpLinks.forEach((link) => {
+                const isActive = link.hash === `#${id}`;
+                link.classList.toggle("is-active", isActive);
+                if (isActive) {
+                    link.setAttribute("aria-current", "true");
+                } else {
+                    link.removeAttribute("aria-current");
+                }
+            });
+        };
+
+        const sectionObserver = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setActiveJumpLink(entry.target.id);
+                    }
+                });
+            },
+            { rootMargin: "-15% 0px -70% 0px", threshold: 0 },
+        );
+
+        sections.forEach((section) => sectionObserver.observe(section));
+    }
 })();
