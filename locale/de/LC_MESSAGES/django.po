@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 10:45+0200\n"
+"POT-Creation-Date: 2026-08-28 13:18+0200\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: German\n"
@@ -232,8 +232,8 @@ msgid "Game name"
 msgstr "Name des Spiels"
 
 #: .\app\forms.py:642 .\app\templates\app\demo.html:160
-#: .\app\templates\app\overlay_dashboard.html:248
-#: .\app\templates\app\overlay_dashboard.html:274
+#: .\app\templates\app\overlay_dashboard.html:255
+#: .\app\templates\app\overlay_dashboard.html:281
 #: .\app\templates\app\partials\_winchallenge_overlay.html:46
 #: .\app\templates\app\winchallenge\list.html:74
 #: .\app\templates\app\winchallenge\manage.html:46
@@ -314,7 +314,7 @@ msgid "When disabled, minus buttons stop at 0."
 msgstr "Wenn deaktiviert, stoppen die Minus-Schaltflächen bei 0."
 
 #: .\app\forms.py:903 .\app\models.py:1584
-#: .\app\templates\app\overlay_dashboard.html:360
+#: .\app\templates\app\overlay_dashboard.html:373
 #: .\app\templates\app\score\create.html:53
 msgid "Score HUD"
 msgstr "Score HUD"
@@ -1278,7 +1278,7 @@ msgstr "Wiedergabe-Demo"
 
 #: .\app\templates\app\demo.html:70 .\app\templates\app\home.html:64
 #: .\app\templates\app\home.html:99
-#: .\app\templates\app\overlay_dashboard.html:153
+#: .\app\templates\app\overlay_dashboard.html:154
 #: .\app\templates\app\spotify\_overlay.html:13
 #: .\app\templates\app\spotify\_overlay.html:72
 #: .\app\templates\app\spotify\list.html:93
@@ -1326,7 +1326,7 @@ msgid "Current"
 msgstr "Aktuell"
 
 #: .\app\templates\app\demo.html:114
-#: .\app\templates\app\overlay_dashboard.html:444
+#: .\app\templates\app\overlay_dashboard.html:463
 #: .\app\templates\app\twitch_goal\create.html:137
 msgid "Target"
 msgstr "Ziel"
@@ -1342,8 +1342,8 @@ msgstr "Fortschritts-Demo"
 #: .\app\templates\app\demo.html:127 .\app\templates\app\demo.html:133
 #: .\app\templates\app\home.html:73 .\app\templates\app\home.html:138
 #: .\app\templates\app\home.html:151
-#: .\app\templates\app\overlay_dashboard.html:245
-#: .\app\templates\app\overlay_dashboard.html:267
+#: .\app\templates\app\overlay_dashboard.html:252
+#: .\app\templates\app\overlay_dashboard.html:274
 #: .\app\templates\app\partials\_winchallenge_overlay.html:40
 #: .\app\templates\app\winchallenge\list.html:141
 #: .\app\templates\app\winchallenge\manage.html:42
@@ -1480,14 +1480,14 @@ msgid "Adjustable design and colors"
 msgstr "Anpassbares Design und Farben"
 
 #: .\app\templates\app\home.html:164
-#: .\app\templates\app\overlay_dashboard.html:232
+#: .\app\templates\app\overlay_dashboard.html:239
 #: .\app\templates\app\winchallenge\create.html:6
 #: .\app\templates\app\winchallenge\list.html:50
 msgid "Create Win Challenge"
 msgstr "Win Challenge erstellen"
 
 #: .\app\templates\app\home.html:179
-#: .\app\templates\app\overlay_dashboard.html:507
+#: .\app\templates\app\overlay_dashboard.html:532
 msgid "Ready"
 msgstr "Bereit"
 
@@ -1537,7 +1537,7 @@ msgid "Animations and celebration sounds"
 msgstr "Animationen und Feier-Sounds"
 
 #: .\app\templates\app\home.html:227
-#: .\app\templates\app\overlay_dashboard.html:424
+#: .\app\templates\app\overlay_dashboard.html:443
 #: .\app\templates\app\twitch_goal\create.html:5
 msgid "Create Twitch Goal"
 msgstr "Twitch-Ziel erstellen"
@@ -1755,7 +1755,7 @@ msgid "Overlay categories"
 msgstr "Overlay-Kategorien"
 
 #: .\app\templates\app\overlay_dashboard.html:31
-#: .\app\templates\app\overlay_dashboard.html:59
+#: .\app\templates\app\overlay_dashboard.html:67
 #: .\app\templates\app\spotify\list.html:65
 msgid "Spotify"
 msgstr "Spotify"
@@ -1772,128 +1772,145 @@ msgstr[0] "%(counter)s Overlay"
 msgstr[1] "%(counter)s Overlays"
 
 #: .\app\templates\app\overlay_dashboard.html:35
-#: .\app\templates\app\overlay_dashboard.html:63
-#: .\app\templates\app\overlay_dashboard.html:229
+#: .\app\templates\app\overlay_dashboard.html:68
+#: .\app\templates\app\overlay_dashboard.html:236
 #: .\app\templates\app\winchallenge\list.html:6
 #: .\app\templates\app\winchallenge\list.html:17
 msgid "Win Challenges"
 msgstr "Win Challenges"
 
 #: .\app\templates\app\overlay_dashboard.html:39
-#: .\app\templates\app\overlay_dashboard.html:67
-#: .\app\templates\app\overlay_dashboard.html:329
+#: .\app\templates\app\overlay_dashboard.html:69
+#: .\app\templates\app\overlay_dashboard.html:342
 msgid "Score HUDs"
 msgstr "Score HUDs"
 
 #: .\app\templates\app\overlay_dashboard.html:43
-#: .\app\templates\app\overlay_dashboard.html:71
+#: .\app\templates\app\overlay_dashboard.html:70
 msgid "Timers"
 msgstr "Timer"
 
 #: .\app\templates\app\overlay_dashboard.html:47
-#: .\app\templates\app\overlay_dashboard.html:75
-#: .\app\templates\app\overlay_dashboard.html:421
+#: .\app\templates\app\overlay_dashboard.html:71
+#: .\app\templates\app\overlay_dashboard.html:440
 msgid "Twitch Goals"
 msgstr "Twitch-Ziele"
 
-#: .\app\templates\app\overlay_dashboard.html:53
-msgid "Overlay overview"
-msgstr "Overlay-Übersicht"
+#: .\app\templates\app\overlay_dashboard.html:54
+msgid "Filter overlays"
+msgstr "Overlays filtern"
 
-#: .\app\templates\app\overlay_dashboard.html:55
-msgid "All overlays"
-msgstr "Alle Overlays"
+#: .\app\templates\app\overlay_dashboard.html:56
+msgid "Search overlays"
+msgstr "Overlays durchsuchen"
 
-#: .\app\templates\app\overlay_dashboard.html:93
+#: .\app\templates\app\overlay_dashboard.html:61
+msgid "Search by name…"
+msgstr "Nach Name suchen…"
+
+#: .\app\templates\app\overlay_dashboard.html:65
+msgid "Filter by type"
+msgstr "Nach Typ filtern"
+
+#: .\app\templates\app\overlay_dashboard.html:66
+msgid "All"
+msgstr "Alle"
+
+#: .\app\templates\app\overlay_dashboard.html:76
+#, python-brace-format
+msgid "Showing {shown} of {total} overlays"
+msgstr "{shown} von {total} Overlays werden angezeigt"
+
+#: .\app\templates\app\overlay_dashboard.html:94
 msgid "Transfer"
 msgstr "Übertragen"
 
-#: .\app\templates\app\overlay_dashboard.html:94
+#: .\app\templates\app\overlay_dashboard.html:95
 msgid "Import overlay"
 msgstr "Overlay importieren"
 
-#: .\app\templates\app\overlay_dashboard.html:95
+#: .\app\templates\app\overlay_dashboard.html:96
 msgid "Restore a Nexora JSON export or move an overlay between accounts."
 msgstr ""
 "Stelle einen Nexora-JSON-Export wieder her oder übertrage ein Overlay "
 "zwischen Konten."
 
-#: .\app\templates\app\overlay_dashboard.html:109
+#: .\app\templates\app\overlay_dashboard.html:110
 msgid "Import"
 msgstr "Importieren"
 
-#: .\app\templates\app\overlay_dashboard.html:134
+#: .\app\templates\app\overlay_dashboard.html:135
 msgid "Music and playback"
 msgstr "Musik und Wiedergabe"
 
-#: .\app\templates\app\overlay_dashboard.html:135
+#: .\app\templates\app\overlay_dashboard.html:136
 #: .\app\templates\app\spotify\create.html:43
 #: .\app\templates\app\spotify\list.html:15
 #: .\app\templates\app\spotify\list.html:24
 msgid "Spotify overlays"
 msgstr "Spotify-Overlays"
 
-#: .\app\templates\app\overlay_dashboard.html:138
+#: .\app\templates\app\overlay_dashboard.html:139
 msgid "Create Spotify overlay"
 msgstr "Spotify-Overlay erstellen"
 
-#: .\app\templates\app\overlay_dashboard.html:146
-#: .\app\templates\app\overlay_dashboard.html:186
-#: .\app\templates\app\overlay_dashboard.html:240
-#: .\app\templates\app\overlay_dashboard.html:288
-#: .\app\templates\app\overlay_dashboard.html:340
-#: .\app\templates\app\overlay_dashboard.html:380
-#: .\app\templates\app\overlay_dashboard.html:432
-#: .\app\templates\app\overlay_dashboard.html:452
-#: .\app\templates\app\overlay_dashboard.html:483
-#: .\app\templates\app\overlay_dashboard.html:525
+#: .\app\templates\app\overlay_dashboard.html:147
+#: .\app\templates\app\overlay_dashboard.html:182
+#: .\app\templates\app\overlay_dashboard.html:247
+#: .\app\templates\app\overlay_dashboard.html:290
+#: .\app\templates\app\overlay_dashboard.html:353
+#: .\app\templates\app\overlay_dashboard.html:388
+#: .\app\templates\app\overlay_dashboard.html:451
+#: .\app\templates\app\overlay_dashboard.html:469
+#: .\app\templates\app\overlay_dashboard.html:508
+#: .\app\templates\app\overlay_dashboard.html:545
 msgid "Preview"
 msgstr "Vorschau"
 
-#: .\app\templates\app\overlay_dashboard.html:164
+#: .\app\templates\app\overlay_dashboard.html:165
 #: .\app\templates\app\spotify\list.html:57
 msgid "Spotify overlay"
 msgstr "Spotify-Overlay"
 
-#: .\app\templates\app\overlay_dashboard.html:168
-#: .\app\templates\app\overlay_dashboard.html:441
+#: .\app\templates\app\overlay_dashboard.html:169
+#: .\app\templates\app\overlay_dashboard.html:460
 #: .\app\templates\app\spotify\create.html:298
 #: .\app\templates\app\spotify\list.html:66
 msgid "Connected"
 msgstr "Verbunden"
 
-#: .\app\templates\app\overlay_dashboard.html:168
-#: .\app\templates\app\overlay_dashboard.html:441
+#: .\app\templates\app\overlay_dashboard.html:169
+#: .\app\templates\app\overlay_dashboard.html:460
 #: .\app\templates\app\spotify\create.html:310
 #: .\app\templates\app\twitch_goal\create.html:94
 msgid "Not connected"
 msgstr "Nicht verbunden"
 
-#: .\app\templates\app\overlay_dashboard.html:173
+#: .\app\templates\app\overlay_dashboard.html:174
 #: .\app\templates\app\spotify\list.html:62
 msgid "Size"
 msgstr "Größe"
 
-#: .\app\templates\app\overlay_dashboard.html:174
-#: .\app\templates\app\overlay_dashboard.html:368
+#: .\app\templates\app\overlay_dashboard.html:175
+#: .\app\templates\app\overlay_dashboard.html:381
 #: .\app\templates\app\score\create.html:352
 #: .\app\templates\app\spotify\list.html:63
 #: .\app\templates\app\twitch_goal\create.html:131
 msgid "Elements"
 msgstr "Elemente"
 
-#: .\app\templates\app\overlay_dashboard.html:175
-#: .\app\templates\app\overlay_dashboard.html:276
-#: .\app\templates\app\overlay_dashboard.html:369
-#: .\app\templates\app\overlay_dashboard.html:446
-#: .\app\templates\app\overlay_dashboard.html:514
+#: .\app\templates\app\overlay_dashboard.html:176
+#: .\app\templates\app\overlay_dashboard.html:283
+#: .\app\templates\app\overlay_dashboard.html:382
+#: .\app\templates\app\overlay_dashboard.html:465
+#: .\app\templates\app\overlay_dashboard.html:539
 #: .\app\templates\app\presets\list.html:68
 #: .\app\templates\app\winchallenge\list.html:82
 #: .\app\templates\app\winchallenge\manage.html:88
 msgid "Updated"
 msgstr "Aktualisiert"
 
-#: .\app\templates\app\overlay_dashboard.html:179
+#: .\app\templates\app\overlay_dashboard.html:180
 #: .\app\templates\app\score\create.html:20
 #: .\app\templates\app\spotify\create.html:20
 #: .\app\templates\app\spotify\list.html:70
@@ -1903,44 +1920,52 @@ msgid "Edit"
 msgstr "Bearbeiten"
 
 #: .\app\templates\app\overlay_dashboard.html:182
-#: .\app\templates\app\overlay_dashboard.html:284
-#: .\app\templates\app\overlay_dashboard.html:376
-#: .\app\templates\app\overlay_dashboard.html:450
-#: .\app\templates\app\overlay_dashboard.html:521
-msgid "Duplicate"
-msgstr "Duplizieren"
-
-#: .\app\templates\app\overlay_dashboard.html:184
-#: .\app\templates\app\overlay_dashboard.html:286
-#: .\app\templates\app\overlay_dashboard.html:378
-#: .\app\templates\app\overlay_dashboard.html:451
-#: .\app\templates\app\overlay_dashboard.html:523
-msgid "Export"
-msgstr "Exportieren"
-
-#: .\app\templates\app\overlay_dashboard.html:186
-#: .\app\templates\app\overlay_dashboard.html:288
-#: .\app\templates\app\overlay_dashboard.html:380
-#: .\app\templates\app\overlay_dashboard.html:525
+#: .\app\templates\app\overlay_dashboard.html:290
+#: .\app\templates\app\overlay_dashboard.html:388
+#: .\app\templates\app\overlay_dashboard.html:545
 #: .\app\templates\app\spotify\list.html:72
 #: .\app\templates\app\winchallenge\list.html:95
 msgid "opens in a new tab"
 msgstr "öffnet in einem neuen Tab"
 
+#: .\app\templates\app\overlay_dashboard.html:185
+#: .\app\templates\app\overlay_dashboard.html:293
+#: .\app\templates\app\overlay_dashboard.html:391
+#: .\app\templates\app\overlay_dashboard.html:471
+#: .\app\templates\app\overlay_dashboard.html:548
+msgid "More"
+msgstr "Mehr"
+
 #: .\app\templates\app\overlay_dashboard.html:189
-#: .\app\templates\app\overlay_dashboard.html:291
-#: .\app\templates\app\overlay_dashboard.html:383
-#: .\app\templates\app\overlay_dashboard.html:453
-#: .\app\templates\app\overlay_dashboard.html:528
+#: .\app\templates\app\overlay_dashboard.html:297
+#: .\app\templates\app\overlay_dashboard.html:395
+#: .\app\templates\app\overlay_dashboard.html:473
+#: .\app\templates\app\overlay_dashboard.html:552
+msgid "Duplicate"
+msgstr "Duplizieren"
+
+#: .\app\templates\app\overlay_dashboard.html:191
+#: .\app\templates\app\overlay_dashboard.html:299
+#: .\app\templates\app\overlay_dashboard.html:397
+#: .\app\templates\app\overlay_dashboard.html:474
+#: .\app\templates\app\overlay_dashboard.html:554
+msgid "Export"
+msgstr "Exportieren"
+
+#: .\app\templates\app\overlay_dashboard.html:193
+#: .\app\templates\app\overlay_dashboard.html:301
+#: .\app\templates\app\overlay_dashboard.html:399
+#: .\app\templates\app\overlay_dashboard.html:475
+#: .\app\templates\app\overlay_dashboard.html:556
 #: .\app\templates\app\spotify\list.html:75
 msgid "Copy OBS link"
 msgstr "OBS-Link kopieren"
 
-#: .\app\templates\app\overlay_dashboard.html:195
-#: .\app\templates\app\overlay_dashboard.html:297
-#: .\app\templates\app\overlay_dashboard.html:389
-#: .\app\templates\app\overlay_dashboard.html:454
-#: .\app\templates\app\overlay_dashboard.html:534
+#: .\app\templates\app\overlay_dashboard.html:199
+#: .\app\templates\app\overlay_dashboard.html:307
+#: .\app\templates\app\overlay_dashboard.html:405
+#: .\app\templates\app\overlay_dashboard.html:476
+#: .\app\templates\app\overlay_dashboard.html:562
 #: .\app\templates\app\score\create.html:379
 #: .\app\templates\app\spotify\create.html:425
 #: .\app\templates\app\timer\create.html:213
@@ -1950,11 +1975,11 @@ msgid "The previous OBS link will stop working immediately. Continue?"
 msgstr ""
 "Der bisherige OBS-Link funktioniert danach sofort nicht mehr. Fortfahren?"
 
-#: .\app\templates\app\overlay_dashboard.html:199
-#: .\app\templates\app\overlay_dashboard.html:301
-#: .\app\templates\app\overlay_dashboard.html:393
-#: .\app\templates\app\overlay_dashboard.html:454
-#: .\app\templates\app\overlay_dashboard.html:538
+#: .\app\templates\app\overlay_dashboard.html:203
+#: .\app\templates\app\overlay_dashboard.html:311
+#: .\app\templates\app\overlay_dashboard.html:409
+#: .\app\templates\app\overlay_dashboard.html:476
+#: .\app\templates\app\overlay_dashboard.html:566
 #: .\app\templates\app\score\create.html:238
 #: .\app\templates\app\spotify\create.html:341
 #: .\app\templates\app\timer\create.html:217
@@ -1963,17 +1988,17 @@ msgstr ""
 msgid "Renew OBS link"
 msgstr "OBS-Link erneuern"
 
-#: .\app\templates\app\overlay_dashboard.html:201
+#: .\app\templates\app\overlay_dashboard.html:205
 #: .\app\templates\app\spotify\create.html:437
 #: .\app\templates\app\spotify\list.html:77
 msgid "Delete this Spotify overlay?"
 msgstr "Dieses Spotify-Overlay löschen?"
 
-#: .\app\templates\app\overlay_dashboard.html:203
-#: .\app\templates\app\overlay_dashboard.html:305
-#: .\app\templates\app\overlay_dashboard.html:397
-#: .\app\templates\app\overlay_dashboard.html:455
-#: .\app\templates\app\overlay_dashboard.html:542
+#: .\app\templates\app\overlay_dashboard.html:207
+#: .\app\templates\app\overlay_dashboard.html:315
+#: .\app\templates\app\overlay_dashboard.html:413
+#: .\app\templates\app\overlay_dashboard.html:477
+#: .\app\templates\app\overlay_dashboard.html:570
 #: .\app\templates\app\presets\list.html:79
 #: .\app\templates\app\spotify\list.html:79
 #: .\app\templates\app\timer\create.html:224
@@ -1981,30 +2006,38 @@ msgstr "Dieses Spotify-Overlay löschen?"
 msgid "Delete"
 msgstr "Löschen"
 
-#: .\app\templates\app\overlay_dashboard.html:214
+#: .\app\templates\app\overlay_dashboard.html:216
+#: .\app\templates\app\overlay_dashboard.html:324
+#: .\app\templates\app\overlay_dashboard.html:422
+#: .\app\templates\app\overlay_dashboard.html:485
+#: .\app\templates\app\overlay_dashboard.html:579
+msgid "No overlays match your search."
+msgstr "Keine Overlays entsprechen deiner Suche."
+
+#: .\app\templates\app\overlay_dashboard.html:221
 msgid "No Spotify overlays yet"
 msgstr "Noch keine Spotify-Overlays"
 
-#: .\app\templates\app\overlay_dashboard.html:215
+#: .\app\templates\app\overlay_dashboard.html:222
 msgid "Create a layout for the current track, artwork and playback progress."
 msgstr ""
 "Erstelle ein Layout für den aktuellen Titel, das Cover und den "
 "Wiedergabefortschritt."
 
-#: .\app\templates\app\overlay_dashboard.html:228
+#: .\app\templates\app\overlay_dashboard.html:235
 msgid "Goals and progress"
 msgstr "Ziele und Fortschritt"
 
-#: .\app\templates\app\overlay_dashboard.html:258
+#: .\app\templates\app\overlay_dashboard.html:265
 msgid "Add your first game in the editor."
 msgstr "Füge dein erstes Spiel im Editor hinzu."
 
-#: .\app\templates\app\overlay_dashboard.html:270
-#: .\app\templates\app\overlay_dashboard.html:363
+#: .\app\templates\app\overlay_dashboard.html:277
+#: .\app\templates\app\overlay_dashboard.html:376
 msgid "Ready for OBS"
 msgstr "Bereit für OBS"
 
-#: .\app\templates\app\overlay_dashboard.html:275
+#: .\app\templates\app\overlay_dashboard.html:282
 #: .\app\templates\app\winchallenge\list.html:78
 #: .\app\templates\app\winchallenge\manage.html:49
 #: .\app\templates\app\winchallenge\manage.html:65
@@ -2014,62 +2047,62 @@ msgstr "Bereit für OBS"
 msgid "Games"
 msgstr "Spiele"
 
-#: .\app\templates\app\overlay_dashboard.html:280
-#: .\app\templates\app\overlay_dashboard.html:373
-#: .\app\templates\app\overlay_dashboard.html:449
+#: .\app\templates\app\overlay_dashboard.html:287
+#: .\app\templates\app\overlay_dashboard.html:386
+#: .\app\templates\app\overlay_dashboard.html:468
 #: .\app\templates\app\winchallenge\list.html:89
 msgid "Manage"
 msgstr "Verwalten"
 
-#: .\app\templates\app\overlay_dashboard.html:281
+#: .\app\templates\app\overlay_dashboard.html:288
 #: .\app\templates\app\winchallenge\create.html:101
 #: .\app\templates\app\winchallenge\manage.html:66
 #: .\app\templates\app\winchallenge\manage.html:256
 msgid "Design"
 msgstr "Design"
 
-#: .\app\templates\app\overlay_dashboard.html:303
+#: .\app\templates\app\overlay_dashboard.html:313
 #: .\app\templates\app\winchallenge\list.html:108
 msgid "Delete this Win Challenge?"
 msgstr "Diese Win Challenge löschen?"
 
-#: .\app\templates\app\overlay_dashboard.html:316
+#: .\app\templates\app\overlay_dashboard.html:329
 msgid "No Win Challenges yet"
 msgstr "Noch keine Win Challenges"
 
-#: .\app\templates\app\overlay_dashboard.html:317
+#: .\app\templates\app\overlay_dashboard.html:330
 msgid "Create a counter, add games and keep your stream audience up to date."
 msgstr ""
 "Erstelle einen Zähler, füge Spiele hinzu und halte dein Stream-Publikum auf "
 "dem Laufenden."
 
-#: .\app\templates\app\overlay_dashboard.html:328
+#: .\app\templates\app\overlay_dashboard.html:341
 msgid "Scores and matchups"
 msgstr "Punktzahlen und Matchups"
 
-#: .\app\templates\app\overlay_dashboard.html:332
+#: .\app\templates\app\overlay_dashboard.html:345
 #: .\app\templates\app\score\create.html:6
 msgid "Create Score HUD"
 msgstr "Score HUD erstellen"
 
-#: .\app\templates\app\overlay_dashboard.html:352
+#: .\app\templates\app\overlay_dashboard.html:365
 msgid "Add players in the editor."
 msgstr "Füge Spieler im Editor hinzu."
 
-#: .\app\templates\app\overlay_dashboard.html:367
+#: .\app\templates\app\overlay_dashboard.html:380
 msgid "Participants"
 msgstr "Teilnehmer"
 
-#: .\app\templates\app\overlay_dashboard.html:395
+#: .\app\templates\app\overlay_dashboard.html:411
 #: .\app\templates\app\score\create.html:388
 msgid "Delete this Score HUD?"
 msgstr "Dieses Score HUD löschen?"
 
-#: .\app\templates\app\overlay_dashboard.html:408
+#: .\app\templates\app\overlay_dashboard.html:427
 msgid "No Score HUDs yet"
 msgstr "Noch keine Score HUDs"
 
-#: .\app\templates\app\overlay_dashboard.html:409
+#: .\app\templates\app\overlay_dashboard.html:428
 msgid ""
 "Create a live scoreboard for players or teams with fully editable HUD "
 "elements."
@@ -2077,52 +2110,52 @@ msgstr ""
 "Erstelle ein Live-Scoreboard für Spieler oder Teams mit frei gestaltbaren "
 "HUD-Elementen."
 
-#: .\app\templates\app\overlay_dashboard.html:420
+#: .\app\templates\app\overlay_dashboard.html:439
 msgid "Community growth"
 msgstr "Community-Wachstum"
 
-#: .\app\templates\app\overlay_dashboard.html:445
+#: .\app\templates\app\overlay_dashboard.html:464
 msgid "Mode"
 msgstr "Modus"
 
-#: .\app\templates\app\overlay_dashboard.html:455
+#: .\app\templates\app\overlay_dashboard.html:477
 #: .\app\templates\app\twitch_goal\create.html:224
 msgid "Delete this Twitch goal overlay?"
 msgstr "Dieses Twitch-Ziel-Overlay löschen?"
 
-#: .\app\templates\app\overlay_dashboard.html:462
+#: .\app\templates\app\overlay_dashboard.html:487
 msgid "No Twitch Goals yet"
 msgstr "Noch keine Twitch-Ziele"
 
-#: .\app\templates\app\overlay_dashboard.html:462
+#: .\app\templates\app\overlay_dashboard.html:487
 msgid ""
 "Connect Twitch and build a responsive follower or subscription milestone."
 msgstr ""
 "Verbinde Twitch und erstelle einen responsiven Follower- oder Abo-"
 "Meilenstein."
 
-#: .\app\templates\app\overlay_dashboard.html:471
+#: .\app\templates\app\overlay_dashboard.html:496
 msgid "Time and pacing"
 msgstr "Zeit und Ablauf"
 
-#: .\app\templates\app\overlay_dashboard.html:472
+#: .\app\templates\app\overlay_dashboard.html:497
 #: .\app\templates\app\timer\create.html:44
 msgid "Stream timers"
 msgstr "Stream-Timer"
 
-#: .\app\templates\app\overlay_dashboard.html:475
+#: .\app\templates\app\overlay_dashboard.html:500
 msgid "Create stream timer"
 msgstr "Stream-Timer erstellen"
 
-#: .\app\templates\app\overlay_dashboard.html:490
-#: .\app\templates\app\overlay_dashboard.html:507
+#: .\app\templates\app\overlay_dashboard.html:515
+#: .\app\templates\app\overlay_dashboard.html:532
 #: .\app\templates\app\partials\_timer_overlay.html:45
 #: .\app\templates\app\timer\create.html:38
 #: .\app\templates\app\timer\public_overlay.html:20
 msgid "Running"
 msgstr "Läuft"
 
-#: .\app\templates\app\overlay_dashboard.html:490
+#: .\app\templates\app\overlay_dashboard.html:515
 #: .\app\templates\app\partials\_timer_overlay.html:49
 #: .\app\templates\app\spotify\_overlay.html:14
 #: .\app\templates\app\spotify\_overlay.html:72
@@ -2131,43 +2164,43 @@ msgstr "Läuft"
 msgid "Paused"
 msgstr "Pausiert"
 
-#: .\app\templates\app\overlay_dashboard.html:503
+#: .\app\templates\app\overlay_dashboard.html:528
 msgid "Stream timer"
 msgstr "Stream-Timer"
 
-#: .\app\templates\app\overlay_dashboard.html:512
+#: .\app\templates\app\overlay_dashboard.html:537
 msgid "Type"
 msgstr "Typ"
 
-#: .\app\templates\app\overlay_dashboard.html:513
+#: .\app\templates\app\overlay_dashboard.html:538
 #: .\app\templates\app\spotify\create.html:212
 #: .\app\templates\app\spotify\create.html:213
 #: .\app\templates\app\timer\create.html:125
 msgid "Duration"
 msgstr "Dauer"
 
-#: .\app\templates\app\overlay_dashboard.html:518
+#: .\app\templates\app\overlay_dashboard.html:543
 #: .\app\templates\app\score\create.html:186
 msgid "Control"
 msgstr "Steuern"
 
-#: .\app\templates\app\overlay_dashboard.html:540
+#: .\app\templates\app\overlay_dashboard.html:568
 #: .\app\templates\app\timer\create.html:222
 msgid "Delete this timer overlay?"
 msgstr "Dieses Timer-Overlay löschen?"
 
-#: .\app\templates\app\overlay_dashboard.html:553
+#: .\app\templates\app\overlay_dashboard.html:584
 msgid "No stream timers yet"
 msgstr "Noch keine Stream-Timer"
 
-#: .\app\templates\app\overlay_dashboard.html:554
+#: .\app\templates\app\overlay_dashboard.html:585
 msgid ""
 "Create a countdown or stopwatch that you can control live during your stream."
 msgstr ""
 "Erstelle einen Countdown oder eine Stoppuhr, die du während deines Streams "
 "live steuern kannst."
 
-#: .\app\templates\app\overlay_dashboard.html:560
+#: .\app\templates\app\overlay_dashboard.html:591
 #: .\app\templates\app\score\create.html:407
 #: .\app\templates\app\spotify\create.html:456
 #: .\app\templates\app\spotify\list.html:109
@@ -3312,8 +3345,8 @@ msgstr ""
 msgid ""
 "Drag the dashed border around the whole preview to resize the overlay itself."
 msgstr ""
-"Ziehe am gestrichelten Rahmen um die gesamte Vorschau, um das Overlay "
-"selbst in der Größe zu ändern."
+"Ziehe am gestrichelten Rahmen um die gesamte Vorschau, um das Overlay selbst "
+"in der Größe zu ändern."
 
 #: .\app\templates\app\spotify\create.html:377
 msgid "Alignment tools"
@@ -4217,6 +4250,12 @@ msgstr "Ungültige Win-Änderung."
 #: .\app\views\winchallenge.py:317
 msgid "Game name is required."
 msgstr "Der Spielname ist erforderlich."
+
+#~ msgid "Overlay overview"
+#~ msgstr "Overlay-Übersicht"
+
+#~ msgid "All overlays"
+#~ msgstr "Alle Overlays"
 
 #~ msgid "Snap 10 px"
 #~ msgstr "10-Pixel-Raster"

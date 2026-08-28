@@ -6,6 +6,18 @@
       "runtimeExecutable": ".venv/Scripts/python.exe",
       "runtimeArgs": ["manage.py", "runserver", "127.0.0.1:8090"],
       "port": 8090
+    },
+    {
+      "name": "nexora-dev-8080",
+      "runtimeExecutable": ".venv/Scripts/python.exe",
+      "runtimeArgs": ["manage.py", "runserver", "127.0.0.1:8080"],
+      "port": 8080
+    },
+    {
+      "name": "nexora-dev-8097",
+      "runtimeExecutable": ".venv/Scripts/python.exe",
+      "runtimeArgs": ["manage.py", "runserver", "127.0.0.1:8097"],
+      "port": 8097
     }
   ]
 }

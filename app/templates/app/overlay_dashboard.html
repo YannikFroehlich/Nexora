@@ -49,33 +49,34 @@
                     </a>
                 </nav>
             </div>
+        </section>
 
-            <dl class="dashboard-summary" aria-label="{% translate 'Overlay overview' %}">
-                <div>
-                    <dt>{% translate "All overlays" %}</dt>
-                    <dd>{{ overlay_count }}</dd>
-                </div>
-                <div>
-                    <dt>{% translate "Spotify" %}</dt>
-                    <dd>{{ spotify_count }}</dd>
-                </div>
-                <div>
-                    <dt>{% translate "Win Challenges" %}</dt>
-                    <dd>{{ winchallenge_count }}</dd>
-                </div>
-                <div>
-                    <dt>{% translate "Score HUDs" %}</dt>
-                    <dd>{{ score_count }}</dd>
-                </div>
-                <div>
-                    <dt>{% translate "Timers" %}</dt>
-                    <dd>{{ timer_count }}</dd>
-                </div>
-                <div>
-                    <dt>{% translate "Twitch Goals" %}</dt>
-                    <dd>{{ twitch_goal_count }}</dd>
-                </div>
-            </dl>
+        <section class="dashboard-toolbar" aria-label="{% translate 'Filter overlays' %}">
+            <div class="dashboard-search">
+                <label for="dashboard-search-input" class="sr-only">{% translate "Search overlays" %}</label>
+                <input
+                    type="search"
+                    id="dashboard-search-input"
+                    data-dashboard-search-input
+                    placeholder="{% translate 'Search by name…' %}"
+                    autocomplete="off"
+                >
+            </div>
+            <div class="dashboard-filter-chips" role="group" aria-label="{% translate 'Filter by type' %}">
+                <button type="button" class="dashboard-filter-chip is-active" data-filter-type="all" aria-pressed="true">{% translate "All" %}</button>
+                <button type="button" class="dashboard-filter-chip" data-filter-type="spotify" aria-pressed="false">{% translate "Spotify" %}</button>
+                <button type="button" class="dashboard-filter-chip" data-filter-type="winchallenge" aria-pressed="false">{% translate "Win Challenges" %}</button>
+                <button type="button" class="dashboard-filter-chip" data-filter-type="score" aria-pressed="false">{% translate "Score HUDs" %}</button>
+                <button type="button" class="dashboard-filter-chip" data-filter-type="timer" aria-pressed="false">{% translate "Timers" %}</button>
+                <button type="button" class="dashboard-filter-chip" data-filter-type="twitch-goal" aria-pressed="false">{% translate "Twitch Goals" %}</button>
+            </div>
+            <p
+                class="dashboard-toolbar__count"
+                data-dashboard-count
+                data-count-template="{% translate 'Showing {shown} of {total} overlays' %}"
+                aria-live="polite"
+                hidden
+            ></p>
         </section>
 
         {% if messages %}
@@ -124,7 +125,7 @@
             </form>
         </section>
 
-        <section class="dashboard-collection" id="spotify-overlays" aria-labelledby="spotify-overlays-title">
+        <section class="dashboard-collection" id="spotify-overlays" aria-labelledby="spotify-overlays-title" data-dashboard-section="spotify">
             <div class="dashboard-collection__header">
                 <div class="dashboard-collection__title">
                     <span class="dashboard-collection__icon dashboard-collection__icon--spotify" aria-hidden="true">
@@ -142,7 +143,7 @@
                 <div class="dashboard-grid">
                     {% for overlay in spotify_overlays %}
                         {% url 'spotify_overlay' overlay.public_token as overlay_path %}
-                        <article class="dashboard-card">
+                        <article class="dashboard-card" data-dashboard-name="{{ overlay.display_name|lower }}">
                             <div class="dashboard-card__preview dashboard-card__preview--spotify" aria-label="{% translate 'Preview' %}">
                                 <div
                                     class="spotify-dashboard-preview"
@@ -177,36 +178,42 @@
 
                                 <div class="dashboard-card__actions">
                                     <a class="btn action-button" href="{% url 'spotify_manage' overlay.pk %}">{% translate "Edit" %}</a>
-                                    <form class="dashboard-card__action-form" action="{% url 'spotify_duplicate' overlay.pk %}" method="post">
-                                        {% csrf_token %}
-                                        <button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button>
-                                    </form>
-                                    <a class="btn glass-design" href="{% url 'spotify_export' overlay.pk %}">{% translate "Export" %}</a>
                                     <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">
                                         {% translate "Preview" %}<span class="sr-only"> ({% translate "opens in a new tab" %})</span>
                                     </a>
-                                    <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
-                                        {% translate "Copy OBS link" %}
-                                    </button>
-                                    <form
-                                        class="dashboard-card__action-form"
-                                        action="{% url 'spotify_renew_obs_link' overlay.pk %}"
-                                        method="post"
-                                        data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
-                                    >
-                                        {% csrf_token %}
-                                        <input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#spotify-overlays">
-                                        <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
-                                    </form>
-                                    <form class="dashboard-card__delete" action="{% url 'spotify_delete' overlay.pk %}" method="post" data-confirm-delete="{% translate 'Delete this Spotify overlay?' %}">
-                                        {% csrf_token %}
-                                        <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
-                                    </form>
+                                    <details class="dashboard-card__menu">
+                                        <summary class="btn glass-design">{% translate "More" %}</summary>
+                                        <div class="dashboard-card__menu-panel">
+                                            <form class="dashboard-card__action-form" action="{% url 'spotify_duplicate' overlay.pk %}" method="post">
+                                                {% csrf_token %}
+                                                <button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button>
+                                            </form>
+                                            <a class="btn glass-design" href="{% url 'spotify_export' overlay.pk %}">{% translate "Export" %}</a>
+                                            <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
+                                                {% translate "Copy OBS link" %}
+                                            </button>
+                                            <form
+                                                class="dashboard-card__action-form"
+                                                action="{% url 'spotify_renew_obs_link' overlay.pk %}"
+                                                method="post"
+                                                data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+                                            >
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#spotify-overlays">
+                                                <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
+                                            </form>
+                                            <form class="dashboard-card__delete" action="{% url 'spotify_delete' overlay.pk %}" method="post" data-confirm-delete="{% translate 'Delete this Spotify overlay?' %}">
+                                                {% csrf_token %}
+                                                <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
+                                            </form>
+                                        </div>
+                                    </details>
                                 </div>
                             </div>
                         </article>
                     {% endfor %}
                 </div>
+                <p class="dashboard-no-matches" data-no-matches hidden>{% translate "No overlays match your search." %}</p>
             {% else %}
                 <div class="dashboard-empty">
                     <span class="dashboard-empty__icon" aria-hidden="true">♪</span>
@@ -218,7 +225,7 @@
             {% endif %}
         </section>
 
-        <section class="dashboard-collection" id="winchallenge-overlays" aria-labelledby="winchallenge-overlays-title">
+        <section class="dashboard-collection" id="winchallenge-overlays" aria-labelledby="winchallenge-overlays-title" data-dashboard-section="winchallenge">
             <div class="dashboard-collection__header">
                 <div class="dashboard-collection__title">
                     <span class="dashboard-collection__icon dashboard-collection__icon--challenge" aria-hidden="true">
@@ -236,7 +243,7 @@
                 <div class="dashboard-grid">
                     {% for challenge in win_challenges %}
                         {% url 'winchallenge_overlay' challenge.public_token as overlay_path %}
-                        <article class="dashboard-card">
+                        <article class="dashboard-card" data-dashboard-name="{{ challenge.display_title|lower }}">
                             <div class="dashboard-card__preview dashboard-card__preview--challenge" aria-label="{% translate 'Preview' %}">
                                 <div
                                     class="challenge-dashboard-preview"
@@ -279,36 +286,42 @@
                                 <div class="dashboard-card__actions">
                                     <a class="btn action-button" href="{% url 'winchallenge_manage' challenge.pk %}">{% translate "Manage" %}</a>
                                     <a class="btn glass-design" href="{% url 'winchallenge_manage' challenge.pk %}#design">{% translate "Design" %}</a>
-                                    <form class="dashboard-card__action-form" action="{% url 'winchallenge_duplicate' challenge.pk %}" method="post">
-                                        {% csrf_token %}
-                                        <button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button>
-                                    </form>
-                                    <a class="btn glass-design" href="{% url 'winchallenge_export' challenge.pk %}">{% translate "Export" %}</a>
                                     <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">
                                         {% translate "Preview" %}<span class="sr-only"> ({% translate "opens in a new tab" %})</span>
                                     </a>
-                                    <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
-                                        {% translate "Copy OBS link" %}
-                                    </button>
-                                    <form
-                                        class="dashboard-card__action-form"
-                                        action="{% url 'winchallenge_renew_obs_link' challenge.pk %}"
-                                        method="post"
-                                        data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
-                                    >
-                                        {% csrf_token %}
-                                        <input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#winchallenge-overlays">
-                                        <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
-                                    </form>
-                                    <form class="dashboard-card__delete" action="{% url 'winchallenge_delete' challenge.pk %}" method="post" data-confirm-delete="{% translate 'Delete this Win Challenge?' %}">
-                                        {% csrf_token %}
-                                        <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
-                                    </form>
+                                    <details class="dashboard-card__menu">
+                                        <summary class="btn glass-design">{% translate "More" %}</summary>
+                                        <div class="dashboard-card__menu-panel">
+                                            <form class="dashboard-card__action-form" action="{% url 'winchallenge_duplicate' challenge.pk %}" method="post">
+                                                {% csrf_token %}
+                                                <button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button>
+                                            </form>
+                                            <a class="btn glass-design" href="{% url 'winchallenge_export' challenge.pk %}">{% translate "Export" %}</a>
+                                            <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
+                                                {% translate "Copy OBS link" %}
+                                            </button>
+                                            <form
+                                                class="dashboard-card__action-form"
+                                                action="{% url 'winchallenge_renew_obs_link' challenge.pk %}"
+                                                method="post"
+                                                data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+                                            >
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#winchallenge-overlays">
+                                                <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
+                                            </form>
+                                            <form class="dashboard-card__delete" action="{% url 'winchallenge_delete' challenge.pk %}" method="post" data-confirm-delete="{% translate 'Delete this Win Challenge?' %}">
+                                                {% csrf_token %}
+                                                <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
+                                            </form>
+                                        </div>
+                                    </details>
                                 </div>
                             </div>
                         </article>
                     {% endfor %}
                 </div>
+                <p class="dashboard-no-matches" data-no-matches hidden>{% translate "No overlays match your search." %}</p>
             {% else %}
                 <div class="dashboard-empty">
                     <span class="dashboard-empty__icon" aria-hidden="true">◆</span>
@@ -320,7 +333,7 @@
             {% endif %}
         </section>
 
-        <section class="dashboard-collection" id="score-overlays" aria-labelledby="score-overlays-title">
+        <section class="dashboard-collection" id="score-overlays" aria-labelledby="score-overlays-title" data-dashboard-section="score">
             <div class="dashboard-collection__header">
                 <div class="dashboard-collection__title">
                     <span class="dashboard-collection__icon dashboard-collection__icon--score" aria-hidden="true">#</span>
@@ -336,7 +349,7 @@
                 <div class="dashboard-grid">
                     {% for overlay in score_overlays %}
                         {% url 'score_overlay' overlay.public_token as overlay_path %}
-                        <article class="dashboard-card">
+                        <article class="dashboard-card" data-dashboard-name="{{ overlay.display_name|lower }}">
                             <div class="dashboard-card__preview dashboard-card__preview--score" aria-label="{% translate 'Preview' %}">
                                 <div
                                     class="score-dashboard-preview"
@@ -371,36 +384,42 @@
 
                                 <div class="dashboard-card__actions">
                                     <a class="btn action-button" href="{% url 'score_manage' overlay.pk %}">{% translate "Manage" %}</a>
-                                    <form class="dashboard-card__action-form" action="{% url 'score_duplicate' overlay.pk %}" method="post">
-                                        {% csrf_token %}
-                                        <button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button>
-                                    </form>
-                                    <a class="btn glass-design" href="{% url 'score_export' overlay.pk %}">{% translate "Export" %}</a>
                                     <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">
                                         {% translate "Preview" %}<span class="sr-only"> ({% translate "opens in a new tab" %})</span>
                                     </a>
-                                    <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
-                                        {% translate "Copy OBS link" %}
-                                    </button>
-                                    <form
-                                        class="dashboard-card__action-form"
-                                        action="{% url 'score_renew_obs_link' overlay.pk %}"
-                                        method="post"
-                                        data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
-                                    >
-                                        {% csrf_token %}
-                                        <input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#score-overlays">
-                                        <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
-                                    </form>
-                                    <form class="dashboard-card__delete" action="{% url 'score_delete' overlay.pk %}" method="post" data-confirm-delete="{% translate 'Delete this Score HUD?' %}">
-                                        {% csrf_token %}
-                                        <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
-                                    </form>
+                                    <details class="dashboard-card__menu">
+                                        <summary class="btn glass-design">{% translate "More" %}</summary>
+                                        <div class="dashboard-card__menu-panel">
+                                            <form class="dashboard-card__action-form" action="{% url 'score_duplicate' overlay.pk %}" method="post">
+                                                {% csrf_token %}
+                                                <button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button>
+                                            </form>
+                                            <a class="btn glass-design" href="{% url 'score_export' overlay.pk %}">{% translate "Export" %}</a>
+                                            <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
+                                                {% translate "Copy OBS link" %}
+                                            </button>
+                                            <form
+                                                class="dashboard-card__action-form"
+                                                action="{% url 'score_renew_obs_link' overlay.pk %}"
+                                                method="post"
+                                                data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+                                            >
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#score-overlays">
+                                                <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
+                                            </form>
+                                            <form class="dashboard-card__delete" action="{% url 'score_delete' overlay.pk %}" method="post" data-confirm-delete="{% translate 'Delete this Score HUD?' %}">
+                                                {% csrf_token %}
+                                                <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
+                                            </form>
+                                        </div>
+                                    </details>
                                 </div>
                             </div>
                         </article>
                     {% endfor %}
                 </div>
+                <p class="dashboard-no-matches" data-no-matches hidden>{% translate "No overlays match your search." %}</p>
             {% else %}
                 <div class="dashboard-empty">
                     <span class="dashboard-empty__icon" aria-hidden="true">#</span>
@@ -412,7 +431,7 @@
             {% endif %}
         </section>
 
-        <section class="dashboard-collection" id="twitch-goal-overlays" aria-labelledby="twitch-goal-overlays-title">
+        <section class="dashboard-collection" id="twitch-goal-overlays" aria-labelledby="twitch-goal-overlays-title" data-dashboard-section="twitch-goal">
             <div class="dashboard-collection__header">
                 <div class="dashboard-collection__title">
                     <span class="dashboard-collection__icon dashboard-collection__icon--twitch" aria-hidden="true">♥</span>
@@ -428,7 +447,7 @@
                 <div class="dashboard-grid">
                     {% for overlay in twitch_goal_overlays %}
                         {% url 'twitch_goal_overlay' overlay.public_token as overlay_path %}
-                        <article class="dashboard-card">
+                        <article class="dashboard-card" data-dashboard-name="{{ overlay.display_name|lower }}">
                             <div class="dashboard-card__preview dashboard-card__preview--goal" aria-label="{% translate 'Preview' %}">
                                 <div class="goal-dashboard-preview" style="--goal-bg:{{ overlay.background_rgba }};--goal-accent:{{ overlay.accent_color }};--goal-track:{{ overlay.track_color }};--goal-radius:{{ overlay.corner_radius }}px;">
                                     <span>{% if overlay.goal_type == "followers" %}♥{% else %}★{% endif %}</span>
@@ -447,23 +466,29 @@
                                 </dl>
                                 <div class="dashboard-card__actions">
                                     <a class="btn action-button" href="{% url 'twitch_goal_manage' overlay.pk %}">{% translate "Manage" %}</a>
-                                    <form class="dashboard-card__action-form" action="{% url 'twitch_goal_duplicate' overlay.pk %}" method="post">{% csrf_token %}<button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button></form>
-                                    <a class="btn glass-design" href="{% url 'twitch_goal_export' overlay.pk %}">{% translate "Export" %}</a>
                                     <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">{% translate "Preview" %}</a>
-                                    <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">{% translate "Copy OBS link" %}</button>
-                                    <form class="dashboard-card__action-form" action="{% url 'twitch_goal_renew_obs_link' overlay.pk %}" method="post" data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#twitch-goal-overlays"><button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button></form>
-                                    <form class="dashboard-card__delete" action="{% url 'twitch_goal_delete' overlay.pk %}" method="post" data-confirm-delete="{% translate 'Delete this Twitch goal overlay?' %}">{% csrf_token %}<button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button></form>
+                                    <details class="dashboard-card__menu">
+                                        <summary class="btn glass-design">{% translate "More" %}</summary>
+                                        <div class="dashboard-card__menu-panel">
+                                            <form class="dashboard-card__action-form" action="{% url 'twitch_goal_duplicate' overlay.pk %}" method="post">{% csrf_token %}<button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button></form>
+                                            <a class="btn glass-design" href="{% url 'twitch_goal_export' overlay.pk %}">{% translate "Export" %}</a>
+                                            <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">{% translate "Copy OBS link" %}</button>
+                                            <form class="dashboard-card__action-form" action="{% url 'twitch_goal_renew_obs_link' overlay.pk %}" method="post" data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#twitch-goal-overlays"><button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button></form>
+                                            <form class="dashboard-card__delete" action="{% url 'twitch_goal_delete' overlay.pk %}" method="post" data-confirm-delete="{% translate 'Delete this Twitch goal overlay?' %}">{% csrf_token %}<button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button></form>
+                                        </div>
+                                    </details>
                                 </div>
                             </div>
                         </article>
                     {% endfor %}
                 </div>
+                <p class="dashboard-no-matches" data-no-matches hidden>{% translate "No overlays match your search." %}</p>
             {% else %}
                 <div class="dashboard-empty"><span class="dashboard-empty__icon" aria-hidden="true">♥</span><div><h3>{% translate "No Twitch Goals yet" %}</h3><p>{% translate "Connect Twitch and build a responsive follower or subscription milestone." %}</p></div></div>
             {% endif %}
         </section>
 
-        <section class="dashboard-collection" id="timer-overlays" aria-labelledby="timer-overlays-title">
+        <section class="dashboard-collection" id="timer-overlays" aria-labelledby="timer-overlays-title" data-dashboard-section="timer">
             <div class="dashboard-collection__header">
                 <div class="dashboard-collection__title">
                     <span class="dashboard-collection__icon dashboard-collection__icon--timer" aria-hidden="true">&#9719;</span>
@@ -479,7 +504,7 @@
                 <div class="dashboard-grid">
                     {% for timer in timer_overlays %}
                         {% url 'timer_overlay' timer.public_token as overlay_path %}
-                        <article class="dashboard-card">
+                        <article class="dashboard-card" data-dashboard-name="{{ timer.display_name|lower }}">
                             <div class="dashboard-card__preview dashboard-card__preview--timer" aria-label="{% translate 'Preview' %}">
                                 <div
                                     class="timer-dashboard-preview timer-dashboard-preview--{{ timer.design_template }}"
@@ -516,36 +541,42 @@
 
                                 <div class="dashboard-card__actions">
                                     <a class="btn action-button" href="{% url 'timer_manage' timer.pk %}">{% translate "Control" %}</a>
-                                    <form class="dashboard-card__action-form" action="{% url 'timer_duplicate' timer.pk %}" method="post">
-                                        {% csrf_token %}
-                                        <button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button>
-                                    </form>
-                                    <a class="btn glass-design" href="{% url 'timer_export' timer.pk %}">{% translate "Export" %}</a>
                                     <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">
                                         {% translate "Preview" %}<span class="sr-only"> ({% translate "opens in a new tab" %})</span>
                                     </a>
-                                    <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
-                                        {% translate "Copy OBS link" %}
-                                    </button>
-                                    <form
-                                        class="dashboard-card__action-form"
-                                        action="{% url 'timer_renew_obs_link' timer.pk %}"
-                                        method="post"
-                                        data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
-                                    >
-                                        {% csrf_token %}
-                                        <input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#timer-overlays">
-                                        <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
-                                    </form>
-                                    <form class="dashboard-card__delete" action="{% url 'timer_delete' timer.pk %}" method="post" data-confirm-delete="{% translate 'Delete this timer overlay?' %}">
-                                        {% csrf_token %}
-                                        <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
-                                    </form>
+                                    <details class="dashboard-card__menu">
+                                        <summary class="btn glass-design">{% translate "More" %}</summary>
+                                        <div class="dashboard-card__menu-panel">
+                                            <form class="dashboard-card__action-form" action="{% url 'timer_duplicate' timer.pk %}" method="post">
+                                                {% csrf_token %}
+                                                <button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button>
+                                            </form>
+                                            <a class="btn glass-design" href="{% url 'timer_export' timer.pk %}">{% translate "Export" %}</a>
+                                            <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
+                                                {% translate "Copy OBS link" %}
+                                            </button>
+                                            <form
+                                                class="dashboard-card__action-form"
+                                                action="{% url 'timer_renew_obs_link' timer.pk %}"
+                                                method="post"
+                                                data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+                                            >
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#timer-overlays">
+                                                <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
+                                            </form>
+                                            <form class="dashboard-card__delete" action="{% url 'timer_delete' timer.pk %}" method="post" data-confirm-delete="{% translate 'Delete this timer overlay?' %}">
+                                                {% csrf_token %}
+                                                <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
+                                            </form>
+                                        </div>
+                                    </details>
                                 </div>
                             </div>
                         </article>
                     {% endfor %}
                 </div>
+                <p class="dashboard-no-matches" data-no-matches hidden>{% translate "No overlays match your search." %}</p>
             {% else %}
                 <div class="dashboard-empty">
                     <span class="dashboard-empty__icon" aria-hidden="true">&#9719;</span>
