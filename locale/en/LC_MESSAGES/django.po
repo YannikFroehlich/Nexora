@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-28 13:18+0200\n"
+"POT-Creation-Date: 2026-08-28 13:27+0200\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: English\n"
@@ -33,7 +33,7 @@ msgstr ""
 msgid "Background image"
 msgstr ""
 
-#: .\app\forms.py:72 .\app\models.py:1316 .\app\models.py:1339
+#: .\app\forms.py:72 .\app\models.py:1322 .\app\models.py:1345
 msgid "None"
 msgstr ""
 
@@ -313,7 +313,7 @@ msgstr ""
 msgid "When disabled, minus buttons stop at 0."
 msgstr ""
 
-#: .\app\forms.py:903 .\app\models.py:1584
+#: .\app\forms.py:903 .\app\models.py:1598
 #: .\app\templates\app\overlay_dashboard.html:373
 #: .\app\templates\app\score\create.html:53
 msgid "Score HUD"
@@ -481,7 +481,7 @@ msgstr ""
 msgid "Optional text displayed above the time."
 msgstr ""
 
-#: .\app\forms.py:1473 .\app\forms.py:1527 .\app\models.py:1833
+#: .\app\forms.py:1473 .\app\forms.py:1527 .\app\models.py:1847
 #: .\app\templates\app\about.html:126 .\app\templates\app\home.html:193
 msgid "Stream Timer"
 msgstr ""
@@ -528,19 +528,19 @@ msgstr ""
 msgid "Restored"
 msgstr ""
 
-#: .\app\models.py:212 .\app\models.py:1847 .\app\templates\app\demo.html:93
+#: .\app\models.py:212 .\app\models.py:1861 .\app\templates\app\demo.html:93
 #: .\app\templates\app\demo.html:173
 #: .\app\templates\app\winchallenge\create.html:117
 msgid "Minimal"
 msgstr ""
 
-#: .\app\models.py:213 .\app\models.py:1848 .\app\templates\app\demo.html:94
+#: .\app\models.py:213 .\app\models.py:1862 .\app\templates\app\demo.html:94
 #: .\app\templates\app\demo.html:174
 #: .\app\templates\app\winchallenge\create.html:126
 msgid "Glass"
 msgstr ""
 
-#: .\app\models.py:214 .\app\models.py:1849 .\app\templates\app\demo.html:95
+#: .\app\models.py:214 .\app\models.py:1863 .\app\templates\app\demo.html:95
 #: .\app\templates\app\demo.html:175
 #: .\app\templates\app\winchallenge\create.html:135
 msgid "Neon"
@@ -574,95 +574,95 @@ msgstr ""
 msgid "Broadcast list"
 msgstr ""
 
-#: .\app\models.py:1277 .\app\templates\app\about.html:138
+#: .\app\models.py:1283 .\app\templates\app\about.html:138
 #: .\app\templates\app\demo.html:109 .\app\templates\app\home.html:223
 msgid "Twitch Goal"
 msgstr ""
 
-#: .\app\models.py:1284 .\app\models.py:1477 .\app\templates\app\home.html:220
+#: .\app\models.py:1290 .\app\models.py:1483 .\app\templates\app\home.html:220
 msgid "Follower goal"
 msgstr ""
 
-#: .\app\models.py:1285
+#: .\app\models.py:1291
 msgid "Subscription goal"
 msgstr ""
 
-#: .\app\models.py:1291
+#: .\app\models.py:1297
 msgid "Active subscriptions"
 msgstr ""
 
-#: .\app\models.py:1292
+#: .\app\models.py:1298
 msgid "Subscription points"
 msgstr ""
 
-#: .\app\models.py:1298
+#: .\app\models.py:1304
 msgid "Total count"
 msgstr ""
 
-#: .\app\models.py:1299
+#: .\app\models.py:1305
 msgid "Campaign growth"
 msgstr ""
 
-#: .\app\models.py:1317
+#: .\app\models.py:1323
 msgid "Confetti"
 msgstr ""
 
-#: .\app\models.py:1318
+#: .\app\models.py:1324
 msgid "Fireworks"
 msgstr ""
 
-#: .\app\models.py:1319
+#: .\app\models.py:1325
 msgid "Neon burst"
 msgstr ""
 
-#: .\app\models.py:1320
+#: .\app\models.py:1326
 msgid "Bounce and pulse"
 msgstr ""
 
-#: .\app\models.py:1321
+#: .\app\models.py:1327
 msgid "Particle rain"
 msgstr ""
 
-#: .\app\models.py:1328
+#: .\app\models.py:1334
 msgid "Low"
 msgstr ""
 
-#: .\app\models.py:1329
+#: .\app\models.py:1335
 msgid "Medium"
 msgstr ""
 
-#: .\app\models.py:1330
+#: .\app\models.py:1336
 msgid "High"
 msgstr ""
 
-#: .\app\models.py:1340
+#: .\app\models.py:1346
 msgid "Chime"
 msgstr ""
 
-#: .\app\models.py:1341
+#: .\app\models.py:1347
 msgid "Fanfare"
 msgstr ""
 
-#: .\app\models.py:1342
+#: .\app\models.py:1348
 msgid "Arcade win"
 msgstr ""
 
-#: .\app\models.py:1343
+#: .\app\models.py:1349
 msgid "Sparkle"
 msgstr ""
 
-#: .\app\models.py:1477
+#: .\app\models.py:1483
 msgid "Sub goal"
 msgstr ""
 
-#: .\app\models.py:1839 .\app\templates\app\home.html:179
+#: .\app\models.py:1853 .\app\templates\app\home.html:179
 #: .\app\templates\app\partials\_timer_overlay.html:37
 #: .\app\templates\app\timer\create.html:36
 #: .\app\templates\app\timer\public_overlay.html:18
 msgid "Countdown"
 msgstr ""
 
-#: .\app\models.py:1840 .\app\templates\app\partials\_timer_overlay.html:37
+#: .\app\models.py:1854 .\app\templates\app\partials\_timer_overlay.html:37
 #: .\app\templates\app\timer\create.html:37
 #: .\app\templates\app\timer\public_overlay.html:19
 msgid "Stopwatch"
@@ -1833,6 +1833,12 @@ msgstr ""
 #| msgid "Spotify Overlay"
 msgid "Spotify overlay"
 msgstr "Spotify Overlay"
+
+#: .\app\templates\app\overlay_dashboard.html:169
+#: .\app\templates\app\overlay_dashboard.html:460
+#: .\app\templates\app\twitch_goal\create.html:89
+msgid "Reconnect required"
+msgstr ""
 
 #: .\app\templates\app\overlay_dashboard.html:169
 #: .\app\templates\app\overlay_dashboard.html:460
@@ -3385,10 +3391,6 @@ msgstr ""
 
 #: .\app\templates\app\twitch_goal\create.html:87
 msgid "Twitch connection"
-msgstr ""
-
-#: .\app\templates\app\twitch_goal\create.html:89
-msgid "Reconnect required"
 msgstr ""
 
 #: .\app\templates\app\twitch_goal\create.html:89

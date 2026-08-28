@@ -705,6 +705,11 @@
     background: #ccfbf1;
 }
 
+.status-badge--warning {
+    color: #92400e;
+    background: #fef3c7;
+}
+
 .dashboard-card__stats {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -904,6 +909,11 @@ body.theme-dark .status-badge--connected,
 body.theme-dark .status-badge--live {
     color: #99f6e4;
     background: rgba(15, 118, 110, 0.35);
+}
+
+body.theme-dark .status-badge--warning {
+    color: #fde68a;
+    background: rgba(146, 64, 14, 0.4);
 }
 
 body.theme-dark .dashboard-danger-button {

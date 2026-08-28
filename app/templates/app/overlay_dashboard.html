@@ -165,8 +165,8 @@
                                         <p class="dashboard-card__type">{% translate "Spotify overlay" %}</p>
                                         <h3>{{ overlay.display_name }}</h3>
                                     </div>
-                                    <span class="status-badge{% if overlay.is_spotify_connected %} status-badge--connected{% endif %}">
-                                        {% if overlay.is_spotify_connected %}{% translate "Connected" %}{% else %}{% translate "Not connected" %}{% endif %}
+                                    <span class="status-badge{% if overlay.needs_reconnect %} status-badge--warning{% elif overlay.is_spotify_connected %} status-badge--connected{% endif %}">
+                                        {% if overlay.needs_reconnect %}{% translate "Reconnect required" %}{% elif overlay.is_spotify_connected %}{% translate "Connected" %}{% else %}{% translate "Not connected" %}{% endif %}
                                     </span>
                                 </div>
 
@@ -457,7 +457,7 @@
                             <div class="dashboard-card__content">
                                 <div class="dashboard-card__heading">
                                     <div><p class="dashboard-card__type">{{ overlay.get_goal_type_display }}</p><h3>{{ overlay.display_name }}</h3></div>
-                                    <span class="status-badge{% if overlay.connection.is_connected %} status-badge--connected{% endif %}">{% if overlay.connection.is_connected %}{% translate "Connected" %}{% else %}{% translate "Not connected" %}{% endif %}</span>
+                                    <span class="status-badge{% if overlay.needs_reconnect %} status-badge--warning{% elif overlay.is_twitch_connected %} status-badge--connected{% endif %}">{% if overlay.needs_reconnect %}{% translate "Reconnect required" %}{% elif overlay.is_twitch_connected %}{% translate "Connected" %}{% else %}{% translate "Not connected" %}{% endif %}</span>
                                 </div>
                                 <dl class="dashboard-card__stats">
                                     <div><dt>{% translate "Target" %}</dt><dd>{{ overlay.target_value }}</dd></div>
