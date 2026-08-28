@@ -1193,6 +1193,12 @@ class SpotifyOverlay(OverlayBrandingMixin, models.Model):
         return bool(self.connection_id and self.connection.is_connected)
 
     @property
+    def needs_reconnect(self):
+        if not self.is_spotify_connected:
+            return False
+        return bool((self.connection.playback_cache or {}).get("needs_reconnect"))
+
+    @property
     def background_rgba(self):
         red = int(self.background_color[1:3], 16)
         green = int(self.background_color[3:5], 16)
@@ -1475,6 +1481,14 @@ class TwitchGoalOverlay(OverlayBrandingMixin, models.Model):
         if self.title.strip():
             return self.title.strip()
         return _("Follower goal") if self.goal_type == self.GOAL_FOLLOWERS else _("Sub goal")
+
+    @property
+    def is_twitch_connected(self):
+        return bool(self.connection_id and self.connection.is_connected)
+
+    @property
+    def needs_reconnect(self):
+        return bool(self.is_twitch_connected and self.connection.needs_reconnect)
 
     @property
     def background_rgba(self):
