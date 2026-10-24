@@ -7,7 +7,7 @@
     align-items: center;
     gap: clamp(40px, 8vw, 110px);
     margin: 0 auto;
-    padding: clamp(36px, 7vw, 90px) 0;
+    padding: var(--page-top-space) 0 clamp(36px, 7vw, 90px);
 }
 
 .auth-intro h1 {

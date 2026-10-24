@@ -62,7 +62,7 @@
     grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
     align-items: center;
     gap: 72px;
-    padding: 72px 0 92px;
+    padding: var(--page-top-space) 0 92px;
 }
 
 .about-hero h1 {
@@ -216,7 +216,7 @@
 .about-principles,
 .about-workflow,
 .about-cta {
-    margin-top: 112px;
+    margin-top: var(--page-section-space);
 }
 
 .about-section-heading {
@@ -267,7 +267,7 @@
 }
 
 .about-tool--timer .about-tool__icon {
-    color: #7c3aed;
+    color: var(--color-accent-timer);
     background: rgba(139, 92, 246, 0.12);
     font-size: 1.7rem;
     font-weight: 850;
@@ -479,7 +479,6 @@
 
     .about-hero {
         gap: 48px;
-        padding-top: 44px;
     }
 
     .about-hero__panel {
@@ -498,13 +497,6 @@
     .about-tool__content > p:not(.about-tool__type) {
         min-height: 0;
     }
-
-    .about-tools,
-    .about-principles,
-    .about-workflow,
-    .about-cta {
-        margin-top: 88px;
-    }
 }
 
 @media (max-width: 620px) {
@@ -518,7 +510,7 @@
 
     .about-hero {
         gap: 38px;
-        padding: 30px 0 72px;
+        padding-bottom: 72px;
     }
 
     .about-hero h1 {
@@ -543,13 +535,6 @@
     .about-intro,
     .about-principles {
         padding: 56px 0;
-    }
-
-    .about-tools,
-    .about-principles,
-    .about-workflow,
-    .about-cta {
-        margin-top: 72px;
     }
 
     .about-tool {
