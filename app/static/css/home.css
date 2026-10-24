@@ -47,7 +47,7 @@
 }
 
 .home-section {
-    margin-top: 112px;
+    margin-top: var(--page-section-space);
     scroll-margin-top: 24px;
 }
 
@@ -97,7 +97,7 @@
 
 /* Hero and stream preview */
 .hero {
-    padding: 66px 0 0;
+    padding: var(--page-top-space) 0 0;
     text-align: center;
 }
 
@@ -541,7 +541,7 @@
 }
 
 .overlay-card__icon--timer {
-    color: #7c3aed;
+    color: var(--color-accent-timer);
     background: rgba(139, 92, 246, 0.14);
 }
 
@@ -813,7 +813,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 40px;
-    margin-top: 112px;
+    margin-top: var(--page-section-space);
     padding: 42px 46px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 8px;
@@ -854,15 +854,6 @@
         width: min(100% - 32px, 760px);
     }
 
-    .home-section,
-    .final-cta {
-        margin-top: 88px;
-    }
-
-    .hero {
-        padding-top: 42px;
-    }
-
     .hero h1 {
         font-size: 3.35rem;
     }
@@ -892,18 +883,9 @@
         width: min(100% - 24px, 520px);
     }
 
-    .home-section,
-    .final-cta {
-        margin-top: 72px;
-    }
-
     .section-heading h2,
     .final-cta h2 {
         font-size: 1.8rem;
-    }
-
-    .hero {
-        padding-top: 30px;
     }
 
     .hero h1 {

@@ -1,7 +1,7 @@
 .legal-page {
     width: min(760px, calc(100% - 32px));
     margin: 0 auto;
-    padding: clamp(32px, 6vw, 64px) 0 72px;
+    padding: var(--page-top-space) 0 72px;
 }
 
 .legal-header {

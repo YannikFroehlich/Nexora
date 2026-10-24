@@ -8,6 +8,27 @@ body {
 
 html {
     scroll-behavior: smooth;
+    scrollbar-gutter: stable;
+}
+
+/* Shared vertical rhythm: space above page heroes and between top-level sections. */
+:root {
+    --page-top-space: 72px;
+    --page-section-space: 112px;
+}
+
+@media (max-width: 900px) {
+    :root {
+        --page-top-space: 44px;
+        --page-section-space: 88px;
+    }
+}
+
+@media (max-width: 620px) {
+    :root {
+        --page-top-space: 30px;
+        --page-section-space: 72px;
+    }
 }
 
 [hidden] {
@@ -657,7 +678,6 @@ footer {
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     padding: 25px 30px;
-    background-color: var(--color-footer-bg);
     color: var(--color-footer-text);
     margin-top: 50px;
 }

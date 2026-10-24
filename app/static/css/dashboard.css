@@ -81,13 +81,13 @@
 
 .dashboard-jumps a.is-active {
     border-color: transparent;
-    color: #ffffff;
-    background: #0f766e;
+    color: var(--color-button-text);
+    background: var(--color-button-bg);
 }
 
 .dashboard-jumps a.is-active span {
-    color: #0f766e;
-    background: #ffffff;
+    color: var(--color-button-bg);
+    background: var(--color-button-text);
 }
 
 .dashboard-jumps span {
@@ -96,8 +96,8 @@
     min-width: 24px;
     height: 24px;
     border-radius: 999px;
-    color: #ffffff;
-    background: #0f766e;
+    color: var(--color-button-text);
+    background: var(--color-button-bg);
     font-size: 0.76rem;
 }
 
@@ -160,9 +160,9 @@
 }
 
 .dashboard-filter-chip.is-active {
-    color: #ffffff;
+    color: var(--color-button-text);
     border-color: transparent;
-    background: #0f766e;
+    background: var(--color-button-bg);
 }
 
 .dashboard-toolbar__count {
@@ -217,8 +217,8 @@
     width: 52px;
     height: 52px;
     border-radius: 17px;
-    color: #ffffff;
-    background: #0f766e;
+    color: var(--color-button-text);
+    background: var(--color-button-bg);
     font-size: 1.45rem;
     font-weight: 850;
     place-items: center;
@@ -337,7 +337,7 @@
 }
 
 .dashboard-collection__icon--timer {
-    color: #7c3aed;
+    color: var(--color-accent-timer);
     background: rgba(139, 92, 246, 0.15);
     font-size: 1.9rem;
     font-weight: 800;
@@ -869,8 +869,8 @@
     width: 50px;
     height: 50px;
     border-radius: 16px;
-    color: #ffffff;
-    background: #0f766e;
+    color: var(--color-button-text);
+    background: var(--color-button-bg);
     font-size: 1.35rem;
     place-items: center;
     flex: 0 0 auto;
@@ -892,8 +892,8 @@
     margin: 0;
     padding: 12px 18px;
     border-radius: 14px;
-    color: #ffffff;
-    background: #0f766e;
+    color: var(--color-button-text);
+    background: var(--color-button-bg);
     box-shadow: 0 16px 36px rgba(15, 23, 42, 0.32);
     font-weight: 800;
 }

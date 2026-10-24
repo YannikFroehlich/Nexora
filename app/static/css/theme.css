@@ -35,9 +35,11 @@
     --color-button-border: #115e59;
 
     /* Footer */
-    --color-footer-bg: rgba(22, 32, 42, 0.88);
     --color-footer-text: #17212b;
-    --color-footer-link: #d9f4ef;
+    --color-footer-link: #0f766e;
+
+    /* Overlay type accents */
+    --color-accent-timer: #7c3aed;
 
     /* Focus states */
     --color-focus-ring: #0f766e;
@@ -72,9 +74,11 @@
     --color-button-text: #061316;
 
     /* Footer */
-    --color-footer-bg: rgba(5, 10, 18, 0.9);
     --color-footer-text: #e8eef4;
     --color-footer-link: #a5f3fc;
+
+    /* Overlay type accents */
+    --color-accent-timer: #a78bfa;
 
     /* Focus states */
     --color-focus-ring: #67e8f9;
