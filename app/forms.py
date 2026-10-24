@@ -443,6 +443,16 @@ class WinChallengeBaseForm(forms.ModelForm):
             "item_spacing",
             "shadow_enabled",
             "show_games_list",
+            "secondary_color",
+            "use_gradient",
+            "track_color",
+            "track_opacity",
+            "label_text",
+            "show_label",
+            "wins_text",
+            "show_wins_text",
+            "games_per_page",
+            "win_animation",
             "font_family",
             "font_asset",
             "logo_asset",
@@ -471,11 +481,24 @@ class WinChallengeBaseForm(forms.ModelForm):
             "item_spacing": _("Element spacing"),
             "shadow_enabled": _("Show shadow"),
             "show_games_list": _("Show games list"),
+            "secondary_color": _("Gradient color"),
+            "use_gradient": _("Progress bar gradient"),
+            "track_color": _("Track color"),
+            "track_opacity": _("Track opacity"),
+            "label_text": _("Label text"),
+            "show_label": _("Show label"),
+            "wins_text": _("Wins text"),
+            "show_wins_text": _("Show wins text"),
+            "games_per_page": _("Games per page"),
+            "win_animation": _("Win animation"),
         }
         help_texts = {
             "background_opacity": _("0 is transparent, 100 is fully opaque."),
             "overlay_height": _("0 keeps automatic height."),
             "page_interval_seconds": _("Seconds before switching to the next page."),
+            "label_text": _("Leave empty to use the default text."),
+            "wins_text": _("Leave empty to use the default text."),
+            "win_animation": _("Plays when a game gets a new win."),
         }
         widgets = {
             "title": forms.TextInput(
@@ -530,6 +553,24 @@ class WinChallengeBaseForm(forms.ModelForm):
             ),
             "shadow_enabled": forms.CheckboxInput(attrs={"class": "toggle-control"}),
             "show_games_list": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "secondary_color": ColorInput(attrs={"class": "color-control"}),
+            "use_gradient": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "track_color": ColorInput(attrs={"class": "color-control"}),
+            "track_opacity": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 100, "step": 1}
+            ),
+            "label_text": forms.TextInput(
+                attrs={"class": BASE_INPUT_CLASS, "placeholder": WinChallenge.DEFAULT_LABEL_TEXT}
+            ),
+            "show_label": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "wins_text": forms.TextInput(
+                attrs={"class": BASE_INPUT_CLASS, "placeholder": WinChallenge.DEFAULT_WINS_TEXT}
+            ),
+            "show_wins_text": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "games_per_page": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 1, "max": 6, "step": 1}
+            ),
+            "win_animation": forms.Select(attrs={"class": BASE_INPUT_CLASS}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -554,6 +595,8 @@ class WinChallengeBaseForm(forms.ModelForm):
             "pager_text_size": (8, 32),
             "page_interval_seconds": (1, 60),
             "item_spacing": (4, 28),
+            "track_opacity": (0, 100),
+            "games_per_page": (1, 6),
         }
 
         for field_name, (minimum, maximum) in limits.items():
@@ -569,6 +612,12 @@ class WinChallengeBaseForm(forms.ModelForm):
 
     def clean_title(self):
         return self.cleaned_data["title"].strip()
+
+    def clean_label_text(self):
+        return self.cleaned_data["label_text"].strip()
+
+    def clean_wins_text(self):
+        return self.cleaned_data["wins_text"].strip()
 
     def clean_font_family(self):
         return _selected_font_family(self)
@@ -626,6 +675,16 @@ class WinChallengeDesignForm(WinChallengeBaseForm):
             "item_spacing",
             "shadow_enabled",
             "show_games_list",
+            "secondary_color",
+            "use_gradient",
+            "track_color",
+            "track_opacity",
+            "label_text",
+            "show_label",
+            "wins_text",
+            "show_wins_text",
+            "games_per_page",
+            "win_animation",
             "font_family",
             "font_asset",
             "logo_asset",

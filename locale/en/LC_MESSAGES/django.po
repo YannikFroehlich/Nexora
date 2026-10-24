@@ -4141,3 +4141,63 @@ msgstr ""
 #~| msgid "Spotify Overlay"
 #~ msgid "All Spotify overlays"
 #~ msgstr "Spotify Overlay"
+
+#: .\app\models.py:224
+msgid "No animation"
+msgstr ""
+
+#: .\app\models.py:225
+msgid "Pulse"
+msgstr ""
+
+#: .\app\models.py:226
+msgid "Glow"
+msgstr ""
+
+#: .\app\forms.py:484
+msgid "Gradient color"
+msgstr ""
+
+#: .\app\forms.py:485
+msgid "Progress bar gradient"
+msgstr ""
+
+#: .\app\forms.py:487
+msgid "Track opacity"
+msgstr ""
+
+#: .\app\forms.py:488
+msgid "Label text"
+msgstr ""
+
+#: .\app\forms.py:489
+msgid "Show label"
+msgstr ""
+
+#: .\app\forms.py:490
+msgid "Wins text"
+msgstr ""
+
+#: .\app\forms.py:491
+msgid "Show wins text"
+msgstr ""
+
+#: .\app\forms.py:492
+msgid "Games per page"
+msgstr ""
+
+#: .\app\forms.py:493
+msgid "Win animation"
+msgstr ""
+
+#: .\app\forms.py:499 .\app\forms.py:500
+msgid "Leave empty to use the default text."
+msgstr ""
+
+#: .\app\forms.py:501
+msgid "Plays when a game gets a new win."
+msgstr ""
+
+#: .\app\templates\app\winchallenge\create.html:328
+msgid "Texts"
+msgstr ""

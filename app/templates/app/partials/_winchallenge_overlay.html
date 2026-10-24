@@ -9,10 +9,14 @@
     data-winchallenge-overlay
     data-overlay-branding-root
     data-page-interval-seconds="{{ challenge.page_interval_seconds }}"
+    data-win-animation="{{ challenge.win_animation }}"
+    {% if challenge.use_gradient %}data-progress-gradient{% endif %}
     style="
         --wc-bg: {{ challenge.background_rgba }};
         --wc-text: {{ challenge.text_color }};
         --wc-accent: {{ challenge.accent_color }};
+        --wc-secondary: {{ challenge.secondary_color }};
+        --wc-track: {{ challenge.track_rgba }};
         --wc-border: {{ challenge.border_color }};
         --wc-border-width: {{ challenge.border_width }}px;
         --wc-radius: {{ challenge.corner_radius }}px;
@@ -37,13 +41,22 @@
     {% endif %}
     <div class="winchallenge-overlay__header">
         <div>
-            <p class="winchallenge-overlay__label">{% translate "Win Challenge" %}</p>
+            <p
+                class="winchallenge-overlay__label"
+                data-overlay-label
+                data-default-text="{{ challenge.DEFAULT_LABEL_TEXT }}"
+                {% if not challenge.show_label %}hidden{% endif %}
+            >{{ challenge.display_label_text }}</p>
             <h2 data-overlay-title>{{ challenge.display_title }}</h2>
         </div>
 
         <div class="winchallenge-overlay__score" aria-live="polite">
             <span data-total-wins>{{ challenge.total_wins }}</span>
-            <span>{% translate "Wins" %}</span>
+            <span
+                data-overlay-wins-text
+                data-default-text="{{ challenge.DEFAULT_WINS_TEXT }}"
+                {% if not challenge.show_wins_text %}hidden{% endif %}
+            >{{ challenge.display_wins_text }}</span>
         </div>
     </div>
 
@@ -52,7 +65,7 @@
         data-games-list
         data-empty-label="{% translate 'No games yet' %}"
         data-complete-label="{% translate 'Completed' %}"
-        data-games-per-page="3"
+        data-games-per-page="{{ challenge.games_per_page }}"
         {% if not challenge.show_games_list %}hidden{% endif %}
     >
         {% for page in challenge.game_pages %}

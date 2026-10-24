@@ -1709,7 +1709,7 @@
     height: max(4px, calc(var(--wc-game-score-font-size, 12px) * 0.28));
     overflow: hidden;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--wc-track, rgba(255, 255, 255, 0.12));
 }
 
 .winchallenge-overlay__game-progress span {
@@ -1717,6 +1717,41 @@
     height: 100%;
     border-radius: inherit;
     background: var(--wc-accent);
+}
+
+.winchallenge-overlay[data-progress-gradient] .winchallenge-overlay__game-progress span {
+    background: linear-gradient(90deg, var(--wc-accent), var(--wc-secondary));
+}
+
+/* Optional feedback when a game gains a win; restarted by JS via the is-winning class. */
+.winchallenge-overlay[data-win-animation="pulse"] .is-winning:not(.is-completing) {
+    animation: winchallenge-win-pulse 600ms cubic-bezier(0.2, 0.8, 0.3, 1.2);
+}
+
+.winchallenge-overlay[data-win-animation="glow"] .is-winning:not(.is-completing) {
+    animation: winchallenge-win-glow 900ms ease-out;
+}
+
+@keyframes winchallenge-win-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    40% {
+        transform: scale(1.08);
+    }
+}
+
+@keyframes winchallenge-win-glow {
+    0%,
+    100% {
+        filter: drop-shadow(0 0 0 transparent);
+    }
+
+    35% {
+        filter: drop-shadow(0 0 10px var(--wc-accent)) brightness(1.25);
+    }
 }
 
 @keyframes game-row-complete {

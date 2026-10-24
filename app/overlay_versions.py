@@ -193,7 +193,7 @@ def _restore_timer(overlay, payload, assets):
 
 
 def _restore_winchallenge(overlay, payload, assets):
-    overlay_data = copy.deepcopy(payload["overlay"])
+    overlay_data = overlay_transfer.winchallenge_data_with_defaults(payload["overlay"])
     overlay_data.setdefault("font_family", overlay.FONT_SYSTEM)
     games_data = payload["games"]
     if not isinstance(games_data, list) or len(games_data) > WinChallenge.MAX_GAMES:

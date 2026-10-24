@@ -49,6 +49,19 @@ SPOTIFY_FIELDS = (
     "font_family",
 )
 
+WINCHALLENGE_ADDED_FIELDS = (
+    "secondary_color",
+    "use_gradient",
+    "track_color",
+    "track_opacity",
+    "label_text",
+    "show_label",
+    "wins_text",
+    "show_wins_text",
+    "games_per_page",
+    "win_animation",
+)
+
 WINCHALLENGE_FIELDS = (
     "title",
     "design_template",
@@ -74,9 +87,19 @@ WINCHALLENGE_FIELDS = (
     "shadow_enabled",
     "show_games_list",
     "font_family",
+    *WINCHALLENGE_ADDED_FIELDS,
 )
 
 GAME_FIELDS = ("name", "wins", "target_wins")
+
+
+def winchallenge_data_with_defaults(data):
+    """Fill fields added after older exports and version snapshots were written."""
+    normalized = copy.deepcopy(data)
+    for field_name in WINCHALLENGE_ADDED_FIELDS:
+        normalized.setdefault(field_name, WinChallenge._meta.get_field(field_name).get_default())
+    return normalized
+
 
 TIMER_FIELDS = (
     "name",
@@ -544,7 +567,7 @@ def _import_twitch_goal(payload, owner):
 
 
 def _import_winchallenge(payload, owner):
-    overlay_data = _overlay_data_with_defaults(payload["overlay"])
+    overlay_data = winchallenge_data_with_defaults(_overlay_data_with_defaults(payload["overlay"]))
     games_data = payload["games"]
     _require_exact_keys(overlay_data, WINCHALLENGE_FIELDS)
 
