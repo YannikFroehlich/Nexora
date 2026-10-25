@@ -95,6 +95,16 @@
         item_spacing: "id_item_spacing",
         shadow_enabled: "id_shadow_enabled",
         show_games_list: "id_show_games_list",
+        secondary_color: "id_secondary_color",
+        use_gradient: "id_use_gradient",
+        track_color: "id_track_color",
+        track_opacity: "id_track_opacity",
+        label_text: "id_label_text",
+        show_label: "id_show_label",
+        wins_text: "id_wins_text",
+        show_wins_text: "id_show_wins_text",
+        games_per_page: "id_games_per_page",
+        win_animation: "id_win_animation",
     };
 
     const iconPaths = {
@@ -176,6 +186,16 @@
         item_spacing: numberValue("item_spacing", 9, 4, 28),
         shadow_enabled: checkboxValue("shadow_enabled", true),
         show_games_list: checkboxValue("show_games_list", true),
+        secondary_color: textValue("secondary_color", "#38bdf8"),
+        use_gradient: checkboxValue("use_gradient", false),
+        track_color: textValue("track_color", "#ffffff"),
+        track_opacity: numberValue("track_opacity", 12, 0, 100),
+        label_text: textValue("label_text", ""),
+        show_label: checkboxValue("show_label", true),
+        wins_text: textValue("wins_text", ""),
+        show_wins_text: checkboxValue("show_wins_text", true),
+        games_per_page: numberValue("games_per_page", 3, 1, 6),
+        win_animation: textValue("win_animation", "none"),
     });
 
     const applyDesignToOverlay = (overlay, design) => {
@@ -187,6 +207,13 @@
         overlay.style.setProperty("--wc-bg", background);
         overlay.style.setProperty("--wc-text", design.text_color);
         overlay.style.setProperty("--wc-accent", design.accent_color);
+        overlay.style.setProperty("--wc-secondary", design.secondary_color || design.accent_color);
+        overlay.style.setProperty(
+            "--wc-track",
+            design.track_rgba || hexToRgba(design.track_color || "#ffffff", design.track_opacity ?? 12)
+        );
+        overlay.toggleAttribute("data-progress-gradient", Boolean(design.use_gradient));
+        overlay.dataset.winAnimation = design.win_animation || "none";
         overlay.style.setProperty("--wc-border", design.border_color);
         overlay.style.setProperty("--wc-border-width", `${design.border_width}px`);
         overlay.style.setProperty("--wc-radius", `${design.corner_radius}px`);
@@ -214,7 +241,38 @@
 
         if (gamesList) {
             gamesList.hidden = !design.show_games_list;
+            gamesList.dataset.gamesPerPage = String(design.games_per_page || 3);
         }
+
+        [
+            ["[data-overlay-label]", design.label_text, design.show_label],
+            ["[data-overlay-wins-text]", design.wins_text, design.show_wins_text],
+        ].forEach(([selector, text, visible]) => {
+            overlay.querySelectorAll(selector).forEach((node) => {
+                node.textContent = text || node.dataset.defaultText || "";
+                node.hidden = visible === false;
+            });
+        });
+    };
+
+    // Drop the class once the animation ends so it does not replay whenever a hidden page reappears.
+    const clearWinAnimationWhenDone = (node) => {
+        const handleEnd = (event) => {
+            if (event.target === node) {
+                node.classList.remove("is-winning");
+                node.removeEventListener("animationend", handleEnd);
+            }
+        };
+
+        node.addEventListener("animationend", handleEnd);
+    };
+
+    const playWinAnimation = (node) => {
+        node.classList.remove("is-winning");
+        // Force a reflow so re-adding the class restarts the animation.
+        void node.offsetWidth;
+        node.classList.add("is-winning");
+        clearWinAnimationWhenDone(node);
     };
 
     const setText = (root, selector, value) => {
@@ -231,6 +289,27 @@
         }
 
         return chunks;
+    };
+
+    // Re-chunks server-rendered games when the games-per-page setting changes in the editor.
+    const regroupOverlayPages = (overlay) => {
+        const list = overlay.querySelector("[data-games-list]");
+        const games = Array.from(list?.querySelectorAll(".winchallenge-overlay__game") || []);
+
+        if (!games.length) {
+            return;
+        }
+
+        const size = Number.parseInt(list.dataset.gamesPerPage || "3", 10) || 3;
+        const pages = chunkItems(games, size).map((pageGames, pageIndex) => {
+            const page = document.createElement("div");
+            page.className = "winchallenge-overlay__page";
+            page.dataset.pageIndex = pageIndex;
+            page.append(...pageGames);
+            return page;
+        });
+
+        list.replaceChildren(...pages);
     };
 
     const setupOverlayPager = (overlay) => {
@@ -313,6 +392,12 @@
         }
 
         const previousCompletion = completionStateById(list, "[data-game-id]");
+        const previousWins = new Map(
+            Array.from(list.querySelectorAll("[data-game-id]")).map((item) => [
+                item.dataset.gameId,
+                Number.parseInt(item.querySelector("[data-game-wins]")?.textContent, 10),
+            ])
+        );
         list.replaceChildren();
 
         if (!games.length) {
@@ -343,6 +428,10 @@
                 item.className = "winchallenge-overlay__game";
                 item.classList.toggle("is-complete", isComplete);
                 item.classList.toggle("is-completing", isComplete && wasComplete === false);
+                if (game.wins > previousWins.get(gameId)) {
+                    item.classList.add("is-winning");
+                    clearWinAnimationWhenDone(item);
+                }
                 item.dataset.gameId = gameId;
                 item.dataset.gameComplete = String(isComplete);
 
@@ -435,7 +524,13 @@
             applyDesignToOverlay(overlay, state.design);
             window.NexoraBranding?.apply(overlay, state.design);
             setText(overlay, "[data-overlay-title]", state.title);
+            const totalNode = overlay.querySelector("[data-total-wins]");
+            const previousTotal = Number.parseInt(totalNode?.textContent, 10);
             setText(overlay, "[data-total-wins]", state.total_wins);
+
+            if (state.total_wins > previousTotal) {
+                overlay.querySelectorAll(".winchallenge-overlay__score").forEach(playWinAnimation);
+            }
 
             renderOverlayGames(overlay, state.games);
         });
@@ -470,6 +565,7 @@
                     String(sampleGames.reduce((total, game) => total + game.wins, 0))
                 );
             } else {
+                regroupOverlayPages(overlay);
                 setupOverlayPager(overlay);
             }
         });
@@ -831,6 +927,14 @@
 
         getField("design_template")?.addEventListener("change", (event) => {
             applyPreset(event.target.value);
+        });
+
+        getField("win_animation")?.addEventListener("change", () => {
+            document.querySelectorAll("[data-winchallenge-preview] [data-winchallenge-overlay]").forEach((overlay) => {
+                overlay
+                    .querySelectorAll(".winchallenge-overlay__score, .winchallenge-overlay__page.is-active .winchallenge-overlay__game")
+                    .forEach(playWinAnimation);
+            });
         });
 
         editor.addEventListener("nexora:editor-restore", (event) => {

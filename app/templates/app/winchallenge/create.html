@@ -179,6 +179,21 @@
                                 {% endif %}
                                 {{ form.background_opacity.errors }}
                             </div>
+                            <div class="form-field">
+                                <label for="{{ form.secondary_color.id_for_label }}">{{ form.secondary_color.label }}</label>
+                                {{ form.secondary_color }}
+                                {{ form.secondary_color.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.track_color.id_for_label }}">{{ form.track_color.label }}</label>
+                                {{ form.track_color }}
+                                {{ form.track_color.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.track_opacity.id_for_label }}">{{ form.track_opacity.label }}</label>
+                                {{ form.track_opacity }}
+                                {{ form.track_opacity.errors }}
+                            </div>
                         </div>
                     </section>
 
@@ -229,6 +244,11 @@
                                 {% endif %}
                                 {{ form.page_interval_seconds.errors }}
                             </div>
+                            <div class="form-field form-field--wide form-field--compact-number">
+                                <label for="{{ form.games_per_page.id_for_label }}">{{ form.games_per_page.label }}</label>
+                                {{ form.games_per_page }}
+                                {{ form.games_per_page.errors }}
+                            </div>
                         </div>
                     </section>
 
@@ -271,9 +291,20 @@
                         </div>
                     </section>
 
-                    <section class="settings-group settings-group--last" aria-labelledby="options-title">
+                    <section class="settings-group" aria-labelledby="options-title">
                         <div class="settings-group__heading">
                             <h3 id="options-title">{% translate "Options" %}</h3>
+                        </div>
+
+                        <div class="field-grid field-grid--two">
+                            <div class="form-field form-field--wide">
+                                <label for="{{ form.win_animation.id_for_label }}">{{ form.win_animation.label }}</label>
+                                {{ form.win_animation }}
+                                {% if form.win_animation.help_text %}
+                                    <small>{{ form.win_animation.help_text }}</small>
+                                {% endif %}
+                                {{ form.win_animation.errors }}
+                            </div>
                         </div>
 
                         <div class="toggle-grid">
@@ -284,6 +315,46 @@
                             <label class="toggle-row" for="{{ form.show_games_list.id_for_label }}">
                                 {{ form.show_games_list }}
                                 <span>{{ form.show_games_list.label }}</span>
+                            </label>
+                            <label class="toggle-row" for="{{ form.use_gradient.id_for_label }}">
+                                {{ form.use_gradient }}
+                                <span>{{ form.use_gradient.label }}</span>
+                            </label>
+                        </div>
+                    </section>
+
+                    <section class="settings-group settings-group--last" aria-labelledby="texts-title">
+                        <div class="settings-group__heading">
+                            <h3 id="texts-title">{% translate "Texts" %}</h3>
+                        </div>
+
+                        <div class="field-grid field-grid--two">
+                            <div class="form-field">
+                                <label for="{{ form.label_text.id_for_label }}">{{ form.label_text.label }}</label>
+                                {{ form.label_text }}
+                                {% if form.label_text.help_text %}
+                                    <small>{{ form.label_text.help_text }}</small>
+                                {% endif %}
+                                {{ form.label_text.errors }}
+                            </div>
+                            <div class="form-field">
+                                <label for="{{ form.wins_text.id_for_label }}">{{ form.wins_text.label }}</label>
+                                {{ form.wins_text }}
+                                {% if form.wins_text.help_text %}
+                                    <small>{{ form.wins_text.help_text }}</small>
+                                {% endif %}
+                                {{ form.wins_text.errors }}
+                            </div>
+                        </div>
+
+                        <div class="toggle-grid">
+                            <label class="toggle-row" for="{{ form.show_label.id_for_label }}">
+                                {{ form.show_label }}
+                                <span>{{ form.show_label.label }}</span>
+                            </label>
+                            <label class="toggle-row" for="{{ form.show_wins_text.id_for_label }}">
+                                {{ form.show_wins_text }}
+                                <span>{{ form.show_wins_text.label }}</span>
                             </label>
                         </div>
                     </section>

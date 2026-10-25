@@ -202,6 +202,8 @@ class WinChallenge(OverlayBrandingMixin, models.Model):
     """Editable win counter overlay configuration."""
 
     DEFAULT_OVERLAY_TITLE = _("Winchallenge")
+    DEFAULT_LABEL_TEXT = _("Win Challenge")
+    DEFAULT_WINS_TEXT = _("Wins")
     MAX_GAMES = 20
 
     TEMPLATE_MINIMAL = "minimal"
@@ -212,6 +214,16 @@ class WinChallenge(OverlayBrandingMixin, models.Model):
         (TEMPLATE_MINIMAL, _("Minimal")),
         (TEMPLATE_GLASS, _("Glass")),
         (TEMPLATE_NEON, _("Neon")),
+    )
+
+    ANIMATION_NONE = "none"
+    ANIMATION_PULSE = "pulse"
+    ANIMATION_GLOW = "glow"
+
+    WIN_ANIMATION_CHOICES = (
+        (ANIMATION_NONE, _("No animation")),
+        (ANIMATION_PULSE, _("Pulse")),
+        (ANIMATION_GLOW, _("Glow")),
     )
 
     owner = models.ForeignKey(
@@ -317,6 +329,34 @@ class WinChallenge(OverlayBrandingMixin, models.Model):
     )
     shadow_enabled = models.BooleanField(default=True)
     show_games_list = models.BooleanField(default=True)
+    secondary_color = models.CharField(
+        max_length=7,
+        default="#38bdf8",
+        validators=[hex_color_validator],
+    )
+    use_gradient = models.BooleanField(default=False)
+    track_color = models.CharField(
+        max_length=7,
+        default="#ffffff",
+        validators=[hex_color_validator],
+    )
+    track_opacity = models.PositiveSmallIntegerField(
+        default=12,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+    label_text = models.CharField(max_length=40, blank=True)
+    show_label = models.BooleanField(default=True)
+    wins_text = models.CharField(max_length=20, blank=True)
+    show_wins_text = models.BooleanField(default=True)
+    games_per_page = models.PositiveSmallIntegerField(
+        default=3,
+        validators=[MinValueValidator(1), MaxValueValidator(6)],
+    )
+    win_animation = models.CharField(
+        max_length=10,
+        choices=WIN_ANIMATION_CHOICES,
+        default=ANIMATION_NONE,
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -373,11 +413,21 @@ class WinChallenge(OverlayBrandingMixin, models.Model):
     def game_pages(self):
         games = list(self.ordered_games)
 
-        return [games[index : index + 3] for index in range(0, len(games), 3)]
+        size = self.games_per_page
+
+        return [games[index : index + size] for index in range(0, len(games), size)]
 
     @property
     def game_page_count(self):
         return len(self.game_pages)
+
+    @property
+    def display_label_text(self):
+        return self.label_text or self.DEFAULT_LABEL_TEXT
+
+    @property
+    def display_wins_text(self):
+        return self.wins_text or self.DEFAULT_WINS_TEXT
 
     @property
     def background_rgba(self):
@@ -385,6 +435,15 @@ class WinChallenge(OverlayBrandingMixin, models.Model):
         green = int(self.background_color[3:5], 16)
         blue = int(self.background_color[5:7], 16)
         alpha = self.background_opacity / 100
+
+        return f"rgba({red}, {green}, {blue}, {alpha:.2f})"
+
+    @property
+    def track_rgba(self):
+        red = int(self.track_color[1:3], 16)
+        green = int(self.track_color[3:5], 16)
+        blue = int(self.track_color[5:7], 16)
+        alpha = self.track_opacity / 100
 
         return f"rgba({red}, {green}, {blue}, {alpha:.2f})"
 
@@ -400,7 +459,7 @@ class WinChallenge(OverlayBrandingMixin, models.Model):
             "title": self.display_title,
             "total_wins": self.total_wins,
             "updated_at": self.updated_at.isoformat(),
-            "games_per_page": 3,
+            "games_per_page": self.games_per_page,
             "games": [
                 {
                     "id": game.pk,
@@ -437,6 +496,17 @@ class WinChallenge(OverlayBrandingMixin, models.Model):
                 "shadow_enabled": self.shadow_enabled,
                 "shadow_css": self.shadow_css,
                 "show_games_list": self.show_games_list,
+                "secondary_color": self.secondary_color,
+                "use_gradient": self.use_gradient,
+                "track_color": self.track_color,
+                "track_opacity": self.track_opacity,
+                "track_rgba": self.track_rgba,
+                "label_text": self.label_text,
+                "show_label": self.show_label,
+                "wins_text": self.wins_text,
+                "show_wins_text": self.show_wins_text,
+                "games_per_page": self.games_per_page,
+                "win_animation": self.win_animation,
                 **self.branding_payload(),
             },
         }

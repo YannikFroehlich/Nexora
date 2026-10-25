@@ -17,7 +17,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from PIL import Image
 
-from app import overlay_presets, overlay_versions, spotify_api
+from app import overlay_presets, overlay_transfer, overlay_versions, spotify_api
 from app.forms import (
     ScoreOverlayForm,
     SpotifyOverlayForm,
@@ -677,6 +677,22 @@ class OverlayVersionTests(TestCase):
         self.assertEqual(challenge.title, "First")
         self.assertEqual(challenge.games.get().wins, 0)
 
+    def test_winchallenge_restore_of_older_snapshot_uses_default_design_options(self):
+        challenge = WinChallenge.objects.create(owner=self.user, title="First")
+        baseline, _ = overlay_versions.record_version(challenge, OverlayVersion.REASON_CREATED)
+        for field_name in overlay_transfer.WINCHALLENGE_ADDED_FIELDS:
+            baseline.snapshot["payload"]["overlay"].pop(field_name)
+        baseline.save()
+        challenge.games_per_page = 6
+        challenge.label_text = "Changed"
+        challenge.save()
+
+        overlay_versions.restore_version(challenge, baseline)
+        challenge.refresh_from_db()
+
+        self.assertEqual(challenge.games_per_page, 3)
+        self.assertEqual(challenge.label_text, "")
+
     def test_timer_restore_recovers_duration_and_design(self):
         timer = TimerOverlay.objects.create(
             owner=self.user,
@@ -997,6 +1013,26 @@ class OverlayTransferTests(TestCase):
         self.assertEqual(imported_game.name, "Rocket League")
         self.assertEqual(imported_game.wins, 4)
 
+    def test_older_winchallenge_export_without_design_options_remains_importable(self):
+        payload = json.loads(
+            self.client.get(reverse("winchallenge_export", args=[self.challenge.pk])).content
+        )
+        for field_name in overlay_transfer.WINCHALLENGE_ADDED_FIELDS:
+            payload["overlay"].pop(field_name)
+        upload = SimpleUploadedFile(
+            "older-ranked-run.json",
+            json.dumps(payload).encode(),
+            content_type="application/json",
+        )
+
+        response = self.client.post(reverse("overlay_import"), {"overlay_file": upload})
+
+        imported = WinChallenge.objects.exclude(pk=self.challenge.pk).get(owner=self.user)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(imported.games_per_page, 3)
+        self.assertEqual(imported.win_animation, WinChallenge.ANIMATION_NONE)
+        self.assertFalse(imported.use_gradient)
+
     def test_invalid_or_extended_import_file_is_rejected_without_creating_data(self):
         malformed_upload = SimpleUploadedFile(
             "broken.json",
@@ -1110,6 +1146,15 @@ class WinChallengeCreateFormTests(TestCase):
                 "item_spacing": challenge.item_spacing,
                 "shadow_enabled": "on",
                 "show_games_list": "on",
+                "secondary_color": challenge.secondary_color,
+                "track_color": challenge.track_color,
+                "track_opacity": challenge.track_opacity,
+                "label_text": "",
+                "show_label": "on",
+                "wins_text": "",
+                "show_wins_text": "on",
+                "games_per_page": challenge.games_per_page,
+                "win_animation": WinChallenge.ANIMATION_NONE,
             }
         )
 
@@ -1118,6 +1163,7 @@ class WinChallengeCreateFormTests(TestCase):
         saved_challenge = form.save()
         self.assertEqual(saved_challenge.title, "")
         self.assertEqual(saved_challenge.display_title, "Winchallenge")
+        self.assertEqual(saved_challenge.display_label_text, "Win Challenge")
 
 
 class WinChallengeEndpointTests(TestCase):
@@ -1223,6 +1269,80 @@ class WinChallengeEndpointTests(TestCase):
         self.assertTrue(response.json()["ok"])
         self.assertEqual(self.challenge.accent_color, "#ff5500")
         self.assertEqual(self.challenge.title, "Road to Diamond")
+
+    def design_form_data(self, **updates):
+        data = {
+            field_name: (
+                getattr(self.challenge, field_name)
+                if getattr(self.challenge, field_name) is not None
+                else ""
+            )
+            for field_name in WinChallengeDesignForm.Meta.fields
+        }
+        data.update({"form_type": "design", **updates})
+        return data
+
+    def test_design_autosave_stores_progress_text_and_animation_options(self):
+        response = self.client.post(
+            reverse("winchallenge_autosave", args=[self.challenge.pk]),
+            self.design_form_data(
+                use_gradient=True,
+                secondary_color="#ff00aa",
+                track_color="#000000",
+                track_opacity=40,
+                label_text="  Ranked Grind  ",
+                show_wins_text=False,
+                games_per_page=5,
+                win_animation=WinChallenge.ANIMATION_GLOW,
+            ),
+        )
+
+        self.challenge.refresh_from_db()
+        design = self.challenge.state_payload()["design"]
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(self.challenge.label_text, "Ranked Grind")
+        self.assertEqual(design["track_rgba"], "rgba(0, 0, 0, 0.40)")
+        self.assertTrue(design["use_gradient"])
+        self.assertFalse(design["show_wins_text"])
+        self.assertEqual(design["games_per_page"], 5)
+        self.assertEqual(design["win_animation"], WinChallenge.ANIMATION_GLOW)
+
+    def test_design_autosave_rejects_out_of_range_games_per_page(self):
+        response = self.client.post(
+            reverse("winchallenge_autosave", args=[self.challenge.pk]),
+            self.design_form_data(games_per_page=7, win_animation="confetti"),
+        )
+
+        self.challenge.refresh_from_db()
+        errors = response.json()["errors"]
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("games_per_page", errors)
+        self.assertIn("win_animation", errors)
+        self.assertEqual(self.challenge.games_per_page, 3)
+
+    def test_public_overlay_renders_custom_texts_and_page_size(self):
+        for index in range(4):
+            WinChallengeGame.objects.create(
+                challenge=self.challenge, name=f"Extra {index}", sort_order=index + 1
+            )
+        self.challenge.label_text = "Ranked Grind"
+        self.challenge.show_wins_text = False
+        self.challenge.games_per_page = 2
+        self.challenge.use_gradient = True
+        self.challenge.save()
+        self.client.logout()
+
+        response = self.client.get(
+            reverse("winchallenge_overlay", args=[self.challenge.public_token])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, ">Ranked Grind</p>")
+        self.assertContains(response, 'data-games-per-page="2"')
+        self.assertContains(response, "data-progress-gradient")
+        self.assertContains(response, "data-current-page>1</span>")
+        self.assertContains(response, "data-total-pages>3</span>")
+        self.assertEqual(len(self.challenge.game_pages), 3)
 
     def test_autosave_rejects_unknown_form(self):
         response = self.client.post(
