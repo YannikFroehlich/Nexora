@@ -55,6 +55,9 @@ def _validate_image(uploaded_file, extension):
         if width < 1 or height < 1 or width * height > MAX_IMAGE_PIXELS:
             raise ValidationError(_("The image dimensions are too large."))
         image.verify()
+    except Image.DecompressionBombError as error:
+        # Pillow refuses absurd sizes inside open(), before our own pixel check runs.
+        raise ValidationError(_("The image dimensions are too large.")) from error
     except (UnidentifiedImageError, OSError, SyntaxError) as error:
         raise ValidationError(_("The uploaded image is invalid.")) from error
     finally:

@@ -1,25 +1,38 @@
+import base64
+import hashlib
 import json
+import struct
+import zlib
 from datetime import timedelta
 from io import BytesIO
 from unittest.mock import MagicMock, patch
 from urllib import error as urlerror
 
+from cryptography.fernet import Fernet
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.messages import get_messages
 from django.core import mail
 from django.core.cache import cache
+from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection as database_connection
-from django.test import TestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from PIL import Image
 
-from app import overlay_presets, overlay_transfer, overlay_versions, spotify_api
+from app import (
+    overlay_presets,
+    overlay_transfer,
+    overlay_versions,
+    spotify_api,
+    upload_validators,
+)
+from app.encrypted_fields import ENCRYPTED_VALUE_PREFIX, EncryptedTextField
 from app.forms import (
     ScoreOverlayForm,
     SpotifyOverlayForm,
@@ -584,6 +597,422 @@ class OverlayAssetTests(TestCase):
         self.assertEqual(
             state_response.json()["font_family"],
             SpotifyOverlay.FONT_GEORGIA,
+        )
+
+
+def png_header_only(width, height):
+    """A PNG that only declares its size, so huge dimensions cost no memory."""
+
+    def chunk(kind, data):
+        checksum = struct.pack(">I", zlib.crc32(kind + data))
+        return struct.pack(">I", len(data)) + kind + data + checksum
+
+    header = struct.pack(">IIBBBBB", width, height, 8, 0, 0, 0, 0)
+    return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + chunk(b"IEND", b"")
+
+
+class UploadValidatorTests(SimpleTestCase):
+    def assert_rejected(self, uploaded_file, kind):
+        with self.assertRaises(ValidationError):
+            upload_validators.validate_overlay_asset(uploaded_file, kind)
+
+    def image_bytes(self, image_format="PNG", size=(4, 4)):
+        buffer = BytesIO()
+        Image.new("RGB", size, (20, 184, 166)).save(buffer, format=image_format)
+        return buffer.getvalue()
+
+    def test_valid_images_are_accepted_and_rewound(self):
+        for name, image_format in (
+            ("logo.png", "PNG"),
+            ("logo.JPG", "JPEG"),
+            ("logo.jpeg", "JPEG"),
+            ("logo.webp", "WEBP"),
+        ):
+            with self.subTest(name=name):
+                uploaded = SimpleUploadedFile(name, self.image_bytes(image_format))
+                upload_validators.validate_overlay_asset(uploaded, "image")
+                self.assertEqual(uploaded.tell(), 0)
+
+    def test_unknown_asset_kind_is_rejected(self):
+        self.assert_rejected(SimpleUploadedFile("logo.png", self.image_bytes()), "script")
+
+    def test_image_with_disallowed_extension_is_rejected(self):
+        for name in ("logo.gif", "logo.svg", "logo.png.html", "logo", "logo.exe"):
+            with self.subTest(name=name):
+                self.assert_rejected(SimpleUploadedFile(name, self.image_bytes()), "image")
+
+    def test_image_content_must_match_an_allowed_format(self):
+        for content in (
+            self.image_bytes("GIF"),
+            self.image_bytes("BMP"),
+            b"<svg onload=alert(1)></svg>",
+            b"",
+            b"\x89PNG\r\n\x1a\n" + b"\0" * 32,
+        ):
+            with self.subTest(content=content[:12]):
+                self.assert_rejected(SimpleUploadedFile("logo.png", content), "image")
+
+    def test_truncated_image_is_rejected(self):
+        content = self.image_bytes(size=(64, 64))
+        self.assert_rejected(SimpleUploadedFile("logo.png", content[:-20]), "image")
+
+    def test_oversized_image_file_is_rejected_before_parsing(self):
+        uploaded = SimpleUploadedFile("logo.png", self.image_bytes())
+        uploaded.size = upload_validators.MAX_IMAGE_BYTES + 1
+
+        with patch("app.upload_validators.Image.open") as image_open:
+            self.assert_rejected(uploaded, "image")
+
+        image_open.assert_not_called()
+
+    def test_image_dimensions_above_the_pixel_limit_are_rejected(self):
+        uploaded = SimpleUploadedFile("huge.png", png_header_only(4001, 4001))
+
+        self.assert_rejected(uploaded, "image")
+
+    def test_decompression_bomb_dimensions_are_rejected(self):
+        # Far above Pillow's own bomb threshold, which raises a non-OSError error.
+        uploaded = SimpleUploadedFile("bomb.png", png_header_only(50_000, 50_000))
+
+        self.assert_rejected(uploaded, "image")
+
+    def test_valid_fonts_are_accepted_and_rewound(self):
+        for name, signature in (
+            ("font.woff", b"wOFF"),
+            ("font.woff2", b"wOF2"),
+            ("font.ttf", b"\x00\x01\x00\x00"),
+            ("font.TTF", b"true"),
+            ("font.otf", b"OTTO"),
+        ):
+            with self.subTest(name=name):
+                uploaded = SimpleUploadedFile(name, signature + b"\0" * 32)
+                upload_validators.validate_overlay_asset(uploaded, "font")
+                self.assertEqual(uploaded.tell(), 0)
+
+    def test_font_with_wrong_extension_or_signature_is_rejected(self):
+        for name, content in (
+            ("font.svg", b"wOF2" + b"\0" * 32),
+            ("font.exe", b"MZ\x90\x00" + b"\0" * 32),
+            ("font.woff2", b"wOFF" + b"\0" * 32),
+            ("font.otf", b"<html><script>"),
+            ("font.ttf", b"tr"),
+            ("font.woff", b""),
+        ):
+            with self.subTest(name=name, content=content[:8]):
+                self.assert_rejected(SimpleUploadedFile(name, content), "font")
+
+    def test_oversized_font_is_rejected(self):
+        uploaded = SimpleUploadedFile("font.woff2", b"wOF2" + b"\0" * 32)
+        uploaded.size = upload_validators.MAX_FONT_BYTES + 1
+
+        self.assert_rejected(uploaded, "font")
+
+    def test_content_type_is_derived_from_allowed_extensions_only(self):
+        self.assertEqual(upload_validators.asset_content_type("LOGO.PNG"), "image/png")
+        self.assertEqual(upload_validators.asset_content_type("font.woff2"), "font/woff2")
+        for name in ("page.html", "image.svg", "noextension"):
+            with self.subTest(name=name):
+                self.assertEqual(
+                    upload_validators.asset_content_type(name), "application/octet-stream"
+                )
+
+
+@override_settings(NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY="", SPOTIFY_TOKEN_ENCRYPTION_KEY="")
+class EncryptedTextFieldTests(TestCase):
+    key_a = Fernet.generate_key().decode()
+    key_b = Fernet.generate_key().decode()
+
+    def setUp(self):
+        self.field = EncryptedTextField()
+
+    def test_values_are_encrypted_with_a_prefix_and_round_trip(self):
+        stored = self.field.get_prep_value("secret-token")
+
+        self.assertTrue(stored.startswith(ENCRYPTED_VALUE_PREFIX))
+        self.assertNotIn("secret-token", stored)
+        self.assertEqual(self.field.from_db_value(stored, None, None), "secret-token")
+        self.assertEqual(self.field.to_python(stored), "secret-token")
+
+    def test_empty_values_are_stored_unencrypted(self):
+        for value in ("", None):
+            with self.subTest(value=value):
+                self.assertEqual(self.field.get_prep_value(value), value)
+                self.assertEqual(self.field.from_db_value(value, None, None), value)
+
+    def test_already_encrypted_values_are_not_encrypted_twice(self):
+        stored = self.field.get_prep_value("secret-token")
+        resaved = self.field.get_prep_value(stored)
+
+        self.assertEqual(self.field.from_db_value(resaved, None, None), "secret-token")
+
+    def test_legacy_plaintext_rows_are_still_readable(self):
+        connection = SpotifyConnection.objects.create(owner=User.objects.create_user("legacy"))
+        with database_connection.cursor() as cursor:
+            cursor.execute(
+                f"UPDATE {SpotifyConnection._meta.db_table} SET access_token = %s WHERE id = %s",
+                ["plain-legacy-token", connection.pk],
+            )
+
+        connection.refresh_from_db()
+        self.assertEqual(connection.access_token, "plain-legacy-token")
+
+    def test_key_precedence_and_secret_key_fallback(self):
+        cases = (
+            ({"NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY": f"  {self.key_a}  "}, self.key_a),
+            ({"SPOTIFY_TOKEN_ENCRYPTION_KEY": self.key_b}, self.key_b),
+        )
+        for overrides, expected_key in cases:
+            with self.subTest(overrides=list(overrides)), override_settings(**overrides):
+                stored = self.field.get_prep_value("secret-token")
+                ciphertext = stored.removeprefix(ENCRYPTED_VALUE_PREFIX).encode()
+                self.assertEqual(Fernet(expected_key).decrypt(ciphertext), b"secret-token")
+
+        with override_settings(SECRET_KEY="fallback-secret"):
+            stored = self.field.get_prep_value("secret-token")
+        fallback_key = base64.urlsafe_b64encode(hashlib.sha256(b"fallback-secret").digest())
+        ciphertext = stored.removeprefix(ENCRYPTED_VALUE_PREFIX).encode()
+        self.assertEqual(Fernet(fallback_key).decrypt(ciphertext), b"secret-token")
+
+    def test_changed_key_raises_improperly_configured_without_leaking(self):
+        with override_settings(NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY=self.key_a):
+            stored = self.field.get_prep_value("secret-token")
+
+        with override_settings(NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY=self.key_b):
+            with self.assertRaises(ImproperlyConfigured) as raised:
+                self.field.from_db_value(stored, None, None)
+
+        self.assertNotIn("secret-token", str(raised.exception))
+        self.assertNotIn(self.key_a, str(raised.exception))
+
+    def test_corrupted_ciphertext_raises_improperly_configured(self):
+        for stored in (
+            f"{ENCRYPTED_VALUE_PREFIX}garbage",
+            f"{ENCRYPTED_VALUE_PREFIX}",
+            f"{ENCRYPTED_VALUE_PREFIX}ü-not-ascii",
+        ):
+            with self.subTest(stored=stored):
+                with self.assertRaises(ImproperlyConfigured):
+                    self.field.from_db_value(stored, None, None)
+
+    def test_invalid_configured_key_raises_improperly_configured(self):
+        for key in ("too-short", "ü" * 44, "=" * 44):
+            with self.subTest(key=key), override_settings(NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY=key):
+                with self.assertRaises(ImproperlyConfigured):
+                    self.field.get_prep_value("secret-token")
+
+
+class OverlayImportValidationTests(TestCase):
+    """Crafted import files must be rejected with a form error, never a 500."""
+
+    models = (SpotifyOverlay, TimerOverlay, ScoreOverlay, WinChallenge, TwitchGoalOverlay)
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="import-owner")
+        self.other_user = User.objects.create_user(username="import-victim")
+        self.client.force_login(self.user)
+        self.score = ScoreOverlay.objects.create(owner=self.other_user, name="Score")
+        participants = [
+            ScoreParticipant.objects.create(overlay=self.score, name="Alice", sort_order=0),
+            ScoreParticipant.objects.create(overlay=self.score, name="Bob", sort_order=1),
+        ]
+        self.score.elements = score_elements_for_layout(participants, self.score.layout_mode)
+        self.score.save()
+        self.challenge = WinChallenge.objects.create(owner=self.other_user, title="Challenge")
+        WinChallengeGame.objects.create(challenge=self.challenge, name="Rocket League")
+        self.exports = {
+            "spotify": SpotifyOverlay.objects.create(owner=self.other_user, name="Music"),
+            "timer": TimerOverlay.objects.create(owner=self.other_user, name="Timer"),
+            "score": self.score,
+            "winchallenge": self.challenge,
+            "twitch_goal": TwitchGoalOverlay.objects.create(owner=self.other_user, name="Goal"),
+        }
+
+    def export(self, overlay_type):
+        return overlay_transfer.export_payload(self.exports[overlay_type])
+
+    def owned_counts(self):
+        return [model.objects.filter(owner=self.user).count() for model in self.models]
+
+    def post_import(self, content):
+        if not isinstance(content, bytes):
+            content = json.dumps(content).encode()
+        upload = SimpleUploadedFile("import.json", content, content_type="application/json")
+        return self.client.post(reverse("overlay_import"), {"overlay_file": upload})
+
+    def assert_import_rejected(self, content):
+        before = self.owned_counts()
+        response = self.post_import(content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(self.owned_counts(), before)
+        return response
+
+    def test_every_type_round_trips_as_a_new_owned_overlay(self):
+        for overlay_type in self.exports:
+            with self.subTest(overlay_type=overlay_type):
+                response = self.post_import(self.export(overlay_type))
+                self.assertEqual(response.status_code, 302)
+
+        self.assertEqual(self.owned_counts(), [1, 1, 1, 1, 1])
+
+    def test_utf8_bom_is_accepted(self):
+        content = "﻿".encode() + json.dumps(self.export("timer")).encode()
+
+        self.assertEqual(self.post_import(content).status_code, 302)
+
+    def test_files_that_are_not_a_json_object_are_rejected(self):
+        for content in (
+            b"[]",
+            b'"text"',
+            b"null",
+            b"42",
+            b"\xff\xfe\x00broken",
+            b"{'single': 'quotes'}",
+            b"[" * 50_000 + b"]" * 50_000,
+        ):
+            with self.subTest(content=content[:16]):
+                self.assert_import_rejected(content)
+
+    def test_oversized_file_is_rejected(self):
+        payload = self.export("timer")
+        payload["overlay"]["label"] = "x" * overlay_transfer.MAX_IMPORT_BYTES
+
+        self.assert_import_rejected(payload)
+
+    def test_envelope_must_match_exactly(self):
+        def mutated(**changes):
+            payload = self.export("spotify")
+            for key, value in changes.items():
+                if value is KeyError:
+                    payload.pop(key)
+                else:
+                    payload[key] = value
+            return payload
+
+        for payload in (
+            mutated(format="other-app"),
+            mutated(version=2),
+            mutated(version="1"),
+            mutated(type="admin"),
+            mutated(type=["spotify"]),
+            mutated(type={"name": "spotify"}),
+            mutated(type=None),
+            mutated(overlay=KeyError),
+            mutated(owner=self.user.pk),
+            mutated(overlay=["not", "an", "object"]),
+            mutated(overlay="text"),
+        ):
+            with self.subTest(payload={k: v for k, v in payload.items() if k != "overlay"}):
+                self.assert_import_rejected(payload)
+
+    def test_overlay_fields_must_match_exactly(self):
+        for overlay_type in self.exports:
+            for extra in ({"owner": self.other_user.pk}, {"public_token": "x"}, {"id": 1}):
+                with self.subTest(overlay_type=overlay_type, extra=extra):
+                    payload = self.export(overlay_type)
+                    payload["overlay"].update(extra)
+                    self.assert_import_rejected(payload)
+
+    def test_imported_assets_and_runtime_state_cannot_be_smuggled_in(self):
+        logo = OverlayAsset.objects.create(
+            owner=self.other_user,
+            name="Private logo",
+            kind=OverlayAsset.KIND_IMAGE,
+            file="overlay-assets/import-victim/logo.png",
+        )
+        asset_payload = self.export("spotify")
+        asset_payload["overlay"]["logo_asset"] = logo.pk
+        goal_payload = self.export("twitch_goal")
+        goal_payload["overlay"]["campaign_baseline"] = 5
+
+        self.assert_import_rejected(asset_payload)
+        self.assert_import_rejected(goal_payload)
+
+    def test_invalid_field_values_are_rejected(self):
+        cases = (
+            ("spotify", {"background_color": "javascript:alert(1)"}),
+            ("spotify", {"elements": [{"id": "x", "type": "script"}]}),
+            ("spotify", {"elements": "not a list"}),
+            ("timer", {"duration_seconds": "300"}),
+            ("timer", {"duration_seconds": -5}),
+            ("timer", {"mode": "sideways"}),
+            ("twitch_goal", {"target_value": 0}),
+            ("winchallenge", {"games_per_page": 99}),
+            ("score", {"canvas_width": "wide"}),
+        )
+
+        for overlay_type, changes in cases:
+            with self.subTest(overlay_type=overlay_type, changes=changes):
+                payload = self.export(overlay_type)
+                payload["overlay"].update(changes)
+                self.assert_import_rejected(payload)
+
+    def test_score_elements_of_the_wrong_shape_are_rejected(self):
+        for elements in ("text", 42, None, ["text"], [None], [{"participant_id": ["x"]}]):
+            with self.subTest(elements=elements):
+                payload = self.export("score")
+                payload["overlay"]["elements"] = elements
+                self.assert_import_rejected(payload)
+
+    def test_score_participant_lists_of_the_wrong_shape_are_rejected(self):
+        valid = self.export("score")["participants"]
+        cases = (
+            "not a list",
+            {"public_id": "x"},
+            valid[:1],
+            valid * 5,
+            ["text", "text"],
+            [None, None],
+            [valid[0], {**valid[1], "public_id": valid[0]["public_id"]}],
+            [valid[0], {key: value for key, value in valid[1].items() if key != "public_id"}],
+            [valid[0], {**valid[1], "score": 10**9}],
+            [valid[0], {**valid[1], "overlay": self.score.pk}],
+            [valid[0], {**valid[1], "accent_color": "red"}],
+        )
+
+        for participants in cases:
+            with self.subTest(participants=participants):
+                payload = self.export("score")
+                payload["participants"] = participants
+                self.assert_import_rejected(payload)
+
+    def test_winchallenge_game_lists_of_the_wrong_shape_are_rejected(self):
+        game = self.export("winchallenge")["games"][0]
+        cases = (
+            "not a list",
+            [game] * (WinChallenge.MAX_GAMES + 1),
+            ["text"],
+            [None],
+            [{**game, "challenge": self.challenge.pk}],
+            [{**game, "wins": -1}],
+            [{**game, "target_wins": "many"}],
+        )
+
+        for games in cases:
+            with self.subTest(games=games if len(str(games)) < 80 else "many"):
+                payload = self.export("winchallenge")
+                payload["games"] = games
+                self.assert_import_rejected(payload)
+
+    def test_invalid_child_rows_roll_back_the_parent_overlay(self):
+        score_payload = self.export("score")
+        score_payload["participants"][1]["name"] = ""
+        challenge_payload = self.export("winchallenge")
+        challenge_payload["games"].append({"name": "", "wins": 0, "target_wins": 1})
+
+        self.assert_import_rejected(score_payload)
+        self.assert_import_rejected(challenge_payload)
+
+    def test_imported_participant_ids_never_reuse_existing_ones(self):
+        response = self.post_import(self.export("score"))
+
+        imported = ScoreOverlay.objects.get(owner=self.user)
+        original_ids = set(self.score.participants.values_list("public_id", flat=True))
+        imported_ids = set(imported.participants.values_list("public_id", flat=True))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(original_ids & imported_ids)
+        self.assertEqual(
+            {element["participant_id"] for element in imported.elements} - {None},
+            {str(public_id) for public_id in imported_ids},
         )
 
 

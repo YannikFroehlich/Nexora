@@ -268,7 +268,8 @@ def load_payload(uploaded_file):
 
     try:
         payload = json.loads(raw_content.decode("utf-8-sig"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+    # RecursionError: deeply nested JSON fits easily within MAX_IMPORT_BYTES.
+    except (UnicodeDecodeError, json.JSONDecodeError, RecursionError) as error:
         raise OverlayTransferError(_("The selected file is not valid JSON.")) from error
 
     if not isinstance(payload, dict):
@@ -403,13 +404,14 @@ def _validate_envelope(payload):
     if payload["version"] != FORMAT_VERSION:
         raise OverlayTransferError(_("This overlay export version is not supported."))
 
-    if overlay_type not in {
+    # A tuple, not a set: the type comes from the file and may be an unhashable list.
+    if overlay_type not in (
         SPOTIFY_TYPE,
         TIMER_TYPE,
         WINCHALLENGE_TYPE,
         SCORE_TYPE,
         TWITCH_GOAL_TYPE,
-    }:
+    ):
         raise OverlayTransferError(_("The overlay type is not supported."))
 
     return overlay_type
@@ -506,9 +508,16 @@ def _import_score(payload, owner):
         <= ScoreOverlay.MAX_PARTICIPANTS
     ):
         raise OverlayTransferError(_("The score participant list is invalid."))
+    for participant_data in participants_data:
+        _require_exact_keys(participant_data, SCORE_PARTICIPANT_FIELDS)
+    if len({str(data["public_id"]) for data in participants_data}) != len(participants_data):
+        raise OverlayTransferError(_("The score participant list is invalid."))
 
     overlay_data = _score_layout_mode_with_defaults(payload["overlay"], participants_data)
     _require_exact_keys(overlay_data, SCORE_FIELDS)
+    elements = overlay_data["elements"]
+    if not isinstance(elements, list) or not all(isinstance(item, dict) for item in elements):
+        raise OverlayTransferError(_("The score overlay data is invalid."))
 
     participant_id_map = {
         str(participant_data["public_id"]): str(uuid.uuid4())
@@ -518,7 +527,7 @@ def _import_score(payload, owner):
         participant_data["public_id"] = participant_id_map[str(participant_data["public_id"])]
 
     form_data = copy.deepcopy(overlay_data)
-    for element in form_data.get("elements", []):
+    for element in form_data["elements"]:
         participant_id = str(element.get("participant_id", ""))
         if participant_id in participant_id_map:
             element["participant_id"] = participant_id_map[participant_id]
