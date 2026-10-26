@@ -1574,6 +1574,150 @@ class WinChallengeEndpointTests(TestCase):
 
         self.assertEqual(response.status_code, 400)
 
+    def test_manage_post_saves_settings_and_design_forms(self):
+        url = reverse("winchallenge_manage", args=[self.challenge.pk])
+
+        settings_response = self.client.post(url, {"form_type": "challenge", "title": "Renamed"})
+        design_response = self.client.post(url, self.design_form_data(accent_color="#ff5500"))
+
+        self.challenge.refresh_from_db()
+        self.assertRedirects(settings_response, f"{url}#challenge", fetch_redirect_response=False)
+        self.assertRedirects(design_response, f"{url}#design", fetch_redirect_response=False)
+        self.assertEqual(self.challenge.title, "Renamed")
+        self.assertEqual(self.challenge.accent_color, "#ff5500")
+        self.assertEqual(overlay_versions.versions_for(self.challenge).count(), 2)
+
+    def test_manage_post_rerenders_invalid_or_unknown_forms_without_saving(self):
+        url = reverse("winchallenge_manage", args=[self.challenge.pk])
+
+        responses = (
+            self.client.post(url, {"form_type": "challenge", "title": "x" * 121}),
+            self.client.post(
+                url,
+                self.design_form_data(
+                    games_per_page=7, background_color="nope", track_color="#zz0000"
+                ),
+            ),
+            self.client.post(url, {"form_type": "unknown", "title": "Ignored"}),
+        )
+
+        self.challenge.refresh_from_db()
+        for response in responses:
+            self.assertEqual(response.status_code, 200)
+        self.assertTrue(responses[0].context["settings_form"].errors)
+        self.assertTrue(responses[1].context["design_form"].errors)
+        self.assertEqual(self.challenge.title, "Road to Diamond")
+        self.assertEqual(self.challenge.games_per_page, 3)
+
+    def test_delete_removes_challenge_games_and_versions(self):
+        overlay_versions.record_version(self.challenge)
+
+        response = self.client.post(reverse("winchallenge_delete", args=[self.challenge.pk]))
+
+        self.assertRedirects(response, f"{reverse('overlay_dashboard')}#winchallenge-overlays")
+        self.assertFalse(WinChallenge.objects.filter(pk=self.challenge.pk).exists())
+        self.assertFalse(WinChallengeGame.objects.filter(pk=self.game.pk).exists())
+        self.assertFalse(
+            OverlayVersion.objects.filter(
+                overlay_type=overlay_transfer.WINCHALLENGE_TYPE,
+                overlay_id=self.challenge.pk,
+            ).exists()
+        )
+
+    def test_game_add_rejects_invalid_data(self):
+        response = self.client.post(
+            reverse("winchallenge_game_add", args=[self.challenge.pk]),
+            {"name": "", "wins": 0, "target_wins": 0},
+        )
+
+        errors = response.json()["errors"]
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("name", errors)
+        self.assertIn("target_wins", errors)
+        self.assertEqual(self.challenge.games.count(), 1)
+
+    def test_game_wins_rejects_invalid_delta(self):
+        url = reverse("winchallenge_game_wins", args=[self.challenge.pk, self.game.pk])
+
+        for delta in ("abc", "5", "0", "-2"):
+            with self.subTest(delta=delta):
+                response = self.client.post(url, {"delta": delta})
+                self.assertEqual(response.status_code, 400)
+
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.wins, 0)
+
+    def test_game_wins_decrement_lowers_positive_wins(self):
+        self.game.wins = 2
+        self.game.save()
+
+        response = self.client.post(
+            reverse("winchallenge_game_wins", args=[self.challenge.pk, self.game.pk]),
+            {"delta": -1},
+        )
+
+        self.game.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.game.wins, 1)
+
+    def test_game_rename_updates_name_and_keeps_omitted_counts(self):
+        self.game.wins = 2
+        self.game.save()
+
+        response = self.client.post(
+            reverse("winchallenge_game_rename", args=[self.challenge.pk, self.game.pk]),
+            {"name": "  Valorant  "},
+        )
+
+        self.game.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.game.name, "Valorant")
+        self.assertEqual(self.game.wins, 2)
+        self.assertEqual(self.game.target_wins, 3)
+        self.assertEqual(response.json()["games"][0]["name"], "Valorant")
+
+    def test_game_rename_rejects_blank_name_and_invalid_counts(self):
+        url = reverse("winchallenge_game_rename", args=[self.challenge.pk, self.game.pk])
+
+        blank = self.client.post(url, {"name": "   "})
+        invalid = self.client.post(url, {"name": "Valorant", "target_wins": "0"})
+
+        self.game.refresh_from_db()
+        self.assertEqual(blank.status_code, 400)
+        self.assertEqual(invalid.status_code, 400)
+        self.assertIn("target_wins", invalid.json()["errors"])
+        self.assertEqual(self.game.name, "Rocket League")
+        self.assertEqual(self.game.target_wins, 3)
+
+    def test_game_delete_removes_only_that_game(self):
+        other_game = WinChallengeGame.objects.create(challenge=self.challenge, name="Other")
+
+        response = self.client.post(
+            reverse("winchallenge_game_delete", args=[self.challenge.pk, self.game.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(self.challenge.games.all()), [other_game])
+
+    def test_game_routes_reject_games_from_another_challenge(self):
+        other_challenge = WinChallenge.objects.create(owner=self.user, title="Second")
+        other_game = WinChallengeGame.objects.create(challenge=other_challenge, name="Other")
+
+        for name, data in (
+            ("winchallenge_game_wins", {"delta": 1}),
+            ("winchallenge_game_rename", {"name": "Hijacked"}),
+            ("winchallenge_game_delete", {}),
+        ):
+            with self.subTest(route=name):
+                response = self.client.post(
+                    reverse(name, args=[self.challenge.pk, other_game.pk]), data
+                )
+                self.assertEqual(response.status_code, 404)
+
+        other_game.refresh_from_db()
+        self.assertEqual(other_game.name, "Other")
+        self.assertEqual(other_game.wins, 0)
+
 
 class SpotifyOverlayModelTests(TestCase):
     def test_default_overlay_has_starter_elements_and_display_name(self):
@@ -2852,6 +2996,236 @@ class ScoreOverlayEndpointTests(TestCase):
         )
         self.assertEqual(imported.layout_mode, ScoreOverlay.LAYOUT_CUSTOM)
 
+    def participant_url(self, name, participant=None, overlay=None):
+        overlay = overlay or self.overlay
+        participant = participant or self.player_one
+        return reverse(name, args=[overlay.pk, participant.public_id])
+
+    def test_create_custom_layout_maps_slot_elements_to_new_participants(self):
+        candidate = ScoreOverlay()
+        response = self.client.post(
+            reverse("score_create"),
+            {
+                **{
+                    field: getattr(candidate, field)
+                    for field in (
+                        "canvas_width",
+                        "canvas_height",
+                        "background_color",
+                        "background_opacity",
+                        "border_color",
+                        "border_width",
+                        "corner_radius",
+                        "font_family",
+                    )
+                },
+                "name": "Custom Final",
+                "player_one_name": "Team Blue",
+                "player_two_name": "Team Red",
+                "layout_mode": ScoreOverlay.LAYOUT_CUSTOM,
+                "elements": json.dumps(candidate.elements),
+            },
+        )
+
+        created = ScoreOverlay.objects.get(name="Custom Final")
+        public_ids = {str(participant.public_id) for participant in created.participants.all()}
+        referenced = {
+            element["participant_id"]
+            for element in created.elements
+            if element.get("participant_id")
+        }
+        self.assertRedirects(response, reverse("score_manage", args=[created.pk]))
+        self.assertEqual(created.layout_mode, ScoreOverlay.LAYOUT_CUSTOM)
+        self.assertEqual(referenced, public_ids)
+
+    def test_create_with_invalid_data_rerenders_without_saving(self):
+        response = self.client.post(reverse("score_create"), {"name": "Broken"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["form"].errors)
+        self.assertFalse(ScoreOverlay.objects.filter(name="Broken").exists())
+
+    def test_manage_post_saves_valid_and_rejects_invalid_data(self):
+        url = reverse("score_manage", args=[self.overlay.pk])
+
+        invalid = self.client.post(url, self.score_form_data(background_color="nope"))
+        self.overlay.refresh_from_db()
+        self.assertEqual(invalid.status_code, 200)
+        self.assertNotEqual(self.overlay.background_color, "nope")
+
+        valid = self.client.post(url, self.score_form_data(name="Renamed"))
+        self.overlay.refresh_from_db()
+        self.assertRedirects(valid, url)
+        self.assertEqual(self.overlay.name, "Renamed")
+
+    def test_autosave_returns_400_for_invalid_data(self):
+        response = self.client.post(
+            reverse("score_autosave", args=[self.overlay.pk]),
+            self.score_form_data(name="Changed", elements="not json"),
+        )
+
+        self.overlay.refresh_from_db()
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(response.json()["ok"])
+        self.assertIn("elements", response.json()["errors"])
+        self.assertEqual(self.overlay.name, "Finals")
+
+    def test_delete_removes_overlay_participants_and_versions(self):
+        overlay_versions.record_version(self.overlay)
+
+        response = self.client.post(reverse("score_delete", args=[self.overlay.pk]))
+
+        self.assertRedirects(response, f"{reverse('overlay_dashboard')}#score-overlays")
+        self.assertFalse(ScoreOverlay.objects.filter(pk=self.overlay.pk).exists())
+        self.assertFalse(ScoreParticipant.objects.filter(pk=self.player_one.pk).exists())
+        self.assertFalse(
+            OverlayVersion.objects.filter(
+                overlay_type=overlay_transfer.SCORE_TYPE,
+                overlay_id=self.overlay.pk,
+            ).exists()
+        )
+
+    def test_participant_add_rejects_invalid_data_and_enforces_maximum(self):
+        url = reverse("score_participant_add", args=[self.overlay.pk])
+
+        invalid = self.client.post(url, {"name": "", "accent_color": "blue", "image_asset": ""})
+        self.assertEqual(invalid.status_code, 400)
+        self.assertIn("name", invalid.json()["errors"])
+        self.assertIn("accent_color", invalid.json()["errors"])
+
+        ScoreParticipant.objects.bulk_create(
+            [
+                ScoreParticipant(overlay=self.overlay, name=f"Extra {index}", sort_order=index + 2)
+                for index in range(ScoreOverlay.MAX_PARTICIPANTS - 2)
+            ]
+        )
+        full = self.client.post(url, {"name": "Too many", "accent_color": "#22c55e"})
+
+        self.assertEqual(full.status_code, 400)
+        self.assertEqual(self.overlay.participants.count(), ScoreOverlay.MAX_PARTICIPANTS)
+
+    def test_participant_add_rejects_another_users_image_asset(self):
+        other_user = User.objects.create_user(username="score-asset-owner")
+        foreign_asset = OverlayAsset.objects.create(
+            owner=other_user,
+            name="Private",
+            kind=OverlayAsset.KIND_IMAGE,
+            file="overlay-assets/score-asset-owner/private.png",
+        )
+
+        response = self.client.post(
+            reverse("score_participant_add", args=[self.overlay.pk]),
+            {"name": "Carol", "accent_color": "#22c55e", "image_asset": foreign_asset.pk},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("image_asset", response.json()["errors"])
+        self.assertFalse(ScoreParticipant.objects.filter(name="Carol").exists())
+
+    def test_participant_update_saves_valid_and_rejects_invalid_data(self):
+        url = self.participant_url("score_participant_update")
+
+        invalid = self.client.post(url, {"name": "", "accent_color": "#22c55e"})
+        self.assertEqual(invalid.status_code, 400)
+
+        valid = self.client.post(url, {"name": "Alicia", "accent_color": "#22c55e"})
+        self.player_one.refresh_from_db()
+        self.assertEqual(valid.status_code, 200)
+        self.assertEqual(self.player_one.name, "Alicia")
+        self.assertIn("Alicia", [p["name"] for p in valid.json()["participants"]])
+
+    def test_participant_update_in_structured_layout_rebuilds_elements(self):
+        self.overlay.layout_mode = ScoreOverlay.LAYOUT_BROADCAST_DUEL
+        self.overlay.elements = []
+        self.overlay.save(update_fields=["layout_mode", "elements", "updated_at"])
+
+        response = self.client.post(
+            self.participant_url("score_participant_update"),
+            {"name": "Alicia", "accent_color": "#22c55e"},
+        )
+
+        self.overlay.refresh_from_db()
+        self.player_one.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            self.overlay.elements,
+            score_elements_for_layout(
+                [self.player_one, self.player_two], ScoreOverlay.LAYOUT_BROADCAST_DUEL
+            ),
+        )
+
+    def test_participant_delete_keeps_the_minimum_of_two(self):
+        response = self.client.post(self.participant_url("score_participant_delete"))
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(self.overlay.participants.count(), 2)
+
+    def test_structured_participant_delete_switches_list_back_to_duel(self):
+        carol = ScoreParticipant.objects.create(overlay=self.overlay, name="Carol", sort_order=2)
+        participants = [self.player_one, self.player_two, carol]
+        self.overlay.layout_mode = ScoreOverlay.LAYOUT_BROADCAST_LIST
+        self.overlay.elements = score_elements_for_layout(
+            participants, ScoreOverlay.LAYOUT_BROADCAST_LIST
+        )
+        self.overlay.save(update_fields=["layout_mode", "elements", "updated_at"])
+
+        response = self.client.post(self.participant_url("score_participant_delete", carol))
+
+        self.overlay.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.overlay.layout_mode, ScoreOverlay.LAYOUT_BROADCAST_DUEL)
+        self.assertNotIn(str(carol.public_id), json.dumps(self.overlay.elements))
+
+    def test_score_change_rejects_invalid_delta(self):
+        url = self.participant_url("score_participant_score")
+
+        for delta in ("abc", "5", "0", "-2"):
+            with self.subTest(delta=delta):
+                self.assertEqual(self.client.post(url, {"delta": delta}).status_code, 400)
+
+        self.player_one.refresh_from_db()
+        self.assertEqual(self.player_one.score, 0)
+
+    def test_score_change_does_not_exceed_maximum(self):
+        self.player_one.score = ScoreOverlay.MAX_SCORE
+        self.player_one.save(update_fields=["score"])
+
+        response = self.client.post(self.participant_url("score_participant_score"), {"delta": 1})
+
+        self.player_one.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.player_one.score, ScoreOverlay.MAX_SCORE)
+
+    def test_participant_reset_only_resets_that_participant(self):
+        ScoreParticipant.objects.filter(overlay=self.overlay).update(score=4)
+
+        response = self.client.post(self.participant_url("score_participant_reset"))
+
+        self.player_one.refresh_from_db()
+        self.player_two.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.player_one.score, 0)
+        self.assertEqual(self.player_two.score, 4)
+
+    def test_participant_routes_reject_participants_from_another_overlay(self):
+        other_overlay = ScoreOverlay.objects.create(owner=self.user, name="Second")
+        outsider = ScoreParticipant.objects.create(overlay=other_overlay, name="Outsider", score=3)
+        ScoreParticipant.objects.create(overlay=self.overlay, name="Carol", sort_order=2)
+
+        for name, data in (
+            ("score_participant_update", {"name": "Hijacked", "accent_color": "#22c55e"}),
+            ("score_participant_score", {"delta": 1}),
+            ("score_participant_reset", {}),
+            ("score_participant_delete", {}),
+        ):
+            with self.subTest(route=name):
+                response = self.client.post(self.participant_url(name, outsider), data)
+                self.assertEqual(response.status_code, 404)
+
+        outsider.refresh_from_db()
+        self.assertEqual(outsider.name, "Outsider")
+        self.assertEqual(outsider.score, 3)
+
 
 class PublicStateConditionalRequestTests(TestCase):
     def setUp(self):
@@ -3149,6 +3523,90 @@ class AccessControlTests(TestCase):
         self.assertEqual(response.status_code, 404)
         self.foreign_game.refresh_from_db()
         self.assertEqual(self.foreign_game.wins, 0)
+
+    def test_every_foreign_score_and_challenge_route_returns_404_without_changes(self):
+        foreign_participant = ScoreParticipant.objects.create(
+            overlay=self.foreign_score, name="Private Player", score=3
+        )
+        score_token = self.foreign_score.public_token
+        challenge_token = self.foreign_challenge.public_token
+        score_pk = self.foreign_score.pk
+        challenge_pk = self.foreign_challenge.pk
+        participant_args = [score_pk, foreign_participant.public_id]
+        game_args = [challenge_pk, self.foreign_game.pk]
+        requests = (
+            ("get", "score_export", [score_pk], {}),
+            ("post", "score_manage", [score_pk], {"name": "Hijacked"}),
+            ("post", "score_delete", [score_pk], {}),
+            ("post", "score_duplicate", [score_pk], {}),
+            ("post", "score_renew_obs_link", [score_pk], {}),
+            ("post", "score_reset_all", [score_pk], {}),
+            ("post", "score_participant_add", [score_pk], {"name": "Intruder"}),
+            ("post", "score_participant_update", participant_args, {"name": "Hijacked"}),
+            ("post", "score_participant_score", participant_args, {"delta": 1}),
+            ("post", "score_participant_reset", participant_args, {}),
+            ("post", "score_participant_delete", participant_args, {}),
+            ("get", "winchallenge_export", [challenge_pk], {}),
+            (
+                "post",
+                "winchallenge_manage",
+                [challenge_pk],
+                {"form_type": "challenge", "title": "Hijacked"},
+            ),
+            ("post", "winchallenge_delete", [challenge_pk], {}),
+            ("post", "winchallenge_duplicate", [challenge_pk], {}),
+            ("post", "winchallenge_renew_obs_link", [challenge_pk], {}),
+            ("post", "winchallenge_game_add", [challenge_pk], {"name": "Intruder"}),
+            ("post", "winchallenge_game_rename", game_args, {"name": "Hijacked"}),
+            ("post", "winchallenge_game_delete", game_args, {}),
+        )
+        self.client.force_login(self.owner)
+
+        for method, name, args, data in requests:
+            with self.subTest(route=name):
+                response = getattr(self.client, method)(reverse(name, args=args), data)
+                self.assertEqual(response.status_code, 404)
+
+        self.foreign_score.refresh_from_db()
+        self.foreign_challenge.refresh_from_db()
+        foreign_participant.refresh_from_db()
+        self.foreign_game.refresh_from_db()
+        self.assertEqual(self.foreign_score.name, "Foreign Score")
+        self.assertEqual(self.foreign_score.public_token, score_token)
+        self.assertEqual(self.foreign_score.participants.count(), 1)
+        self.assertEqual(
+            (foreign_participant.name, foreign_participant.score), ("Private Player", 3)
+        )
+        self.assertEqual(self.foreign_challenge.title, "Foreign Challenge")
+        self.assertEqual(self.foreign_challenge.public_token, challenge_token)
+        self.assertEqual(self.foreign_challenge.games.count(), 1)
+        self.assertEqual(self.foreign_game.name, "Private Game")
+        self.assertEqual(ScoreOverlay.objects.filter(owner=self.owner).count(), 1)
+        self.assertEqual(WinChallenge.objects.filter(owner=self.owner).count(), 1)
+
+    def test_score_and_challenge_mutations_redirect_anonymous_users(self):
+        participant = ScoreParticipant.objects.create(overlay=self.owner_score, name="Player")
+        urls = (
+            reverse("score_delete", args=[self.owner_score.pk]),
+            reverse("score_reset_all", args=[self.owner_score.pk]),
+            reverse("score_participant_add", args=[self.owner_score.pk]),
+            reverse(
+                "score_participant_score",
+                args=[self.owner_score.pk, participant.public_id],
+            ),
+            reverse("winchallenge_delete", args=[self.owner_challenge.pk]),
+            reverse("winchallenge_game_add", args=[self.owner_challenge.pk]),
+        )
+
+        for url in urls:
+            with self.subTest(url=url):
+                response = self.client.post(url, {"delta": 1, "name": "Anonymous"})
+                self.assertRedirects(response, f"{reverse('login')}?next={url}")
+
+        participant.refresh_from_db()
+        self.assertEqual(participant.score, 0)
+        self.assertTrue(ScoreOverlay.objects.filter(pk=self.owner_score.pk).exists())
+        self.assertFalse(self.owner_challenge.games.exists())
 
     def test_logout_ends_access_to_management_pages(self):
         self.client.force_login(self.owner)
