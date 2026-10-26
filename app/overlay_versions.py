@@ -269,6 +269,10 @@ def _restore_score(overlay, payload, assets):
     if not form.is_valid():
         raise OverlayVersionError("Invalid Score HUD version")
     restored = form.save()
+    # Delete first: the snapshot reuses the participants' unique public_id values, so
+    # full_clean() would reject them while the old rows exist. restore_version() is
+    # atomic, so a validation error below still rolls the deletion back.
+    restored.participants.all().delete()
 
     participants = []
     for sort_order, participant_data in enumerate(participants_data):
@@ -283,7 +287,6 @@ def _restore_score(overlay, payload, assets):
             raise OverlayVersionError("Invalid Score HUD version") from error
         participants.append(participant)
 
-    restored.participants.all().delete()
     ScoreParticipant.objects.bulk_create(participants)
     return restored
 

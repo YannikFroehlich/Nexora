@@ -18,6 +18,15 @@ hex_color_validator = RegexValidator(
 )
 
 
+def hex_color_rgba(color, opacity):
+    # A rejected form has already copied its invalid color onto the instance, and the
+    # editor re-renders that instance, so fall back to black instead of crashing.
+    if not hex_color_validator.regex.match(color or ""):
+        color = "#000000"
+    red, green, blue = (int(color[index : index + 2], 16) for index in (1, 3, 5))
+    return f"rgba({red}, {green}, {blue}, {opacity / 100:.2f})"
+
+
 def overlay_asset_upload_to(instance, filename):
     extension = Path(filename).suffix.lower()
     return f"overlay-assets/{instance.owner_id}/{uuid.uuid4().hex}{extension}"
@@ -431,21 +440,11 @@ class WinChallenge(OverlayBrandingMixin, models.Model):
 
     @property
     def background_rgba(self):
-        red = int(self.background_color[1:3], 16)
-        green = int(self.background_color[3:5], 16)
-        blue = int(self.background_color[5:7], 16)
-        alpha = self.background_opacity / 100
-
-        return f"rgba({red}, {green}, {blue}, {alpha:.2f})"
+        return hex_color_rgba(self.background_color, self.background_opacity)
 
     @property
     def track_rgba(self):
-        red = int(self.track_color[1:3], 16)
-        green = int(self.track_color[3:5], 16)
-        blue = int(self.track_color[5:7], 16)
-        alpha = self.track_opacity / 100
-
-        return f"rgba({red}, {green}, {blue}, {alpha:.2f})"
+        return hex_color_rgba(self.track_color, self.track_opacity)
 
     @property
     def shadow_css(self):
@@ -1270,12 +1269,7 @@ class SpotifyOverlay(OverlayBrandingMixin, models.Model):
 
     @property
     def background_rgba(self):
-        red = int(self.background_color[1:3], 16)
-        green = int(self.background_color[3:5], 16)
-        blue = int(self.background_color[5:7], 16)
-        alpha = self.background_opacity / 100
-
-        return f"rgba({red}, {green}, {blue}, {alpha:.2f})"
+        return hex_color_rgba(self.background_color, self.background_opacity)
 
     @property
     def browser_source_width(self):
@@ -1562,10 +1556,7 @@ class TwitchGoalOverlay(OverlayBrandingMixin, models.Model):
 
     @property
     def background_rgba(self):
-        red = int(self.background_color[1:3], 16)
-        green = int(self.background_color[3:5], 16)
-        blue = int(self.background_color[5:7], 16)
-        return f"rgba({red}, {green}, {blue}, {self.background_opacity / 100:.2f})"
+        return hex_color_rgba(self.background_color, self.background_opacity)
 
     @property
     def browser_source_width(self):
@@ -1774,11 +1765,7 @@ class ScoreOverlay(OverlayBrandingMixin, models.Model):
 
     @property
     def background_rgba(self):
-        red = int(self.background_color[1:3], 16)
-        green = int(self.background_color[3:5], 16)
-        blue = int(self.background_color[5:7], 16)
-        alpha = self.background_opacity / 100
-        return f"rgba({red}, {green}, {blue}, {alpha:.2f})"
+        return hex_color_rgba(self.background_color, self.background_opacity)
 
     @property
     def browser_source_width(self):
@@ -2035,11 +2022,7 @@ class TimerOverlay(OverlayBrandingMixin, models.Model):
 
     @property
     def background_rgba(self):
-        red = int(self.background_color[1:3], 16)
-        green = int(self.background_color[3:5], 16)
-        blue = int(self.background_color[5:7], 16)
-        alpha = self.background_opacity / 100
-        return f"rgba({red}, {green}, {blue}, {alpha:.2f})"
+        return hex_color_rgba(self.background_color, self.background_opacity)
 
     @property
     def shadow_css(self):

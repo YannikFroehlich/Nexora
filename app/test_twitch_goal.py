@@ -1,10 +1,12 @@
 import json
 from datetime import timedelta
-from io import StringIO
-from unittest.mock import patch
+from io import BytesIO, StringIO
+from unittest.mock import MagicMock, patch
+from urllib import error as urlerror
 from urllib.parse import parse_qs, urlparse
 
 from django.contrib.auth import get_user_model
+from django.contrib.messages import get_messages
 from django.core.management import call_command
 from django.db import connection as database_connection
 from django.test import Client, TestCase, override_settings
@@ -14,6 +16,7 @@ from django.utils import timezone
 from app import overlay_transfer, overlay_versions, twitch_api
 from app.forms import TwitchGoalOverlayForm
 from app.models import (
+    OverlayVersion,
     TwitchConnection,
     TwitchGoalOverlay,
     goal_elements_for_layout,
@@ -250,6 +253,263 @@ class TwitchConnectionAndAPITests(TestCase):
         self.assertFalse(self.connection.needs_reconnect)
         self.assertEqual(self.connection.last_error, "network down")
 
+    def test_recent_validation_is_reused_without_request(self):
+        with patch("app.twitch_api._validate_request") as validate_request:
+            data = twitch_api.validate_connection(self.connection)
+
+        validate_request.assert_not_called()
+        self.assertEqual(data["user_id"], "1234")
+        self.assertEqual(data["login"], "nexora")
+
+    def test_validation_without_access_token_is_rejected(self):
+        self.connection.access_token = ""
+
+        with self.assertRaises(twitch_api.TwitchAPIError) as raised:
+            twitch_api.validate_connection(self.connection, force=True)
+
+        self.assertEqual(raised.exception.status_code, 401)
+
+    @override_settings(TWITCH_CLIENT_ID="client-id", TWITCH_CLIENT_SECRET="client-secret")
+    def test_expired_token_is_refreshed_and_revalidated(self):
+        with (
+            patch(
+                "app.twitch_api._validate_request",
+                side_effect=[
+                    twitch_api.TwitchAPIError("invalid access token", 401),
+                    {
+                        "client_id": "client-id",
+                        "user_id": "1234",
+                        "login": "nexora",
+                        "scopes": [twitch_api.FOLLOWER_SCOPE],
+                    },
+                ],
+            ) as validate_request,
+            patch(
+                "app.twitch_api._token_request",
+                return_value={"access_token": "new-access", "refresh_token": "rotated"},
+            ) as token_request,
+        ):
+            twitch_api.validate_connection(self.connection, force=True)
+
+        self.connection.refresh_from_db()
+        token_request.assert_called_once_with(
+            {"grant_type": "refresh_token", "refresh_token": "refresh-secret"}
+        )
+        validate_request.assert_called_with("new-access")
+        self.assertEqual(self.connection.access_token, "new-access")
+        self.assertEqual(self.connection.refresh_token, "rotated")
+        self.assertEqual(self.connection.scopes, [twitch_api.FOLLOWER_SCOPE])
+        self.assertIsNotNone(self.connection.validated_at)
+        self.assertFalse(self.connection.needs_reconnect)
+
+    def test_failed_refresh_marks_connection_for_reconnect(self):
+        with (
+            patch(
+                "app.twitch_api._validate_request",
+                side_effect=twitch_api.TwitchAPIError("invalid access token", 401),
+            ),
+            patch(
+                "app.twitch_api._token_request",
+                side_effect=twitch_api.TwitchAPIError("Invalid refresh token", 400),
+            ),
+        ):
+            with self.assertRaises(twitch_api.TwitchAPIError):
+                twitch_api.validate_connection(self.connection, force=True)
+
+        self.connection.refresh_from_db()
+        self.assertTrue(self.connection.needs_reconnect)
+        self.assertEqual(self.connection.last_error, "Invalid refresh token")
+        self.assertEqual(self.connection.access_token, "access-secret")
+
+    def test_401_without_refresh_token_marks_reconnect_without_refresh(self):
+        self.connection.refresh_token = ""
+        self.connection.save()
+
+        with (
+            patch(
+                "app.twitch_api._validate_request",
+                side_effect=twitch_api.TwitchAPIError("invalid access token", 401),
+            ),
+            patch("app.twitch_api._token_request") as token_request,
+        ):
+            with self.assertRaises(twitch_api.TwitchAPIError):
+                twitch_api.validate_connection(self.connection, force=True)
+
+        token_request.assert_not_called()
+        self.connection.refresh_from_db()
+        self.assertTrue(self.connection.needs_reconnect)
+
+    def test_helix_401_without_refresh_token_is_raised(self):
+        self.connection.refresh_token = ""
+
+        with (
+            patch(
+                "app.twitch_api._api_request",
+                side_effect=twitch_api.TwitchAPIError("expired", 401),
+            ),
+            patch("app.twitch_api._refresh_access_token") as refresh,
+        ):
+            with self.assertRaises(twitch_api.TwitchAPIError):
+                twitch_api._helix_metric_request(twitch_api.FOLLOWERS_URL, self.connection, {})
+
+        refresh.assert_not_called()
+
+    def test_token_response_without_access_token_is_rejected(self):
+        with self.assertRaises(twitch_api.TwitchAPIError):
+            twitch_api._store_token_response(self.connection, {"refresh_token": "rotated"})
+
+        self.connection.refresh_from_db()
+        self.assertEqual(self.connection.access_token, "access-secret")
+        self.assertEqual(self.connection.refresh_token, "refresh-secret")
+
+    def test_token_response_keeps_refresh_token_and_resets_validation(self):
+        self.connection.needs_reconnect = True
+        self.connection.last_error = "expired"
+        self.connection.save()
+
+        twitch_api._store_token_response(
+            self.connection,
+            {"access_token": "new-access", "expires_in": "soon"},
+        )
+        self.connection.refresh_from_db()
+
+        remaining = self.connection.token_expires_at - timezone.now()
+        self.assertEqual(self.connection.access_token, "new-access")
+        self.assertEqual(self.connection.refresh_token, "refresh-secret")
+        self.assertGreater(remaining, timedelta(minutes=59))
+        self.assertIsNone(self.connection.validated_at)
+        self.assertFalse(self.connection.needs_reconnect)
+        self.assertEqual(self.connection.last_error, "")
+
+    def test_auth_failure_during_metric_fetch_requires_reconnect(self):
+        self.connection.follower_count = 40
+        self.connection.save()
+
+        with patch(
+            "app.twitch_api._helix_metric_request",
+            side_effect=twitch_api.TwitchAPIError("Missing scope", 403),
+        ):
+            state = twitch_api.cached_metric_state(
+                self.connection, TwitchGoalOverlay.GOAL_FOLLOWERS
+            )
+
+        self.assertEqual(state["follower_count"], 40)
+        self.assertTrue(state["needs_reconnect"])
+        self.connection.refresh_from_db()
+        self.assertIsNone(self.connection.refresh_started_at)
+        self.assertIsNotNone(self.connection.follower_cached_at)
+
+    def test_malformed_metric_response_preserves_last_known_value(self):
+        self.connection.subscription_count = 12
+        self.connection.save()
+
+        with patch(
+            "app.twitch_api._helix_metric_request",
+            return_value={"total": "many", "points": 3},
+        ):
+            state = twitch_api.cached_metric_state(
+                self.connection, TwitchGoalOverlay.GOAL_SUBSCRIPTIONS
+            )
+
+        self.assertEqual(state["subscription_count"], 12)
+        self.assertTrue(state["error"])
+        self.assertFalse(state["needs_reconnect"])
+
+    @override_settings(TWITCH_CLIENT_ID="client-id", TWITCH_CLIENT_SECRET="client-secret")
+    def test_code_exchange_rejects_missing_scopes(self):
+        with (
+            patch("app.twitch_api._token_request", return_value={"access_token": "new-access"}),
+            patch(
+                "app.twitch_api._validate_request",
+                return_value={
+                    "client_id": "client-id",
+                    "user_id": "1234",
+                    "login": "nexora",
+                    "scopes": [twitch_api.FOLLOWER_SCOPE],
+                },
+            ),
+            patch("app.twitch_api._load_channel_profile") as load_profile,
+        ):
+            with self.assertRaises(twitch_api.TwitchAPIError) as raised:
+                twitch_api.exchange_authorization_code(
+                    MagicMock(),
+                    self.user,
+                    "code",
+                    [twitch_api.SUBSCRIPTION_SCOPE],
+                )
+
+        self.assertEqual(raised.exception.status_code, 403)
+        load_profile.assert_not_called()
+
+    def test_disconnect_clears_tokens_even_when_revoke_fails(self):
+        with patch(
+            "app.twitch_api._read_json_response",
+            side_effect=twitch_api.TwitchAPIError("revoke failed", 500),
+        ):
+            twitch_api.disconnect(self.user)
+
+        self.connection.refresh_from_db()
+        self.assertFalse(self.connection.is_connected)
+        self.assertEqual(self.connection.scopes, [])
+
+    def test_read_json_response_maps_http_error_message_and_status(self):
+        error = urlerror.HTTPError(
+            "https://example.com",
+            401,
+            "error",
+            {},
+            BytesIO(json.dumps({"status": 401, "message": "invalid access token"}).encode()),
+        )
+
+        with patch("app.twitch_api.urlrequest.urlopen", side_effect=error):
+            with self.assertRaises(twitch_api.TwitchAPIError) as raised:
+                twitch_api._read_json_response(object())
+
+        self.assertEqual(str(raised.exception), "invalid access token")
+        self.assertEqual(raised.exception.status_code, 401)
+
+    def test_read_json_response_hides_unparseable_error_body(self):
+        error = urlerror.HTTPError("https://example.com", 502, "error", {}, BytesIO(b"<html>"))
+
+        with patch("app.twitch_api.urlrequest.urlopen", side_effect=error):
+            with self.assertRaises(twitch_api.TwitchAPIError) as raised:
+                twitch_api._read_json_response(object())
+
+        self.assertNotIn("<html>", str(raised.exception))
+        self.assertEqual(raised.exception.status_code, 502)
+
+    def test_read_json_response_handles_network_failure(self):
+        for failure in (urlerror.URLError("offline"), TimeoutError()):
+            with self.subTest(failure=failure):
+                with patch("app.twitch_api.urlrequest.urlopen", side_effect=failure):
+                    with self.assertRaises(twitch_api.TwitchAPIError) as raised:
+                        twitch_api._read_json_response(object())
+
+                self.assertIsNone(raised.exception.status_code)
+
+    def test_read_json_response_handles_empty_and_invalid_bodies(self):
+        def response_with(body):
+            response = MagicMock()
+            response.__enter__.return_value.read.return_value = body
+            return response
+
+        with patch("app.twitch_api.urlrequest.urlopen", return_value=response_with(b"")):
+            self.assertEqual(twitch_api._read_json_response(object(), allow_empty=True), {})
+            with self.assertRaises(twitch_api.TwitchAPIError):
+                twitch_api._read_json_response(object())
+
+        with patch("app.twitch_api.urlrequest.urlopen", return_value=response_with(b"not json")):
+            with self.assertRaises(twitch_api.TwitchAPIError):
+                twitch_api._read_json_response(object())
+
+    @override_settings(TWITCH_CLIENT_ID="", TWITCH_CLIENT_SECRET="")
+    def test_token_request_requires_configured_credentials(self):
+        with patch("app.twitch_api.urlrequest.urlopen") as urlopen:
+            with self.assertRaises(twitch_api.TwitchAPIError):
+                twitch_api._token_request({"grant_type": "refresh_token"})
+
+        urlopen.assert_not_called()
+
     def test_hourly_validation_command_checks_stored_connections(self):
         output = StringIO()
         with patch("app.twitch_api.validate_connection") as validate:
@@ -445,3 +705,309 @@ class TwitchGoalEndpointTests(TestCase):
 
         self.assertEqual(self.overlay.title, original_title)
         self.assertEqual(self.overlay.celebration_sequence, 7)
+
+    def start_oauth_session(self, overlay_id=None, state="expected"):
+        session = self.client.session
+        session["twitch_oauth"] = {
+            "state": state,
+            "overlay_id": overlay_id or self.overlay.pk,
+            "scopes": [twitch_api.FOLLOWER_SCOPE],
+        }
+        session.save()
+
+    def test_anonymous_users_are_redirected_to_login(self):
+        self.client.logout()
+        protected_urls = (
+            reverse("twitch_goal_list"),
+            reverse("twitch_goal_create"),
+            reverse("twitch_goal_manage", args=[self.overlay.pk]),
+            reverse("twitch_goal_autosave", args=[self.overlay.pk]),
+            reverse("twitch_goal_delete", args=[self.overlay.pk]),
+            reverse("twitch_goal_duplicate", args=[self.overlay.pk]),
+            reverse("twitch_goal_export", args=[self.overlay.pk]),
+            reverse("twitch_goal_renew_obs_link", args=[self.overlay.pk]),
+            reverse("twitch_connect", args=[self.overlay.pk]),
+            reverse("twitch_callback"),
+            reverse("twitch_disconnect"),
+            reverse("twitch_goal_campaign_reset", args=[self.overlay.pk]),
+            reverse("twitch_goal_replay", args=[self.overlay.pk]),
+        )
+
+        for url in protected_urls:
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertRedirects(response, f"{reverse('login')}?next={url}")
+
+    def test_foreign_overlay_management_routes_return_404_without_changes(self):
+        self.client.force_login(self.other)
+        public_token = self.overlay.public_token
+        requests = (
+            ("get", "twitch_goal_manage"),
+            ("post", "twitch_goal_manage"),
+            ("post", "twitch_goal_autosave"),
+            ("post", "twitch_goal_delete"),
+            ("post", "twitch_goal_duplicate"),
+            ("get", "twitch_goal_export"),
+            ("post", "twitch_goal_renew_obs_link"),
+            ("get", "twitch_connect"),
+            ("post", "twitch_goal_campaign_reset"),
+        )
+
+        for method, name in requests:
+            with self.subTest(route=name, method=method):
+                url = reverse(name, args=[self.overlay.pk])
+                response = getattr(self.client, method)(url, form_data(self.overlay, name="X"))
+                self.assertEqual(response.status_code, 404)
+
+        self.overlay.refresh_from_db()
+        self.assertEqual(self.overlay.name, "Follower Sprint")
+        self.assertEqual(self.overlay.public_token, public_token)
+        self.assertEqual(TwitchGoalOverlay.objects.count(), 1)
+        self.assertNotIn("twitch_oauth", self.client.session)
+
+    def test_callback_cannot_attach_a_connection_to_a_foreign_overlay(self):
+        foreign = TwitchGoalOverlay.objects.create(owner=self.other, name="Foreign")
+        self.start_oauth_session(overlay_id=foreign.pk)
+
+        with patch("app.twitch_api.exchange_authorization_code") as exchange:
+            response = self.client.get(
+                reverse("twitch_callback"),
+                {"state": "expected", "code": "code"},
+            )
+
+        self.assertEqual(response.status_code, 404)
+        exchange.assert_not_called()
+        foreign.refresh_from_db()
+        self.assertIsNone(foreign.connection_id)
+
+    def test_callback_state_is_single_use(self):
+        self.start_oauth_session()
+        url = reverse("twitch_callback")
+
+        with patch(
+            "app.twitch_api.exchange_authorization_code",
+            return_value=self.connection,
+        ) as exchange:
+            first = self.client.get(url, {"state": "expected", "code": "code"})
+            replay = self.client.get(url, {"state": "expected", "code": "code"})
+
+        self.assertRedirects(first, reverse("twitch_goal_manage", args=[self.overlay.pk]))
+        self.assertRedirects(
+            replay,
+            f"{reverse('overlay_dashboard')}#twitch-goal-overlays",
+            fetch_redirect_response=False,
+        )
+        exchange.assert_called_once()
+
+    def test_callback_without_session_or_state_is_rejected(self):
+        with patch("app.twitch_api.exchange_authorization_code") as exchange:
+            no_session = self.client.get(reverse("twitch_callback"), {"code": "code"})
+            self.start_oauth_session()
+            no_state = self.client.get(reverse("twitch_callback"), {"code": "code"})
+
+        for response in (no_session, no_state):
+            self.assertRedirects(
+                response,
+                f"{reverse('overlay_dashboard')}#twitch-goal-overlays",
+                fetch_redirect_response=False,
+            )
+        exchange.assert_not_called()
+
+    def test_callback_handles_denied_access_and_missing_code(self):
+        manage_url = reverse("twitch_goal_manage", args=[self.overlay.pk])
+
+        for params in (
+            {"state": "expected", "error": "access_denied"},
+            {"state": "expected"},
+        ):
+            with self.subTest(params=params):
+                self.start_oauth_session()
+                with patch("app.twitch_api.exchange_authorization_code") as exchange:
+                    response = self.client.get(reverse("twitch_callback"), params)
+
+                self.assertRedirects(response, manage_url, fetch_redirect_response=False)
+                exchange.assert_not_called()
+
+    def test_callback_reports_exchange_failure_without_upstream_details(self):
+        self.overlay.connection = None
+        self.overlay.save(update_fields=("connection", "updated_at"))
+        self.start_oauth_session()
+
+        with patch(
+            "app.twitch_api.exchange_authorization_code",
+            side_effect=twitch_api.TwitchAPIError("upstream secret detail", 400),
+        ):
+            response = self.client.get(
+                reverse("twitch_callback"),
+                {"state": "expected", "code": "code"},
+            )
+
+        error_messages = [str(message) for message in get_messages(response.wsgi_request)]
+        self.overlay.refresh_from_db()
+        self.assertRedirects(
+            response,
+            reverse("twitch_goal_manage", args=[self.overlay.pk]),
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(len(error_messages), 1)
+        self.assertNotIn("upstream secret detail", error_messages[0])
+        self.assertIsNone(self.overlay.connection_id)
+
+    def test_callback_links_the_connection_on_success(self):
+        self.overlay.connection = None
+        self.overlay.save(update_fields=("connection", "updated_at"))
+        self.start_oauth_session()
+
+        with patch(
+            "app.twitch_api.exchange_authorization_code",
+            return_value=self.connection,
+        ) as exchange:
+            self.client.get(reverse("twitch_callback"), {"state": "expected", "code": "code"})
+
+        self.overlay.refresh_from_db()
+        self.assertEqual(self.overlay.connection, self.connection)
+        self.assertEqual(exchange.call_args.args[2:], ("code", [twitch_api.FOLLOWER_SCOPE]))
+
+    @override_settings(TWITCH_CLIENT_ID="", TWITCH_CLIENT_SECRET="")
+    def test_connect_without_credentials_redirects_back_to_editor(self):
+        response = self.client.get(reverse("twitch_connect", args=[self.overlay.pk]))
+
+        self.assertRedirects(
+            response,
+            reverse("twitch_goal_manage", args=[self.overlay.pk]),
+            fetch_redirect_response=False,
+        )
+        self.assertNotIn("twitch_oauth", self.client.session)
+
+    def test_disconnect_ignores_external_next_url(self):
+        with patch("app.twitch_api._read_json_response", return_value={}):
+            response = self.client.post(
+                reverse("twitch_disconnect"),
+                {"next": "https://evil.example/phish"},
+            )
+
+        self.assertRedirects(response, reverse("overlay_dashboard"))
+
+    def test_disconnect_and_mutations_require_post(self):
+        for url in (
+            reverse("twitch_disconnect"),
+            reverse("twitch_goal_autosave", args=[self.overlay.pk]),
+            reverse("twitch_goal_delete", args=[self.overlay.pk]),
+            reverse("twitch_goal_campaign_reset", args=[self.overlay.pk]),
+        ):
+            with self.subTest(url=url):
+                self.assertEqual(self.client.get(url).status_code, 405)
+
+        self.connection.refresh_from_db()
+        self.assertTrue(self.connection.is_connected)
+        self.assertTrue(TwitchGoalOverlay.objects.filter(pk=self.overlay.pk).exists())
+
+    def test_create_attaches_the_owner_connection_and_records_a_version(self):
+        candidate = TwitchGoalOverlay(owner=self.user)
+        response = self.client.post(
+            reverse("twitch_goal_create"),
+            form_data(candidate, name="New Goal"),
+        )
+
+        created = TwitchGoalOverlay.objects.get(name="New Goal")
+        self.assertRedirects(response, reverse("twitch_goal_manage", args=[created.pk]))
+        self.assertEqual(created.owner, self.user)
+        self.assertEqual(created.connection, self.connection)
+        self.assertEqual(overlay_versions.versions_for(created).count(), 1)
+
+    def test_create_with_invalid_data_rerenders_without_saving(self):
+        candidate = TwitchGoalOverlay(owner=self.user)
+        response = self.client.post(
+            reverse("twitch_goal_create"),
+            form_data(candidate, name="Broken", target_value=0),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["form"].errors)
+        self.assertFalse(TwitchGoalOverlay.objects.filter(name="Broken").exists())
+
+    def test_manage_post_saves_valid_and_rejects_invalid_data(self):
+        url = reverse("twitch_goal_manage", args=[self.overlay.pk])
+
+        invalid = self.client.post(
+            url, form_data(self.overlay, target_value=0, background_color="nope")
+        )
+        self.overlay.refresh_from_db()
+        self.assertEqual(invalid.status_code, 200)
+        self.assertEqual(self.overlay.target_value, 100)
+        self.assertNotEqual(self.overlay.background_color, "nope")
+
+        valid = self.client.post(url, form_data(self.overlay, name="Renamed"))
+        self.overlay.refresh_from_db()
+        self.assertRedirects(valid, url)
+        self.assertEqual(self.overlay.name, "Renamed")
+
+    def test_autosave_returns_400_for_invalid_data_and_records_valid_saves(self):
+        url = reverse("twitch_goal_autosave", args=[self.overlay.pk])
+
+        invalid = self.client.post(url, form_data(self.overlay, elements="not json"))
+        self.assertEqual(invalid.status_code, 400)
+        self.assertFalse(invalid.json()["ok"])
+        self.assertIn("elements", invalid.json()["errors"])
+        self.assertEqual(overlay_versions.versions_for(self.overlay).count(), 0)
+
+        valid = self.client.post(url, form_data(self.overlay, name="Autosaved"))
+        self.overlay.refresh_from_db()
+        self.assertEqual(valid.status_code, 200)
+        self.assertTrue(valid.json()["ok"])
+        self.assertEqual(self.overlay.name, "Autosaved")
+        self.assertEqual(overlay_versions.versions_for(self.overlay).count(), 1)
+
+    def test_delete_removes_overlay_and_its_versions(self):
+        overlay_versions.record_version(self.overlay)
+
+        response = self.client.post(reverse("twitch_goal_delete", args=[self.overlay.pk]))
+
+        self.assertRedirects(response, f"{reverse('overlay_dashboard')}#twitch-goal-overlays")
+        self.assertFalse(TwitchGoalOverlay.objects.filter(pk=self.overlay.pk).exists())
+        self.assertFalse(
+            OverlayVersion.objects.filter(
+                overlay_type=overlay_transfer.TWITCH_GOAL_TYPE,
+                overlay_id=self.overlay.pk,
+            ).exists()
+        )
+        self.connection.refresh_from_db()
+        self.assertTrue(self.connection.is_connected)
+
+    def test_renew_obs_link_invalidates_the_old_public_url(self):
+        old_url = reverse("twitch_goal_overlay_state", args=[self.overlay.public_token])
+
+        self.client.post(reverse("twitch_goal_renew_obs_link", args=[self.overlay.pk]))
+        self.overlay.refresh_from_db()
+
+        self.assertEqual(self.client.get(old_url).status_code, 404)
+        new_url = reverse("twitch_goal_overlay_state", args=[self.overlay.public_token])
+        self.assertEqual(self.client.get(new_url).status_code, 200)
+
+    def test_campaign_reset_requires_connection_and_metric_value(self):
+        url = reverse("twitch_goal_campaign_reset", args=[self.overlay.pk])
+        self.overlay.progress_mode = TwitchGoalOverlay.MODE_CAMPAIGN
+        self.overlay.connection = None
+        self.overlay.save(update_fields=("progress_mode", "connection", "updated_at"))
+
+        not_connected = self.client.post(url)
+        self.assertEqual(not_connected.status_code, 409)
+
+        self.overlay.connection = self.connection
+        self.overlay.save(update_fields=("connection", "updated_at"))
+        self.connection.follower_count = None
+        self.connection.save(update_fields=("follower_count", "updated_at"))
+        no_value = self.client.post(url)
+
+        self.overlay.refresh_from_db()
+        self.assertEqual(no_value.status_code, 409)
+        self.assertIsNone(self.overlay.campaign_baseline)
+        self.assertEqual(self.overlay.goal_revision, 1)
+
+    def test_public_routes_return_404_for_unknown_tokens(self):
+        self.client.logout()
+        unknown = "00000000-0000-0000-0000-000000000000"
+
+        for name in ("twitch_goal_overlay", "twitch_goal_overlay_state"):
+            with self.subTest(route=name):
+                self.assertEqual(self.client.get(reverse(name, args=[unknown])).status_code, 404)
