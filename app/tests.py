@@ -1,7 +1,8 @@
 import json
 from datetime import timedelta
 from io import BytesIO
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+from urllib import error as urlerror
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -713,6 +714,89 @@ class OverlayVersionTests(TestCase):
 
         self.assertEqual(timer.duration_seconds, 120)
         self.assertEqual(timer.accent_color, "#14b8a6")
+
+    def create_score_overlay(self):
+        score = ScoreOverlay.objects.create(owner=self.user, name="Finals")
+        alice = ScoreParticipant.objects.create(
+            overlay=score, name="Alice", score=0, accent_color="#38bdf8", sort_order=0
+        )
+        bob = ScoreParticipant.objects.create(
+            overlay=score, name="Bob", score=0, accent_color="#fb7185", sort_order=1
+        )
+        return score, alice, bob
+
+    def test_score_restore_replaces_participants_and_keeps_public_ids(self):
+        score, alice, bob = self.create_score_overlay()
+        baseline, _ = overlay_versions.record_version(score, OverlayVersion.REASON_CREATED)
+        score.name = "Changed"
+        score.save()
+        alice.name = "Renamed"
+        alice.score = 7
+        alice.save()
+        ScoreParticipant.objects.create(overlay=score, name="Carol", sort_order=2)
+
+        overlay_versions.restore_version(score, baseline)
+        score.refresh_from_db()
+
+        participants = list(score.ordered_participants)
+        self.assertEqual(score.name, "Finals")
+        self.assertEqual([p.name for p in participants], ["Alice", "Bob"])
+        self.assertEqual([p.score for p in participants], [0, 0])
+        self.assertEqual(
+            [p.public_id for p in participants],
+            [alice.public_id, bob.public_id],
+        )
+
+    def test_score_restore_rejects_invalid_participant_count_without_changes(self):
+        score, _alice, _bob = self.create_score_overlay()
+        baseline, _ = overlay_versions.record_version(score, OverlayVersion.REASON_CREATED)
+        score.name = "Changed"
+        score.save()
+
+        for participants in ([], "not-a-list", [{"name": "Solo"}] * 9):
+            with self.subTest(participants=participants):
+                baseline.snapshot["payload"]["participants"] = participants
+                baseline.save()
+
+                with self.assertRaises(overlay_versions.OverlayVersionError):
+                    overlay_versions.restore_version(score, baseline)
+
+                score.refresh_from_db()
+                self.assertEqual(score.name, "Changed")
+                self.assertEqual(score.participants.count(), 2)
+
+    def test_score_restore_rolls_back_on_invalid_participant_data(self):
+        score, alice, _bob = self.create_score_overlay()
+        baseline, _ = overlay_versions.record_version(score, OverlayVersion.REASON_CREATED)
+        alice.score = 5
+        alice.save()
+        score.name = "Changed"
+        score.save()
+        baseline.snapshot["payload"]["participants"][1]["score"] = ScoreOverlay.MAX_SCORE + 1
+        baseline.save()
+        versions_before = overlay_versions.versions_for(score).count()
+
+        with self.assertRaises(overlay_versions.OverlayVersionError):
+            overlay_versions.restore_version(score, baseline)
+
+        score.refresh_from_db()
+        alice.refresh_from_db()
+        self.assertEqual(score.name, "Changed")
+        self.assertEqual(alice.score, 5)
+        self.assertEqual(score.participants.count(), 2)
+        self.assertEqual(overlay_versions.versions_for(score).count(), versions_before)
+
+    def test_score_restore_rejects_invalid_overlay_design(self):
+        score, _alice, _bob = self.create_score_overlay()
+        baseline, _ = overlay_versions.record_version(score, OverlayVersion.REASON_CREATED)
+        baseline.snapshot["payload"]["overlay"]["background_color"] = "not-a-color"
+        baseline.save()
+
+        with self.assertRaises(overlay_versions.OverlayVersionError):
+            overlay_versions.restore_version(score, baseline)
+
+        score.refresh_from_db()
+        self.assertEqual(score.participants.count(), 2)
 
     def test_restore_endpoint_rejects_a_version_from_another_account(self):
         other_user = User.objects.create_user(username="other-version-owner")
@@ -1928,6 +2012,277 @@ class SpotifyOverlayEndpointTests(TestCase):
 
         self.assertRedirects(response, reverse("spotify_manage", args=[self.overlay.pk]))
         exchange.assert_called_once()
+
+
+def fake_urlopen_response(body):
+    response = MagicMock()
+    response.__enter__.return_value.read.return_value = body
+    return response
+
+
+def http_error(code, body=b""):
+    return urlerror.HTTPError("https://example.com", code, "error", {}, BytesIO(body))
+
+
+class SpotifyAPIClientTests(TestCase):
+    track_response = {
+        "is_playing": True,
+        "progress_ms": 1000,
+        "item": {
+            "type": "track",
+            "name": "Night Drive",
+            "duration_ms": 200000,
+            "artists": [{"name": "Nova"}],
+            "album": {"name": "Lights", "images": []},
+        },
+    }
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="spotify-api-owner")
+        self.connection = SpotifyConnection.objects.create(
+            owner=self.user,
+            access_token="old-access",
+            refresh_token="refresh-secret",
+            token_expires_at=timezone.now() + timedelta(hours=1),
+        )
+
+    def expire_access_token(self):
+        self.connection.token_expires_at = timezone.now() - timedelta(minutes=1)
+        self.connection.save()
+
+    def test_expired_token_is_refreshed_before_the_request(self):
+        self.expire_access_token()
+
+        with (
+            patch(
+                "app.spotify_api._token_request",
+                return_value={"access_token": "new-access", "expires_in": 3600},
+            ) as token_request,
+            patch("app.spotify_api._api_request", return_value=None) as api_request,
+        ):
+            spotify_api.current_playback(self.connection)
+
+        self.connection.refresh_from_db()
+        token_request.assert_called_once_with(
+            {"grant_type": "refresh_token", "refresh_token": "refresh-secret"}
+        )
+        self.assertEqual(api_request.call_args_list[0].args[1], "new-access")
+        self.assertEqual(self.connection.access_token, "new-access")
+        self.assertEqual(self.connection.refresh_token, "refresh-secret")
+        self.assertGreater(self.connection.token_expires_at, timezone.now())
+
+    def test_rotated_refresh_token_is_stored(self):
+        self.expire_access_token()
+
+        with (
+            patch(
+                "app.spotify_api._token_request",
+                return_value={"access_token": "new-access", "refresh_token": "rotated"},
+            ),
+            patch("app.spotify_api._api_request", return_value=None),
+        ):
+            spotify_api.current_playback(self.connection)
+
+        self.connection.refresh_from_db()
+        self.assertEqual(self.connection.refresh_token, "rotated")
+
+    def test_api_401_refreshes_once_and_retries(self):
+        with (
+            patch(
+                "app.spotify_api._api_request",
+                side_effect=[
+                    spotify_api.SpotifyAPIError("expired", status_code=401),
+                    self.track_response,
+                    None,
+                ],
+            ) as api_request,
+            patch(
+                "app.spotify_api._token_request",
+                return_value={"access_token": "new-access"},
+            ) as token_request,
+        ):
+            playback = spotify_api.current_playback(self.connection)
+
+        self.assertEqual(playback["title"], "Night Drive")
+        token_request.assert_called_once()
+        self.assertEqual(api_request.call_args_list[1].args[1], "new-access")
+
+    def test_api_401_without_refresh_token_is_raised(self):
+        self.connection.refresh_token = ""
+        self.connection.save()
+
+        with (
+            patch(
+                "app.spotify_api._api_request",
+                side_effect=spotify_api.SpotifyAPIError("expired", status_code=401),
+            ),
+            patch("app.spotify_api._token_request") as token_request,
+        ):
+            with self.assertRaises(spotify_api.SpotifyAPIError):
+                spotify_api.current_playback(self.connection)
+
+        token_request.assert_not_called()
+
+    def test_missing_tokens_raise_not_connected(self):
+        self.connection.access_token = ""
+        self.connection.refresh_token = ""
+        self.connection.save()
+
+        with self.assertRaises(spotify_api.SpotifyAPIError) as raised:
+            spotify_api.current_playback(self.connection)
+
+        self.assertEqual(raised.exception.status_code, 401)
+
+    def test_token_response_without_access_token_is_rejected(self):
+        with self.assertRaises(spotify_api.SpotifyAPIError):
+            spotify_api._store_token_response(self.connection, {"expires_in": 3600})
+
+        self.connection.refresh_from_db()
+        self.assertEqual(self.connection.access_token, "old-access")
+
+    def test_invalid_expires_in_falls_back_to_one_hour(self):
+        spotify_api._store_token_response(
+            self.connection,
+            {"access_token": "new-access", "expires_in": "soon"},
+        )
+
+        remaining = self.connection.token_expires_at - timezone.now()
+        self.assertGreater(remaining, timedelta(minutes=59))
+        self.assertLessEqual(remaining, timedelta(hours=1))
+
+    def test_token_refresh_clears_the_playback_cache(self):
+        self.connection.playback_cache = {"playback": {"title": "Old"}}
+        self.connection.playback_cached_at = timezone.now()
+        self.connection.save()
+
+        spotify_api._store_token_response(self.connection, {"access_token": "new-access"})
+        self.connection.refresh_from_db()
+
+        self.assertEqual(self.connection.playback_cache, {})
+        self.assertIsNone(self.connection.playback_cached_at)
+
+    @override_settings(SPOTIFY_PLAYBACK_CACHE_SECONDS=15)
+    def test_fresh_cache_is_served_without_upstream_request(self):
+        cached = {"playback": {"title": "Cached"}, "error": False, "needs_reconnect": False}
+        self.connection.playback_cache = cached
+        self.connection.playback_cached_at = timezone.now()
+        self.connection.save()
+
+        with patch("app.spotify_api._api_request") as api_request:
+            state = spotify_api.cached_playback_state(self.connection)
+
+        self.assertEqual(state, cached)
+        api_request.assert_not_called()
+
+    def test_refresh_lease_returns_last_known_playback_during_parallel_fetch(self):
+        cached = {"playback": {"title": "Last known"}, "error": False, "needs_reconnect": False}
+        self.connection.playback_cache = cached
+        self.connection.playback_cached_at = timezone.now() - timedelta(minutes=1)
+        self.connection.playback_refresh_started_at = timezone.now()
+        self.connection.save()
+
+        with patch("app.spotify_api._api_request") as api_request:
+            state = spotify_api.cached_playback_state(self.connection)
+
+        self.assertEqual(state, cached)
+        api_request.assert_not_called()
+
+    def test_auth_failure_is_cached_as_needs_reconnect(self):
+        self.expire_access_token()
+
+        with patch(
+            "app.spotify_api._token_request",
+            side_effect=spotify_api.SpotifyAPIError("invalid_grant", status_code=400),
+        ):
+            state = spotify_api.cached_playback_state(self.connection)
+
+        self.connection.refresh_from_db()
+        self.assertTrue(state["error"])
+        self.assertTrue(state["needs_reconnect"])
+        self.assertEqual(self.connection.playback_cache, state)
+        self.assertIsNone(self.connection.playback_refresh_started_at)
+
+    def test_upstream_outage_is_not_a_reconnect_and_hides_upstream_message(self):
+        overlay = SpotifyOverlay.objects.create(owner=self.user, connection=self.connection)
+
+        with patch(
+            "app.spotify_api._api_request",
+            side_effect=spotify_api.SpotifyAPIError("internal upstream detail", status_code=503),
+        ):
+            payload = spotify_api.overlay_state_payload(overlay)
+
+        self.assertTrue(payload["error"])
+        self.assertNotIn("internal upstream detail", payload["error"])
+        self.assertFalse(payload["needs_reconnect"])
+        self.assertEqual(payload["playback"]["is_playing"], False)
+
+    def test_episode_playback_uses_show_metadata_and_clamps_progress(self):
+        episode_response = {
+            "is_playing": False,
+            "progress_ms": 999999,
+            "item": {
+                "type": "episode",
+                "name": "Episode 12",
+                "duration_ms": 60000,
+                "show": {"name": "Dev Talk", "images": [{"url": "https://example.com/s.jpg"}]},
+            },
+        }
+
+        with patch("app.spotify_api._api_request", side_effect=[episode_response, None]):
+            playback = spotify_api.current_playback(self.connection)
+
+        self.assertEqual(playback["artist"], "Dev Talk")
+        self.assertEqual(playback["album"], "Dev Talk")
+        self.assertEqual(playback["image_url"], "https://example.com/s.jpg")
+        self.assertEqual(playback["progress_ms"], 60000)
+
+    def test_read_json_response_maps_http_error_message_and_status(self):
+        body = json.dumps({"error": {"status": 429, "message": "rate limited"}}).encode()
+
+        with patch("app.spotify_api.urlrequest.urlopen", side_effect=http_error(429, body)):
+            with self.assertRaises(spotify_api.SpotifyAPIError) as raised:
+                spotify_api._read_json_response(object())
+
+        self.assertEqual(str(raised.exception), "rate limited")
+        self.assertEqual(raised.exception.status_code, 429)
+
+    def test_read_json_response_handles_unparseable_error_body(self):
+        with patch("app.spotify_api.urlrequest.urlopen", side_effect=http_error(502, b"<html>")):
+            with self.assertRaises(spotify_api.SpotifyAPIError) as raised:
+                spotify_api._read_json_response(object())
+
+        self.assertNotIn("<html>", str(raised.exception))
+        self.assertEqual(raised.exception.status_code, 502)
+
+    def test_read_json_response_handles_network_failure(self):
+        for failure in (urlerror.URLError("offline"), TimeoutError()):
+            with self.subTest(failure=failure):
+                with patch("app.spotify_api.urlrequest.urlopen", side_effect=failure):
+                    with self.assertRaises(spotify_api.SpotifyAPIError) as raised:
+                        spotify_api._read_json_response(object())
+
+                self.assertIsNone(raised.exception.status_code)
+
+    def test_read_json_response_handles_empty_and_invalid_bodies(self):
+        with patch("app.spotify_api.urlrequest.urlopen", return_value=fake_urlopen_response(b"")):
+            self.assertIsNone(spotify_api._read_json_response(object(), allow_empty=True))
+            with self.assertRaises(spotify_api.SpotifyAPIError):
+                spotify_api._read_json_response(object())
+
+        with patch(
+            "app.spotify_api.urlrequest.urlopen",
+            return_value=fake_urlopen_response(b"not json"),
+        ):
+            with self.assertRaises(spotify_api.SpotifyAPIError):
+                spotify_api._read_json_response(object())
+
+    @override_settings(SPOTIFY_CLIENT_ID="", SPOTIFY_CLIENT_SECRET="")
+    def test_token_request_requires_configured_credentials(self):
+        with patch("app.spotify_api.urlrequest.urlopen") as urlopen:
+            with self.assertRaises(spotify_api.SpotifyAPIError):
+                spotify_api._token_request({"grant_type": "refresh_token"})
+
+        urlopen.assert_not_called()
 
 
 class TimerOverlayModelAndFormTests(TestCase):

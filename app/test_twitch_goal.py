@@ -1,7 +1,8 @@
 import json
 from datetime import timedelta
-from io import StringIO
-from unittest.mock import patch
+from io import BytesIO, StringIO
+from unittest.mock import MagicMock, patch
+from urllib import error as urlerror
 from urllib.parse import parse_qs, urlparse
 
 from django.contrib.auth import get_user_model
@@ -249,6 +250,263 @@ class TwitchConnectionAndAPITests(TestCase):
         self.connection.refresh_from_db()
         self.assertFalse(self.connection.needs_reconnect)
         self.assertEqual(self.connection.last_error, "network down")
+
+    def test_recent_validation_is_reused_without_request(self):
+        with patch("app.twitch_api._validate_request") as validate_request:
+            data = twitch_api.validate_connection(self.connection)
+
+        validate_request.assert_not_called()
+        self.assertEqual(data["user_id"], "1234")
+        self.assertEqual(data["login"], "nexora")
+
+    def test_validation_without_access_token_is_rejected(self):
+        self.connection.access_token = ""
+
+        with self.assertRaises(twitch_api.TwitchAPIError) as raised:
+            twitch_api.validate_connection(self.connection, force=True)
+
+        self.assertEqual(raised.exception.status_code, 401)
+
+    @override_settings(TWITCH_CLIENT_ID="client-id", TWITCH_CLIENT_SECRET="client-secret")
+    def test_expired_token_is_refreshed_and_revalidated(self):
+        with (
+            patch(
+                "app.twitch_api._validate_request",
+                side_effect=[
+                    twitch_api.TwitchAPIError("invalid access token", 401),
+                    {
+                        "client_id": "client-id",
+                        "user_id": "1234",
+                        "login": "nexora",
+                        "scopes": [twitch_api.FOLLOWER_SCOPE],
+                    },
+                ],
+            ) as validate_request,
+            patch(
+                "app.twitch_api._token_request",
+                return_value={"access_token": "new-access", "refresh_token": "rotated"},
+            ) as token_request,
+        ):
+            twitch_api.validate_connection(self.connection, force=True)
+
+        self.connection.refresh_from_db()
+        token_request.assert_called_once_with(
+            {"grant_type": "refresh_token", "refresh_token": "refresh-secret"}
+        )
+        validate_request.assert_called_with("new-access")
+        self.assertEqual(self.connection.access_token, "new-access")
+        self.assertEqual(self.connection.refresh_token, "rotated")
+        self.assertEqual(self.connection.scopes, [twitch_api.FOLLOWER_SCOPE])
+        self.assertIsNotNone(self.connection.validated_at)
+        self.assertFalse(self.connection.needs_reconnect)
+
+    def test_failed_refresh_marks_connection_for_reconnect(self):
+        with (
+            patch(
+                "app.twitch_api._validate_request",
+                side_effect=twitch_api.TwitchAPIError("invalid access token", 401),
+            ),
+            patch(
+                "app.twitch_api._token_request",
+                side_effect=twitch_api.TwitchAPIError("Invalid refresh token", 400),
+            ),
+        ):
+            with self.assertRaises(twitch_api.TwitchAPIError):
+                twitch_api.validate_connection(self.connection, force=True)
+
+        self.connection.refresh_from_db()
+        self.assertTrue(self.connection.needs_reconnect)
+        self.assertEqual(self.connection.last_error, "Invalid refresh token")
+        self.assertEqual(self.connection.access_token, "access-secret")
+
+    def test_401_without_refresh_token_marks_reconnect_without_refresh(self):
+        self.connection.refresh_token = ""
+        self.connection.save()
+
+        with (
+            patch(
+                "app.twitch_api._validate_request",
+                side_effect=twitch_api.TwitchAPIError("invalid access token", 401),
+            ),
+            patch("app.twitch_api._token_request") as token_request,
+        ):
+            with self.assertRaises(twitch_api.TwitchAPIError):
+                twitch_api.validate_connection(self.connection, force=True)
+
+        token_request.assert_not_called()
+        self.connection.refresh_from_db()
+        self.assertTrue(self.connection.needs_reconnect)
+
+    def test_helix_401_without_refresh_token_is_raised(self):
+        self.connection.refresh_token = ""
+
+        with (
+            patch(
+                "app.twitch_api._api_request",
+                side_effect=twitch_api.TwitchAPIError("expired", 401),
+            ),
+            patch("app.twitch_api._refresh_access_token") as refresh,
+        ):
+            with self.assertRaises(twitch_api.TwitchAPIError):
+                twitch_api._helix_metric_request(twitch_api.FOLLOWERS_URL, self.connection, {})
+
+        refresh.assert_not_called()
+
+    def test_token_response_without_access_token_is_rejected(self):
+        with self.assertRaises(twitch_api.TwitchAPIError):
+            twitch_api._store_token_response(self.connection, {"refresh_token": "rotated"})
+
+        self.connection.refresh_from_db()
+        self.assertEqual(self.connection.access_token, "access-secret")
+        self.assertEqual(self.connection.refresh_token, "refresh-secret")
+
+    def test_token_response_keeps_refresh_token_and_resets_validation(self):
+        self.connection.needs_reconnect = True
+        self.connection.last_error = "expired"
+        self.connection.save()
+
+        twitch_api._store_token_response(
+            self.connection,
+            {"access_token": "new-access", "expires_in": "soon"},
+        )
+        self.connection.refresh_from_db()
+
+        remaining = self.connection.token_expires_at - timezone.now()
+        self.assertEqual(self.connection.access_token, "new-access")
+        self.assertEqual(self.connection.refresh_token, "refresh-secret")
+        self.assertGreater(remaining, timedelta(minutes=59))
+        self.assertIsNone(self.connection.validated_at)
+        self.assertFalse(self.connection.needs_reconnect)
+        self.assertEqual(self.connection.last_error, "")
+
+    def test_auth_failure_during_metric_fetch_requires_reconnect(self):
+        self.connection.follower_count = 40
+        self.connection.save()
+
+        with patch(
+            "app.twitch_api._helix_metric_request",
+            side_effect=twitch_api.TwitchAPIError("Missing scope", 403),
+        ):
+            state = twitch_api.cached_metric_state(
+                self.connection, TwitchGoalOverlay.GOAL_FOLLOWERS
+            )
+
+        self.assertEqual(state["follower_count"], 40)
+        self.assertTrue(state["needs_reconnect"])
+        self.connection.refresh_from_db()
+        self.assertIsNone(self.connection.refresh_started_at)
+        self.assertIsNotNone(self.connection.follower_cached_at)
+
+    def test_malformed_metric_response_preserves_last_known_value(self):
+        self.connection.subscription_count = 12
+        self.connection.save()
+
+        with patch(
+            "app.twitch_api._helix_metric_request",
+            return_value={"total": "many", "points": 3},
+        ):
+            state = twitch_api.cached_metric_state(
+                self.connection, TwitchGoalOverlay.GOAL_SUBSCRIPTIONS
+            )
+
+        self.assertEqual(state["subscription_count"], 12)
+        self.assertTrue(state["error"])
+        self.assertFalse(state["needs_reconnect"])
+
+    @override_settings(TWITCH_CLIENT_ID="client-id", TWITCH_CLIENT_SECRET="client-secret")
+    def test_code_exchange_rejects_missing_scopes(self):
+        with (
+            patch("app.twitch_api._token_request", return_value={"access_token": "new-access"}),
+            patch(
+                "app.twitch_api._validate_request",
+                return_value={
+                    "client_id": "client-id",
+                    "user_id": "1234",
+                    "login": "nexora",
+                    "scopes": [twitch_api.FOLLOWER_SCOPE],
+                },
+            ),
+            patch("app.twitch_api._load_channel_profile") as load_profile,
+        ):
+            with self.assertRaises(twitch_api.TwitchAPIError) as raised:
+                twitch_api.exchange_authorization_code(
+                    MagicMock(),
+                    self.user,
+                    "code",
+                    [twitch_api.SUBSCRIPTION_SCOPE],
+                )
+
+        self.assertEqual(raised.exception.status_code, 403)
+        load_profile.assert_not_called()
+
+    def test_disconnect_clears_tokens_even_when_revoke_fails(self):
+        with patch(
+            "app.twitch_api._read_json_response",
+            side_effect=twitch_api.TwitchAPIError("revoke failed", 500),
+        ):
+            twitch_api.disconnect(self.user)
+
+        self.connection.refresh_from_db()
+        self.assertFalse(self.connection.is_connected)
+        self.assertEqual(self.connection.scopes, [])
+
+    def test_read_json_response_maps_http_error_message_and_status(self):
+        error = urlerror.HTTPError(
+            "https://example.com",
+            401,
+            "error",
+            {},
+            BytesIO(json.dumps({"status": 401, "message": "invalid access token"}).encode()),
+        )
+
+        with patch("app.twitch_api.urlrequest.urlopen", side_effect=error):
+            with self.assertRaises(twitch_api.TwitchAPIError) as raised:
+                twitch_api._read_json_response(object())
+
+        self.assertEqual(str(raised.exception), "invalid access token")
+        self.assertEqual(raised.exception.status_code, 401)
+
+    def test_read_json_response_hides_unparseable_error_body(self):
+        error = urlerror.HTTPError("https://example.com", 502, "error", {}, BytesIO(b"<html>"))
+
+        with patch("app.twitch_api.urlrequest.urlopen", side_effect=error):
+            with self.assertRaises(twitch_api.TwitchAPIError) as raised:
+                twitch_api._read_json_response(object())
+
+        self.assertNotIn("<html>", str(raised.exception))
+        self.assertEqual(raised.exception.status_code, 502)
+
+    def test_read_json_response_handles_network_failure(self):
+        for failure in (urlerror.URLError("offline"), TimeoutError()):
+            with self.subTest(failure=failure):
+                with patch("app.twitch_api.urlrequest.urlopen", side_effect=failure):
+                    with self.assertRaises(twitch_api.TwitchAPIError) as raised:
+                        twitch_api._read_json_response(object())
+
+                self.assertIsNone(raised.exception.status_code)
+
+    def test_read_json_response_handles_empty_and_invalid_bodies(self):
+        def response_with(body):
+            response = MagicMock()
+            response.__enter__.return_value.read.return_value = body
+            return response
+
+        with patch("app.twitch_api.urlrequest.urlopen", return_value=response_with(b"")):
+            self.assertEqual(twitch_api._read_json_response(object(), allow_empty=True), {})
+            with self.assertRaises(twitch_api.TwitchAPIError):
+                twitch_api._read_json_response(object())
+
+        with patch("app.twitch_api.urlrequest.urlopen", return_value=response_with(b"not json")):
+            with self.assertRaises(twitch_api.TwitchAPIError):
+                twitch_api._read_json_response(object())
+
+    @override_settings(TWITCH_CLIENT_ID="", TWITCH_CLIENT_SECRET="")
+    def test_token_request_requires_configured_credentials(self):
+        with patch("app.twitch_api.urlrequest.urlopen") as urlopen:
+            with self.assertRaises(twitch_api.TwitchAPIError):
+                twitch_api._token_request({"grant_type": "refresh_token"})
+
+        urlopen.assert_not_called()
 
     def test_hourly_validation_command_checks_stored_connections(self):
         output = StringIO()
