@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
@@ -11,6 +12,15 @@ from app.models import OverlayPreset
 
 def manageable_presets(request):
     return OverlayPreset.objects.filter(owner=request.user)
+
+
+def posted_pk(request, key):
+    # Unlike <int:pk> URL params, POSTed ids are unchecked; a non-integer would make
+    # the lookup raise ValueError (500) instead of a 404.
+    try:
+        return int(request.POST.get(key, ""))
+    except ValueError:
+        raise Http404 from None
 
 
 @login_required
@@ -26,7 +36,6 @@ def preset_list(request):
 @require_POST
 def preset_save(request):
     overlay_type = request.POST.get("overlay_type", "")
-    pk = request.POST.get("pk", "")
     name = request.POST.get("name", "").strip()
 
     try:
@@ -34,7 +43,7 @@ def preset_save(request):
     except overlay_presets.OverlayPresetError:
         return redirect("preset_list")
 
-    overlay = get_object_or_404(model, owner=request.user, pk=pk)
+    overlay = get_object_or_404(model, owner=request.user, pk=posted_pk(request, "pk"))
 
     if not name:
         messages.error(request, _("Enter a name for the template."))
@@ -58,7 +67,9 @@ def preset_apply(request, overlay_type, pk):
         return redirect("overlay_dashboard")
 
     overlay = get_object_or_404(model, owner=request.user, pk=pk)
-    preset = get_object_or_404(OverlayPreset, owner=request.user, pk=request.POST.get("preset_id"))
+    preset = get_object_or_404(
+        OverlayPreset, owner=request.user, pk=posted_pk(request, "preset_id")
+    )
 
     overlay_versions.record_version(overlay, overlay_versions.OverlayVersion.REASON_AUTOSAVE)
     try:

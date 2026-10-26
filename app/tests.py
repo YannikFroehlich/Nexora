@@ -7,6 +7,7 @@ from urllib import error as urlerror
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.messages import get_messages
 from django.core import mail
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -945,6 +946,134 @@ class OverlayPresetTests(TestCase):
 
         self.assertRedirects(response, reverse("preset_list"))
         self.assertFalse(OverlayPreset.objects.filter(pk=preset.pk).exists())
+
+    def bold_preset(self, owner=None, **style_overrides):
+        return OverlayPreset.objects.create(
+            owner=owner or self.user,
+            name="Bold",
+            style={**overlay_presets.capture_style(self.goal), **style_overrides},
+        )
+
+    def test_preset_list_shows_only_own_presets(self):
+        self.bold_preset()
+        OverlayPreset.objects.create(
+            owner=self.other_user,
+            name="Foreign Secret",
+            style=overlay_presets.capture_style(self.goal),
+        )
+
+        response = self.client.get(reverse("preset_list"))
+
+        self.assertContains(response, "Bold")
+        self.assertNotContains(response, "Foreign Secret")
+
+    def test_save_rejects_unknown_type_and_blank_name(self):
+        unknown_type = self.client.post(
+            reverse("preset_save"),
+            {"overlay_type": "spotify_manage", "pk": self.goal.pk, "name": "X"},
+        )
+        blank_name = self.client.post(
+            reverse("preset_save"),
+            {"overlay_type": "twitch_goal", "pk": self.goal.pk, "name": "   "},
+        )
+
+        self.assertRedirects(unknown_type, reverse("preset_list"))
+        self.assertRedirects(blank_name, reverse("twitch_goal_manage", args=[self.goal.pk]))
+        self.assertFalse(OverlayPreset.objects.exists())
+
+    def test_save_from_another_users_overlay_returns_404(self):
+        foreign_goal = TwitchGoalOverlay.objects.create(owner=self.other_user, name="Foreign")
+
+        response = self.client.post(
+            reverse("preset_save"),
+            {"overlay_type": "twitch_goal", "pk": foreign_goal.pk, "name": "Stolen"},
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(OverlayPreset.objects.exists())
+
+    def test_save_and_apply_with_malformed_ids_return_404(self):
+        preset = self.bold_preset()
+        score = self.score_with_participants()
+
+        for pk in ("", "abc", "1.5"):
+            with self.subTest(pk=pk):
+                save = self.client.post(
+                    reverse("preset_save"),
+                    {"overlay_type": "twitch_goal", "pk": pk, "name": "X"},
+                )
+                apply = self.client.post(
+                    reverse("preset_apply", args=["score", score.pk]),
+                    {"preset_id": pk},
+                )
+                self.assertEqual(save.status_code, 404)
+                self.assertEqual(apply.status_code, 404)
+
+        self.assertEqual(OverlayPreset.objects.get(), preset)
+
+    def test_apply_with_unknown_type_redirects_to_dashboard(self):
+        preset = self.bold_preset()
+
+        response = self.client.post(
+            reverse("preset_apply", args=["unknown", self.goal.pk]),
+            {"preset_id": preset.pk},
+        )
+
+        self.assertRedirects(response, reverse("overlay_dashboard"))
+
+    def test_apply_of_invalid_stored_style_leaves_overlay_unchanged(self):
+        preset = self.bold_preset(background_color="nope")
+        score = self.score_with_participants()
+        original_color = score.background_color
+
+        response = self.client.post(
+            reverse("preset_apply", args=["score", score.pk]),
+            {"preset_id": preset.pk},
+        )
+
+        score.refresh_from_db()
+        self.assertRedirects(response, reverse("score_manage", args=[score.pk]))
+        self.assertEqual(score.background_color, original_color)
+
+    def test_apply_ignores_branding_assets_of_another_user(self):
+        foreign_logo = OverlayAsset.objects.create(
+            owner=self.other_user,
+            name="Foreign Logo",
+            kind=OverlayAsset.KIND_IMAGE,
+            file="overlay-assets/preset-other/logo.png",
+        )
+        preset = self.bold_preset(
+            assets={"font_asset": None, "logo_asset": foreign_logo.pk, "background_asset": None}
+        )
+        score = self.score_with_participants()
+
+        self.client.post(
+            reverse("preset_apply", args=["score", score.pk]),
+            {"preset_id": preset.pk},
+        )
+
+        score.refresh_from_db()
+        self.assertIsNone(score.logo_asset_id)
+        self.assertEqual(score.background_color, "#111111")
+
+    def test_preset_routes_require_login_and_post(self):
+        preset = self.bold_preset()
+
+        get_responses = [
+            self.client.get(reverse("preset_save")),
+            self.client.get(reverse("preset_apply", args=["score", 1])),
+            self.client.get(reverse("preset_delete", args=[preset.pk])),
+        ]
+        self.client.logout()
+        anonymous = self.client.post(reverse("preset_delete", args=[preset.pk]))
+
+        for response in get_responses:
+            self.assertEqual(response.status_code, 405)
+        self.assertRedirects(
+            anonymous,
+            f"{reverse('login')}?next={reverse('preset_delete', args=[preset.pk])}",
+        )
+        self.assertTrue(OverlayPreset.objects.filter(pk=preset.pk).exists())
 
 
 class OverlayTransferTests(TestCase):
@@ -2157,6 +2286,198 @@ class SpotifyOverlayEndpointTests(TestCase):
         self.assertRedirects(response, reverse("spotify_manage", args=[self.overlay.pk]))
         exchange.assert_called_once()
 
+    def start_oauth_session(self, overlay_id=None, state="expected"):
+        session = self.client.session
+        session["spotify_oauth"] = {"state": state, "overlay_id": overlay_id or self.overlay.pk}
+        session.save()
+
+    def test_foreign_overlay_routes_return_404_without_changes(self):
+        other_user = User.objects.create_user(username="spotify-intruder")
+        self.client.force_login(other_user)
+        public_token = self.overlay.public_token
+        requests = (
+            ("get", "spotify_manage"),
+            ("post", "spotify_manage"),
+            ("post", "spotify_delete"),
+            ("post", "spotify_disconnect"),
+            ("get", "spotify_connect"),
+        )
+
+        for method, name in requests:
+            with self.subTest(route=name, method=method):
+                url = reverse(name, args=[self.overlay.pk])
+                response = getattr(self.client, method)(url, self.spotify_form_data(name="X"))
+                self.assertEqual(response.status_code, 404)
+
+        self.overlay.refresh_from_db()
+        self.assertEqual(self.overlay.name, "Desk Setup")
+        self.assertEqual(self.overlay.public_token, public_token)
+        self.assertNotIn("spotify_oauth", self.client.session)
+
+    def test_anonymous_users_cannot_reach_oauth_routes(self):
+        self.client.logout()
+
+        for url in (
+            reverse("spotify_connect", args=[self.overlay.pk]),
+            reverse("spotify_callback"),
+            reverse("spotify_disconnect", args=[self.overlay.pk]),
+            reverse("spotify_delete", args=[self.overlay.pk]),
+        ):
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertRedirects(response, f"{reverse('login')}?next={url}")
+
+    def test_create_with_invalid_data_rerenders_without_saving(self):
+        candidate = SpotifyOverlay()
+        data = {
+            field_name: getattr(candidate, field_name) or ""
+            for field_name in SpotifyOverlayForm.Meta.fields
+        }
+        data.update(
+            {
+                "name": "Broken",
+                "elements": json.dumps(candidate.elements),
+                "background_color": "nope",
+            }
+        )
+
+        response = self.client.post(reverse("spotify_create"), data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("background_color", response.context["form"].errors)
+        self.assertFalse(SpotifyOverlay.objects.filter(name="Broken").exists())
+
+    def test_manage_post_saves_valid_and_rejects_invalid_data(self):
+        url = reverse("spotify_manage", args=[self.overlay.pk])
+
+        invalid = self.client.post(url, self.spotify_form_data(elements="not json"))
+        self.assertEqual(invalid.status_code, 200)
+        self.assertIn("elements", invalid.context["form"].errors)
+
+        valid = self.client.post(url, self.spotify_form_data(name="Renamed"))
+        self.overlay.refresh_from_db()
+        self.assertRedirects(valid, url)
+        self.assertEqual(self.overlay.name, "Renamed")
+        self.assertEqual(overlay_versions.versions_for(self.overlay).count(), 2)
+
+    def test_autosave_rejects_unknown_elements(self):
+        elements = [*self.overlay.elements, {"id": "evil", "type": "script"}]
+
+        response = self.client.post(
+            reverse("spotify_autosave", args=[self.overlay.pk]),
+            self.spotify_form_data(elements=json.dumps(elements)),
+        )
+
+        self.overlay.refresh_from_db()
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("elements", response.json()["errors"])
+        self.assertNotIn("evil", json.dumps(self.overlay.elements))
+
+    def test_delete_removes_overlay_and_versions_but_keeps_the_connection(self):
+        connection = SpotifyConnection.objects.create(owner=self.user, access_token="secret")
+        self.overlay.connection = connection
+        self.overlay.save(update_fields=["connection"])
+        overlay_versions.record_version(self.overlay)
+
+        response = self.client.post(reverse("spotify_delete", args=[self.overlay.pk]))
+
+        self.assertRedirects(response, f"{reverse('overlay_dashboard')}#spotify-overlays")
+        self.assertFalse(SpotifyOverlay.objects.filter(pk=self.overlay.pk).exists())
+        self.assertFalse(
+            OverlayVersion.objects.filter(
+                overlay_type=overlay_transfer.SPOTIFY_TYPE,
+                overlay_id=self.overlay.pk,
+            ).exists()
+        )
+        self.assertTrue(SpotifyConnection.objects.filter(pk=connection.pk).exists())
+
+    @override_settings(SPOTIFY_CLIENT_ID="", SPOTIFY_CLIENT_SECRET="")
+    def test_connect_without_credentials_redirects_back_to_editor(self):
+        response = self.client.get(reverse("spotify_connect", args=[self.overlay.pk]))
+
+        self.assertRedirects(
+            response,
+            reverse("spotify_manage", args=[self.overlay.pk]),
+            fetch_redirect_response=False,
+        )
+        self.assertNotIn("spotify_oauth", self.client.session)
+
+    def test_callback_rejects_missing_session_and_wrong_state(self):
+        dashboard_url = f"{reverse('overlay_dashboard')}#spotify-overlays"
+
+        with patch("app.views.spotify_api.exchange_authorization_code") as exchange:
+            no_session = self.client.get(
+                reverse("spotify_callback"), {"state": "expected", "code": "c"}
+            )
+            self.start_oauth_session()
+            wrong_state = self.client.get(
+                reverse("spotify_callback"), {"state": "forged", "code": "c"}
+            )
+            replayed = self.client.get(
+                reverse("spotify_callback"), {"state": "expected", "code": "c"}
+            )
+
+        for response in (no_session, wrong_state, replayed):
+            self.assertRedirects(response, dashboard_url, fetch_redirect_response=False)
+        exchange.assert_not_called()
+
+    def test_callback_cannot_connect_a_foreign_overlay(self):
+        other_user = User.objects.create_user(username="spotify-victim")
+        foreign = SpotifyOverlay.objects.create(owner=other_user, name="Foreign")
+        self.start_oauth_session(overlay_id=foreign.pk)
+
+        with patch("app.views.spotify_api.exchange_authorization_code") as exchange:
+            response = self.client.get(
+                reverse("spotify_callback"), {"state": "expected", "code": "c"}
+            )
+
+        self.assertEqual(response.status_code, 404)
+        exchange.assert_not_called()
+
+    def test_callback_handles_denied_access_and_missing_code(self):
+        manage_url = reverse("spotify_manage", args=[self.overlay.pk])
+
+        for params in (
+            {"state": "expected", "error": "access_denied"},
+            {"state": "expected"},
+        ):
+            with self.subTest(params=params):
+                self.start_oauth_session()
+                with patch("app.views.spotify_api.exchange_authorization_code") as exchange:
+                    response = self.client.get(reverse("spotify_callback"), params)
+
+                self.assertRedirects(response, manage_url, fetch_redirect_response=False)
+                exchange.assert_not_called()
+
+    def test_callback_reports_exchange_failure_without_upstream_details(self):
+        self.start_oauth_session()
+
+        with patch(
+            "app.views.spotify_api.exchange_authorization_code",
+            side_effect=spotify_api.SpotifyAPIError("upstream secret detail", status_code=400),
+        ):
+            response = self.client.get(
+                reverse("spotify_callback"), {"state": "expected", "code": "c"}
+            )
+
+        notices = [str(message) for message in get_messages(response.wsgi_request)]
+        self.assertRedirects(
+            response,
+            reverse("spotify_manage", args=[self.overlay.pk]),
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(len(notices), 1)
+        self.assertNotIn("upstream secret detail", notices[0])
+        self.assertFalse(self.overlay.is_spotify_connected)
+
+    def test_public_routes_return_404_for_unknown_tokens(self):
+        self.client.logout()
+        unknown = "00000000-0000-0000-0000-000000000000"
+
+        for name in ("spotify_overlay", "spotify_overlay_state"):
+            with self.subTest(route=name):
+                self.assertEqual(self.client.get(reverse(name, args=[unknown])).status_code, 404)
+
 
 def fake_urlopen_response(body):
     response = MagicMock()
@@ -2679,6 +3000,117 @@ class TimerOverlayEndpointTests(TestCase):
         self.assertEqual(created.owner, self.user)
         self.assertEqual(created.duration_seconds, 120)
         self.assertEqual(created.accent_color, candidate.accent_color)
+
+    def test_create_with_invalid_data_rerenders_without_saving(self):
+        response = self.client.post(
+            reverse("timer_create"),
+            self.timer_form_data(name="Broken", background_color="nope"),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("background_color", response.context["form"].errors)
+        self.assertFalse(TimerOverlay.objects.filter(name="Broken").exists())
+
+    def test_manage_post_saves_valid_and_rejects_invalid_data(self):
+        url = reverse("timer_manage", args=[self.timer.pk])
+
+        invalid = self.client.post(url, self.timer_form_data(background_color="nope"))
+        self.timer.refresh_from_db()
+        self.assertEqual(invalid.status_code, 200)
+        self.assertNotEqual(self.timer.background_color, "nope")
+
+        valid = self.client.post(url, self.timer_form_data(name="Break", duration_minutes=10))
+        self.timer.refresh_from_db()
+        self.assertRedirects(valid, url)
+        self.assertEqual(self.timer.name, "Break")
+        self.assertEqual(self.timer.duration_seconds, 600)
+
+    def test_autosave_returns_400_for_invalid_data(self):
+        response = self.client.post(
+            reverse("timer_autosave", args=[self.timer.pk]),
+            self.timer_form_data(name="Changed", mode="sideways"),
+        )
+
+        self.timer.refresh_from_db()
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(response.json()["ok"])
+        self.assertIn("mode", response.json()["errors"])
+        self.assertEqual(self.timer.name, "Starting Soon")
+
+    def test_control_rejects_unknown_action(self):
+        response = self.client.post(
+            reverse("timer_control", args=[self.timer.pk]), {"action": "explode"}
+        )
+
+        self.timer.refresh_from_db()
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(self.timer.is_running)
+
+    def test_start_after_finished_countdown_restarts_from_zero(self):
+        self.timer.accumulated_seconds = self.timer.duration_seconds
+        self.timer.save()
+
+        response = self.client.post(
+            reverse("timer_control", args=[self.timer.pk]), {"action": "start"}
+        )
+
+        self.timer.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(self.timer.is_running)
+        self.assertEqual(self.timer.accumulated_seconds, 0)
+
+    def test_foreign_timer_routes_return_404_without_changes(self):
+        other_user = User.objects.create_user(username="timer-intruder")
+        self.client.force_login(other_user)
+        public_token = self.timer.public_token
+
+        for method, name, data in (
+            ("get", "timer_manage", {}),
+            ("post", "timer_manage", self.timer_form_data(name="Hijacked")),
+            ("post", "timer_autosave", self.timer_form_data(name="Hijacked")),
+            ("post", "timer_control", {"action": "start"}),
+            ("post", "timer_delete", {}),
+            ("post", "timer_duplicate", {}),
+            ("get", "timer_export", {}),
+            ("post", "timer_renew_obs_link", {}),
+        ):
+            with self.subTest(route=name, method=method):
+                url = reverse(name, args=[self.timer.pk])
+                self.assertEqual(getattr(self.client, method)(url, data).status_code, 404)
+
+        self.timer.refresh_from_db()
+        self.assertEqual(self.timer.name, "Starting Soon")
+        self.assertFalse(self.timer.is_running)
+        self.assertEqual(self.timer.public_token, public_token)
+        self.assertEqual(TimerOverlay.objects.count(), 1)
+
+    def test_delete_removes_timer_and_versions(self):
+        overlay_versions.record_version(self.timer)
+
+        response = self.client.post(reverse("timer_delete", args=[self.timer.pk]))
+
+        self.assertRedirects(response, f"{reverse('overlay_dashboard')}#timer-overlays")
+        self.assertFalse(TimerOverlay.objects.filter(pk=self.timer.pk).exists())
+        self.assertFalse(
+            OverlayVersion.objects.filter(
+                overlay_type=overlay_transfer.TIMER_TYPE,
+                overlay_id=self.timer.pk,
+            ).exists()
+        )
+
+    def test_renew_obs_link_invalidates_old_url_and_ignores_external_next(self):
+        old_url = reverse("timer_overlay_state", args=[self.timer.public_token])
+
+        response = self.client.post(
+            reverse("timer_renew_obs_link", args=[self.timer.pk]),
+            {"next": "https://evil.example/phish"},
+        )
+
+        self.timer.refresh_from_db()
+        self.assertRedirects(response, reverse("overlay_dashboard"))
+        self.assertEqual(self.client.get(old_url).status_code, 404)
+        new_url = reverse("timer_overlay_state", args=[self.timer.public_token])
+        self.assertEqual(self.client.get(new_url).status_code, 200)
 
 
 class ScoreOverlayEndpointTests(TestCase):
