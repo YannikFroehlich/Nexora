@@ -76,7 +76,8 @@ class HomeViewTests(TestCase):
         self.assertContains(response, f'href="{reverse("demo")}"')
         self.assertContains(response, f'href="{reverse("about")}"')
         self.assertContains(response, 'class="header-logo__image"')
-        self.assertContains(response, "imgs/icons/nexora_logo.webp")
+        self.assertContains(response, "imgs/icons/nexora_mark.svg")
+        self.assertContains(response, '<span class="header-logo__text">Nexora</span>')
         self.assertEqual(content.count(f'href="{reverse("home")}"'), 2)
 
     def test_header_exposes_accessible_mobile_navigation(self):

@@ -343,28 +343,27 @@ header .title {
 }
 
 .header-logo {
-    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
 
-    width: 168px;
     height: 52px;
-    overflow: hidden;
-    padding: 0;
+    padding: 0 18px 0 13px;
 }
 
 .header-logo__image {
     display: block;
-    position: absolute;
-    top: 50%;
-    left: 50%;
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+}
 
-    width: calc(100% - 12px);
-    max-width: none;
-    height: calc(100% - 4px);
-
-    image-rendering: auto;
-    object-fit: contain;
-    object-position: center;
-    transform: translate(-50%, -50%);
+.header-logo__text {
+    color: var(--color-heading);
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
 }
 
 .header-menu {
