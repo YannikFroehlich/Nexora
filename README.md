@@ -711,6 +711,49 @@ journalctl -u nexora-update.service -n 50
 ~/services/nexora/update.sh
 ```
 
+### Twitch-Tokens stündlich prüfen
+
+`validate_twitch_tokens` muss in Produktion einmal pro Stunde laufen. Ein
+zweiter systemd-Timer führt den Befehl im laufenden Container aus.
+`/etc/systemd/system/nexora-twitch-tokens.service`:
+
+```ini
+[Unit]
+Description=Validate Nexora Twitch tokens
+After=docker.service
+
+[Service]
+Type=oneshot
+User=BENUTZERNAME
+WorkingDirectory=/home/BENUTZERNAME/services/nexora
+ExecStart=/usr/bin/docker compose exec -T web python manage.py validate_twitch_tokens
+```
+
+`/etc/systemd/system/nexora-twitch-tokens.timer`:
+
+```ini
+[Unit]
+Description=Validate Nexora Twitch tokens every hour
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=1h
+
+[Install]
+WantedBy=timers.target
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now nexora-twitch-tokens.timer
+
+systemctl list-timers nexora-twitch-tokens.timer
+journalctl -u nexora-twitch-tokens.service -n 50
+```
+
+Ist der Container gerade gestoppt, etwa während eines Backups, schlägt dieser
+Lauf fehl. Der nächste stündliche Lauf holt die Prüfung nach.
+
 ### SQLite-Datenbank sichern
 
 Für eine konsistente einfache Dateikopie sollte der Web-Container während des
