@@ -530,8 +530,20 @@ python manage.py makemigrations --check --dry-run
 
 Die Docker-Konfiguration startet Nexora mit Gunicorn, stellt statische Dateien
 über WhiteNoise bereit und speichert SQLite dauerhaft unter
-`~/docker/Nexora/data/db.sqlite3`. Auf dem Linux-Server werden Docker Engine,
+`~/services/nexora/data/db.sqlite3`. Auf dem Linux-Server werden Docker Engine,
 das Compose-Plugin und Git benötigt.
+
+Der Code liegt als Git-Klon in `src/`. Compose-Datei, `.env`, Daten und
+Update-Skript liegen daneben, damit ein Update sie nie überschreibt:
+
+```text
+~/services/nexora/
+├── compose.yaml   # baut ./src, bindet ./data ein
+├── .env           # Serverwerte, nicht im Repository
+├── data/          # SQLite-Datenbank und hochgeladene Dateien
+├── src/           # Git-Klon dieses Repositorys, nicht von Hand ändern
+└── update.sh      # vom systemd-Timer alle 5 Minuten ausgeführt
+```
 
 ### Erstinstallation
 
@@ -540,15 +552,32 @@ Mit `BENUTZERNAME` ist der Linux-Benutzer auf dem Server gemeint:
 ```bash
 ssh BENUTZERNAME@192.168.178.175
 
-mkdir -p ~/docker
-cd ~/docker
-git clone https://github.com/YannikFroehlich/Nexora.git
-cd Nexora
+mkdir -p ~/services/nexora/data
+cd ~/services/nexora
+git clone https://github.com/YannikFroehlich/Nexora.git src
 
-cp .env.example .env
+cp src/.env.example .env
 nano .env
+```
 
-mkdir -p data
+Lege daneben `compose.yaml` an:
+
+```yaml
+services:
+  web:
+    build: ./src
+    container_name: nexora
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "0.0.0.0:8001:8000"
+    volumes:
+      - ./data:/app/data
+```
+
+Starte anschließend den Container:
+
+```bash
 docker compose up -d --build
 docker compose ps
 docker compose logs -f web
@@ -593,7 +622,7 @@ Server-Benutzer und einem Berechtigungsfehler kann der Datenordner einmalig
 angepasst werden:
 
 ```bash
-sudo chown -R 1000:1000 ~/docker/Nexora/data
+sudo chown -R 1000:1000 ~/services/nexora/data
 ```
 
 Nexora ist anschließend unter
@@ -602,7 +631,7 @@ Nexora ist anschließend unter
 ### Betrieb und Administration
 
 ```bash
-cd ~/docker/Nexora
+cd ~/services/nexora
 
 docker compose ps
 docker compose logs -f web
@@ -616,25 +645,82 @@ docker compose down
 per Bind-Mount gespeicherte Datenbank und Branding-Dateien im lokalen
 `data`-Ordner.
 
-### Updates einspielen
+### Automatische Updates
 
-```bash
-cd ~/docker/Nexora
-git pull
+`~/services/nexora/update.sh` holt `origin/main` und baut den Container nur neu,
+wenn sich `main` seit dem letzten Lauf bewegt hat:
+
+```sh
+#!/bin/sh
+# Pull origin/main and rebuild only when it moved. Run by nexora-update.timer.
+set -e
+cd "$(dirname "$0")"
+git -C src fetch -q origin main
+[ "$(git -C src rev-parse HEAD)" = "$(git -C src rev-parse origin/main)" ] && exit 0
+git -C src merge --ff-only -q origin/main
+echo "Updating to $(git -C src log -1 --format="%h %s")"
 docker compose up -d --build
-docker compose logs --tail=100 web
+docker image prune -f
 ```
 
+Ein systemd-Timer führt das Skript zwei Minuten nach dem Booten und danach alle
+fünf Minuten aus. `/etc/systemd/system/nexora-update.service`:
+
+```ini
+[Unit]
+Description=Update Nexora from origin/main
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=BENUTZERNAME
+ExecStart=/home/BENUTZERNAME/services/nexora/update.sh
+```
+
+`/etc/systemd/system/nexora-update.timer`:
+
+```ini
+[Unit]
+Description=Check Nexora main every 5 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target
+```
+
+```bash
+chmod +x ~/services/nexora/update.sh
+sudo systemctl daemon-reload
+sudo systemctl enable --now nexora-update.timer
+```
+
+Ein Merge nach `main` ist damit nach spätestens etwa fünf Minuten live.
 Migrationen und `collectstatic --noinput` laufen bei jedem neu gestarteten
-Container automatisch vor Gunicorn.
+Container automatisch vor Gunicorn. Da das Skript nur per Fast-Forward
+aktualisiert, schlägt es fehl, sobald in `src/` lokal etwas geändert wurde.
+
+```bash
+systemctl list-timers nexora-update.timer
+journalctl -u nexora-update.service -n 50
+
+# Update sofort einspielen, ohne auf den Timer zu warten
+~/services/nexora/update.sh
+```
 
 ### SQLite-Datenbank sichern
 
 Für eine konsistente einfache Dateikopie sollte der Web-Container während des
-Backups gestoppt sein:
+Backups gestoppt sein. Steht währenddessen ein Update an, startet der Timer den
+Container wieder; pausiere ihn bei längeren Arbeiten mit
+`sudo systemctl stop nexora-update.timer` und starte ihn danach mit `start`
+erneut.
 
 ```bash
-cd ~/docker/Nexora
+cd ~/services/nexora
 docker compose stop web
 cp data/db.sqlite3 "data/db.sqlite3.backup-$(date +%Y%m%d-%H%M%S)"
 docker compose start web
@@ -649,7 +735,8 @@ Schreibzugriffe stattfinden:
 
 ```bash
 ssh BENUTZERNAME@192.168.178.175
-cd ~/docker/Nexora
+sudo systemctl stop nexora-update.timer
+cd ~/services/nexora
 docker compose stop web
 ```
 
@@ -657,16 +744,17 @@ Kopiere danach auf deinem lokalen Windows-Rechner in PowerShell die vorhandene
 Datenbank an das persistente Ziel:
 
 ```powershell
-scp .\db.sqlite3 BENUTZERNAME@192.168.178.175:~/docker/Nexora/data/db.sqlite3
+scp .\db.sqlite3 BENUTZERNAME@192.168.178.175:~/services/nexora/data/db.sqlite3
 ```
 
 Starte den Container anschließend auf dem Server wieder. Der Entrypoint wendet
 noch fehlende Migrationen an:
 
 ```bash
-cd ~/docker/Nexora
+cd ~/services/nexora
 docker compose start web
 docker compose logs --tail=100 web
+sudo systemctl start nexora-update.timer
 ```
 
 Eine vorhandene Serverdatenbank sollte vor dem Überschreiben wie oben beschrieben
