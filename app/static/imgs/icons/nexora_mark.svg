@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Nexora">
+  <defs>
+    <mask id="nexora-mark-cut">
+      <rect width="64" height="64" fill="#fff"/>
+      <rect x="0" y="27" width="41" height="32" rx="10" fill="#000"/>
+    </mask>
+  </defs>
+  <rect x="11" y="8" width="46" height="36" rx="9" fill="none" stroke="#14b8a6" stroke-width="5.5" mask="url(#nexora-mark-cut)"/>
+  <rect x="4" y="31" width="33" height="23" rx="6.5" fill="#7c3aed"/>
+  <rect x="10.5" y="39" width="15" height="4.5" rx="2.25" fill="#fff"/>
+  <circle cx="47" cy="19" r="4.5" fill="#22d3ee"/>
+</svg>

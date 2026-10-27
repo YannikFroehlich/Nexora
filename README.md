@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="app/static/imgs/icons/nexora_logo.webp" alt="Nexora logo" width="420">
+  <img src="app/static/imgs/icons/nexora_mark.svg" alt="Nexora logo" width="120">
 </p>
 
 <h1 align="center">Nexora</h1>
