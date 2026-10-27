@@ -1,0 +1,24 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'de' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="{% static 'css/scene.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
+    <title>{{ scene.display_name }}</title>
+</head>
+<body
+    class="scene-overlay-source"
+    data-scene-source
+    data-state-url="{% url 'scene_overlay_state' scene.public_token %}"
+>
+    {% include "app/partials/_scene_overlay.html" with scene=scene %}
+    <script src="{% static 'js/polling.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/scene.js' %}?v={{ APP_VERSION }}"></script>
+</body>
+</html>

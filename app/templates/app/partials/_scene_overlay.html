@@ -1,0 +1,38 @@
+{% load i18n %}
+
+{% if scene.font_asset_id %}
+    <style>@font-face { font-family: "NexoraUploadedOverlayFont"; src: url("{{ scene.font_asset.public_url }}"); font-display: swap; }</style>
+{% endif %}
+
+<div class="scene-frame" data-scene-frame>
+    <article
+        class="scene-overlay scene-overlay--{{ scene.design_template }}"
+        data-scene-overlay
+        data-overlay-branding-root
+        data-scene="{{ scene.active_scene }}"
+        data-countdown-seconds="{{ scene.countdown_seconds }}"
+        data-has-countdown="{{ scene.countdown_ends_at|yesno:'true,false' }}"
+        style="
+            --scene-background: {{ scene.background_rgba }};
+            --scene-text: {{ scene.text_color }};
+            --scene-accent: {{ scene.accent_color }};
+            --scene-border: {{ scene.border_color }};
+            --scene-border-width: {{ scene.border_width }}px;
+            --scene-radius: {{ scene.corner_radius }}px;
+            --scene-headline-size: {{ scene.headline_text_size }}px;
+            --scene-message-size: {{ scene.message_text_size }}px;
+            --scene-shadow: {{ scene.shadow_css }};
+            --nexora-overlay-font: {% if scene.font_asset_id %}'NexoraUploadedOverlayFont'{% else %}{{ scene.font_css_stack }}{% endif %};
+            {% if scene.background_asset_id %}--nexora-overlay-background-image: url("{{ scene.background_asset.public_url }}");{% endif %}
+        "
+    >
+        {% if scene.logo_asset_id %}
+            <img class="overlay-custom-logo" src="{{ scene.logo_asset.public_url }}" alt="" data-overlay-custom-logo>
+        {% endif %}
+        <div class="scene-overlay__card">
+            <h1 class="scene-overlay__headline" data-scene-headline>{{ scene.headline }}</h1>
+            <p class="scene-overlay__message" data-scene-message {% if not scene.message %}hidden{% endif %}>{{ scene.message }}</p>
+            <time class="scene-overlay__countdown" data-scene-countdown {% if not scene.countdown_ends_at %}hidden{% endif %}>{{ scene.formatted_countdown }}</time>
+        </div>
+    </article>
+</div>

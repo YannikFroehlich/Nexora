@@ -1,0 +1,292 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% if is_create %}{% translate "Create stream scenes" %}{% else %}{{ scene.display_name }}{% endif %} · Nexora{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/timer.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/scene.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li><a href="{% url 'overlay_dashboard' %}#scene-overlays">{% translate "My overlays" %}</a></li>
+            <li aria-current="page">{% if is_create %}{% translate "Create" %}{% else %}{% translate "Edit" %}{% endif %}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <div
+        class="timer-page"
+        data-scene-editor
+        data-overlay-branding-editor
+        data-editor-state
+        data-editor-create="{{ is_create|yesno:'true,false' }}"
+        data-editor-draft-key="nexora:draft:scene:{{ user.pk }}:{% if is_create %}new{% else %}{{ scene.pk }}{% endif %}"
+        data-status-saved="{% if is_create %}{% translate 'No unsaved changes' %}{% else %}{% translate 'All changes saved' %}{% endif %}"
+        data-status-unsaved="{% translate 'Unsaved changes' %}"
+        data-status-saving="{% translate 'Saving changes...' %}"
+        data-status-failed="{% translate 'Autosave failed. Use the save button to try again.' %}"
+        data-status-draft-saved="{% translate 'Draft saved locally' %}"
+        data-status-draft-restored="{% translate 'Local draft restored' %}"
+    >
+        <section class="timer-hero" aria-labelledby="scene-editor-title">
+            <div>
+                <p class="timer-kicker"><span>Nexora</span> {% translate "Stream scenes" %}</p>
+                <h1 id="scene-editor-title">
+                    {% if is_create %}{% translate "Create stream scenes" %}{% else %}{% translate "Edit stream scenes" %}{% endif %}
+                </h1>
+                <p>{% translate "One full-screen browser source for Starting soon, Be right back and Stream ending. Switch scenes live while OBS keeps the same URL." %}</p>
+            </div>
+            <a class="btn glass-design" href="{% url 'overlay_dashboard' %}#scene-overlays">{% translate "Back to my overlays" %}</a>
+        </section>
+
+        {% include "app/partials/_editor_state_toolbar.html" %}
+
+        {% if messages %}
+            <div class="timer-messages" role="status" aria-live="polite" aria-atomic="true">
+                {% for message in messages %}<p>{{ message }}</p>{% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="timer-editor-layout">
+            <div class="timer-editor-sidebar">
+                {% if not is_create %}
+                    <section class="timer-panel" aria-labelledby="scene-controls-title">
+                        <div class="timer-panel__heading">
+                            <span aria-hidden="true">01</span>
+                            <div>
+                                <p class="timer-kicker">{% translate "Live control" %}</p>
+                                <h2 id="scene-controls-title">{% translate "Active scene" %}</h2>
+                            </div>
+                        </div>
+                        <form
+                            class="scene-controls"
+                            method="post"
+                            action="{% url 'scene_control' scene.pk %}"
+                            data-scene-controls
+                            data-control-url="{% url 'scene_control' scene.pk %}"
+                        >
+                            {% csrf_token %}
+                            {% for value, label in scene.SCENE_CHOICES %}
+                                <button
+                                    class="btn glass-design"
+                                    type="button"
+                                    data-scene-action="{{ value }}"
+                                    aria-pressed="{% if value == scene.active_scene %}true{% else %}false{% endif %}"
+                                >{{ label }}</button>
+                            {% endfor %}
+                            <button class="btn glass-design" type="button" data-scene-action="restart">{% translate "Restart countdown" %}</button>
+                        </form>
+                        <p class="timer-control-status" data-control-status role="status" aria-live="polite"></p>
+                    </section>
+                {% endif %}
+
+                <form
+                    class="timer-form"
+                    method="post"
+                    novalidate
+                    data-scene-form
+                    data-editor-state-form
+                    data-editor-form-key="scene"
+                    {% if not is_create %}data-autosave-url="{% url 'scene_autosave' scene.pk %}"{% endif %}
+                >
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}<div class="timer-form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+
+                    <section class="timer-panel" aria-labelledby="scene-content-title">
+                        <div class="timer-panel__heading">
+                            <span aria-hidden="true">{% if is_create %}01{% else %}02{% endif %}</span>
+                            <div>
+                                <p class="timer-kicker">{% translate "Content" %}</p>
+                                <h2 id="scene-content-title">{% translate "Scene texts" %}</h2>
+                            </div>
+                        </div>
+
+                        <div class="timer-field">
+                            <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                            {{ form.name }}{{ form.name.errors }}
+                        </div>
+
+                        <fieldset class="scene-fieldset" data-scene-fields="starting">
+                            <legend>{% translate "Starting soon" %}</legend>
+                            <div class="timer-field">
+                                <label for="{{ form.starting_headline.id_for_label }}">{{ form.starting_headline.label }}</label>
+                                {{ form.starting_headline }}{{ form.starting_headline.errors }}
+                            </div>
+                            <div class="timer-field">
+                                <label for="{{ form.starting_message.id_for_label }}">{{ form.starting_message.label }}</label>
+                                {{ form.starting_message }}{{ form.starting_message.errors }}
+                            </div>
+                            <div class="timer-field">
+                                <label for="{{ form.starting_countdown_minutes.id_for_label }}">{{ form.starting_countdown_minutes.label }}</label>
+                                {{ form.starting_countdown_minutes }}{{ form.starting_countdown_minutes.errors }}
+                                <small>{{ form.starting_countdown_minutes.help_text }}</small>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="scene-fieldset" data-scene-fields="brb">
+                            <legend>{% translate "Be right back" %}</legend>
+                            <div class="timer-field">
+                                <label for="{{ form.brb_headline.id_for_label }}">{{ form.brb_headline.label }}</label>
+                                {{ form.brb_headline }}{{ form.brb_headline.errors }}
+                            </div>
+                            <div class="timer-field">
+                                <label for="{{ form.brb_message.id_for_label }}">{{ form.brb_message.label }}</label>
+                                {{ form.brb_message }}{{ form.brb_message.errors }}
+                            </div>
+                            <div class="timer-field">
+                                <label for="{{ form.brb_countdown_minutes.id_for_label }}">{{ form.brb_countdown_minutes.label }}</label>
+                                {{ form.brb_countdown_minutes }}{{ form.brb_countdown_minutes.errors }}
+                                <small>{{ form.brb_countdown_minutes.help_text }}</small>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="scene-fieldset" data-scene-fields="ending">
+                            <legend>{% translate "Stream ending" %}</legend>
+                            <div class="timer-field">
+                                <label for="{{ form.ending_headline.id_for_label }}">{{ form.ending_headline.label }}</label>
+                                {{ form.ending_headline }}{{ form.ending_headline.errors }}
+                            </div>
+                            <div class="timer-field">
+                                <label for="{{ form.ending_message.id_for_label }}">{{ form.ending_message.label }}</label>
+                                {{ form.ending_message }}{{ form.ending_message.errors }}
+                            </div>
+                        </fieldset>
+                    </section>
+
+                    <section class="timer-panel" aria-labelledby="scene-design-title">
+                        <div class="timer-panel__heading">
+                            <span aria-hidden="true">{% if is_create %}02{% else %}03{% endif %}</span>
+                            <div>
+                                <p class="timer-kicker">{% translate "Appearance" %}</p>
+                                <h2 id="scene-design-title">{% translate "Overlay design" %}</h2>
+                            </div>
+                        </div>
+
+                        <div class="timer-field">
+                            <label for="{{ form.design_template.id_for_label }}">{{ form.design_template.label }}</label>
+                            {{ form.design_template }}{{ form.design_template.errors }}
+                        </div>
+
+                        <div class="timer-field-grid timer-field-grid--colors">
+                            {% for field in form %}
+                                {% if field.name == "background_color" or field.name == "text_color" or field.name == "accent_color" or field.name == "border_color" %}
+                                    <div class="timer-field">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {{ field }}{{ field.errors }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="timer-field-grid">
+                            {% for field in form %}
+                                {% if field.name == "background_opacity" or field.name == "border_width" or field.name == "corner_radius" or field.name == "headline_text_size" or field.name == "message_text_size" %}
+                                    <div class="timer-field">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {{ field }}{{ field.errors }}
+                                        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="timer-toggles">
+                            <label for="{{ form.shadow_enabled.id_for_label }}">{{ form.shadow_enabled }}<span>{{ form.shadow_enabled.label }}</span></label>
+                        </div>
+
+                        {% include "app/partials/_overlay_branding_controls.html" with branding_form=form overlay=scene overlay_type="scene" %}
+
+                        <button class="btn action-button timer-save" type="submit">
+                            {% if is_create %}{% translate "Create scenes" %}{% else %}{% translate "Save scenes" %}{% endif %}
+                        </button>
+                    </section>
+                </form>
+
+                <form id="overlay-asset-upload-form" action="{% url 'overlay_asset_upload' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                </form>
+
+                {% if not is_create %}
+                    <section class="timer-panel" aria-labelledby="scene-obs-title">
+                        <div class="timer-panel__heading">
+                            <span aria-hidden="true">04</span>
+                            <div>
+                                <p class="timer-kicker">{% translate "Browser source" %}</p>
+                                <h2 id="scene-obs-title">{% translate "OBS Link" %}</h2>
+                            </div>
+                        </div>
+                        <div class="timer-obs-copy">
+                            <input class="form-control" type="text" value="{{ obs_url }}" readonly data-obs-url>
+                            <button class="btn action-button" type="button" data-copy-url="{{ obs_url }}">{% translate "Copy OBS Link" %}</button>
+                        </div>
+                        <form
+                            class="obs-link-renew-form"
+                            action="{% url 'scene_renew_obs_link' scene.pk %}"
+                            method="post"
+                            data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+                        >
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{% url 'scene_manage' scene.pk %}">
+                            <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
+                        </form>
+                        <p>{% blocktranslate with width=1920 height=1080 %}Recommended browser-source size: {{ width }} × {{ height }} pixels.{% endblocktranslate %}</p>
+                        {% include "app/partials/_overlay_control_links.html" %}
+                        {% include "app/partials/_overlay_control_renew_form.html" with overlay_type="scene" overlay_pk=scene.pk %}
+                        <div class="timer-danger-zone">
+                            <a class="btn glass-design" href="{% url 'scene_overlay' scene.public_token %}" target="_blank" rel="noopener">{% translate "Open preview" %}</a>
+                            <form action="{% url 'scene_delete' scene.pk %}" method="post" data-confirm-delete="{% translate 'Delete this scene overlay?' %}">
+                                {% csrf_token %}
+                                <button class="btn timer-danger-button" type="submit">{% translate "Delete" %}</button>
+                            </form>
+                        </div>
+                    </section>
+                    <form id="overlay-preset-save-form" action="{% url 'preset_save' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="overlay_type" value="scene">
+                        <input type="hidden" name="pk" value="{{ scene.pk }}">
+                    </form>
+                    <form
+                        id="overlay-preset-apply-form"
+                        action="{% url 'preset_apply' overlay_type='scene' pk=scene.pk %}"
+                        method="post"
+                        data-confirm-action="{% translate 'This replaces the current font, images, colors, border and corner radius. Continue?' %}"
+                    >
+                        {% csrf_token %}
+                    </form>
+                {% endif %}
+            </div>
+
+            <aside class="timer-preview-panel" aria-labelledby="scene-preview-title">
+                <div class="timer-preview-panel__heading">
+                    <div>
+                        <p class="timer-kicker">{% translate "Live preview" %}</p>
+                        <h2 id="scene-preview-title">{% translate "Overlay preview" %}</h2>
+                    </div>
+                    <span data-scene-preview-label>{{ scene.get_active_scene_display }}</span>
+                </div>
+                {% include "app/partials/_scene_overlay.html" with scene=scene %}
+            </aside>
+        </div>
+
+        {% if not is_create %}
+            {% include "app/partials/_overlay_version_history.html" with overlay=scene %}
+        {% endif %}
+
+        <p class="timer-toast" data-copy-toast role="status" aria-live="polite" aria-atomic="true" hidden>{% translate "OBS link copied" %}</p>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/scene.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
+{% endblock %}

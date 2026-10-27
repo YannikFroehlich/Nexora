@@ -243,6 +243,32 @@ urlpatterns = [
         views.timer_remote_control,
         name="timer_remote_control",
     ),
+    path("scenes/", views.scene_list, name="scene_list"),
+    path("scenes/new/", views.scene_create, name="scene_create"),
+    path("scenes/<int:pk>/", views.scene_manage, name="scene_manage"),
+    path("scenes/<int:pk>/autosave/", views.scene_autosave, name="scene_autosave"),
+    path("scenes/<int:pk>/control/", views.scene_control, name="scene_control"),
+    path("scenes/<int:pk>/duplicate/", views.scene_duplicate, name="scene_duplicate"),
+    path("scenes/<int:pk>/export/", views.scene_export, name="scene_export"),
+    path(
+        "scenes/<int:pk>/renew-obs-link/", views.scene_renew_obs_link, name="scene_renew_obs_link"
+    ),
+    path("scenes/<int:pk>/delete/", views.scene_delete, name="scene_delete"),
+    path(
+        "overlays/scene/<uuid:public_token>/",
+        views.scene_overlay,
+        name="scene_overlay",
+    ),
+    path(
+        "overlays/scene/<uuid:public_token>/state/",
+        views.scene_overlay_state,
+        name="scene_overlay_state",
+    ),
+    path(
+        "control/scene/<uuid:control_token>/<str:action>/",
+        views.scene_remote_control,
+        name="scene_remote_control",
+    ),
     path("winchallenges/", views.winchallenge_list, name="winchallenge_list"),
     path("winchallenges/new/", views.winchallenge_create, name="winchallenge_create"),
     path("winchallenges/<int:pk>/", views.winchallenge_manage, name="winchallenge_manage"),

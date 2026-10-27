@@ -1,4 +1,6 @@
+import math
 import uuid
+from datetime import timedelta
 from pathlib import Path
 
 from django.conf import settings
@@ -2096,6 +2098,194 @@ class TimerOverlay(OverlayBrandingMixin, models.Model):
                 "timer_text_size": self.timer_text_size,
                 "show_progress": self.show_progress,
                 "shadow_enabled": self.shadow_enabled,
+                "shadow_css": self.shadow_css,
+                **self.branding_payload(),
+            },
+        }
+
+
+class SceneOverlay(OverlayBrandingMixin, models.Model):
+    """Full-screen Starting Soon / Be Right Back / Ending scene switched live."""
+
+    DEFAULT_NAME = _("Stream Scenes")
+    MAX_COUNTDOWN_MINUTES = 240
+
+    SCENE_STARTING = "starting"
+    SCENE_BRB = "brb"
+    SCENE_ENDING = "ending"
+    SCENE_CHOICES = (
+        (SCENE_STARTING, _("Starting soon")),
+        (SCENE_BRB, _("Be right back")),
+        (SCENE_ENDING, _("Stream ending")),
+    )
+
+    TEMPLATE_MINIMAL = "minimal"
+    TEMPLATE_GLASS = "glass"
+    TEMPLATE_NEON = "neon"
+    DESIGN_TEMPLATE_CHOICES = (
+        (TEMPLATE_MINIMAL, _("Minimal")),
+        (TEMPLATE_GLASS, _("Glass")),
+        (TEMPLATE_NEON, _("Neon")),
+    )
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="scene_overlays",
+        blank=True,
+        null=True,
+    )
+    public_token = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        db_index=True,
+    )
+    control_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    name = models.CharField(max_length=120, default="Stream Scenes", blank=True)
+    active_scene = models.CharField(
+        max_length=20,
+        choices=SCENE_CHOICES,
+        default=SCENE_STARTING,
+    )
+    countdown_ends_at = models.DateTimeField(blank=True, null=True)
+
+    starting_headline = models.CharField(max_length=120, default="Starting soon", blank=True)
+    starting_message = models.CharField(max_length=200, blank=True)
+    starting_countdown_minutes = models.PositiveSmallIntegerField(
+        default=5,
+        validators=[MaxValueValidator(MAX_COUNTDOWN_MINUTES)],
+    )
+    brb_headline = models.CharField(max_length=120, default="Be right back", blank=True)
+    brb_message = models.CharField(max_length=200, blank=True)
+    brb_countdown_minutes = models.PositiveSmallIntegerField(
+        default=5,
+        validators=[MaxValueValidator(MAX_COUNTDOWN_MINUTES)],
+    )
+    ending_headline = models.CharField(max_length=120, default="Thanks for watching", blank=True)
+    ending_message = models.CharField(max_length=200, blank=True)
+
+    design_template = models.CharField(
+        max_length=20,
+        choices=DESIGN_TEMPLATE_CHOICES,
+        default=TEMPLATE_GLASS,
+    )
+    background_color = models.CharField(
+        max_length=7,
+        default="#0b1020",
+        validators=[hex_color_validator],
+    )
+    background_opacity = models.PositiveSmallIntegerField(
+        default=100,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+    text_color = models.CharField(
+        max_length=7,
+        default="#f8fafc",
+        validators=[hex_color_validator],
+    )
+    accent_color = models.CharField(
+        max_length=7,
+        default="#8b5cf6",
+        validators=[hex_color_validator],
+    )
+    border_color = models.CharField(
+        max_length=7,
+        default="#a78bfa",
+        validators=[hex_color_validator],
+    )
+    border_width = models.PositiveSmallIntegerField(
+        default=1,
+        validators=[MinValueValidator(0), MaxValueValidator(12)],
+    )
+    corner_radius = models.PositiveSmallIntegerField(
+        default=32,
+        validators=[MinValueValidator(0), MaxValueValidator(64)],
+    )
+    headline_text_size = models.PositiveSmallIntegerField(
+        default=96,
+        validators=[MinValueValidator(32), MaxValueValidator(180)],
+    )
+    message_text_size = models.PositiveSmallIntegerField(
+        default=30,
+        validators=[MinValueValidator(14), MaxValueValidator(72)],
+    )
+    shadow_enabled = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-updated_at", "-created_at")
+
+    def __str__(self):
+        return str(self.display_name)
+
+    @property
+    def display_name(self):
+        return self.name or self.DEFAULT_NAME
+
+    @property
+    def headline(self):
+        return getattr(self, f"{self.active_scene}_headline", "").strip()
+
+    @property
+    def message(self):
+        return getattr(self, f"{self.active_scene}_message", "").strip()
+
+    @property
+    def background_rgba(self):
+        return hex_color_rgba(self.background_color, self.background_opacity)
+
+    @property
+    def shadow_css(self):
+        if not self.shadow_enabled:
+            return "none"
+        return "0 32px 90px rgba(0, 0, 0, 0.45)"
+
+    def countdown_minutes_for(self, scene):
+        # The ending scene has no countdown.
+        return getattr(self, f"{scene}_countdown_minutes", 0)
+
+    def restart_countdown(self, now=None):
+        minutes = self.countdown_minutes_for(self.active_scene)
+        now = now or timezone.now()
+        self.countdown_ends_at = now + timedelta(minutes=minutes) if minutes else None
+
+    def countdown_seconds(self, now=None):
+        if not self.countdown_ends_at:
+            return 0
+        now = now or timezone.now()
+        return max(math.ceil((self.countdown_ends_at - now).total_seconds()), 0)
+
+    def formatted_countdown(self, now=None):
+        hours, remainder = divmod(self.countdown_seconds(now), 3600)
+        minutes, seconds = divmod(remainder, 60)
+        if hours:
+            return f"{hours:d}:{minutes:02d}:{seconds:02d}"
+        return f"{minutes:02d}:{seconds:02d}"
+
+    def state_payload(self):
+        now = timezone.now()
+        return {
+            "name": self.display_name,
+            "scene": self.active_scene,
+            "headline": self.headline,
+            "message": self.message,
+            "has_countdown": self.countdown_ends_at is not None,
+            "countdown_seconds": self.countdown_seconds(now),
+            "server_time": now.isoformat(),
+            "updated_at": self.updated_at.isoformat() if self.updated_at else "",
+            "design": {
+                "template": self.design_template,
+                "background_rgba": self.background_rgba,
+                "text_color": self.text_color,
+                "accent_color": self.accent_color,
+                "border_color": self.border_color,
+                "border_width": self.border_width,
+                "corner_radius": self.corner_radius,
+                "headline_text_size": self.headline_text_size,
+                "message_text_size": self.message_text_size,
                 "shadow_css": self.shadow_css,
                 **self.branding_payload(),
             },

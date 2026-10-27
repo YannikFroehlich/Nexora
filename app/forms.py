@@ -16,6 +16,7 @@ from django.utils.translation import gettext_lazy as _
 from app.models import (
     GOAL_LAYOUT_DIMENSIONS,
     OverlayAsset,
+    SceneOverlay,
     ScoreOverlay,
     ScoreParticipant,
     SpotifyOverlay,
@@ -1646,3 +1647,141 @@ class TimerOverlayForm(forms.ModelForm):
             self._save_m2m()
 
         return instance
+
+
+class SceneOverlayForm(forms.ModelForm):
+    """Texts, countdowns and design for the Starting Soon / BRB / Ending scenes."""
+
+    class Meta:
+        model = SceneOverlay
+        fields = (
+            "name",
+            "starting_headline",
+            "starting_message",
+            "starting_countdown_minutes",
+            "brb_headline",
+            "brb_message",
+            "brb_countdown_minutes",
+            "ending_headline",
+            "ending_message",
+            "design_template",
+            "background_color",
+            "background_opacity",
+            "text_color",
+            "accent_color",
+            "border_color",
+            "border_width",
+            "corner_radius",
+            "headline_text_size",
+            "message_text_size",
+            "shadow_enabled",
+            "font_family",
+            "font_asset",
+            "logo_asset",
+            "background_asset",
+        )
+        labels = {
+            "name": _("Overlay name"),
+            "starting_headline": _("Headline"),
+            "starting_message": _("Message"),
+            "starting_countdown_minutes": _("Countdown in minutes"),
+            "brb_headline": _("Headline"),
+            "brb_message": _("Message"),
+            "brb_countdown_minutes": _("Countdown in minutes"),
+            "ending_headline": _("Headline"),
+            "ending_message": _("Message"),
+            "design_template": _("Design template"),
+            "background_color": _("Background color"),
+            "background_opacity": _("Background opacity"),
+            "text_color": _("Text color"),
+            "accent_color": _("Accent color"),
+            "border_color": _("Border color"),
+            "border_width": _("Border width"),
+            "corner_radius": _("Corner radius"),
+            "headline_text_size": _("Headline text size"),
+            "message_text_size": _("Message text size"),
+            "shadow_enabled": _("Show shadow"),
+        }
+        help_texts = {
+            "background_opacity": _("0 is transparent, 100 is fully opaque."),
+            "starting_countdown_minutes": _("0 hides the countdown."),
+            "brb_countdown_minutes": _("0 hides the countdown."),
+        }
+        widgets = {
+            "name": forms.TextInput(
+                attrs={"class": BASE_INPUT_CLASS, "placeholder": _("Stream Scenes")}
+            ),
+            "starting_headline": forms.TextInput(attrs={"class": BASE_INPUT_CLASS}),
+            "starting_message": forms.TextInput(attrs={"class": BASE_INPUT_CLASS}),
+            "starting_countdown_minutes": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 240, "step": 1}
+            ),
+            "brb_headline": forms.TextInput(attrs={"class": BASE_INPUT_CLASS}),
+            "brb_message": forms.TextInput(attrs={"class": BASE_INPUT_CLASS}),
+            "brb_countdown_minutes": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 240, "step": 1}
+            ),
+            "ending_headline": forms.TextInput(attrs={"class": BASE_INPUT_CLASS}),
+            "ending_message": forms.TextInput(attrs={"class": BASE_INPUT_CLASS}),
+            "design_template": forms.Select(attrs={"class": BASE_INPUT_CLASS}),
+            "background_color": ColorInput(attrs={"class": "color-control"}),
+            "background_opacity": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 100, "step": 1}
+            ),
+            "text_color": ColorInput(attrs={"class": "color-control"}),
+            "accent_color": ColorInput(attrs={"class": "color-control"}),
+            "border_color": ColorInput(attrs={"class": "color-control"}),
+            "border_width": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 12, "step": 1}
+            ),
+            "corner_radius": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 64, "step": 1}
+            ),
+            "headline_text_size": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 32, "max": 180, "step": 1}
+            ),
+            "message_text_size": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 14, "max": 72, "step": 1}
+            ),
+            "shadow_enabled": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+        }
+
+    TEXT_FIELDS = (
+        "starting_headline",
+        "starting_message",
+        "brb_headline",
+        "brb_message",
+        "ending_headline",
+        "ending_message",
+    )
+
+    def __init__(self, *args, **kwargs):
+        asset_owner = kwargs.pop("asset_owner", None)
+        super().__init__(*args, **kwargs)
+        _configure_branding_fields(self, asset_owner)
+        self.fields["name"].required = False
+        for field_name in self.TEXT_FIELDS:
+            self.fields[field_name].required = False
+
+        if not self.is_bound and self.instance.pk is None:
+            self.initial.update(
+                {
+                    "name": _("Stream Scenes"),
+                    "starting_headline": _("Starting soon"),
+                    "brb_headline": _("Be right back"),
+                    "ending_headline": _("Thanks for watching"),
+                }
+            )
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip() or "Stream Scenes"
+
+    def clean_font_family(self):
+        return _selected_font_family(self)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        for field_name in self.TEXT_FIELDS:
+            if field_name in cleaned_data:
+                cleaned_data[field_name] = cleaned_data[field_name].strip()
+        return cleaned_data

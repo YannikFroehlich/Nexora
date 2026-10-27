@@ -1,0 +1,160 @@
+/* Rendered 1920 × 1080 scene, scaled into its frame by scene.js ---------- */
+
+.scene-frame {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    border-radius: 18px;
+    background-color: #131821;
+    background-image:
+        linear-gradient(45deg, rgba(255,255,255,.055) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255,255,255,.055) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255,255,255,.055) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,.055) 75%);
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+    background-size: 20px 20px;
+}
+
+/* Two classes so this beats [data-overlay-branding-root] { position: relative }. */
+.scene-frame > .scene-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    display: flex;
+    width: 1920px;
+    height: 1080px;
+    padding: 96px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    color: var(--scene-text, #f8fafc);
+    background-color: var(--scene-background, #0b1020);
+    font-family: var(--nexora-overlay-font, Inter, ui-sans-serif, system-ui, sans-serif);
+    text-align: center;
+    transform-origin: 0 0;
+}
+
+.scene-overlay > .overlay-custom-logo {
+    position: static;
+    max-width: 360px;
+    max-height: 220px;
+}
+
+.scene-overlay__card {
+    display: grid;
+    max-width: 1400px;
+    padding: 72px 110px;
+    justify-items: center;
+    gap: 28px;
+    border: var(--scene-border-width, 1px) solid var(--scene-border, #a78bfa);
+    border-radius: var(--scene-radius, 32px);
+    background: color-mix(in srgb, var(--scene-background, #0b1020) 55%, transparent);
+    box-shadow: var(--scene-shadow, none);
+}
+
+.scene-overlay--glass .scene-overlay__card {
+    backdrop-filter: blur(24px) saturate(140%);
+}
+
+.scene-overlay--minimal .scene-overlay__card {
+    border-width: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.scene-overlay--neon .scene-overlay__card {
+    box-shadow:
+        0 0 42px color-mix(in srgb, var(--scene-accent) 55%, transparent),
+        inset 0 0 36px color-mix(in srgb, var(--scene-accent) 14%, transparent);
+}
+
+.scene-overlay__headline {
+    margin: 0;
+    font-size: var(--scene-headline-size, 96px);
+    font-weight: 850;
+    letter-spacing: -.035em;
+    line-height: 1.02;
+}
+
+.scene-overlay--neon .scene-overlay__headline {
+    text-shadow: 0 0 28px color-mix(in srgb, var(--scene-accent) 60%, transparent);
+}
+
+.scene-overlay__message {
+    max-width: 1100px;
+    margin: 0;
+    opacity: .82;
+    font-size: var(--scene-message-size, 30px);
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.scene-overlay__countdown {
+    display: block;
+    color: var(--scene-accent, #8b5cf6);
+    font-size: calc(var(--scene-headline-size, 96px) * 1.1);
+    font-variant-numeric: tabular-nums;
+    font-weight: 850;
+    letter-spacing: -.04em;
+    line-height: 1;
+}
+
+.scene-overlay__countdown[hidden],
+.scene-overlay__message[hidden] {
+    display: none;
+}
+
+/* OBS browser source: the frame fills the viewport without a checkerboard. */
+
+.scene-overlay-source {
+    margin: 0;
+    overflow: hidden;
+    background: transparent;
+}
+
+.scene-overlay-source .scene-frame {
+    width: 100vw;
+    height: 100vh;
+    aspect-ratio: auto;
+    border-radius: 0;
+    background: none;
+}
+
+/* Editor ----------------------------------------------------------------- */
+
+.scene-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.scene-controls .btn {
+    min-width: 0;
+}
+
+.scene-controls .btn[aria-pressed="true"] {
+    border-color: #8b5cf6;
+    color: #fff;
+    background: #7c3aed;
+}
+
+.scene-fieldset {
+    margin: 0 0 16px;
+    padding: 16px 16px 0;
+    border: 1px solid rgba(148, 163, 184, .24);
+    border-radius: 16px;
+}
+
+.scene-fieldset legend {
+    padding: 0 7px;
+    font-size: .8rem;
+    font-weight: 800;
+}
+
+@media (max-width: 680px) {
+    .scene-controls {
+        grid-template-columns: 1fr;
+    }
+}

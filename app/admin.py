@@ -4,6 +4,7 @@ from app.models import (
     OverlayAsset,
     OverlayPreset,
     OverlayVersion,
+    SceneOverlay,
     ScoreOverlay,
     ScoreParticipant,
     SpotifyConnection,
@@ -246,3 +247,11 @@ class TimerOverlayAdmin(admin.ModelAdmin):
     @admin.display(boolean=True, description="Running")
     def timer_running(self, obj):
         return obj.effective_is_running()
+
+
+@admin.register(SceneOverlay)
+class SceneOverlayAdmin(admin.ModelAdmin):
+    list_display = ("display_name", "owner", "active_scene", "updated_at")
+    list_filter = ("active_scene", "design_template", "owner")
+    search_fields = ("name", "public_token", "owner__username")
+    readonly_fields = ("public_token", "control_token", "created_at", "updated_at")

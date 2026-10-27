@@ -7,6 +7,7 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 
 from app.forms import (
+    SceneOverlayForm,
     ScoreOverlayForm,
     SpotifyOverlayForm,
     TimerOverlayForm,
@@ -14,6 +15,7 @@ from app.forms import (
 )
 from app.models import (
     OverlayBrandingMixin,
+    SceneOverlay,
     ScoreOverlay,
     ScoreParticipant,
     SpotifyConnection,
@@ -35,6 +37,7 @@ TIMER_TYPE = "timer"
 WINCHALLENGE_TYPE = "winchallenge"
 SCORE_TYPE = "score"
 TWITCH_GOAL_TYPE = "twitch_goal"
+SCENE_TYPE = "scene"
 
 SPOTIFY_FIELDS = (
     "name",
@@ -180,6 +183,31 @@ TWITCH_GOAL_FIELDS = (
 )
 
 
+SCENE_FIELDS = (
+    "name",
+    "starting_headline",
+    "starting_message",
+    "starting_countdown_minutes",
+    "brb_headline",
+    "brb_message",
+    "brb_countdown_minutes",
+    "ending_headline",
+    "ending_message",
+    "design_template",
+    "background_color",
+    "background_opacity",
+    "text_color",
+    "accent_color",
+    "border_color",
+    "border_width",
+    "corner_radius",
+    "headline_text_size",
+    "message_text_size",
+    "shadow_enabled",
+    "font_family",
+)
+
+
 class OverlayTransferError(ValueError):
     """Safe, user-facing error for invalid import files."""
 
@@ -241,6 +269,15 @@ def twitch_goal_export_payload(overlay):
     }
 
 
+def scene_export_payload(scene):
+    return {
+        "format": FORMAT_NAME,
+        "version": FORMAT_VERSION,
+        "type": SCENE_TYPE,
+        "overlay": _model_fields(scene, SCENE_FIELDS),
+    }
+
+
 def export_payload(overlay):
     if isinstance(overlay, SpotifyOverlay):
         return spotify_export_payload(overlay)
@@ -256,6 +293,9 @@ def export_payload(overlay):
 
     if isinstance(overlay, TwitchGoalOverlay):
         return twitch_goal_export_payload(overlay)
+
+    if isinstance(overlay, SceneOverlay):
+        return scene_export_payload(overlay)
 
     raise TypeError("Unsupported overlay model")
 
@@ -411,6 +451,7 @@ def _validate_envelope(payload):
         WINCHALLENGE_TYPE,
         SCORE_TYPE,
         TWITCH_GOAL_TYPE,
+        SCENE_TYPE,
     ):
         raise OverlayTransferError(_("The overlay type is not supported."))
 
@@ -575,6 +616,18 @@ def _import_twitch_goal(payload, owner):
     return overlay
 
 
+def _import_scene(payload, owner):
+    overlay_data = _overlay_data_with_defaults(payload["overlay"])
+    _require_exact_keys(overlay_data, SCENE_FIELDS)
+    form = SceneOverlayForm(data=overlay_data, asset_owner=owner)
+    if not form.is_valid():
+        raise OverlayTransferError(_("The scene overlay data is invalid."))
+    scene = form.save(commit=False)
+    scene.owner = owner
+    scene.save()
+    return scene
+
+
 def _import_winchallenge(payload, owner):
     overlay_data = winchallenge_data_with_defaults(_overlay_data_with_defaults(payload["overlay"]))
     games_data = payload["games"]
@@ -614,6 +667,9 @@ def import_payload(payload, owner):
 
     if overlay_type == TWITCH_GOAL_TYPE:
         return _import_twitch_goal(payload, owner)
+
+    if overlay_type == SCENE_TYPE:
+        return _import_scene(payload, owner)
 
     return _import_winchallenge(payload, owner)
 
