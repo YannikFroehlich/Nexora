@@ -44,6 +44,7 @@ from app.models import (
     OverlayAsset,
     OverlayPreset,
     OverlayVersion,
+    SceneOverlay,
     ScoreOverlay,
     ScoreParticipant,
     SpotifyConnection,
@@ -317,12 +318,14 @@ class OverlayDashboardTests(TestCase):
         self.assertContains(response, 'id="score-overlays"')
         self.assertContains(response, 'id="timer-overlays"')
         self.assertContains(response, 'id="twitch-goal-overlays"')
-        self.assertContains(response, 'class="dashboard-empty"', count=5)
+        self.assertContains(response, 'id="scene-overlays"')
+        self.assertContains(response, 'class="dashboard-empty"', count=6)
         self.assertEqual(content.count(f'href="{reverse("spotify_create")}"'), 1)
         self.assertEqual(content.count(f'href="{reverse("winchallenge_create")}"'), 1)
         self.assertEqual(content.count(f'href="{reverse("score_create")}"'), 1)
         self.assertEqual(content.count(f'href="{reverse("timer_create")}"'), 1)
         self.assertEqual(content.count(f'href="{reverse("twitch_goal_create")}"'), 1)
+        self.assertEqual(content.count(f'href="{reverse("scene_create")}"'), 1)
 
     def test_dashboard_shows_saved_overlays_from_all_tools(self):
         spotify_overlay = SpotifyOverlay.objects.create(owner=self.user, name="Stream Music")
@@ -3541,6 +3544,239 @@ class TimerOverlayEndpointTests(TestCase):
         self.assertEqual(self.client.get(old_url).status_code, 404)
         new_url = reverse("timer_overlay_state", args=[self.timer.public_token])
         self.assertEqual(self.client.get(new_url).status_code, 200)
+
+
+class SceneOverlayEndpointTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="scene-owner")
+        self.client.force_login(self.user)
+        self.scene = SceneOverlay.objects.create(
+            owner=self.user,
+            name="Scenes",
+            starting_message="Grab a drink",
+            starting_countdown_minutes=5,
+            brb_countdown_minutes=0,
+        )
+
+    def scene_form_data(self, **updates):
+        data = {
+            field_name: getattr(self.scene, field_name)
+            for field_name in overlay_transfer.SCENE_FIELDS
+        }
+        data.update(updates)
+        return data
+
+    def test_manage_page_contains_controls_preview_and_obs_url(self):
+        response = self.client.get(reverse("scene_manage", args=[self.scene.pk]))
+
+        self.assertContains(response, "data-scene-editor")
+        self.assertContains(response, 'data-scene-action="brb"')
+        self.assertContains(response, reverse("scene_overlay", args=[self.scene.public_token]))
+        self.assertContains(response, reverse("scene_autosave", args=[self.scene.pk]))
+        self.assertContains(
+            response,
+            reverse("scene_remote_control", args=[self.scene.control_token, "ending"]),
+        )
+
+    def test_create_assigns_owner_and_translated_default_headlines(self):
+        form_page = self.client.get(reverse("scene_create"))
+        self.assertEqual(form_page.status_code, 200)
+
+        response = self.client.post(
+            reverse("scene_create"), self.scene_form_data(name="Fresh", brb_headline="Pause")
+        )
+
+        created = SceneOverlay.objects.get(name="Fresh")
+        self.assertRedirects(response, reverse("scene_manage", args=[created.pk]))
+        self.assertEqual(created.owner, self.user)
+        self.assertEqual(created.brb_headline, "Pause")
+
+    def test_autosave_updates_texts_and_rejects_invalid_data(self):
+        url = reverse("scene_autosave", args=[self.scene.pk])
+
+        valid = self.client.post(
+            url, self.scene_form_data(ending_message="  See you  ", headline_text_size=120)
+        )
+        invalid = self.client.post(url, self.scene_form_data(starting_countdown_minutes=999))
+
+        self.scene.refresh_from_db()
+        self.assertEqual(valid.status_code, 200)
+        self.assertEqual(self.scene.ending_message, "See you")
+        self.assertEqual(self.scene.headline_text_size, 120)
+        self.assertEqual(invalid.status_code, 400)
+        self.assertIn("starting_countdown_minutes", invalid.json()["errors"])
+
+    def test_switching_scenes_starts_that_scenes_countdown(self):
+        now = timezone.now()
+        url = reverse("scene_control", args=[self.scene.pk])
+
+        with patch("app.views.timezone.now", return_value=now):
+            starting = self.client.post(url, {"action": "starting"})
+        self.scene.refresh_from_db()
+        self.assertEqual(starting.status_code, 200)
+        self.assertEqual(self.scene.countdown_ends_at, now + timedelta(minutes=5))
+        self.assertTrue(starting.json()["has_countdown"])
+
+        brb = self.client.post(url, {"action": "brb"})
+        self.scene.refresh_from_db()
+        self.assertEqual(self.scene.active_scene, SceneOverlay.SCENE_BRB)
+        self.assertIsNone(self.scene.countdown_ends_at)
+        self.assertFalse(brb.json()["has_countdown"])
+
+        unknown = self.client.post(url, {"action": "explode"})
+        self.assertEqual(unknown.status_code, 400)
+
+    def test_countdown_seconds_round_up_and_stop_at_zero(self):
+        now = timezone.now()
+        self.scene.countdown_ends_at = now + timedelta(seconds=90, milliseconds=200)
+
+        self.assertEqual(self.scene.countdown_seconds(now), 91)
+        self.assertEqual(self.scene.formatted_countdown(now), "01:31")
+        self.assertEqual(self.scene.countdown_seconds(now + timedelta(hours=1)), 0)
+
+    def test_public_page_and_state_work_unauthenticated_without_leaks(self):
+        self.client.logout()
+
+        page = self.client.get(reverse("scene_overlay", args=[self.scene.public_token]))
+        state = self.client.get(reverse("scene_overlay_state", args=[self.scene.public_token]))
+        payload = state.json()
+
+        self.assertEqual(page.status_code, 200)
+        self.assertEqual(page["Cache-Control"].split(",")[0], "no-store")
+        self.assertEqual(payload["scene"], SceneOverlay.SCENE_STARTING)
+        self.assertEqual(payload["headline"], "Starting soon")
+        self.assertEqual(payload["message"], "Grab a drink")
+        for secret in ("owner", "public_token", "control_token"):
+            self.assertNotIn(secret, payload)
+        self.assertEqual(
+            self.client.get(
+                reverse("scene_overlay_state", args=[self.scene.public_token]),
+                HTTP_IF_NONE_MATCH=state["ETag"],
+            ).status_code,
+            304,
+        )
+
+    def test_remote_control_switches_scene_without_login(self):
+        self.client.logout()
+
+        response = self.client.get(
+            reverse("scene_remote_control", args=[self.scene.control_token, "ending"])
+        )
+        unknown = self.client.get(
+            reverse("scene_remote_control", args=[self.scene.control_token, "explode"])
+        )
+
+        self.scene.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.scene.active_scene, SceneOverlay.SCENE_ENDING)
+        self.assertEqual(unknown.status_code, 404)
+
+    def test_export_import_and_duplicate_keep_texts_but_not_runtime_state(self):
+        self.scene.active_scene = SceneOverlay.SCENE_BRB
+        self.scene.countdown_ends_at = timezone.now()
+        self.scene.save()
+
+        export = self.client.get(reverse("scene_export", args=[self.scene.pk]))
+        payload = json.loads(export.content)
+        self.assertEqual(payload["type"], "scene")
+        self.assertNotIn("active_scene", payload["overlay"])
+        self.assertNotIn("countdown_ends_at", payload["overlay"])
+
+        upload = SimpleUploadedFile(
+            "scene.json", json.dumps(payload).encode("utf-8"), content_type="application/json"
+        )
+        import_response = self.client.post(reverse("overlay_import"), {"overlay_file": upload})
+        self.assertRedirects(
+            import_response,
+            f"{reverse('overlay_dashboard')}#scene-overlays",
+            fetch_redirect_response=False,
+        )
+        imported = SceneOverlay.objects.exclude(pk=self.scene.pk).get()
+        self.assertEqual(imported.starting_message, "Grab a drink")
+        self.assertEqual(imported.active_scene, SceneOverlay.SCENE_STARTING)
+        self.assertIsNone(imported.countdown_ends_at)
+
+        self.client.post(reverse("scene_duplicate", args=[self.scene.pk]))
+        duplicate = SceneOverlay.objects.latest("pk")
+        self.assertTrue(duplicate.name.startswith("Scenes ("))
+        self.assertNotEqual(duplicate.public_token, self.scene.public_token)
+
+    def test_version_restore_recovers_texts(self):
+        overlay_versions.record_version(self.scene)
+        version = overlay_versions.versions_for(self.scene).get()
+        self.scene.starting_headline = "Changed"
+        self.scene.save()
+
+        response = self.client.post(
+            reverse(
+                "overlay_version_restore",
+                args=[overlay_transfer.SCENE_TYPE, self.scene.pk, version.pk],
+            )
+        )
+
+        self.scene.refresh_from_db()
+        self.assertRedirects(response, reverse("scene_manage", args=[self.scene.pk]))
+        self.assertEqual(self.scene.starting_headline, "Starting soon")
+
+    def test_foreign_scene_routes_return_404_and_anonymous_users_must_log_in(self):
+        other_user = User.objects.create_user(username="scene-intruder")
+        self.client.force_login(other_user)
+
+        for method, name, data in (
+            ("get", "scene_manage", {}),
+            ("post", "scene_autosave", self.scene_form_data(name="Hijacked")),
+            ("post", "scene_control", {"action": "ending"}),
+            ("post", "scene_delete", {}),
+            ("post", "scene_duplicate", {}),
+            ("get", "scene_export", {}),
+            ("post", "scene_renew_obs_link", {}),
+        ):
+            with self.subTest(route=name):
+                url = reverse(name, args=[self.scene.pk])
+                self.assertEqual(getattr(self.client, method)(url, data).status_code, 404)
+
+        self.scene.refresh_from_db()
+        self.assertEqual(self.scene.name, "Scenes")
+        self.assertEqual(self.scene.active_scene, SceneOverlay.SCENE_STARTING)
+        self.assertEqual(SceneOverlay.objects.count(), 1)
+
+        self.client.logout()
+        url = reverse("scene_manage", args=[self.scene.pk])
+        self.assertRedirects(self.client.get(url), f"{reverse('login')}?next={url}")
+
+    def test_delete_removes_scene_and_versions(self):
+        overlay_versions.record_version(self.scene)
+
+        response = self.client.post(reverse("scene_delete", args=[self.scene.pk]))
+
+        self.assertRedirects(response, f"{reverse('overlay_dashboard')}#scene-overlays")
+        self.assertFalse(SceneOverlay.objects.exists())
+        self.assertFalse(
+            OverlayVersion.objects.filter(overlay_type=overlay_transfer.SCENE_TYPE).exists()
+        )
+
+    def test_dashboard_lists_scene_and_preset_applies_clamped_style(self):
+        dashboard = self.client.get(reverse("overlay_dashboard"))
+        self.assertContains(dashboard, 'id="scene-overlays"')
+        self.assertContains(dashboard, "Scenes")
+
+        preset = OverlayPreset.objects.create(
+            owner=self.user,
+            name="Wide",
+            style={
+                "background_color": "#101010",
+                "background_opacity": 50,
+                "border_color": "#ffffff",
+                "border_width": 24,
+                "corner_radius": 100,
+            },
+        )
+        self.client.post(
+            reverse("preset_apply", args=[overlay_transfer.SCENE_TYPE, self.scene.pk]),
+            {"preset_id": preset.pk},
+        )
+        self.scene.refresh_from_db()
+        self.assertEqual((self.scene.border_width, self.scene.corner_radius), (12, 64))
 
 
 class ScoreOverlayEndpointTests(TestCase):

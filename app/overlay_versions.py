@@ -7,6 +7,7 @@ from django.db import transaction
 
 from app import overlay_transfer
 from app.forms import (
+    SceneOverlayForm,
     ScoreOverlayForm,
     SpotifyOverlayForm,
     TimerOverlayForm,
@@ -15,6 +16,7 @@ from app.forms import (
 from app.models import (
     OverlayAsset,
     OverlayVersion,
+    SceneOverlay,
     ScoreOverlay,
     ScoreParticipant,
     SpotifyOverlay,
@@ -43,6 +45,8 @@ def overlay_type_for(overlay):
         return overlay_transfer.WINCHALLENGE_TYPE
     if isinstance(overlay, TwitchGoalOverlay):
         return overlay_transfer.TWITCH_GOAL_TYPE
+    if isinstance(overlay, SceneOverlay):
+        return overlay_transfer.SCENE_TYPE
     raise TypeError("Unsupported overlay model")
 
 
@@ -310,6 +314,20 @@ def _restore_twitch_goal(overlay, payload, assets):
     return form.save()
 
 
+def _restore_scene(overlay, payload, assets):
+    form_data = copy.deepcopy(payload["overlay"])
+    form_data.setdefault("font_family", overlay.FONT_SYSTEM)
+    form_data.update(_branding_data(overlay.owner, assets))
+    form = SceneOverlayForm(
+        data=form_data,
+        instance=overlay,
+        asset_owner=overlay.owner,
+    )
+    if not form.is_valid():
+        raise OverlayVersionError("Invalid scene version")
+    return form.save()
+
+
 @transaction.atomic
 def restore_version(overlay, version):
     overlay_type = overlay_type_for(overlay)
@@ -336,6 +354,8 @@ def restore_version(overlay, version):
         restored = _restore_winchallenge(overlay, payload, assets)
     elif isinstance(overlay, TwitchGoalOverlay):
         restored = _restore_twitch_goal(overlay, payload, assets)
+    elif isinstance(overlay, SceneOverlay):
+        restored = _restore_scene(overlay, payload, assets)
     else:
         restored = _restore_score(overlay, payload, assets)
 

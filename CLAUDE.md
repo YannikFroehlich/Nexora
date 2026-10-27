@@ -53,9 +53,11 @@ Hourly production job for Twitch token validation: `python manage.py validate_tw
 
 ### Overlay types
 
-Five parallel overlay families, each an independent model + editor + public page:
+Six parallel overlay families, each an independent model + editor + public page:
 `SpotifyOverlay` (`/spotify/`), `TwitchGoalOverlay` (`/goals/`), `ScoreOverlay` (`/scores/`),
-`TimerOverlay` (`/timers/`), `WinChallenge` (+ `WinChallengeGame`, `/winchallenges/`).
+`TimerOverlay` (`/timers/`), `SceneOverlay` (`/scenes/`), `WinChallenge` (+ `WinChallengeGame`,
+`/winchallenges/`). `SceneOverlay` is a full-screen 1920 × 1080 Starting soon / BRB / Ending
+scene; its editor reuses the `timer-*` layout classes from `timer.css`.
 Each has a view module in [app/views/](app/views/), a template dir under
 [app/templates/app/](app/templates/app/), and one CSS + one JS file in `app/static/`.
 

@@ -43,6 +43,10 @@
                         {% translate "Timers" %}
                         <span aria-label="{% blocktranslate count counter=timer_count %}{{ counter }} overlay{% plural %}{{ counter }} overlays{% endblocktranslate %}">{{ timer_count }}</span>
                     </a>
+                    <a href="#scene-overlays">
+                        {% translate "Scenes" %}
+                        <span aria-label="{% blocktranslate count counter=scene_count %}{{ counter }} overlay{% plural %}{{ counter }} overlays{% endblocktranslate %}">{{ scene_count }}</span>
+                    </a>
                     <a href="#twitch-goal-overlays">
                         {% translate "Twitch Goals" %}
                         <span aria-label="{% blocktranslate count counter=twitch_goal_count %}{{ counter }} overlay{% plural %}{{ counter }} overlays{% endblocktranslate %}">{{ twitch_goal_count }}</span>
@@ -68,6 +72,7 @@
                 <button type="button" class="dashboard-filter-chip" data-filter-type="winchallenge" aria-pressed="false">{% translate "Win Challenges" %}</button>
                 <button type="button" class="dashboard-filter-chip" data-filter-type="score" aria-pressed="false">{% translate "Score HUDs" %}</button>
                 <button type="button" class="dashboard-filter-chip" data-filter-type="timer" aria-pressed="false">{% translate "Timers" %}</button>
+                <button type="button" class="dashboard-filter-chip" data-filter-type="scene" aria-pressed="false">{% translate "Scenes" %}</button>
                 <button type="button" class="dashboard-filter-chip" data-filter-type="twitch-goal" aria-pressed="false">{% translate "Twitch Goals" %}</button>
             </div>
             <p
@@ -583,6 +588,97 @@
                     <div>
                         <h3>{% translate "No stream timers yet" %}</h3>
                         <p>{% translate "Create a countdown or stopwatch that you can control live during your stream." %}</p>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="dashboard-collection" id="scene-overlays" aria-labelledby="scene-overlays-title" data-dashboard-section="scene">
+            <div class="dashboard-collection__header">
+                <div class="dashboard-collection__title">
+                    <span class="dashboard-collection__icon dashboard-collection__icon--timer" aria-hidden="true">&#9654;</span>
+                    <div>
+                        <p class="dashboard-label">{% translate "Full-screen scenes" %}</p>
+                        <h2 id="scene-overlays-title">{% translate "Stream scenes" %}</h2>
+                    </div>
+                </div>
+                <a class="btn action-button" href="{% url 'scene_create' %}">{% translate "Create stream scenes" %}</a>
+            </div>
+
+            {% if scene_overlays %}
+                <div class="dashboard-grid">
+                    {% for scene in scene_overlays %}
+                        {% url 'scene_overlay' scene.public_token as overlay_path %}
+                        <article class="dashboard-card" data-dashboard-name="{{ scene.display_name|lower }}">
+                            <div class="dashboard-card__preview dashboard-card__preview--timer" aria-label="{% translate 'Preview' %}">
+                                <div
+                                    class="timer-dashboard-preview timer-dashboard-preview--{{ scene.design_template }}"
+                                    style="--preview-background: {{ scene.background_rgba }}; --preview-accent: {{ scene.accent_color }}; --preview-text: {{ scene.text_color }}; --preview-border: {{ scene.border_color }}; --preview-radius: {{ scene.corner_radius }}px;"
+                                >
+                                    <div><small>{{ scene.get_active_scene_display }}</small></div>
+                                    {% if scene.headline %}<strong>{{ scene.headline }}</strong>{% endif %}
+                                    {% if scene.countdown_ends_at %}<time>{{ scene.formatted_countdown }}</time>{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="dashboard-card__content">
+                                <div class="dashboard-card__heading">
+                                    <div>
+                                        <p class="dashboard-card__type">{% translate "Stream scenes" %}</p>
+                                        <h3>{{ scene.display_name }}</h3>
+                                    </div>
+                                    <span class="status-badge status-badge--connected">{{ scene.get_active_scene_display }}</span>
+                                </div>
+
+                                <dl class="dashboard-card__stats">
+                                    <div><dt>{% translate "Design" %}</dt><dd>{{ scene.get_design_template_display }}</dd></div>
+                                    <div><dt>{% translate "Updated" %}</dt><dd>{{ scene.updated_at|date:"d.m.Y H:i" }}</dd></div>
+                                </dl>
+
+                                <div class="dashboard-card__actions">
+                                    <a class="btn action-button" href="{% url 'scene_manage' scene.pk %}">{% translate "Control" %}</a>
+                                    <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">
+                                        {% translate "Preview" %}<span class="sr-only"> ({% translate "opens in a new tab" %})</span>
+                                    </a>
+                                    <details class="dashboard-card__menu">
+                                        <summary class="btn glass-design">{% translate "More" %}</summary>
+                                        <div class="dashboard-card__menu-panel">
+                                            <form class="dashboard-card__action-form" action="{% url 'scene_duplicate' scene.pk %}" method="post">
+                                                {% csrf_token %}
+                                                <button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button>
+                                            </form>
+                                            <a class="btn glass-design" href="{% url 'scene_export' scene.pk %}">{% translate "Export" %}</a>
+                                            <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
+                                                {% translate "Copy OBS link" %}
+                                            </button>
+                                            <form
+                                                class="dashboard-card__action-form"
+                                                action="{% url 'scene_renew_obs_link' scene.pk %}"
+                                                method="post"
+                                                data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+                                            >
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#scene-overlays">
+                                                <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
+                                            </form>
+                                            <form class="dashboard-card__delete" action="{% url 'scene_delete' scene.pk %}" method="post" data-confirm-delete="{% translate 'Delete this scene overlay?' %}">
+                                                {% csrf_token %}
+                                                <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
+                                            </form>
+                                        </div>
+                                    </details>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+                <p class="dashboard-no-matches" data-no-matches hidden>{% translate "No overlays match your search." %}</p>
+            {% else %}
+                <div class="dashboard-empty">
+                    <span class="dashboard-empty__icon" aria-hidden="true">&#9654;</span>
+                    <div>
+                        <h3>{% translate "No stream scenes yet" %}</h3>
+                        <p>{% translate "Create Starting soon, Be right back and Stream ending screens that you switch live from one OBS browser source." %}</p>
                     </div>
                 </div>
             {% endif %}

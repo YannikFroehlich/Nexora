@@ -1,5 +1,6 @@
 from app import overlay_transfer
 from app.models import (
+    SceneOverlay,
     ScoreOverlay,
     SpotifyOverlay,
     TimerOverlay,
@@ -22,6 +23,7 @@ MODEL_BY_TYPE = {
     overlay_transfer.WINCHALLENGE_TYPE: WinChallenge,
     overlay_transfer.SCORE_TYPE: ScoreOverlay,
     overlay_transfer.TWITCH_GOAL_TYPE: TwitchGoalOverlay,
+    overlay_transfer.SCENE_TYPE: SceneOverlay,
 }
 
 
