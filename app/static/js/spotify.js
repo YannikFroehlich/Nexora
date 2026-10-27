@@ -5,7 +5,6 @@
     };
 
     const clamp = (value, minimum, maximum) => Math.min(Math.max(value, minimum), maximum);
-    const resizeDirections = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
     const sourceExtraWidth = 80;
     const sourceExtraHeight = 96;
 
@@ -172,13 +171,7 @@
             createElementContent(node, element, playback, canvas);
 
             if (editor && element.id === selectedId) {
-                resizeDirections.forEach((direction) => {
-                    const handle = document.createElement("span");
-                    handle.className = `spotify-resize-handle spotify-resize-handle--${direction}`;
-                    handle.dataset.resizeHandle = direction;
-                    handle.setAttribute("aria-hidden", "true");
-                    node.append(handle);
-                });
+                window.NexoraCanvasEditor.appendResizeHandles(node, "spotify");
             }
 
             canvas.append(node);
@@ -281,12 +274,7 @@
         const canvasResizeFrame = document.createElement("div");
         canvasResizeFrame.className = "spotify-canvas-resize-frame";
         canvasResizeFrame.setAttribute("aria-hidden", "true");
-        resizeDirections.forEach((direction) => {
-            const handle = document.createElement("span");
-            handle.className = `spotify-resize-handle spotify-resize-handle--${direction}`;
-            handle.dataset.canvasResizeHandle = direction;
-            canvasResizeFrame.append(handle);
-        });
+        window.NexoraCanvasEditor.appendResizeHandles(canvasResizeFrame, "spotify");
         canvas.insertAdjacentElement("afterend", canvasResizeFrame);
 
         let elements;
@@ -595,139 +583,51 @@
             if (node) select(node.dataset.elementId, true);
         });
 
-        canvas.addEventListener("keydown", (event) => {
-            const node = event.target.closest("[data-spotify-element]");
-            if (!node) return;
-
-            if (event.key === "Delete") {
-                event.preventDefault();
-                selectedId = node.dataset.elementId;
-                removeSelectedElement(true);
-                return;
-            }
-
-            if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
-            event.preventDefault();
-            selectedId = node.dataset.elementId;
-            const element = selectedElement();
-            const step = gridEnabled
-                ? gridSize * (event.shiftKey ? 5 : 1)
-                : (event.shiftKey ? 10 : 1);
-
-            if (gridEnabled) snapElementPosition(element);
-            if (event.key === "ArrowLeft") element.x -= step;
-            if (event.key === "ArrowRight") element.x += step;
-            if (event.key === "ArrowUp") element.y -= step;
-            if (event.key === "ArrowDown") element.y += step;
-            fitElementToCanvas(element);
-            render();
-            notifyEditorChange();
-            canvas.querySelector(`[data-element-id="${CSS.escape(element.id)}"]`)?.focus();
-        });
-
-        canvas.addEventListener("pointerdown", (event) => {
-            const node = event.target.closest("[data-spotify-element]");
-            if (!node || event.button !== 0) return;
-            event.preventDefault();
-            selectedId = node.dataset.elementId;
-            const element = selectedElement();
-            const resizeHandle = event.target.closest("[data-resize-handle]");
-            const resizeDirection = resizeHandle?.dataset.resizeHandle || "";
-            const startX = event.clientX;
-            const startY = event.clientY;
-            const originX = element.x;
-            const originY = element.y;
-            const originWidth = element.width;
-            const originHeight = element.height;
-            const originRight = originX + originWidth;
-            const originBottom = originY + originHeight;
-            const currentDesign = design();
-            const scale = canvas._spotifyScale || 1;
-            let pointerChanged = false;
-
-            node.focus({preventScroll: true});
-
-            canvas.querySelectorAll("[data-spotify-element]").forEach((item) => {
-                item.classList.toggle("is-selected", item === node);
-            });
-            renderList();
-            updateSelectedControls();
-
-            const move = (moveEvent) => {
-                const deltaX = Math.round((moveEvent.clientX - startX) / scale);
-                const deltaY = Math.round((moveEvent.clientY - startY) / scale);
-
-                if (deltaX || deltaY) {
-                    pointerChanged = true;
-                }
-
-                if (resizeDirection) {
-                    if (resizeDirection.includes("e")) {
-                        const right = clamp(
-                            snapToGrid(originRight + deltaX),
-                            originX + 24,
-                            currentDesign.canvas_width,
-                        );
-                        element.width = right - originX;
-                    }
-                    if (resizeDirection.includes("w")) {
-                        const left = clamp(
-                            snapToGrid(originX + deltaX),
-                            0,
-                            originRight - 24,
-                        );
-                        element.x = left;
-                        element.width = originRight - left;
-                    }
-                    if (resizeDirection.includes("s")) {
-                        const bottom = clamp(
-                            snapToGrid(originBottom + deltaY),
-                            originY + 8,
-                            currentDesign.canvas_height,
-                        );
-                        element.height = bottom - originY;
-                    }
-                    if (resizeDirection.includes("n")) {
-                        const top = clamp(
-                            snapToGrid(originY + deltaY),
-                            0,
-                            originBottom - 8,
-                        );
-                        element.y = top;
-                        element.height = originBottom - top;
-                    }
-                } else {
-                    element.x = snapToGrid(originX + deltaX);
-                    element.y = snapToGrid(originY + deltaY);
-                }
-
-                fitElementToCanvas(element);
-                node.style.left = `${element.x}px`;
-                node.style.top = `${element.y}px`;
-                node.style.width = `${element.width}px`;
-                node.style.height = `${element.height}px`;
+        window.NexoraCanvasEditor.bind({
+            canvas,
+            elementSelector: "[data-spotify-element]",
+            findElement: (id) => elements.find((element) => element.id === id),
+            bounds: () => {
+                const currentDesign = design();
+                return {width: currentDesign.canvas_width, height: currentDesign.canvas_height};
+            },
+            scale: () => canvas._spotifyScale,
+            grid: () => ({enabled: gridEnabled, size: gridSize}),
+            onSelect: (element) => {
+                selectedId = element.id;
+                canvas.querySelectorAll("[data-spotify-element]").forEach((item) => {
+                    item.classList.toggle("is-selected", item.dataset.elementId === element.id);
+                });
+                renderList();
+                updateSelectedControls();
+            },
+            onMove: (element) => {
                 updateGeometryControls(element);
                 syncElements();
-            };
-            const end = () => {
-                window.removeEventListener("pointermove", move);
-                window.removeEventListener("pointerup", end);
+            },
+            onEnd: (element, changed) => {
                 renderList();
-                if (pointerChanged) {
+                if (changed) {
                     notifyEditorChange();
                 }
-            };
-
-            window.addEventListener("pointermove", move);
-            window.addEventListener("pointerup", end, {once: true});
+            },
+            onNudge: (element) => {
+                selectedId = element.id;
+                render();
+                notifyEditorChange();
+            },
+            onDelete: (element) => {
+                selectedId = element.id;
+                removeSelectedElement(true);
+            },
         });
 
         canvasResizeFrame.addEventListener("pointerdown", (event) => {
-            const handle = event.target.closest("[data-canvas-resize-handle]");
+            const handle = event.target.closest("[data-resize-handle]");
             if (!handle || event.button !== 0) return;
             event.preventDefault();
 
-            const direction = handle.dataset.canvasResizeHandle;
+            const direction = handle.dataset.resizeHandle;
             const startX = event.clientX;
             const startY = event.clientY;
             const originWidth = design().canvas_width;

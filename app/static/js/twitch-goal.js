@@ -4,7 +4,6 @@
         return Number.isFinite(parsed) ? parsed : fallback;
     };
     const clamp = (value, min, max) => Math.min(Math.max(number(value, min), min), max);
-    const resizeDirections = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
     const clone = (value) => JSON.parse(JSON.stringify(value));
     const parseScript = (id, fallback = {}) => {
         try { return JSON.parse(document.getElementById(id)?.textContent || ""); }
@@ -109,15 +108,7 @@
             }
             if (!editor && !visible) node.hidden = true;
             createContent(node, element, state);
-            if (editor && element.id === selectedId) {
-                resizeDirections.forEach((direction) => {
-                    const handle = document.createElement("span");
-                    handle.className = `goal-resize-handle goal-resize-handle--${direction}`;
-                    handle.dataset.resizeHandle = direction;
-                    handle.setAttribute("aria-hidden", "true");
-                    node.append(handle);
-                });
-            }
+            if (editor && element.id === selectedId) window.NexoraCanvasEditor.appendResizeHandles(node, "goal");
             canvas.append(node);
         });
     };
@@ -389,100 +380,27 @@
             editor.querySelectorAll("[data-source-height]").forEach((node) => node.textContent = String(currentState.canvas_height + 240));
         };
 
-        canvas.addEventListener("pointerdown", (event) => {
-            const node = event.target.closest("[data-goal-element]");
-            if (!node || event.button !== 0) return;
-            const item = elements.find((candidate) => candidate.id === node.dataset.elementId);
-            if (!item) return;
-            selectedId = item.id;
-            const resizeHandle = event.target.closest("[data-resize-handle]");
-            const resizeDirection = resizeHandle?.dataset.resizeHandle || "";
-            const start = {
-                x: event.clientX,
-                y: event.clientY,
-                left: number(item.x),
-                top: number(item.y),
-                width: number(item.width, 120),
-                height: number(item.height, 40),
-            };
-            start.right = start.left + start.width;
-            start.bottom = start.top + start.height;
-            const currentState = state();
-            let changed = false;
-            const move = (moveEvent) => {
-                const scale = canvas._goalScale || 1;
-                const dx = (moveEvent.clientX - start.x) / scale;
-                const dy = (moveEvent.clientY - start.y) / scale;
-                const gridSize = grid ? 10 : 1;
-                const snap = (value) => Math.round(value / gridSize) * gridSize;
-                if (resizeDirection) {
-                    if (resizeDirection.includes("e")) {
-                        const right = clamp(
-                            snap(start.right + dx),
-                            start.left + 20,
-                            currentState.canvas_width,
-                        );
-                        item.width = right - start.left;
-                    }
-                    if (resizeDirection.includes("w")) {
-                        const left = clamp(snap(start.left + dx), 0, start.right - 20);
-                        item.x = left;
-                        item.width = start.right - left;
-                    }
-                    if (resizeDirection.includes("s")) {
-                        const bottom = clamp(
-                            snap(start.bottom + dy),
-                            start.top + 16,
-                            currentState.canvas_height,
-                        );
-                        item.height = bottom - start.top;
-                    }
-                    if (resizeDirection.includes("n")) {
-                        const top = clamp(snap(start.top + dy), 0, start.bottom - 16);
-                        item.y = top;
-                        item.height = start.bottom - top;
-                    }
-                } else {
-                    item.x = clamp(
-                        snap(start.left + dx),
-                        0,
-                        Math.max(currentState.canvas_width - start.width, 0),
-                    );
-                    item.y = clamp(
-                        snap(start.top + dy),
-                        0,
-                        Math.max(currentState.canvas_height - start.height, 0),
-                    );
-                }
-                if (dx || dy) changed = true;
-                setCustom(); render();
-            };
-            const end = () => {
-                window.removeEventListener("pointermove", move);
-                if (changed) notify();
-            };
-            window.addEventListener("pointermove", move);
-            window.addEventListener("pointerup", end, {once: true});
-            event.preventDefault(); render();
-        });
-
-        canvas.addEventListener("keydown", (event) => {
-            const node = event.target.closest("[data-goal-element]");
-            const item = elements.find((candidate) => candidate.id === node?.dataset.elementId);
-            if (!item) return;
-            if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
-                const step = event.shiftKey || grid ? 10 : 1;
-                if (event.key === "ArrowLeft") item.x = Math.max(0, number(item.x) - step);
-                if (event.key === "ArrowRight") item.x = number(item.x) + step;
-                if (event.key === "ArrowUp") item.y = Math.max(0, number(item.y) - step);
-                if (event.key === "ArrowDown") item.y = number(item.y) + step;
-                event.preventDefault(); setCustom(); render(); notify();
-            }
-            if (event.key === "Delete") {
+        window.NexoraCanvasEditor.bind({
+            canvas,
+            elementSelector: "[data-goal-element]",
+            findElement: (id) => elements.find((candidate) => candidate.id === id),
+            bounds: () => {
+                const currentState = state();
+                return {width: currentState.canvas_width, height: currentState.canvas_height};
+            },
+            scale: () => canvas._goalScale,
+            grid: () => ({enabled: grid, size: 10}),
+            minWidth: 20,
+            minHeight: 16,
+            onSelect: (item) => { selectedId = item.id; render(); },
+            onMove: () => { setCustom(); render(); },
+            onEnd: (item, changed) => { if (changed) notify(); },
+            onNudge: (item) => { selectedId = item.id; setCustom(); render(); notify(); },
+            onDelete: (item) => {
                 elements = elements.filter((candidate) => candidate.id !== item.id);
                 selectedId = elements[0]?.id || null;
-                event.preventDefault(); setCustom(); render(); notify();
-            }
+                setCustom(); render(); notify();
+            },
         });
 
         editor.querySelectorAll("[data-element-property]").forEach((control) => control.addEventListener("input", () => {
