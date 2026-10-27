@@ -360,6 +360,31 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
         self.assertLess(after["width"], before["width"])
         self.assertLess(after["height"], before["height"])
 
+    def test_twitch_goal_arrow_keys_keep_focus_across_repeated_nudges(self):
+        page = self.context.new_page()
+        page.goto(self.live_server_url + reverse("twitch_goal_manage", args=[self.goal.pk]))
+
+        selected = page.locator(".twitch-goal-element.is-selected")
+        selected_id = selected.get_attribute("data-element-id")
+        elements_input = page.locator("[data-elements-input]")
+        before = next(
+            element
+            for element in json.loads(elements_input.input_value())
+            if element["id"] == selected_id
+        )
+
+        selected.focus()
+        for _ in range(3):
+            page.keyboard.press("ArrowRight")
+
+        after = next(
+            element
+            for element in json.loads(elements_input.input_value())
+            if element["id"] == selected_id
+        )
+        self.assertEqual(after["x"], before["x"] + 3)
+        expect(page.locator(f'[data-element-id="{selected_id}"]')).to_be_focused()
+
     def test_twitch_goal_grid_toggle_matches_the_editor_switch_pattern(self):
         page = self.context.new_page()
         page.goto(self.live_server_url + reverse("twitch_goal_manage", args=[self.goal.pk]))

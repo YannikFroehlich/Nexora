@@ -124,6 +124,10 @@ publish globals:
 - [editor-state.js](app/static/js/editor-state.js) — undo/redo history, dirty tracking, debounced
   autosave POSTs, `localStorage` drafts; driven entirely by `data-editor-*` attributes on the markup.
 - [overlay-branding.js](app/static/js/overlay-branding.js) — shared branding/asset controls.
+- [canvas-editor.js](app/static/js/canvas-editor.js) → `window.NexoraCanvasEditor` — pointer
+  drag, eight-direction resize handles and arrow-key nudging for the Spotify, Score and Twitch Goal
+  canvases. Each editor keeps its own elements, selection and rendering and passes callbacks to
+  `bind()`; load it before the editor script in `create.html`.
 
 Static assets are cache-busted with `?v={{ APP_VERSION }}` (from `APP_VERSION` or the `VERSION` file).
 

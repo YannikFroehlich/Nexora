@@ -4,7 +4,6 @@
         return Number.isFinite(parsed) ? parsed : fallback;
     };
     const clamp = (value, minimum, maximum) => Math.min(Math.max(value, minimum), maximum);
-    const resizeDirections = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
     const sourceExtraWidth = 80;
     const sourceExtraHeight = 96;
     const layoutModes = Object.freeze({
@@ -185,13 +184,7 @@
             createElementContent(node, element, participant);
 
             if (editor && element.id === selectedId) {
-                resizeDirections.forEach((direction) => {
-                    const handle = document.createElement("span");
-                    handle.className = `score-resize-handle score-resize-handle--${direction}`;
-                    handle.dataset.resizeHandle = direction;
-                    handle.setAttribute("aria-hidden", "true");
-                    node.append(handle);
-                });
+                window.NexoraCanvasEditor.appendResizeHandles(node, "score");
             }
 
             layer.append(node);
@@ -361,10 +354,6 @@
                 syncElements();
             }
         };
-        const snapToGrid = (value) => gridEnabled
-            ? Math.round(value / gridSize) * gridSize
-            : Math.round(value);
-
         const fitElementToCanvas = (element) => {
             const currentDesign = design();
             element.width = clamp(number(element.width, 120), 24, currentDesign.canvas_width);
@@ -768,95 +757,36 @@
             if (node) select(node.dataset.elementId, true);
         });
 
-        canvas.addEventListener("keydown", (event) => {
-            const node = event.target.closest("[data-score-element]");
-            if (!node || !["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
-            event.preventDefault();
-            selectedId = node.dataset.elementId;
-            const element = selectedElement();
-            const step = gridEnabled ? gridSize * (event.shiftKey ? 5 : 1) : (event.shiftKey ? 10 : 1);
-            if (event.key === "ArrowLeft") element.x -= step;
-            if (event.key === "ArrowRight") element.x += step;
-            if (event.key === "ArrowUp") element.y -= step;
-            if (event.key === "ArrowDown") element.y += step;
-            setCustomLayout();
-            fitElementToCanvas(element);
-            render();
-            notifyEditorChange();
-        });
-
-        canvas.addEventListener("pointerdown", (event) => {
-            const node = event.target.closest("[data-score-element]");
-            if (!node || event.button !== 0) return;
-            event.preventDefault();
-            selectedId = node.dataset.elementId;
-            const element = selectedElement();
-            const resizeHandle = event.target.closest("[data-resize-handle]");
-            const resizeDirection = resizeHandle?.dataset.resizeHandle || "";
-            const startX = event.clientX;
-            const startY = event.clientY;
-            const originX = element.x;
-            const originY = element.y;
-            const originWidth = element.width;
-            const originHeight = element.height;
-            const originRight = originX + originWidth;
-            const originBottom = originY + originHeight;
-            const currentDesign = design();
-            const scale = canvas._scoreScale || 1;
-            let changed = false;
-
-            node.focus({preventScroll: true});
-
-            const move = (moveEvent) => {
-                const deltaX = Math.round((moveEvent.clientX - startX) / scale);
-                const deltaY = Math.round((moveEvent.clientY - startY) / scale);
-                if (deltaX || deltaY) changed = true;
-
-                if (resizeDirection) {
-                    if (resizeDirection.includes("e")) {
-                        const right = clamp(snapToGrid(originRight + deltaX), originX + 24, currentDesign.canvas_width);
-                        element.width = right - originX;
-                    }
-                    if (resizeDirection.includes("w")) {
-                        const left = clamp(snapToGrid(originX + deltaX), 0, originRight - 24);
-                        element.x = left;
-                        element.width = originRight - left;
-                    }
-                    if (resizeDirection.includes("s")) {
-                        const bottom = clamp(snapToGrid(originBottom + deltaY), originY + 8, currentDesign.canvas_height);
-                        element.height = bottom - originY;
-                    }
-                    if (resizeDirection.includes("n")) {
-                        const top = clamp(snapToGrid(originY + deltaY), 0, originBottom - 8);
-                        element.y = top;
-                        element.height = originBottom - top;
-                    }
-                } else {
-                    element.x = snapToGrid(originX + deltaX);
-                    element.y = snapToGrid(originY + deltaY);
-                }
-
-                fitElementToCanvas(element);
-                node.style.left = `${element.x}px`;
-                node.style.top = `${element.y}px`;
-                node.style.width = `${element.width}px`;
-                node.style.height = `${element.height}px`;
+        window.NexoraCanvasEditor.bind({
+            canvas,
+            elementSelector: "[data-score-element]",
+            findElement: (id) => elements.find((element) => element.id === id),
+            bounds: () => {
+                const currentDesign = design();
+                return {width: currentDesign.canvas_width, height: currentDesign.canvas_height};
+            },
+            scale: () => canvas._scoreScale,
+            grid: () => ({enabled: gridEnabled, size: gridSize}),
+            onSelect: (element) => { selectedId = element.id; },
+            onMove: (element) => {
                 editor.querySelectorAll("[data-element-property]").forEach((input) => {
                     if (["x", "y", "width", "height"].includes(input.dataset.elementProperty)) {
                         input.value = element[input.dataset.elementProperty];
                     }
                 });
                 syncElements();
-            };
-            const end = () => {
-                window.removeEventListener("pointermove", move);
-                window.removeEventListener("pointerup", end);
+            },
+            onEnd: (element, changed) => {
                 if (changed) setCustomLayout();
                 render();
                 if (changed) notifyEditorChange();
-            };
-            window.addEventListener("pointermove", move);
-            window.addEventListener("pointerup", end, {once: true});
+            },
+            onNudge: (element) => {
+                selectedId = element.id;
+                setCustomLayout();
+                render();
+                notifyEditorChange();
+            },
         });
 
         form.addEventListener("nexora:editor-restore", () => {
