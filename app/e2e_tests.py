@@ -360,6 +360,39 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
         self.assertLess(after["width"], before["width"])
         self.assertLess(after["height"], before["height"])
 
+    def test_timer_free_canvas_starts_at_classic_positions_and_saves_drags(self):
+        page = self.context.new_page()
+        page.goto(self.live_server_url + reverse("timer_manage", args=[self.timer.pk]))
+        overlay = page.locator("[data-timer-editor] [data-timer-overlay]")
+        time_block = overlay.locator('[data-element-id="time"]')
+        classic_box = time_block.locator("time").bounding_box()
+
+        page.select_option("[data-layout-mode-field]", "custom")
+
+        self.assertEqual(overlay.get_attribute("data-layout-mode"), "custom")
+        custom_box = time_block.bounding_box()
+        self.assertAlmostEqual(custom_box["x"], classic_box["x"], delta=1)
+        self.assertAlmostEqual(custom_box["y"], classic_box["y"], delta=1)
+
+        page.mouse.move(custom_box["x"] + 20, custom_box["y"] + 20)
+        page.mouse.down()
+        page.mouse.move(custom_box["x"] + 20, custom_box["y"] - 30, steps=5)
+        page.mouse.up()
+        expect(page.locator("[data-editor-save-status]")).to_have_attribute(
+            "data-state", "saved", timeout=10000
+        )
+
+        elements = json.loads(page.locator("[data-layout-elements]").input_value())
+        saved_time = next(element for element in elements if element["id"] == "time")
+        self.assertEqual(len(elements), len(TimerOverlay.LAYOUT_BLOCKS))
+        self.assertLess(saved_time["y"], custom_box["y"] - overlay.bounding_box()["y"])
+
+        source = self.context.new_page()
+        source.goto(self.live_server_url + reverse("timer_overlay", args=[self.timer.public_token]))
+        expect(source.locator("[data-timer-overlay]")).to_have_attribute(
+            "data-layout-mode", "custom"
+        )
+
     def test_twitch_goal_arrow_keys_keep_focus_across_repeated_nudges(self):
         page = self.context.new_page()
         page.goto(self.live_server_url + reverse("twitch_goal_manage", args=[self.goal.pk]))

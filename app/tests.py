@@ -1,4 +1,5 @@
 import base64
+import copy
 import hashlib
 import json
 import struct
@@ -5245,3 +5246,174 @@ class AccountSettingsTests(TestCase):
         self.assertFalse(SpotifyConnection.objects.filter(owner_id=self.user.pk).exists())
         self.assertFalse(OverlayAsset.objects.filter(pk=asset.pk).exists())
         self.assertEqual(self.client.get(reverse("account_settings")).status_code, 302)
+
+
+def free_canvas_elements(block_ids, **overrides):
+    elements = [
+        {
+            "id": block_id,
+            "x": 10 * index,
+            "y": 20 * index,
+            "width": 200,
+            "height": 40,
+            "visible": True,
+        }
+        for index, block_id in enumerate(block_ids)
+    ]
+    for element in elements:
+        element.update(overrides.get(element["id"], {}))
+    return elements
+
+
+class OverlayFreeCanvasTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="canvas-owner")
+        self.client.force_login(self.user)
+        self.timer = TimerOverlay.objects.create(owner=self.user, name="Canvas Timer")
+        self.challenge = WinChallenge.objects.create(owner=self.user, title="Canvas Challenge")
+        self.timer_blocks = [block_id for block_id, label in TimerOverlay.LAYOUT_BLOCKS]
+        self.challenge_blocks = [block_id for block_id, label in WinChallenge.LAYOUT_BLOCKS]
+
+    def timer_data(self, **updates):
+        hours, remainder = divmod(self.timer.duration_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        data = {
+            field_name: getattr(self.timer, field_name)
+            for field_name in overlay_transfer.TIMER_FIELDS
+            if field_name not in ("duration_seconds", "elements")
+        }
+        data.update(duration_hours=hours, duration_minutes=minutes, duration_seconds_part=seconds)
+        data.update(updates)
+        return data
+
+    def test_existing_overlays_stay_on_the_classic_layout(self):
+        for overlay in (self.timer, self.challenge):
+            with self.subTest(overlay=type(overlay).__name__):
+                self.assertEqual(overlay.layout_mode, "classic")
+                self.assertEqual(overlay.elements, [])
+                self.assertEqual(overlay.layout_styles, {})
+                overlay.full_clean()
+
+    def test_timer_autosave_stores_free_canvas_and_public_page_positions_blocks(self):
+        elements = free_canvas_elements(self.timer_blocks, label={"visible": False})
+
+        response = self.client.post(
+            reverse("timer_autosave", args=[self.timer.pk]),
+            self.timer_data(layout_mode="custom", elements=json.dumps(elements)),
+        )
+
+        self.timer.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.timer.layout_mode, "custom")
+        self.assertEqual(self.timer.elements, elements)
+
+        self.client.logout()
+        page = self.client.get(reverse("timer_overlay", args=[self.timer.public_token]))
+        state = self.client.get(reverse("timer_overlay_state", args=[self.timer.public_token]))
+        self.assertContains(page, 'data-layout-mode="custom"')
+        self.assertContains(page, "left: 20px; top: 40px; width: 200px; height: 40px;")
+        self.assertContains(page, "height: 40px; display: none;")
+        self.assertEqual(state.json()["design"]["elements"], elements)
+
+    def test_posts_without_layout_fields_keep_the_stored_layout(self):
+        elements = free_canvas_elements(self.timer_blocks)
+        self.timer.layout_mode = "custom"
+        self.timer.elements = elements
+        self.timer.save()
+
+        response = self.client.post(
+            reverse("timer_autosave", args=[self.timer.pk]),
+            self.timer_data(layout_mode="", accent_color="#ff8800"),
+        )
+
+        self.timer.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.timer.layout_mode, "custom")
+        self.assertEqual(self.timer.elements, elements)
+        self.assertEqual(self.timer.accent_color, "#ff8800")
+
+    def test_invalid_layout_elements_are_rejected(self):
+        complete = free_canvas_elements(self.timer_blocks)
+        invalid_layouts = {
+            "unknown block": [*complete, {**complete[0], "id": "logo"}],
+            "duplicate block": [*complete, complete[0]],
+            "negative position": free_canvas_elements(self.timer_blocks, time={"x": -5}),
+            "float size": free_canvas_elements(self.timer_blocks, time={"width": 10.5}),
+            "string visibility": free_canvas_elements(self.timer_blocks, time={"visible": "no"}),
+            "extra key": free_canvas_elements(self.timer_blocks, time={"color": "#fff"}),
+            "missing block": complete[:-1],
+            "not a list": {"time": {}},
+        }
+
+        for reason, elements in invalid_layouts.items():
+            with self.subTest(reason=reason):
+                response = self.client.post(
+                    reverse("timer_autosave", args=[self.timer.pk]),
+                    self.timer_data(layout_mode="custom", elements=json.dumps(elements)),
+                )
+                self.assertEqual(response.status_code, 400)
+                self.assertIn("elements", response.json()["errors"])
+
+        self.timer.refresh_from_db()
+        self.assertEqual(self.timer.layout_mode, "classic")
+
+    def test_win_challenge_free_canvas_requires_a_fixed_height(self):
+        WinChallengeGame.objects.create(challenge=self.challenge, name="Valorant", wins=3)
+        elements = free_canvas_elements(self.challenge_blocks)
+        design = {
+            field_name: (
+                getattr(self.challenge, field_name)
+                if getattr(self.challenge, field_name) is not None
+                else ""
+            )
+            for field_name in WinChallengeDesignForm.Meta.fields
+        }
+        design.update(form_type="design", layout_mode="custom", elements=json.dumps(elements))
+        url = reverse("winchallenge_autosave", args=[self.challenge.pk])
+
+        without_height = self.client.post(url, {**design, "overlay_height": 0})
+        with_height = self.client.post(url, {**design, "overlay_height": 320})
+
+        self.challenge.refresh_from_db()
+        self.assertEqual(without_height.status_code, 400)
+        self.assertIn("overlay_height", without_height.json()["errors"])
+        self.assertEqual(with_height.status_code, 200)
+        self.assertEqual(self.challenge.elements, elements)
+
+        page = self.client.get(reverse("winchallenge_overlay", args=[self.challenge.public_token]))
+        self.assertContains(page, 'data-layout-mode="custom"')
+        self.assertContains(page, 'data-element-id="games" style="left: 30px; top: 60px;')
+
+    def test_export_import_keeps_layout_and_old_timer_exports_still_import(self):
+        self.timer.layout_mode = "custom"
+        self.timer.elements = free_canvas_elements(self.timer_blocks)
+        self.timer.save()
+        payload = overlay_transfer.export_payload(self.timer)
+
+        imported = overlay_transfer.import_payload(copy.deepcopy(payload), self.user)
+        self.assertEqual(imported.layout_mode, "custom")
+        self.assertEqual(imported.elements, self.timer.elements)
+
+        legacy = copy.deepcopy(payload)
+        del legacy["overlay"]["layout_mode"]
+        del legacy["overlay"]["elements"]
+        legacy_import = overlay_transfer.import_payload(legacy, self.user)
+        self.assertEqual(legacy_import.layout_mode, "classic")
+        self.assertEqual(legacy_import.elements, [])
+
+    def test_version_restore_brings_back_the_layout(self):
+        self.challenge.layout_mode = "custom"
+        self.challenge.overlay_height = 300
+        self.challenge.elements = free_canvas_elements(self.challenge_blocks)
+        self.challenge.save()
+        overlay_versions.record_version(self.challenge)
+        version = overlay_versions.versions_for(self.challenge).get()
+        self.challenge.layout_mode = "classic"
+        self.challenge.elements = []
+        self.challenge.save()
+
+        overlay_versions.restore_version(self.challenge, version)
+
+        self.challenge.refresh_from_db()
+        self.assertEqual(self.challenge.layout_mode, "custom")
+        self.assertEqual(len(self.challenge.elements), len(self.challenge_blocks))
