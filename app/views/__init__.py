@@ -15,6 +15,7 @@ from app.views.dashboard import (
     overlay_asset_upload,
     overlay_dashboard,
     overlay_import,
+    overlay_renew_control_link,
     overlay_version_restore,
 )
 from app.views.pages import (
@@ -44,6 +45,7 @@ from app.views.score import (
     score_participant_reset,
     score_participant_score,
     score_participant_update,
+    score_remote_control,
     score_renew_obs_link,
     score_reset_all,
 )
@@ -73,6 +75,7 @@ from app.views.timer import (
     timer_manage,
     timer_overlay,
     timer_overlay_state,
+    timer_remote_control,
     timer_renew_obs_link,
 )
 from app.views.twitch_goal import (
@@ -106,6 +109,7 @@ from app.views.winchallenge import (
     winchallenge_manage,
     winchallenge_overlay,
     winchallenge_overlay_state,
+    winchallenge_remote_control,
     winchallenge_renew_obs_link,
 )
 
@@ -123,6 +127,7 @@ __all__ = [
     "overlay_asset_upload",
     "overlay_dashboard",
     "overlay_import",
+    "overlay_renew_control_link",
     "overlay_version_restore",
     "preset_apply",
     "preset_delete",
@@ -139,6 +144,7 @@ __all__ = [
     "score_manage",
     "score_overlay",
     "score_overlay_state",
+    "score_remote_control",
     "score_participant_add",
     "score_participant_delete",
     "score_participant_reset",
@@ -172,6 +178,7 @@ __all__ = [
     "timer_manage",
     "timer_overlay",
     "timer_overlay_state",
+    "timer_remote_control",
     "timer_renew_obs_link",
     "twitch_callback",
     "twitch_connect",
@@ -202,5 +209,6 @@ __all__ = [
     "winchallenge_manage",
     "winchallenge_overlay",
     "winchallenge_overlay_state",
+    "winchallenge_remote_control",
     "winchallenge_renew_obs_link",
 ]

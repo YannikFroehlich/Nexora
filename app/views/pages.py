@@ -41,6 +41,7 @@ def robots_txt(request):
             "Allow: /",
             "Disallow: /accounts/",
             "Disallow: /admin/",
+            "Disallow: /control/",
             "Disallow: /overlays/",
             "Disallow: /goals/",
             "Disallow: /scores/",

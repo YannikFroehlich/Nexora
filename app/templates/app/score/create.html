@@ -245,6 +245,7 @@
                                 <b data-source-height>{{ overlay.browser_source_height }}</b> px
                             </strong>
                         </p>
+                        {% include "app/partials/_overlay_control_links.html" %}
                     </section>
                 {% endif %}
 
@@ -381,6 +382,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{% url 'score_manage' overlay.pk %}">
             </form>
+            {% include "app/partials/_overlay_control_renew_form.html" with overlay_type="score" overlay_pk=overlay.pk %}
             <form
                 id="score-delete-form"
                 action="{% url 'score_delete' overlay.pk %}"

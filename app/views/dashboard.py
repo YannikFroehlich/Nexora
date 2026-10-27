@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -203,3 +205,26 @@ def overlay_version_restore(request, overlay_type, pk, version_pk):
         messages.success(request, _("Overlay version restored."))
 
     return redirect(redirect_name, pk=overlay.pk)
+
+
+@login_required
+@require_POST
+def overlay_renew_control_link(request, overlay_type, pk):
+    model_and_redirect = {
+        overlay_transfer.TIMER_TYPE: (TimerOverlay, "timer_manage"),
+        overlay_transfer.WINCHALLENGE_TYPE: (WinChallenge, "winchallenge_manage"),
+        overlay_transfer.SCORE_TYPE: (ScoreOverlay, "score_manage"),
+    }
+    model_config = model_and_redirect.get(overlay_type)
+    if model_config is None:
+        return redirect("overlay_dashboard")
+
+    model, redirect_name = model_config
+    overlay = get_object_or_404(model, owner=request.user, pk=pk)
+    overlay.control_token = uuid.uuid4()
+    overlay.save(update_fields=("control_token",))
+    messages.success(
+        request,
+        _("Stream Deck links renewed. Update your buttons with the new URLs."),
+    )
+    return redirect(f"{reverse(redirect_name, args=[overlay.pk])}#control-links")

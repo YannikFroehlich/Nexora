@@ -217,6 +217,8 @@
                             <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
                         </form>
                         <p>{% blocktranslate with width=timer.overlay_width height=timer.overlay_height %}Recommended browser-source size: {{ width }} × {{ height }} pixels.{% endblocktranslate %}</p>
+                        {% include "app/partials/_overlay_control_links.html" %}
+                        {% include "app/partials/_overlay_control_renew_form.html" with overlay_type="timer" overlay_pk=timer.pk %}
                         <div class="timer-danger-zone">
                             <a class="btn glass-design" href="{% url 'timer_overlay' timer.public_token %}" target="_blank" rel="noopener">{% translate "Open preview" %}</a>
                             <form action="{% url 'timer_delete' timer.pk %}" method="post" data-confirm-delete="{% translate 'Delete this timer overlay?' %}">

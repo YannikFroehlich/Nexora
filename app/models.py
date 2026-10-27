@@ -248,6 +248,7 @@ class WinChallenge(OverlayBrandingMixin, models.Model):
         unique=True,
         db_index=True,
     )
+    control_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     title = models.CharField(max_length=120, blank=True)
 
@@ -1682,6 +1683,7 @@ class ScoreOverlay(OverlayBrandingMixin, models.Model):
         unique=True,
         db_index=True,
     )
+    control_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=120, default="Score HUD", blank=True)
     layout_mode = models.CharField(
         max_length=24,
@@ -1933,6 +1935,7 @@ class TimerOverlay(OverlayBrandingMixin, models.Model):
         unique=True,
         db_index=True,
     )
+    control_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=120, default="Stream Timer", blank=True)
     label = models.CharField(max_length=120, default="Starting soon", blank=True)
     mode = models.CharField(max_length=20, choices=MODE_CHOICES, default=MODE_COUNTDOWN)
