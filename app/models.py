@@ -4,6 +4,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models import Sum
@@ -152,6 +153,77 @@ class OverlayBrandingMixin(models.Model):
         }
 
 
+class OverlayLayoutMixin(models.Model):
+    """Optional free canvas that positions an overlay's fixed blocks absolutely.
+
+    Classic mode keeps the original flow layout. The free canvas stores one box per
+    LAYOUT_BLOCKS entry in `elements`; the editor seeds them from the classic layout.
+    """
+
+    LAYOUT_CLASSIC = "classic"
+    LAYOUT_CUSTOM = "custom"
+    LAYOUT_MODE_CHOICES = (
+        (LAYOUT_CLASSIC, _("Classic")),
+        (LAYOUT_CUSTOM, _("Free canvas")),
+    )
+    LAYOUT_BLOCKS = ()
+    LAYOUT_ELEMENT_KEYS = frozenset({"id", "x", "y", "width", "height", "visible"})
+    MAX_LAYOUT_COORDINATE = 2000
+
+    layout_mode = models.CharField(
+        max_length=10,
+        choices=LAYOUT_MODE_CHOICES,
+        default=LAYOUT_CLASSIC,
+    )
+    elements = models.JSONField(default=list, blank=True)
+
+    class Meta:
+        abstract = True
+
+    def clean(self):
+        super().clean()
+        if not self._layout_elements_valid():
+            raise ValidationError({"elements": _("The layout elements are invalid.")})
+
+    def _layout_elements_valid(self):
+        if not isinstance(self.elements, list):
+            return False
+
+        block_ids = {block_id for block_id, label in self.LAYOUT_BLOCKS}
+        seen = set()
+        for element in self.elements:
+            if not isinstance(element, dict) or set(element) != self.LAYOUT_ELEMENT_KEYS:
+                return False
+            if element["id"] not in block_ids or element["id"] in seen:
+                return False
+            seen.add(element["id"])
+            if not isinstance(element["visible"], bool):
+                return False
+            for key, minimum in (("x", 0), ("y", 0), ("width", 1), ("height", 1)):
+                value = element[key]
+                if type(value) is not int or not minimum <= value <= self.MAX_LAYOUT_COORDINATE:
+                    return False
+
+        return self.layout_mode != self.LAYOUT_CUSTOM or seen == block_ids
+
+    @property
+    def layout_styles(self):
+        """Inline CSS per block id on the free canvas; empty in classic mode."""
+        if self.layout_mode != self.LAYOUT_CUSTOM:
+            return {}
+        return {
+            element["id"]: (
+                f"left: {element['x']}px; top: {element['y']}px; "
+                f"width: {element['width']}px; height: {element['height']}px;"
+                + ("" if element["visible"] else " display: none;")
+            )
+            for element in self.elements
+        }
+
+    def layout_payload(self):
+        return {"layout_mode": self.layout_mode, "elements": self.elements}
+
+
 class OverlayVersion(models.Model):
     REASON_CREATED = "created"
     REASON_MANUAL = "manual"
@@ -209,13 +281,20 @@ class OverlayPreset(models.Model):
         return self.name
 
 
-class WinChallenge(OverlayBrandingMixin, models.Model):
+class WinChallenge(OverlayBrandingMixin, OverlayLayoutMixin, models.Model):
     """Editable win counter overlay configuration."""
 
     DEFAULT_OVERLAY_TITLE = _("Winchallenge")
     DEFAULT_LABEL_TEXT = _("Win Challenge")
     DEFAULT_WINS_TEXT = _("Wins")
     MAX_GAMES = 20
+    LAYOUT_BLOCKS = (
+        ("label", _("Label")),
+        ("title", _("Title")),
+        ("score", _("Total wins")),
+        ("games", _("Games list")),
+        ("pager", _("Page indicator")),
+    )
 
     TEMPLATE_MINIMAL = "minimal"
     TEMPLATE_GLASS = "glass"
@@ -379,6 +458,12 @@ class WinChallenge(OverlayBrandingMixin, models.Model):
     def __str__(self):
         return str(self.display_title)
 
+    def clean(self):
+        super().clean()
+        # Absolutely positioned blocks give the overlay no height of its own.
+        if self.layout_mode == self.LAYOUT_CUSTOM and not self.overlay_height:
+            raise ValidationError({"overlay_height": _("Set a height for the free canvas.")})
+
     @property
     def display_title(self):
         return self.title or self.DEFAULT_OVERLAY_TITLE
@@ -510,6 +595,7 @@ class WinChallenge(OverlayBrandingMixin, models.Model):
                 "games_per_page": self.games_per_page,
                 "win_animation": self.win_animation,
                 **self.branding_payload(),
+                **self.layout_payload(),
             },
         }
 
@@ -1902,11 +1988,17 @@ class ScoreParticipant(models.Model):
         return f"{words[0][0]}{words[-1][0]}".upper()
 
 
-class TimerOverlay(OverlayBrandingMixin, models.Model):
+class TimerOverlay(OverlayBrandingMixin, OverlayLayoutMixin, models.Model):
     """Persistent countdown or stopwatch browser-source overlay."""
 
     DEFAULT_NAME = _("Stream Timer")
     MAX_SECONDS = (100 * 60 * 60) - 1
+    LAYOUT_BLOCKS = (
+        ("topline", _("Type and status")),
+        ("label", _("Label")),
+        ("time", _("Time")),
+        ("progress", _("Progress bar")),
+    )
 
     MODE_COUNTDOWN = "countdown"
     MODE_STOPWATCH = "stopwatch"
@@ -2100,6 +2192,7 @@ class TimerOverlay(OverlayBrandingMixin, models.Model):
                 "shadow_enabled": self.shadow_enabled,
                 "shadow_css": self.shadow_css,
                 **self.branding_payload(),
+                **self.layout_payload(),
             },
         }
 

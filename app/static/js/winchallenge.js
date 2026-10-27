@@ -523,6 +523,10 @@
         document.querySelectorAll("[data-winchallenge-overlay]").forEach((overlay) => {
             applyDesignToOverlay(overlay, state.design);
             window.NexoraBranding?.apply(overlay, state.design);
+            // The editor preview shows the unsaved layout, so only overlays outside it follow the saved one.
+            if (!overlay.closest("[data-winchallenge-preview]")) {
+                window.NexoraLayout?.apply(overlay, state.design.layout_mode, state.design.elements);
+            }
             setText(overlay, "[data-overlay-title]", state.title);
             const totalNode = overlay.querySelector("[data-total-wins]");
             const previousTotal = Number.parseInt(totalNode?.textContent, 10);
@@ -580,10 +584,13 @@
             return;
         }
 
+        const freeCanvas = document.querySelector("[data-layout-mode-field]")?.value === "custom";
+
         Object.entries(preset).forEach(([name, value]) => {
             const field = getField(name);
 
-            if (!field) {
+            // The free canvas needs a fixed height; presets would reset it to automatic.
+            if (!field || (freeCanvas && name === "overlay_height")) {
                 return;
             }
 

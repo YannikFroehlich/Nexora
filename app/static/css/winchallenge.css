@@ -1556,6 +1556,11 @@
     font-size: var(--wc-font-size, 16px);
 }
 
+.winchallenge-overlay[data-layout-mode="custom"] {
+    width: var(--wc-width, 460px);
+    flex: none;
+}
+
 .winchallenge-overlay__header {
     display: flex;
     align-items: flex-start;

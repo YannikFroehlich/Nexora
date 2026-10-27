@@ -130,6 +130,12 @@ publish globals:
   drag, eight-direction resize handles and arrow-key nudging for the Spotify, Score and Twitch Goal
   canvases. Each editor keeps its own elements, selection and rendering and passes callbacks to
   `bind()`; load it before the editor script in `create.html`.
+- [overlay-layout.js](app/static/js/overlay-layout.js) → `window.NexoraLayout` — the optional free
+  canvas of Timer and Win Challenge (`OverlayLayoutMixin` in `models.py`: `layout_mode` +
+  `elements`, validated in the model's `clean()` so imports and restores are covered too). Their
+  fixed content blocks sit in `[data-element-id]` wrappers that are `display: contents` in classic
+  mode and absolutely positioned on the free canvas; switching seeds the boxes from the classic
+  layout. Public pages load it too, to apply layout changes from polling.
 
 Static assets are cache-busted with `?v={{ APP_VERSION }}` (from `APP_VERSION` or the `VERSION` file).
 

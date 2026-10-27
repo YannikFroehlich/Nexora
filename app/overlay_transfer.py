@@ -63,6 +63,8 @@ WINCHALLENGE_ADDED_FIELDS = (
     "show_wins_text",
     "games_per_page",
     "win_animation",
+    "layout_mode",
+    "elements",
 )
 
 WINCHALLENGE_FIELDS = (
@@ -124,7 +126,12 @@ TIMER_FIELDS = (
     "show_progress",
     "shadow_enabled",
     "font_family",
+    "layout_mode",
+    "elements",
 )
+
+# Added after the first timer exports were written; older files get the classic layout.
+TIMER_ADDED_FIELDS = ("layout_mode", "elements")
 
 SCORE_FIELDS = (
     "name",
@@ -497,6 +504,8 @@ def _validated_game(game_data, challenge, sort_order):
 
 def _import_timer(payload, owner):
     overlay_data = _overlay_data_with_defaults(payload["overlay"])
+    for field_name in TIMER_ADDED_FIELDS:
+        overlay_data.setdefault(field_name, TimerOverlay._meta.get_field(field_name).get_default())
     _require_exact_keys(overlay_data, TIMER_FIELDS)
     form_data = copy.deepcopy(overlay_data)
     duration_seconds = form_data.pop("duration_seconds")
