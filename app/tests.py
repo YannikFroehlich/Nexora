@@ -234,6 +234,7 @@ class DiscoverabilityTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/plain; charset=utf-8")
         self.assertIn("Disallow: /accounts/", content)
+        self.assertIn("Disallow: /control/", content)
         self.assertIn("Disallow: /overlays/", content)
         self.assertIn("Disallow: /goals/", content)
         self.assertIn("Disallow: /scores/", content)
@@ -4245,6 +4246,193 @@ class PublicOBSLinkRotationTests(TestCase):
 
                 self.assertEqual(response.status_code, 404)
                 self.assertEqual(overlay.public_token, previous_token)
+
+
+class RemoteControlTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username="control-owner")
+        self.other_user = User.objects.create_user(username="control-other")
+        self.score = ScoreOverlay.objects.create(owner=self.owner, name="Score")
+        self.first = ScoreParticipant.objects.create(overlay=self.score, name="First", sort_order=0)
+        self.second = ScoreParticipant.objects.create(
+            overlay=self.score, name="Second", sort_order=1, score=4
+        )
+        self.timer = TimerOverlay.objects.create(owner=self.owner, name="Timer")
+        self.challenge = WinChallenge.objects.create(owner=self.owner, title="Challenge")
+        self.game = WinChallengeGame.objects.create(
+            challenge=self.challenge, name="Game", sort_order=0
+        )
+
+    def score_url(self, position, action):
+        return reverse("score_remote_control", args=[self.score.control_token, position, action])
+
+    def test_score_buttons_work_unauthenticated_by_list_position(self):
+        self.assertEqual(self.client.get(self.score_url(1, "plus")).status_code, 200)
+        self.assertEqual(self.client.get(self.score_url(2, "minus")).status_code, 200)
+        self.first.refresh_from_db()
+        self.second.refresh_from_db()
+        self.assertEqual((self.first.score, self.second.score), (1, 3))
+
+        self.client.get(self.score_url(2, "reset"))
+        self.second.refresh_from_db()
+        self.assertEqual(self.second.score, 0)
+
+        self.client.get(self.score_url(1, "plus"))
+        self.client.get(reverse("score_remote_reset_all", args=[self.score.control_token]))
+        self.assertEqual(
+            list(self.score.participants.values_list("score", flat=True)),
+            [0, 0],
+        )
+
+    def test_control_urls_accept_post_without_csrf_token(self):
+        client = self.client_class(enforce_csrf_checks=True)
+
+        response = client.post(self.score_url(1, "plus"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Cache-Control"].split(",")[0], "no-store")
+        self.first.refresh_from_db()
+        self.assertEqual(self.first.score, 1)
+
+    def test_timer_toggle_alternates_between_start_and_pause(self):
+        toggle_url = reverse("timer_remote_control", args=[self.timer.control_token, "toggle"])
+
+        self.client.get(toggle_url)
+        self.timer.refresh_from_db()
+        self.assertTrue(self.timer.is_running)
+
+        self.client.get(toggle_url)
+        self.timer.refresh_from_db()
+        self.assertFalse(self.timer.is_running)
+
+        self.client.get(reverse("timer_remote_control", args=[self.timer.control_token, "start"]))
+        self.client.get(reverse("timer_remote_control", args=[self.timer.control_token, "reset"]))
+        self.timer.refresh_from_db()
+        self.assertFalse(self.timer.is_running)
+        self.assertEqual(self.timer.accumulated_seconds, 0)
+
+    def test_winchallenge_buttons_change_wins_by_list_position(self):
+        url_args = [self.challenge.control_token, 1]
+
+        self.client.get(reverse("winchallenge_remote_control", args=[*url_args, "plus"]))
+        self.client.get(reverse("winchallenge_remote_control", args=[*url_args, "plus"]))
+        self.client.get(reverse("winchallenge_remote_control", args=[*url_args, "minus"]))
+
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.wins, 1)
+
+    def test_unknown_tokens_positions_and_actions_return_404_without_changes(self):
+        urls = (
+            self.score_url(0, "plus"),
+            self.score_url(3, "plus"),
+            self.score_url(1, "explode"),
+            reverse("score_remote_control", args=[self.score.public_token, 1, "plus"]),
+            reverse("timer_remote_control", args=[self.timer.control_token, "explode"]),
+            reverse("timer_remote_control", args=[self.timer.public_token, "start"]),
+            reverse("winchallenge_remote_control", args=[self.challenge.control_token, 2, "plus"]),
+            reverse("winchallenge_remote_control", args=[self.challenge.public_token, 1, "plus"]),
+        )
+
+        for url in urls:
+            with self.subTest(url=url):
+                self.assertEqual(self.client.get(url).status_code, 404)
+
+        self.first.refresh_from_db()
+        self.timer.refresh_from_db()
+        self.game.refresh_from_db()
+        self.assertEqual((self.first.score, self.game.wins), (0, 0))
+        self.assertFalse(self.timer.is_running)
+
+    def test_public_overlay_pages_never_expose_the_control_token(self):
+        for overlay, page_name, state_name in (
+            (self.score, "score_overlay", "score_overlay_state"),
+            (self.timer, "timer_overlay", "timer_overlay_state"),
+            (self.challenge, "winchallenge_overlay", "winchallenge_overlay_state"),
+        ):
+            with self.subTest(overlay=overlay):
+                for url_name in (page_name, state_name):
+                    response = self.client.get(reverse(url_name, args=[overlay.public_token]))
+                    self.assertNotContains(response, str(overlay.control_token))
+
+    def test_editor_lists_control_urls_for_the_owner(self):
+        self.client.force_login(self.owner)
+
+        for overlay, manage_name, control_url in (
+            (self.score, "score_manage", self.score_url(2, "plus")),
+            (
+                self.timer,
+                "timer_manage",
+                reverse("timer_remote_control", args=[self.timer.control_token, "toggle"]),
+            ),
+            (
+                self.challenge,
+                "winchallenge_manage",
+                reverse(
+                    "winchallenge_remote_control", args=[self.challenge.control_token, 1, "minus"]
+                ),
+            ),
+        ):
+            with self.subTest(overlay=overlay):
+                response = self.client.get(reverse(manage_name, args=[overlay.pk]))
+                self.assertContains(response, f"http://testserver{control_url}")
+
+    def test_owner_can_renew_control_links_and_old_links_stop_working(self):
+        self.client.force_login(self.owner)
+        previous_score_token = self.score.control_token
+
+        for overlay, overlay_type, manage_name in (
+            (self.score, "score", "score_manage"),
+            (self.timer, "timer", "timer_manage"),
+            (self.challenge, "winchallenge", "winchallenge_manage"),
+        ):
+            with self.subTest(overlay_type=overlay_type):
+                previous_token = overlay.control_token
+                renew_url = reverse("overlay_renew_control_link", args=[overlay_type, overlay.pk])
+
+                self.assertEqual(self.client.get(renew_url).status_code, 405)
+                response = self.client.post(renew_url)
+                overlay.refresh_from_db()
+
+                self.assertRedirects(
+                    response,
+                    f"{reverse(manage_name, args=[overlay.pk])}#control-links",
+                    fetch_redirect_response=False,
+                )
+                self.assertNotEqual(overlay.control_token, previous_token)
+
+        self.assertEqual(self.client.get(self.score_url(1, "plus")).status_code, 200)
+        self.assertEqual(
+            self.client.get(
+                reverse("score_remote_control", args=[previous_score_token, 1, "plus"])
+            ).status_code,
+            404,
+        )
+
+    def test_users_cannot_renew_foreign_control_links(self):
+        self.client.force_login(self.other_user)
+        previous_token = self.score.control_token
+
+        response = self.client.post(
+            reverse("overlay_renew_control_link", args=["score", self.score.pk])
+        )
+        self.score.refresh_from_db()
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(self.score.control_token, previous_token)
+
+    def test_renewing_requires_login(self):
+        renew_url = reverse("overlay_renew_control_link", args=["timer", self.timer.pk])
+
+        response = self.client.post(renew_url)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("login"), response["Location"])
+
+    def test_duplicates_get_their_own_control_token(self):
+        for overlay in (self.score, self.timer, self.challenge):
+            with self.subTest(overlay=overlay):
+                duplicate = overlay_transfer.duplicate_overlay(overlay, self.owner, "Copy")
+                self.assertNotEqual(duplicate.control_token, overlay.control_token)
 
 
 class AccessControlTests(TestCase):

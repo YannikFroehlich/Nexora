@@ -2,13 +2,14 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import F, Max
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from app import overlay_transfer, overlay_versions
 from app.forms import (
@@ -21,6 +22,8 @@ from app.forms import (
 from app.models import OverlayVersion, WinChallenge, WinChallengeGame
 from app.views.common import (
     conditional_state_response,
+    control_url,
+    item_at_position,
     json_export_response,
     no_store,
     renew_public_obs_link,
@@ -58,6 +61,46 @@ def fresh_challenge(challenge):
 
 def state_response(challenge):
     return no_store(JsonResponse(fresh_challenge(challenge).state_payload()))
+
+
+def change_game_wins(challenge, game_pk, delta):
+    with transaction.atomic():
+        game = get_object_or_404(
+            WinChallengeGame.objects.select_for_update(),
+            pk=game_pk,
+            challenge=challenge,
+        )
+
+        if delta > 0:
+            WinChallengeGame.objects.filter(
+                pk=game.pk,
+                wins__lt=WinChallengeGame.MAX_WINS,
+            ).update(wins=F("wins") + 1)
+        elif game.wins > 0:
+            WinChallengeGame.objects.filter(pk=game.pk).update(wins=F("wins") - 1)
+
+        touch_challenge(challenge)
+        overlay_versions.record_version(challenge, OverlayVersion.REASON_AUTOSAVE)
+
+    return state_response(challenge)
+
+
+def winchallenge_control_rows(request, challenge):
+    return [
+        {
+            "label": f"{position}. {game.name}",
+            "actions": [
+                (
+                    label,
+                    control_url(
+                        request, "winchallenge_remote_control", challenge, position, action
+                    ),
+                )
+                for action, label in (("plus", "+1"), ("minus", "-1"))
+            ],
+        }
+        for position, game in enumerate(challenge.ordered_games, start=1)
+    ]
 
 
 @login_required
@@ -142,6 +185,7 @@ def winchallenge_manage(request, pk):
         "design_form": design_form,
         "game_form": WinChallengeGameForm(),
         "obs_url": winchallenge_obs_url(request, challenge),
+        "control_rows": winchallenge_control_rows(request, challenge),
         "asset_upload_form": OverlayAssetUploadForm(prefix="asset"),
         "style_presets": manageable_presets(request),
     }
@@ -284,25 +328,22 @@ def winchallenge_game_wins(request, pk, game_pk):
     if delta not in (-1, 1):
         return JsonResponse({"error": _("Invalid win change.")}, status=400)
 
-    with transaction.atomic():
-        game = get_object_or_404(
-            WinChallengeGame.objects.select_for_update(),
-            pk=game_pk,
-            challenge=challenge,
-        )
+    return change_game_wins(challenge, game_pk, delta)
 
-        if delta > 0:
-            WinChallengeGame.objects.filter(
-                pk=game.pk,
-                wins__lt=WinChallengeGame.MAX_WINS,
-            ).update(wins=F("wins") + 1)
-        elif game.wins > 0:
-            WinChallengeGame.objects.filter(pk=game.pk).update(wins=F("wins") - 1)
 
-        touch_challenge(challenge)
-        overlay_versions.record_version(challenge, OverlayVersion.REASON_AUTOSAVE)
+@csrf_exempt
+@never_cache
+@require_http_methods(["GET", "POST"])
+def winchallenge_remote_control(request, control_token, position, action):
+    challenge = get_object_or_404(
+        WinChallenge.objects.prefetch_related("games"), control_token=control_token
+    )
+    game = item_at_position(challenge.ordered_games, position)
 
-    return state_response(challenge)
+    if action not in ("plus", "minus"):
+        raise Http404
+
+    return change_game_wins(challenge, game.pk, 1 if action == "plus" else -1)
 
 
 @login_required

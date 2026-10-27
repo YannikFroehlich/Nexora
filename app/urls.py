@@ -85,6 +85,11 @@ urlpatterns = [
         views.overlay_version_restore,
         name="overlay_version_restore",
     ),
+    path(
+        "overlays/<str:overlay_type>/<int:pk>/renew-control-link/",
+        views.overlay_renew_control_link,
+        name="overlay_renew_control_link",
+    ),
     path("presets/", views.preset_list, name="preset_list"),
     path("presets/save/", views.preset_save, name="preset_save"),
     path(
@@ -201,6 +206,17 @@ urlpatterns = [
         views.score_overlay_state,
         name="score_overlay_state",
     ),
+    path(
+        "control/score/<uuid:control_token>/reset/",
+        views.score_remote_control,
+        {"action": "reset"},
+        name="score_remote_reset_all",
+    ),
+    path(
+        "control/score/<uuid:control_token>/<int:position>/<str:action>/",
+        views.score_remote_control,
+        name="score_remote_control",
+    ),
     path("timers/", views.timer_list, name="timer_list"),
     path("timers/new/", views.timer_create, name="timer_create"),
     path("timers/<int:pk>/", views.timer_manage, name="timer_manage"),
@@ -221,6 +237,11 @@ urlpatterns = [
         "overlays/timer/<uuid:public_token>/state/",
         views.timer_overlay_state,
         name="timer_overlay_state",
+    ),
+    path(
+        "control/timer/<uuid:control_token>/<str:action>/",
+        views.timer_remote_control,
+        name="timer_remote_control",
     ),
     path("winchallenges/", views.winchallenge_list, name="winchallenge_list"),
     path("winchallenges/new/", views.winchallenge_create, name="winchallenge_create"),
@@ -271,5 +292,10 @@ urlpatterns = [
         "overlays/winchallenge/<uuid:public_token>/state/",
         views.winchallenge_overlay_state,
         name="winchallenge_overlay_state",
+    ),
+    path(
+        "control/winchallenge/<uuid:control_token>/<int:position>/<str:action>/",
+        views.winchallenge_remote_control,
+        name="winchallenge_remote_control",
     ),
 ]

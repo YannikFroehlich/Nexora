@@ -481,6 +481,9 @@
                         <li>{% translate "Set a suitable width and height" %}</li>
                         <li>{% translate "Enable refresh when the scene becomes active if desired" %}</li>
                     </ol>
+
+                    {% include "app/partials/_overlay_control_links.html" %}
+                    {% include "app/partials/_overlay_control_renew_form.html" with overlay_type="winchallenge" overlay_pk=challenge.pk %}
                 </section>
             </div>
 

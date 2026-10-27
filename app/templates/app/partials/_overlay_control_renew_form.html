@@ -1,0 +1,9 @@
+{% load i18n %}
+<form
+    id="control-link-renew-form"
+    action="{% url 'overlay_renew_control_link' overlay_type=overlay_type pk=overlay_pk %}"
+    method="post"
+    data-confirm-action="{% translate 'All previous Stream Deck links will stop working immediately. Continue?' %}"
+>
+    {% csrf_token %}
+</form>

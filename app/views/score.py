@@ -4,13 +4,14 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import F, Max
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from app import overlay_transfer, overlay_versions
 from app.forms import (
@@ -29,6 +30,8 @@ from app.models import (
 )
 from app.views.common import (
     conditional_state_response,
+    control_url,
+    item_at_position,
     json_export_response,
     no_store,
     renew_public_obs_link,
@@ -66,6 +69,60 @@ def state_response(overlay):
     return no_store(JsonResponse(fresh_score_overlay(overlay).state_payload()))
 
 
+def change_participant_score(overlay, delta, **participant_lookup):
+    with transaction.atomic():
+        participant = get_object_or_404(
+            ScoreParticipant.objects.select_for_update(),
+            overlay=overlay,
+            **participant_lookup,
+        )
+
+        if delta > 0 and participant.score < ScoreOverlay.MAX_SCORE:
+            ScoreParticipant.objects.filter(pk=participant.pk).update(score=F("score") + 1)
+        elif delta < 0:
+            minimum = ScoreOverlay.MIN_SCORE if overlay.allow_negative_scores else 0
+            if participant.score > minimum:
+                ScoreParticipant.objects.filter(pk=participant.pk).update(score=F("score") - 1)
+
+        touch_score_overlay(overlay)
+        overlay_versions.record_version(overlay, OverlayVersion.REASON_AUTOSAVE)
+
+    return state_response(overlay)
+
+
+def reset_scores(overlay, participants):
+    participants.update(score=0)
+    touch_score_overlay(overlay)
+    overlay_versions.record_version(overlay, OverlayVersion.REASON_AUTOSAVE)
+    return state_response(overlay)
+
+
+def score_control_rows(request, overlay):
+    rows = [
+        {
+            "label": f"{position}. {participant.name}",
+            "actions": [
+                ("+1", control_url(request, "score_remote_control", overlay, position, "plus")),
+                ("-1", control_url(request, "score_remote_control", overlay, position, "minus")),
+                (
+                    _("Reset"),
+                    control_url(request, "score_remote_control", overlay, position, "reset"),
+                ),
+            ],
+        }
+        for position, participant in enumerate(overlay.ordered_participants, start=1)
+    ]
+    rows.append(
+        {
+            "label": _("All participants"),
+            "actions": [
+                (_("Reset all scores"), control_url(request, "score_remote_reset_all", overlay))
+            ],
+        }
+    )
+    return rows
+
+
 def apply_structured_score_layout(overlay, participants):
     participant_count = len(participants)
     overlay.layout_mode = score_layout_mode_for_participant_count(participant_count)
@@ -98,6 +155,7 @@ def score_editor_context(request, form, overlay, is_create):
         "participant_form": ScoreParticipantForm(owner=request.user),
         "asset_upload_form": OverlayAssetUploadForm(prefix="asset"),
         "obs_url": "" if is_create else score_obs_url(request, overlay),
+        "control_rows": [] if is_create else score_control_rows(request, overlay),
     }
     if not is_create:
         context.update(overlay_versions.editor_version_context(overlay))
@@ -405,24 +463,7 @@ def score_participant_score(request, pk, participant_id):
     if delta not in (-1, 1):
         return JsonResponse({"error": _("Invalid score change.")}, status=400)
 
-    with transaction.atomic():
-        participant = get_object_or_404(
-            ScoreParticipant.objects.select_for_update(),
-            public_id=participant_id,
-            overlay=overlay,
-        )
-
-        if delta > 0 and participant.score < ScoreOverlay.MAX_SCORE:
-            ScoreParticipant.objects.filter(pk=participant.pk).update(score=F("score") + 1)
-        elif delta < 0:
-            minimum = ScoreOverlay.MIN_SCORE if overlay.allow_negative_scores else 0
-            if participant.score > minimum:
-                ScoreParticipant.objects.filter(pk=participant.pk).update(score=F("score") - 1)
-
-        touch_score_overlay(overlay)
-        overlay_versions.record_version(overlay, OverlayVersion.REASON_AUTOSAVE)
-
-    return state_response(overlay)
+    return change_participant_score(overlay, delta, public_id=participant_id)
 
 
 @login_required
@@ -430,21 +471,34 @@ def score_participant_score(request, pk, participant_id):
 def score_participant_reset(request, pk, participant_id):
     overlay = get_manageable_score_overlay(request, pk)
     participant = get_object_or_404(ScoreParticipant, public_id=participant_id, overlay=overlay)
-    participant.score = 0
-    participant.save(update_fields=["score"])
-    touch_score_overlay(overlay)
-    overlay_versions.record_version(overlay, OverlayVersion.REASON_AUTOSAVE)
-    return state_response(overlay)
+    return reset_scores(overlay, overlay.participants.filter(pk=participant.pk))
 
 
 @login_required
 @require_POST
 def score_reset_all(request, pk):
     overlay = get_manageable_score_overlay(request, pk)
-    overlay.participants.update(score=0)
-    touch_score_overlay(overlay)
-    overlay_versions.record_version(overlay, OverlayVersion.REASON_AUTOSAVE)
-    return state_response(overlay)
+    return reset_scores(overlay, overlay.participants.all())
+
+
+@csrf_exempt
+@never_cache
+@require_http_methods(["GET", "POST"])
+def score_remote_control(request, control_token, action, position=None):
+    overlay = get_object_or_404(ScoreOverlay, control_token=control_token)
+
+    if position is None:
+        return reset_scores(overlay, overlay.participants.all())
+
+    participant = item_at_position(overlay.ordered_participants, position)
+
+    if action == "reset":
+        return reset_scores(overlay, overlay.participants.filter(pk=participant.pk))
+
+    if action not in ("plus", "minus"):
+        raise Http404
+
+    return change_participant_score(overlay, 1 if action == "plus" else -1, pk=participant.pk)
 
 
 @never_cache

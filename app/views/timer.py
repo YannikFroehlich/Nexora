@@ -1,19 +1,21 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from app import overlay_transfer, overlay_versions
 from app.forms import OverlayAssetUploadForm, TimerOverlayForm
 from app.models import OverlayVersion, TimerOverlay
 from app.views.common import (
     conditional_state_response,
+    control_url,
     json_export_response,
     no_store,
     renew_public_obs_link,
@@ -31,12 +33,30 @@ def timer_obs_url(request, timer):
     return request.build_absolute_uri(reverse("timer_overlay", args=[timer.public_token]))
 
 
+def timer_control_rows(request, timer):
+    return [
+        {
+            "label": timer.display_name,
+            "actions": [
+                (label, control_url(request, "timer_remote_control", timer, action))
+                for action, label in (
+                    ("toggle", _("Start / Pause")),
+                    ("start", _("Start")),
+                    ("pause", _("Pause")),
+                    ("reset", _("Reset")),
+                )
+            ],
+        }
+    ]
+
+
 def timer_editor_context(request, form, timer, is_create):
     context = {
         "form": form,
         "timer": timer,
         "is_create": is_create,
         "obs_url": "" if is_create else timer_obs_url(request, timer),
+        "control_rows": [] if is_create else timer_control_rows(request, timer),
         "asset_upload_form": OverlayAssetUploadForm(prefix="asset"),
     }
     if not is_create:
@@ -123,19 +143,12 @@ def timer_autosave(request, pk):
     return JsonResponse({"ok": True, "updated_at": timer.updated_at.isoformat()})
 
 
-@login_required
-@require_POST
-def timer_control(request, pk):
-    action = request.POST.get("action", "")
+TIMER_ACTIONS = {"start", "pause", "reset", "toggle"}
 
-    if action not in {"start", "pause", "reset"}:
-        return JsonResponse({"error": _("Unknown timer action.")}, status=400)
 
+def run_timer_action(timers, action):
     with transaction.atomic():
-        timer = get_object_or_404(
-            TimerOverlay.objects.select_for_update().filter(owner=request.user),
-            pk=pk,
-        )
+        timer = get_object_or_404(timers.select_for_update())
         now = timezone.now()
         elapsed = timer.elapsed_seconds(now)
         limit = (
@@ -143,6 +156,9 @@ def timer_control(request, pk):
             if timer.mode == TimerOverlay.MODE_COUNTDOWN
             else TimerOverlay.MAX_SECONDS
         )
+
+        if action == "toggle":
+            action = "pause" if timer.is_running and elapsed < limit else "start"
 
         if action == "reset":
             timer.accumulated_seconds = 0
@@ -169,6 +185,27 @@ def timer_control(request, pk):
         )
 
     return no_store(JsonResponse(timer.state_payload()))
+
+
+@login_required
+@require_POST
+def timer_control(request, pk):
+    action = request.POST.get("action", "")
+
+    if action not in TIMER_ACTIONS:
+        return JsonResponse({"error": _("Unknown timer action.")}, status=400)
+
+    return run_timer_action(TimerOverlay.objects.filter(owner=request.user, pk=pk), action)
+
+
+@csrf_exempt
+@never_cache
+@require_http_methods(["GET", "POST"])
+def timer_remote_control(request, control_token, action):
+    if action not in TIMER_ACTIONS:
+        raise Http404
+
+    return run_timer_action(TimerOverlay.objects.filter(control_token=control_token), action)
 
 
 @login_required

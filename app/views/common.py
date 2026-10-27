@@ -3,8 +3,9 @@ import json
 import uuid
 
 from django.contrib import messages
-from django.http import FileResponse, HttpResponse, HttpResponseNotModified, JsonResponse
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseNotModified, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.utils.http import parse_etags
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
@@ -54,6 +55,21 @@ def renew_public_obs_link(request, overlay, redirect_url):
         _("OBS link renewed. Replace the previous URL in OBS."),
     )
     return redirect(redirect_url)
+
+
+def control_url(request, url_name, overlay, *args):
+    return request.build_absolute_uri(reverse(url_name, args=[overlay.control_token, *args]))
+
+
+def item_at_position(items, position):
+    # Control URLs address participants/games by their 1-based list position, so Stream Deck
+    # buttons can be set up without knowing internal ids.
+    if position < 1:
+        raise Http404
+    try:
+        return items[position - 1]
+    except IndexError:
+        raise Http404 from None
 
 
 def overlay_asset_file(request, public_token):

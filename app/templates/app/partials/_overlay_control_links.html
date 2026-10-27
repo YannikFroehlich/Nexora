@@ -1,0 +1,24 @@
+{% load i18n %}
+<div id="control-links" class="control-links">
+    <h3 class="control-links__title">{% translate "Stream Deck & hotkeys" %}</h3>
+    <p class="control-links__note">
+        {% translate "Each button copies a control URL. Use it in a Stream Deck “Website” action with “GET request in background”, or as an HTTP request in Bitfocus Companion. Numbers follow the current list order. Anyone with these URLs can change this overlay." %}
+    </p>
+    <ul class="control-links__rows">
+        {% for row in control_rows %}
+            <li class="control-links__row">
+                <span class="control-links__label">{{ row.label }}</span>
+                <span class="control-links__actions">
+                    {% for label, url in row.actions %}
+                        <button class="btn glass-design" type="button" data-copy-url="{{ url }}" title="{{ url }}">{{ label }}</button>
+                    {% endfor %}
+                </span>
+            </li>
+        {% empty %}
+            <li class="control-links__row">{% translate "Add an entry to get control URLs." %}</li>
+        {% endfor %}
+    </ul>
+    <button class="btn glass-design" type="submit" form="control-link-renew-form">
+        {% translate "Renew Stream Deck links" %}
+    </button>
+</div>

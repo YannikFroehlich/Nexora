@@ -870,3 +870,59 @@ footer p {
         outline: 3px solid Highlight;
     }
 }
+
+.control-links {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-glass-border);
+}
+
+.control-links > .btn {
+    justify-self: start;
+}
+
+.control-links__title {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--color-heading);
+}
+
+.control-links__note {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.control-links__rows {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.control-links__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.control-links__label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.control-links__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.control-links__actions .btn {
+    min-height: 36px;
+    padding: 6px 12px;
+}
