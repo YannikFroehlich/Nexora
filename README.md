@@ -813,25 +813,41 @@ http://192.168.178.175:8001/spotify/callback/
 ```
 
 Spotify akzeptiert HTTP-Redirects jedoch nur für Loopback-Adressen wie
-`127.0.0.1`, nicht für eine private LAN-IP. Deshalb sollte
-`SPOTIFY_REDIRECT_URI` auf dem Server zunächst leer bleiben. Für funktionierendes
-Spotify OAuth benötigt die Server-Bereitstellung eine HTTPS-Domain vor einem
-Reverse Proxy. Die spätere HTTPS-Callback-URI muss dann in `.env` und im Spotify
-Developer Dashboard exakt identisch eingetragen werden.
+`127.0.0.1`, nicht für eine private LAN-IP. Für dauerhaftes Spotify OAuth benötigt
+die Server-Bereitstellung deshalb eine HTTPS-Domain vor einem Reverse Proxy. Die
+HTTPS-Callback-URI muss dann in `.env` und im Spotify Developer Dashboard exakt
+identisch eingetragen werden.
 
-Für die lokale Entwicklung ist weiterhin diese erlaubte Loopback-URI geeignet:
+Bis dahin lässt sich Spotify über einen einmaligen SSH-Tunnel verbinden. Trage dazu
+in der Server-`.env` und im Spotify Developer Dashboard dieselbe Loopback-URI ein.
+Port `8001` kollidiert nicht mit einem lokalen Entwicklungsserver auf `8000`; im
+Dashboard können beide URIs parallel eingetragen sein:
 
 ```env
-SPOTIFY_REDIRECT_URI=http://127.0.0.1:8000/spotify/callback/
+SPOTIFY_REDIRECT_URI=http://127.0.0.1:8001/spotify/callback/
 ```
 
 Trage außerdem `SPOTIFY_CLIENT_ID` und `SPOTIFY_CLIENT_SECRET` aus der Spotify-App
-in `.env` ein und starte den Container nach einer späteren Server-Konfiguration
-neu:
+in `.env` ein. Änderungen an `.env` werden erst übernommen, wenn der Container neu
+erstellt wird (`docker compose restart` reicht dafür nicht):
 
 ```bash
-docker compose restart
+docker compose up -d
 ```
+
+Öffne dann auf dem eigenen PC einen Tunnel zum Server:
+
+```bash
+ssh -L 8001:127.0.0.1:8001 BENUTZERNAME@192.168.178.175
+```
+
+Rufe Nexora jetzt über `http://127.0.0.1:8001` auf, melde dich dort an (die Session
+gilt nur für diese Adresse) und verbinde Spotify im Overlay-Editor. Spotify leitet
+nach dem Login auf `127.0.0.1:8001` zurück, der Tunnel reicht den Callback an den
+Server weiter. Danach kann der Tunnel geschlossen werden: Die Verbindung bleibt
+gespeichert, der Server erneuert die Tokens selbst, und Editor sowie OBS laufen
+weiter über `http://192.168.178.175:8001`. Erneut nötig ist der Tunnel nur, wenn
+Spotify neu verbunden werden muss.
 
 Bei der HTTPS-Bereitstellung müssen `SPOTIFY_REDIRECT_URI`,
 `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` und die optionalen
