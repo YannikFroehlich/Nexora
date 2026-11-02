@@ -4600,6 +4600,12 @@ class PublicOBSLinkRotationTests(TestCase):
                 "winchallenge_overlay",
                 "winchallenge_overlay_state",
             ),
+            (
+                SceneOverlay.objects.create(owner=self.owner, name="Scenes"),
+                "scene_renew_obs_link",
+                "scene_overlay",
+                "scene_overlay_state",
+            ),
         )
 
     def test_owner_can_renew_and_revoke_each_public_obs_link(self):
@@ -4664,6 +4670,10 @@ class PublicOBSLinkRotationTests(TestCase):
                 WinChallenge.objects.create(owner=self.other_user, title="Foreign Challenge"),
                 "winchallenge_renew_obs_link",
             ),
+            (
+                SceneOverlay.objects.create(owner=self.other_user, name="Foreign Scenes"),
+                "scene_renew_obs_link",
+            ),
         )
 
         for overlay, renew_url_name in foreign_overlays:
@@ -4691,6 +4701,7 @@ class RemoteControlTests(TestCase):
         self.game = WinChallengeGame.objects.create(
             challenge=self.challenge, name="Game", sort_order=0
         )
+        self.scene = SceneOverlay.objects.create(owner=self.owner, name="Scenes")
 
     def score_url(self, position, action):
         return reverse("score_remote_control", args=[self.score.control_token, position, action])
@@ -4813,6 +4824,7 @@ class RemoteControlTests(TestCase):
             (self.score, "score", "score_manage"),
             (self.timer, "timer", "timer_manage"),
             (self.challenge, "winchallenge", "winchallenge_manage"),
+            (self.scene, "scene", "scene_manage"),
         ):
             with self.subTest(overlay_type=overlay_type):
                 previous_token = overlay.control_token
@@ -4858,7 +4870,7 @@ class RemoteControlTests(TestCase):
         self.assertIn(reverse("login"), response["Location"])
 
     def test_duplicates_get_their_own_control_token(self):
-        for overlay in (self.score, self.timer, self.challenge):
+        for overlay in (self.score, self.timer, self.challenge, self.scene):
             with self.subTest(overlay=overlay):
                 duplicate = overlay_transfer.duplicate_overlay(overlay, self.owner, "Copy")
                 self.assertNotEqual(duplicate.control_token, overlay.control_token)

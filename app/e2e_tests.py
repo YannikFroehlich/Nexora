@@ -7,6 +7,7 @@ from django.urls import reverse
 from playwright.sync_api import expect, sync_playwright
 
 from app.models import (
+    SceneOverlay,
     SpotifyOverlay,
     TimerOverlay,
     TwitchGoalOverlay,
@@ -44,6 +45,10 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
             name="Browser Game",
             wins=2,
             target_wins=5,
+        )
+        self.scene = SceneOverlay.objects.create(
+            owner=self.user,
+            name="Browser Scenes",
         )
 
         self.client.force_login(self.user)
@@ -162,6 +167,11 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
                 "[data-twitch-goal-source]",
                 "[data-twitch-goal-canvas]",
             ),
+            (
+                reverse("scene_overlay", args=[self.scene.public_token]),
+                "[data-scene-source]",
+                "[data-scene-overlay]",
+            ),
         )
 
         for path, source_selector, overlay_selector in sources:
@@ -189,6 +199,25 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
                 page.close()
 
         obs_context.close()
+
+    def test_scene_live_control_switches_editor_and_public_overlay(self):
+        page = self.context.new_page()
+        page.goto(self.live_server_url + reverse("scene_manage", args=[self.scene.pk]))
+        expect(page.locator("[data-scene-editor]")).to_be_visible()
+
+        brb_button = page.locator('[data-scene-controls] [data-scene-action="brb"]')
+        brb_button.click()
+
+        expect(brb_button).to_have_attribute("aria-pressed", "true")
+        expect(
+            page.locator('[data-scene-controls] [data-scene-action="starting"]')
+        ).to_have_attribute("aria-pressed", "false")
+
+        public_page = self.context.new_page()
+        public_page.goto(
+            self.live_server_url + reverse("scene_overlay", args=[self.scene.public_token])
+        )
+        expect(public_page.locator("[data-scene-overlay]")).to_have_attribute("data-scene", "brb")
 
     def test_preset_font_updates_preview_and_public_overlay(self):
         page = self.context.new_page()
