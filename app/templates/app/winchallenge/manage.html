@@ -272,6 +272,8 @@
                             <div class="form-errors" role="alert">{{ design_form.non_field_errors }}</div>
                         {% endif %}
 
+                        {% include "app/partials/_overlay_layout_controls.html" with layout_form=design_form layout_overlay=challenge layout_root="[data-winchallenge-preview] [data-winchallenge-overlay]" layout_height_field=design_form.overlay_height.id_for_label %}
+
                         <div class="field-grid field-grid--two">
                             <div class="form-field form-field--wide">
                                 <label for="{{ design_form.design_template.id_for_label }}">{{ design_form.design_template.label }}</label>
@@ -529,6 +531,8 @@
 
 {% block extra_js %}
     <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/canvas-editor.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/overlay-layout.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/winchallenge.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
 {% endblock %}

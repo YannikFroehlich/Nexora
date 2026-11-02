@@ -152,6 +152,8 @@
                             {{ form.design_template }}{{ form.design_template.errors }}
                         </div>
 
+                        {% include "app/partials/_overlay_layout_controls.html" with layout_form=form layout_overlay=timer layout_root="[data-timer-editor] [data-timer-overlay]" %}
+
                         <div class="timer-field-grid timer-field-grid--colors">
                             {% for field in form %}
                                 {% if field.name == "background_color" or field.name == "text_color" or field.name == "accent_color" or field.name == "border_color" %}
@@ -267,6 +269,8 @@
 
 {% block extra_js %}
     <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/canvas-editor.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/overlay-layout.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/timer.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
 {% endblock %}

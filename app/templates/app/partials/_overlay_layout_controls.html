@@ -1,0 +1,25 @@
+{% load i18n %}
+<fieldset
+    class="layout-controls"
+    data-layout-controls
+    data-layout-root="{{ layout_root }}"
+    {% if layout_height_field %}data-layout-height-field="{{ layout_height_field }}"{% endif %}
+>
+    <legend>{% translate "Layout" %}</legend>
+    <div>
+        <label class="sr-only" for="{{ layout_form.layout_mode.id_for_label }}">{{ layout_form.layout_mode.label }}</label>
+        {{ layout_form.layout_mode }}{{ layout_form.layout_mode.errors }}
+        {{ layout_form.elements }}{{ layout_form.elements.errors }}
+    </div>
+    <p class="layout-controls__hint">
+        {% translate "On the free canvas, drag and resize the blocks in the preview. Arrow keys move the selected block, Shift moves it by 10 pixels." %}
+    </p>
+    <ul class="layout-controls__blocks" data-layout-custom-only>
+        {% for block_id, label in layout_overlay.LAYOUT_BLOCKS %}
+            <li><label><input type="checkbox" data-layout-visibility="{{ block_id }}"> {{ label }}</label></li>
+        {% endfor %}
+    </ul>
+    <button class="btn glass-design" type="button" data-layout-reset data-layout-custom-only>
+        {% translate "Reset to classic positions" %}
+    </button>
+</fieldset>

@@ -120,6 +120,9 @@
             if (["font_family", "font_url", "logo_url", "background_image_url"].some((key) => key in design)) {
                 window.NexoraBranding?.apply(overlay, design);
             }
+            if ("layout_mode" in design) {
+                window.NexoraLayout?.apply(overlay, design.layout_mode, design.elements);
+            }
             showProgress = design.show_progress !== false;
 
             if (label) {

@@ -89,6 +89,27 @@ def _configure_branding_fields(form, asset_owner):
         )
 
 
+class OverlayLayoutFormMixin:
+    """Free-canvas fields. Posts without them keep the stored layout."""
+
+    def _configure_layout_fields(self):
+        layout_mode = self.fields["layout_mode"]
+        layout_mode.label = _("Layout")
+        layout_mode.required = False
+        layout_mode.widget.attrs.update({"class": BASE_INPUT_CLASS, "data-layout-mode-field": ""})
+        self.fields["elements"].widget = forms.HiddenInput(attrs={"data-layout-elements": ""})
+
+    def _layout_value(self, field_name):
+        value = self.cleaned_data.get(field_name)
+        return getattr(self.instance, field_name) if value in (None, "") else value
+
+    def clean_layout_mode(self):
+        return self._layout_value("layout_mode")
+
+    def clean_elements(self):
+        return self._layout_value("elements")
+
+
 def _selected_font_family(form):
     return (
         form.cleaned_data.get("font_family")
@@ -417,7 +438,7 @@ class ColorInput(forms.TextInput):
     input_type = "color"
 
 
-class WinChallengeBaseForm(forms.ModelForm):
+class WinChallengeBaseForm(OverlayLayoutFormMixin, forms.ModelForm):
     """Shared field setup for create and edit flows."""
 
     class Meta:
@@ -455,6 +476,8 @@ class WinChallengeBaseForm(forms.ModelForm):
             "show_wins_text",
             "games_per_page",
             "win_animation",
+            "layout_mode",
+            "elements",
             "font_family",
             "font_asset",
             "logo_asset",
@@ -579,6 +602,7 @@ class WinChallengeBaseForm(forms.ModelForm):
         asset_owner = kwargs.pop("asset_owner", None)
         super().__init__(*args, **kwargs)
         _configure_branding_fields(self, asset_owner)
+        self._configure_layout_fields()
         self._sync_numeric_widget_limits()
 
     def _sync_numeric_widget_limits(self):
@@ -687,6 +711,8 @@ class WinChallengeDesignForm(WinChallengeBaseForm):
             "show_wins_text",
             "games_per_page",
             "win_animation",
+            "layout_mode",
+            "elements",
             "font_family",
             "font_asset",
             "logo_asset",
@@ -1456,7 +1482,7 @@ class TwitchGoalOverlayForm(forms.ModelForm):
         return instance
 
 
-class TimerOverlayForm(forms.ModelForm):
+class TimerOverlayForm(OverlayLayoutFormMixin, forms.ModelForm):
     """Settings and design form for countdown and stopwatch overlays."""
 
     duration_hours = forms.IntegerField(
@@ -1501,6 +1527,8 @@ class TimerOverlayForm(forms.ModelForm):
             "timer_text_size",
             "show_progress",
             "shadow_enabled",
+            "layout_mode",
+            "elements",
             "font_family",
             "font_asset",
             "logo_asset",
@@ -1571,6 +1599,7 @@ class TimerOverlayForm(forms.ModelForm):
         asset_owner = kwargs.pop("asset_owner", None)
         super().__init__(*args, **kwargs)
         _configure_branding_fields(self, asset_owner)
+        self._configure_layout_fields()
         self.fields["name"].required = False
         self.fields["label"].required = False
 

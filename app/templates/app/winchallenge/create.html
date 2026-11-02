@@ -202,6 +202,8 @@
                             <h3 id="layout-title">{% translate "Layout" %}</h3>
                         </div>
 
+                        {% include "app/partials/_overlay_layout_controls.html" with layout_form=form layout_overlay=preview_challenge layout_root="[data-winchallenge-preview] [data-winchallenge-overlay]" layout_height_field=form.overlay_height.id_for_label %}
+
                         <div class="field-grid field-grid--layout">
                             <div class="form-field">
                                 <label for="{{ form.overlay_width.id_for_label }}">{{ form.overlay_width.label }}</label>
@@ -378,6 +380,8 @@
 
 {% block extra_js %}
     <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/canvas-editor.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/overlay-layout.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/winchallenge.js' %}?v={{ APP_VERSION }}"></script>
     <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
 {% endblock %}
