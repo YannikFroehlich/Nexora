@@ -4427,3 +4427,178 @@ msgstr ""
 #~| msgid "Spotify Overlay"
 #~ msgid "All Spotify overlays"
 #~ msgstr "Spotify Overlay"
+
+msgid "Enter a Twitch channel name: letters, digits and underscores only."
+msgstr ""
+
+msgid "Twitch Chat"
+msgstr ""
+
+msgid "Name and message in one line"
+msgstr ""
+
+msgid "Name above message"
+msgstr ""
+
+msgid "Newest message at the bottom"
+msgstr ""
+
+msgid "Newest message at the top"
+msgstr ""
+
+msgid "Slide in"
+msgstr ""
+
+msgid "Fade in"
+msgstr ""
+
+msgid "Twitch channel"
+msgstr ""
+
+msgid "The channel name from twitch.tv/name. No login needed."
+msgstr ""
+
+msgid "Maximum visible messages"
+msgstr ""
+
+msgid "Hide messages after seconds"
+msgstr ""
+
+msgid "Show badges"
+msgstr ""
+
+msgid "Show subs, gifts and raids"
+msgstr ""
+
+msgid "Hide !commands"
+msgstr ""
+
+msgid "Hidden users"
+msgstr ""
+
+msgid "7TV emotes"
+msgstr ""
+
+msgid "BetterTTV emotes"
+msgstr ""
+
+msgid "FrankerFaceZ emotes"
+msgstr ""
+
+msgid "Message layout"
+msgstr ""
+
+msgid "Message order"
+msgstr ""
+
+msgid "Animation"
+msgstr ""
+
+msgid "Message background"
+msgstr ""
+
+msgid "Use Twitch name colors"
+msgstr ""
+
+msgid "Name color"
+msgstr ""
+
+msgid "Emote size"
+msgstr ""
+
+msgid "Message spacing"
+msgstr ""
+
+msgid "Text shadow"
+msgstr ""
+
+msgid "0 keeps messages until newer ones push them out."
+msgstr ""
+
+msgid "Separate names with commas, for example bots."
+msgstr ""
+
+msgid "Used when Twitch name colors are off or a user has none."
+msgstr ""
+
+#, python-format
+msgid "%(name)s is not a valid Twitch user name."
+msgstr ""
+
+msgid "Chat overlay created."
+msgstr ""
+
+msgid "Chat overlay saved."
+msgstr ""
+
+#, python-format
+msgid "Chat overlay deleted: %(name)s"
+msgstr ""
+
+#, python-format
+msgid "Chat overlay duplicated: %(name)s"
+msgstr ""
+
+msgid "The chat overlay data is invalid."
+msgstr ""
+
+msgid "Create chat overlay"
+msgstr ""
+
+msgid "Twitch chat"
+msgstr ""
+
+msgid "Edit chat overlay"
+msgstr ""
+
+msgid ""
+"Show your Twitch chat on stream with Twitch, 7TV, BetterTTV and FrankerFaceZ "
+"emotes. The overlay reads the public chat, so no extra login is needed."
+msgstr ""
+
+msgid "Channel and messages"
+msgstr ""
+
+msgid "Third-party emotes"
+msgstr ""
+
+msgid "Save chat overlay"
+msgstr ""
+
+msgid "Add test message"
+msgstr ""
+
+msgid "Delete this chat overlay?"
+msgstr ""
+
+msgid "Connecting…"
+msgstr ""
+
+msgid "Live chat"
+msgstr ""
+
+msgid "No channel"
+msgstr ""
+
+msgid "Welcome to the stream!"
+msgstr ""
+
+msgid "That play was insane"
+msgstr ""
+
+msgid "Hello from the chat"
+msgstr ""
+
+msgid "Good luck in the next round"
+msgstr ""
+
+msgid "Chats"
+msgstr ""
+
+msgid "No chat overlays yet"
+msgstr ""
+
+msgid ""
+"Show your Twitch chat on stream with 7TV, BetterTTV and FrankerFaceZ emotes, "
+"styled the way you want."
+msgstr ""

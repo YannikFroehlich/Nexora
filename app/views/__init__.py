@@ -10,6 +10,18 @@ from app.views.account import (
     account_password_change,
     account_settings,
 )
+from app.views.chat import (
+    chat_autosave,
+    chat_create,
+    chat_delete,
+    chat_duplicate,
+    chat_export,
+    chat_list,
+    chat_manage,
+    chat_overlay,
+    chat_overlay_state,
+    chat_renew_obs_link,
+)
 from app.views.common import overlay_asset_file
 from app.views.dashboard import (
     overlay_asset_upload,
@@ -134,6 +146,16 @@ __all__ = [
     "account_email_update",
     "account_password_change",
     "account_settings",
+    "chat_autosave",
+    "chat_create",
+    "chat_delete",
+    "chat_duplicate",
+    "chat_export",
+    "chat_list",
+    "chat_manage",
+    "chat_overlay",
+    "chat_overlay_state",
+    "chat_renew_obs_link",
     "demo",
     "home",
     "imprint",

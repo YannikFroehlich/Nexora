@@ -1,0 +1,38 @@
+{% load i18n %}
+
+{% if chat.font_asset_id %}
+    <style>@font-face { font-family: "NexoraUploadedOverlayFont"; src: url("{{ chat.font_asset.public_url }}"); font-display: swap; }</style>
+{% endif %}
+{{ chat.state_payload|json_script:"chat-initial-state" }}
+
+<div class="chat-frame" data-chat-frame>
+    <section
+        class="chat-overlay chat-overlay--{{ chat.design_template }}"
+        data-chat-overlay
+        data-overlay-branding-root
+        data-layout="{{ chat.message_layout }}"
+        data-direction="{{ chat.message_direction }}"
+        data-animation="{{ chat.animation }}"
+        data-shadow="{{ chat.shadow_enabled|yesno:'true,false' }}"
+        aria-label="{% translate 'Twitch chat' %}"
+        style="
+            --chat-background: {{ chat.background_rgba }};
+            --chat-text: {{ chat.text_color }};
+            --chat-accent: {{ chat.accent_color }};
+            --chat-name: {{ chat.name_color }};
+            --chat-border: {{ chat.border_color }};
+            --chat-border-width: {{ chat.border_width }}px;
+            --chat-radius: {{ chat.corner_radius }}px;
+            --chat-font-size: {{ chat.font_size }}px;
+            --chat-emote-size: {{ chat.emote_size }}px;
+            --chat-gap: {{ chat.message_gap }}px;
+            --nexora-overlay-font: {% if chat.font_asset_id %}'NexoraUploadedOverlayFont'{% else %}{{ chat.font_css_stack }}{% endif %};
+            {% if chat.background_asset_id %}--nexora-overlay-background-image: url("{{ chat.background_asset.public_url }}");{% endif %}
+        "
+    >
+        {% if chat.logo_asset_id %}
+            <img class="overlay-custom-logo" src="{{ chat.logo_asset.public_url }}" alt="" data-overlay-custom-logo>
+        {% endif %}
+        <ol class="chat-overlay__messages" data-chat-messages></ol>
+    </section>
+</div>

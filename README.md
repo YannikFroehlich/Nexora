@@ -118,6 +118,22 @@ Show one live Twitch milestone per overlay and celebrate it automatically when i
 - Last-known-good display during temporary Twitch failures
 - Public browser-source URL with proportional scaling at any viewport size
 
+### 💬 Twitch Chat overlay
+
+Show your Twitch chat on stream, including the emotes your community actually uses.
+
+- Reads the public chat anonymously over Twitch IRC, so no Twitch login or token is needed
+- Native Twitch emotes plus 7TV (including zero-width emotes), BetterTTV and FrankerFaceZ, each switchable
+- Global and channel badges (subscriber months, moderator, VIP, …)
+- Messages deleted, timed out or cleared by moderators disappear from the overlay too
+- Optional sub, resub, gift, raid and announcement highlights
+- Hide bots and other users by name, and hide `!commands`
+- Maximum message count and optional auto-hide after a set number of seconds
+- Minimal, glass and neon designs; one-line or stacked layout; newest message at the top or bottom
+- Slide, fade or no entry animation (respects reduced motion)
+- Colors, opacity, border, corner radius, text and emote size, spacing, text shadow, Twitch or fixed name colors
+- Live editor preview with sample messages and the real chat of the configured channel
+
 ### 🌍 Platform
 
 - German and English user interface
@@ -452,6 +468,8 @@ Nexora/
 | New stream timer | `/timers/new/` | Authenticated |
 | Win Challenges | `/winchallenges/` | Authenticated |
 | New Win Challenge | `/winchallenges/new/` | Authenticated |
+| Chat overlays | `/chats/` | Authenticated |
+| New chat overlay | `/chats/new/` | Authenticated |
 | Django admin | `/admin/` | Staff |
 
 Public OBS routes are generated individually for each overlay and use UUID tokens.

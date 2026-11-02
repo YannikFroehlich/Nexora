@@ -1,0 +1,24 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'de' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="{% static 'css/chat.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
+    <title>{{ chat.display_name }}</title>
+</head>
+<body
+    class="chat-overlay-source"
+    data-chat-source
+    data-state-url="{% url 'chat_overlay_state' chat.public_token %}"
+>
+    {% include "app/partials/_chat_overlay.html" with chat=chat %}
+    <script src="{% static 'js/polling.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/chat.js' %}?v={{ APP_VERSION }}"></script>
+</body>
+</html>

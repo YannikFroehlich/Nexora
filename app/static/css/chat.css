@@ -1,0 +1,238 @@
+/* Chat overlay: messages fill the frame, newest at the bottom or top ------ */
+
+.chat-frame {
+    position: relative;
+    overflow: hidden;
+    height: 600px;
+    border-radius: 18px;
+    background-color: #131821;
+    background-image:
+        linear-gradient(45deg, rgba(255,255,255,.055) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255,255,255,.055) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255,255,255,.055) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,.055) 75%);
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+    background-size: 20px 20px;
+}
+
+/* Two classes so this beats [data-overlay-branding-root] { position: relative }. */
+.chat-frame > .chat-overlay {
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    display: flex;
+    padding: 16px;
+    flex-direction: column;
+    color: var(--chat-text, #f8fafc);
+    font-family: var(--nexora-overlay-font, Inter, ui-sans-serif, system-ui, sans-serif);
+    font-size: var(--chat-font-size, 20px);
+}
+
+.chat-overlay__messages {
+    display: flex;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: var(--chat-gap, 8px);
+    overflow: hidden;
+    list-style: none;
+}
+
+.chat-overlay[data-direction="top"] .chat-overlay__messages {
+    justify-content: flex-start;
+}
+
+.chat-message {
+    --message-name-color: var(--chat-name, #a78bfa);
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: .4em .7em;
+    flex-shrink: 0;
+    border: var(--chat-border-width, 1px) solid var(--chat-border, #a78bfa);
+    border-radius: var(--chat-radius, 14px);
+    background: var(--chat-background, rgba(11, 16, 32, .72));
+    font-weight: 500;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.chat-overlay[data-shadow="true"] .chat-message {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .9), 0 0 6px rgba(0, 0, 0, .55);
+}
+
+.chat-overlay--glass .chat-message {
+    backdrop-filter: blur(14px) saturate(140%);
+}
+
+.chat-overlay--minimal .chat-message {
+    padding: .1em 0;
+    border-width: 0;
+    background: transparent;
+}
+
+.chat-overlay--neon .chat-message {
+    box-shadow:
+        0 0 16px color-mix(in srgb, var(--chat-accent, #8b5cf6) 45%, transparent),
+        inset 0 0 12px color-mix(in srgb, var(--chat-accent, #8b5cf6) 12%, transparent);
+}
+
+.chat-message__name {
+    color: var(--message-name-color);
+    font-weight: 800;
+}
+
+.chat-overlay[data-twitch-colors="true"] .chat-message {
+    --message-name-color: var(--message-twitch-color, var(--chat-name, #a78bfa));
+}
+
+.chat-overlay[data-layout="inline"] .chat-message__name::after {
+    content: ": ";
+    color: var(--chat-text, #f8fafc);
+    font-weight: 500;
+}
+
+.chat-overlay[data-layout="stacked"] .chat-message__author {
+    display: block;
+    margin-bottom: .1em;
+}
+
+.chat-message__badge {
+    width: auto;
+    height: 1.05em;
+    margin-right: .25em;
+    vertical-align: -.15em;
+}
+
+.chat-message--action .chat-message__text {
+    color: var(--message-name-color);
+    font-style: italic;
+}
+
+.chat-overlay[data-layout="inline"] .chat-message--action .chat-message__name::after {
+    content: " ";
+}
+
+.chat-message--event {
+    border-color: var(--chat-accent, #8b5cf6);
+    border-left-width: max(4px, var(--chat-border-width, 1px));
+    background: color-mix(in srgb, var(--chat-accent, #8b5cf6) 28%, var(--chat-background, transparent));
+}
+
+.chat-message__system {
+    display: block;
+    color: var(--chat-text, #f8fafc);
+    font-weight: 800;
+}
+
+.chat-emote {
+    width: auto;
+    height: var(--chat-emote-size, 28px);
+    margin: -.2em .08em;
+    vertical-align: middle;
+}
+
+/* 7TV zero-width emotes are drawn on top of the emote before them. */
+.chat-emote-stack {
+    display: inline-grid;
+    place-items: center;
+    vertical-align: middle;
+}
+
+.chat-emote-stack > .chat-emote {
+    grid-area: 1 / 1;
+    margin: -.2em .08em;
+}
+
+.chat-overlay[data-animation="slide"] .chat-message {
+    animation: chat-slide-in .32s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.chat-overlay[data-animation="fade"] .chat-message {
+    animation: chat-fade-in .4s ease-out both;
+}
+
+.chat-message.chat-message--leaving {
+    opacity: 0;
+    transition: opacity .45s ease;
+}
+
+@keyframes chat-slide-in {
+    from { opacity: 0; transform: translateX(-28px); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes chat-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-overlay .chat-message {
+        animation: none;
+    }
+}
+
+/* OBS browser source: the frame fills the viewport without a checkerboard. */
+
+.chat-overlay-source {
+    margin: 0;
+    overflow: hidden;
+    background: transparent;
+}
+
+.chat-overlay-source .chat-frame {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    background: none;
+}
+
+/* Editor ----------------------------------------------------------------- */
+
+.chat-fieldset {
+    margin: 16px 0 0;
+    padding: 16px 16px 4px;
+    border: 1px solid rgba(148, 163, 184, .24);
+    border-radius: 16px;
+}
+
+.chat-fieldset legend {
+    padding: 0 7px;
+    font-size: .8rem;
+    font-weight: 800;
+}
+
+.chat-help {
+    display: block;
+    margin: -6px 0 14px;
+    opacity: .75;
+}
+
+.chat-preview-status {
+    font-size: .8rem;
+    font-weight: 700;
+}
+
+.chat-preview-status[data-state="live"]::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+}
+
+.chat-test-button {
+    width: 100%;
+    margin-top: 12px;
+}
+
+@media (max-width: 680px) {
+    .chat-frame {
+        height: 460px;
+    }
+}
