@@ -1,0 +1,251 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% if is_create %}{% translate "Create chat overlay" %}{% else %}{{ chat.display_name }}{% endif %} · Nexora{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/timer.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/chat.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li><a href="{% url 'overlay_dashboard' %}#chat-overlays">{% translate "My overlays" %}</a></li>
+            <li aria-current="page">{% if is_create %}{% translate "Create" %}{% else %}{% translate "Edit" %}{% endif %}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <div
+        class="timer-page"
+        data-chat-editor
+        data-overlay-branding-editor
+        data-editor-state
+        data-editor-create="{{ is_create|yesno:'true,false' }}"
+        data-editor-draft-key="nexora:draft:chat:{{ user.pk }}:{% if is_create %}new{% else %}{{ chat.pk }}{% endif %}"
+        data-status-saved="{% if is_create %}{% translate 'No unsaved changes' %}{% else %}{% translate 'All changes saved' %}{% endif %}"
+        data-status-unsaved="{% translate 'Unsaved changes' %}"
+        data-status-saving="{% translate 'Saving changes...' %}"
+        data-status-failed="{% translate 'Autosave failed. Use the save button to try again.' %}"
+        data-status-draft-saved="{% translate 'Draft saved locally' %}"
+        data-status-draft-restored="{% translate 'Local draft restored' %}"
+    >
+        <section class="timer-hero" aria-labelledby="chat-editor-title">
+            <div>
+                <p class="timer-kicker"><span>Nexora</span> {% translate "Twitch chat" %}</p>
+                <h1 id="chat-editor-title">
+                    {% if is_create %}{% translate "Create chat overlay" %}{% else %}{% translate "Edit chat overlay" %}{% endif %}
+                </h1>
+                <p>{% translate "Show your Twitch chat on stream with Twitch, 7TV, BetterTTV and FrankerFaceZ emotes. The overlay reads the public chat, so no extra login is needed." %}</p>
+            </div>
+            <a class="btn glass-design" href="{% url 'overlay_dashboard' %}#chat-overlays">{% translate "Back to my overlays" %}</a>
+        </section>
+
+        {% include "app/partials/_editor_state_toolbar.html" %}
+
+        {% if messages %}
+            <div class="timer-messages" role="status" aria-live="polite" aria-atomic="true">
+                {% for message in messages %}<p>{{ message }}</p>{% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="timer-editor-layout">
+            <div class="timer-editor-sidebar">
+                <form
+                    class="timer-form"
+                    method="post"
+                    novalidate
+                    data-chat-form
+                    data-editor-state-form
+                    data-editor-form-key="chat"
+                    {% if not is_create %}data-autosave-url="{% url 'chat_autosave' chat.pk %}"{% endif %}
+                >
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}<div class="timer-form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+
+                    <section class="timer-panel" aria-labelledby="chat-content-title">
+                        <div class="timer-panel__heading">
+                            <span aria-hidden="true">01</span>
+                            <div>
+                                <p class="timer-kicker">{% translate "Content" %}</p>
+                                <h2 id="chat-content-title">{% translate "Channel and messages" %}</h2>
+                            </div>
+                        </div>
+
+                        {% for field in form %}
+                            {% if field.name == "name" or field.name == "channel" or field.name == "max_messages" or field.name == "message_lifetime_seconds" or field.name == "hidden_users" %}
+                                <div class="timer-field">
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}{{ field.errors }}
+                                    {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <div class="timer-toggles">
+                            {% for field in form %}
+                                {% if field.name == "show_badges" or field.name == "show_events" or field.name == "hide_commands" %}
+                                    <label for="{{ field.id_for_label }}">{{ field }}<span>{{ field.label }}</span></label>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <fieldset class="chat-fieldset">
+                            <legend>{% translate "Third-party emotes" %}</legend>
+                            <div class="timer-toggles">
+                                {% for field in form %}
+                                    {% if field.name == "enable_7tv" or field.name == "enable_bttv" or field.name == "enable_ffz" %}
+                                        <label for="{{ field.id_for_label }}">{{ field }}<span>{{ field.label }}</span></label>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </fieldset>
+                    </section>
+
+                    <section class="timer-panel" aria-labelledby="chat-design-title">
+                        <div class="timer-panel__heading">
+                            <span aria-hidden="true">02</span>
+                            <div>
+                                <p class="timer-kicker">{% translate "Appearance" %}</p>
+                                <h2 id="chat-design-title">{% translate "Overlay design" %}</h2>
+                            </div>
+                        </div>
+
+                        <div class="timer-field-grid">
+                            {% for field in form %}
+                                {% if field.name == "design_template" or field.name == "message_layout" or field.name == "message_direction" or field.name == "animation" %}
+                                    <div class="timer-field">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {{ field }}{{ field.errors }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="timer-field-grid timer-field-grid--colors">
+                            {% for field in form %}
+                                {% if field.name == "background_color" or field.name == "text_color" or field.name == "accent_color" or field.name == "name_color" or field.name == "border_color" %}
+                                    <div class="timer-field">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {{ field }}{{ field.errors }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <small class="chat-help">{{ form.name_color.help_text }}</small>
+
+                        <div class="timer-field-grid">
+                            {% for field in form %}
+                                {% if field.name == "background_opacity" or field.name == "border_width" or field.name == "corner_radius" or field.name == "font_size" or field.name == "emote_size" or field.name == "message_gap" %}
+                                    <div class="timer-field">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {{ field }}{{ field.errors }}
+                                        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="timer-toggles">
+                            <label for="{{ form.use_twitch_name_colors.id_for_label }}">{{ form.use_twitch_name_colors }}<span>{{ form.use_twitch_name_colors.label }}</span></label>
+                            <label for="{{ form.shadow_enabled.id_for_label }}">{{ form.shadow_enabled }}<span>{{ form.shadow_enabled.label }}</span></label>
+                        </div>
+
+                        {% include "app/partials/_overlay_branding_controls.html" with branding_form=form overlay=chat overlay_type="chat" %}
+
+                        <button class="btn action-button timer-save" type="submit">
+                            {% if is_create %}{% translate "Create chat overlay" %}{% else %}{% translate "Save chat overlay" %}{% endif %}
+                        </button>
+                    </section>
+                </form>
+
+                <form id="overlay-asset-upload-form" action="{% url 'overlay_asset_upload' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                </form>
+
+                {% if not is_create %}
+                    <section class="timer-panel" aria-labelledby="chat-obs-title">
+                        <div class="timer-panel__heading">
+                            <span aria-hidden="true">03</span>
+                            <div>
+                                <p class="timer-kicker">{% translate "Browser source" %}</p>
+                                <h2 id="chat-obs-title">{% translate "OBS Link" %}</h2>
+                            </div>
+                        </div>
+                        <div class="timer-obs-copy">
+                            <input class="form-control" type="text" value="{{ obs_url }}" readonly data-obs-url>
+                            <button class="btn action-button" type="button" data-copy-url="{{ obs_url }}">{% translate "Copy OBS Link" %}</button>
+                        </div>
+                        <form
+                            class="obs-link-renew-form"
+                            action="{% url 'chat_renew_obs_link' chat.pk %}"
+                            method="post"
+                            data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+                        >
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{% url 'chat_manage' chat.pk %}">
+                            <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
+                        </form>
+                        <p>{% blocktranslate with width=450 height=800 %}Recommended browser-source size: {{ width }} × {{ height }} pixels.{% endblocktranslate %}</p>
+                        <div class="timer-danger-zone">
+                            <a class="btn glass-design" href="{% url 'chat_overlay' chat.public_token %}" target="_blank" rel="noopener">{% translate "Open preview" %}</a>
+                            <form action="{% url 'chat_delete' chat.pk %}" method="post" data-confirm-delete="{% translate 'Delete this chat overlay?' %}">
+                                {% csrf_token %}
+                                <button class="btn timer-danger-button" type="submit">{% translate "Delete" %}</button>
+                            </form>
+                        </div>
+                    </section>
+                    <form id="overlay-preset-save-form" action="{% url 'preset_save' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="overlay_type" value="chat">
+                        <input type="hidden" name="pk" value="{{ chat.pk }}">
+                    </form>
+                    <form
+                        id="overlay-preset-apply-form"
+                        action="{% url 'preset_apply' overlay_type='chat' pk=chat.pk %}"
+                        method="post"
+                        data-confirm-action="{% translate 'This replaces the current font, images, colors, border and corner radius. Continue?' %}"
+                    >
+                        {% csrf_token %}
+                    </form>
+                {% endif %}
+            </div>
+
+            <aside class="timer-preview-panel" aria-labelledby="chat-preview-title">
+                <div class="timer-preview-panel__heading">
+                    <div>
+                        <p class="timer-kicker">{% translate "Live preview" %}</p>
+                        <h2 id="chat-preview-title">{% translate "Overlay preview" %}</h2>
+                    </div>
+                    <span class="chat-preview-status" data-chat-status data-status-connecting="{% translate 'Connecting…' %}" data-status-live="{% translate 'Live chat' %}" data-status-offline="{% translate 'No channel' %}" role="status"></span>
+                </div>
+                {% include "app/partials/_chat_overlay.html" with chat=chat %}
+                <button
+                    class="btn glass-design chat-test-button"
+                    type="button"
+                    data-chat-test-message
+                    data-demo-texts="{% translate 'Welcome to the stream!' %}|{% translate 'That play was insane' %}|{% translate 'Hello from the chat' %}|{% translate 'Good luck in the next round' %}"
+                >{% translate "Add test message" %}</button>
+            </aside>
+        </div>
+
+        {% if not is_create %}
+            {% include "app/partials/_overlay_version_history.html" with overlay=chat %}
+        {% endif %}
+
+        <p class="timer-toast" data-copy-toast role="status" aria-live="polite" aria-atomic="true" hidden>{% translate "OBS link copied" %}</p>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/chat.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
+{% endblock %}

@@ -7,6 +7,7 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 
 from app.forms import (
+    ChatOverlayForm,
     SceneOverlayForm,
     ScoreOverlayForm,
     SpotifyOverlayForm,
@@ -14,6 +15,7 @@ from app.forms import (
     TwitchGoalOverlayForm,
 )
 from app.models import (
+    ChatOverlay,
     OverlayBrandingMixin,
     SceneOverlay,
     ScoreOverlay,
@@ -38,6 +40,7 @@ WINCHALLENGE_TYPE = "winchallenge"
 SCORE_TYPE = "score"
 TWITCH_GOAL_TYPE = "twitch_goal"
 SCENE_TYPE = "scene"
+CHAT_TYPE = "chat"
 
 SPOTIFY_FIELDS = (
     "name",
@@ -208,6 +211,39 @@ SCENE_FIELDS = (
 )
 
 
+CHAT_FIELDS = (
+    "name",
+    "channel",
+    "max_messages",
+    "message_lifetime_seconds",
+    "show_badges",
+    "show_events",
+    "hide_commands",
+    "hidden_users",
+    "enable_7tv",
+    "enable_bttv",
+    "enable_ffz",
+    "design_template",
+    "message_layout",
+    "message_direction",
+    "animation",
+    "background_color",
+    "background_opacity",
+    "text_color",
+    "accent_color",
+    "use_twitch_name_colors",
+    "name_color",
+    "border_color",
+    "border_width",
+    "corner_radius",
+    "font_size",
+    "emote_size",
+    "message_gap",
+    "shadow_enabled",
+    "font_family",
+)
+
+
 class OverlayTransferError(ValueError):
     """Safe, user-facing error for invalid import files."""
 
@@ -278,6 +314,15 @@ def scene_export_payload(scene):
     }
 
 
+def chat_export_payload(chat):
+    return {
+        "format": FORMAT_NAME,
+        "version": FORMAT_VERSION,
+        "type": CHAT_TYPE,
+        "overlay": _model_fields(chat, CHAT_FIELDS),
+    }
+
+
 def export_payload(overlay):
     if isinstance(overlay, SpotifyOverlay):
         return spotify_export_payload(overlay)
@@ -296,6 +341,9 @@ def export_payload(overlay):
 
     if isinstance(overlay, SceneOverlay):
         return scene_export_payload(overlay)
+
+    if isinstance(overlay, ChatOverlay):
+        return chat_export_payload(overlay)
 
     raise TypeError("Unsupported overlay model")
 
@@ -452,6 +500,7 @@ def _validate_envelope(payload):
         SCORE_TYPE,
         TWITCH_GOAL_TYPE,
         SCENE_TYPE,
+        CHAT_TYPE,
     ):
         raise OverlayTransferError(_("The overlay type is not supported."))
 
@@ -628,6 +677,18 @@ def _import_scene(payload, owner):
     return scene
 
 
+def _import_chat(payload, owner):
+    overlay_data = _overlay_data_with_defaults(payload["overlay"])
+    _require_exact_keys(overlay_data, CHAT_FIELDS)
+    form = ChatOverlayForm(data=overlay_data, asset_owner=owner)
+    if not form.is_valid():
+        raise OverlayTransferError(_("The chat overlay data is invalid."))
+    chat = form.save(commit=False)
+    chat.owner = owner
+    chat.save()
+    return chat
+
+
 def _import_winchallenge(payload, owner):
     overlay_data = winchallenge_data_with_defaults(_overlay_data_with_defaults(payload["overlay"]))
     games_data = payload["games"]
@@ -670,6 +731,9 @@ def import_payload(payload, owner):
 
     if overlay_type == SCENE_TYPE:
         return _import_scene(payload, owner)
+
+    if overlay_type == CHAT_TYPE:
+        return _import_chat(payload, owner)
 
     return _import_winchallenge(payload, owner)
 
