@@ -1,5 +1,6 @@
 from app import overlay_transfer
 from app.models import (
+    ChatOverlay,
     SceneOverlay,
     ScoreOverlay,
     SpotifyOverlay,
@@ -24,6 +25,7 @@ MODEL_BY_TYPE = {
     overlay_transfer.SCORE_TYPE: ScoreOverlay,
     overlay_transfer.TWITCH_GOAL_TYPE: TwitchGoalOverlay,
     overlay_transfer.SCENE_TYPE: SceneOverlay,
+    overlay_transfer.CHAT_TYPE: ChatOverlay,
 }
 
 

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('app', '0020_sceneoverlay'),
+        ('app', '0021_chatoverlay'),
     ]
 
     operations = [

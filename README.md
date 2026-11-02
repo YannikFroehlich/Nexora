@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.2.1-7c3aed?style=for-the-badge">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.4.0-7c3aed?style=for-the-badge">
   <img alt="Python" src="https://img.shields.io/badge/Python-3.12%2B-3776AB?style=for-the-badge&logo=python&logoColor=white">
   <img alt="Django" src="https://img.shields.io/badge/Django-6.0.7-092E20?style=for-the-badge&logo=django&logoColor=white">
   <img alt="OBS" src="https://img.shields.io/badge/OBS-Browser_Source-302E31?style=for-the-badge&logo=obsstudio&logoColor=white">
@@ -117,6 +117,22 @@ Show one live Twitch milestone per overlay and celebrate it automatically when i
 - Shared 15-second metric cache while public OBS sources poll Nexora every two seconds
 - Last-known-good display during temporary Twitch failures
 - Public browser-source URL with proportional scaling at any viewport size
+
+### 💬 Twitch Chat overlay
+
+Show your Twitch chat on stream, including the emotes your community actually uses.
+
+- Reads the public chat anonymously over Twitch IRC, so no Twitch login or token is needed
+- Native Twitch emotes plus 7TV (including zero-width emotes), BetterTTV and FrankerFaceZ, each switchable
+- Global and channel badges (subscriber months, moderator, VIP, …)
+- Messages deleted, timed out or cleared by moderators disappear from the overlay too
+- Optional sub, resub, gift, raid and announcement highlights
+- Hide bots and other users by name, and hide `!commands`
+- Maximum message count and optional auto-hide after a set number of seconds
+- Minimal, glass and neon designs; one-line or stacked layout; newest message at the top or bottom
+- Slide, fade or no entry animation (respects reduced motion)
+- Colors, opacity, border, corner radius, text and emote size, spacing, text shadow, Twitch or fixed name colors
+- Live editor preview with sample messages and the real chat of the configured channel
 
 ### 🌍 Platform
 
@@ -452,6 +468,8 @@ Nexora/
 | New stream timer | `/timers/new/` | Authenticated |
 | Win Challenges | `/winchallenges/` | Authenticated |
 | New Win Challenge | `/winchallenges/new/` | Authenticated |
+| Chat overlays | `/chats/` | Authenticated |
+| New chat overlay | `/chats/new/` | Authenticated |
 | Django admin | `/admin/` | Staff |
 
 Public OBS routes are generated individually for each overlay and use UUID tokens.
@@ -813,25 +831,41 @@ http://192.168.178.175:8001/spotify/callback/
 ```
 
 Spotify akzeptiert HTTP-Redirects jedoch nur für Loopback-Adressen wie
-`127.0.0.1`, nicht für eine private LAN-IP. Deshalb sollte
-`SPOTIFY_REDIRECT_URI` auf dem Server zunächst leer bleiben. Für funktionierendes
-Spotify OAuth benötigt die Server-Bereitstellung eine HTTPS-Domain vor einem
-Reverse Proxy. Die spätere HTTPS-Callback-URI muss dann in `.env` und im Spotify
-Developer Dashboard exakt identisch eingetragen werden.
+`127.0.0.1`, nicht für eine private LAN-IP. Für dauerhaftes Spotify OAuth benötigt
+die Server-Bereitstellung deshalb eine HTTPS-Domain vor einem Reverse Proxy. Die
+HTTPS-Callback-URI muss dann in `.env` und im Spotify Developer Dashboard exakt
+identisch eingetragen werden.
 
-Für die lokale Entwicklung ist weiterhin diese erlaubte Loopback-URI geeignet:
+Bis dahin lässt sich Spotify über einen einmaligen SSH-Tunnel verbinden. Trage dazu
+in der Server-`.env` und im Spotify Developer Dashboard dieselbe Loopback-URI ein.
+Port `8001` kollidiert nicht mit einem lokalen Entwicklungsserver auf `8000`; im
+Dashboard können beide URIs parallel eingetragen sein:
 
 ```env
-SPOTIFY_REDIRECT_URI=http://127.0.0.1:8000/spotify/callback/
+SPOTIFY_REDIRECT_URI=http://127.0.0.1:8001/spotify/callback/
 ```
 
 Trage außerdem `SPOTIFY_CLIENT_ID` und `SPOTIFY_CLIENT_SECRET` aus der Spotify-App
-in `.env` ein und starte den Container nach einer späteren Server-Konfiguration
-neu:
+in `.env` ein. Änderungen an `.env` werden erst übernommen, wenn der Container neu
+erstellt wird (`docker compose restart` reicht dafür nicht):
 
 ```bash
-docker compose restart
+docker compose up -d
 ```
+
+Öffne dann auf dem eigenen PC einen Tunnel zum Server:
+
+```bash
+ssh -L 8001:127.0.0.1:8001 BENUTZERNAME@192.168.178.175
+```
+
+Rufe Nexora jetzt über `http://127.0.0.1:8001` auf, melde dich dort an (die Session
+gilt nur für diese Adresse) und verbinde Spotify im Overlay-Editor. Spotify leitet
+nach dem Login auf `127.0.0.1:8001` zurück, der Tunnel reicht den Callback an den
+Server weiter. Danach kann der Tunnel geschlossen werden: Die Verbindung bleibt
+gespeichert, der Server erneuert die Tokens selbst, und Editor sowie OBS laufen
+weiter über `http://192.168.178.175:8001`. Erneut nötig ist der Tunnel nur, wenn
+Spotify neu verbunden werden muss.
 
 Bei der HTTPS-Bereitstellung müssen `SPOTIFY_REDIRECT_URI`,
 `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` und die optionalen

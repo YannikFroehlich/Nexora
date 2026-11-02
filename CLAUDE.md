@@ -53,11 +53,14 @@ Hourly production job for Twitch token validation: `python manage.py validate_tw
 
 ### Overlay types
 
-Six parallel overlay families, each an independent model + editor + public page:
+Seven parallel overlay families, each an independent model + editor + public page:
 `SpotifyOverlay` (`/spotify/`), `TwitchGoalOverlay` (`/goals/`), `ScoreOverlay` (`/scores/`),
-`TimerOverlay` (`/timers/`), `SceneOverlay` (`/scenes/`), `WinChallenge` (+ `WinChallengeGame`,
-`/winchallenges/`). `SceneOverlay` is a full-screen 1920 × 1080 Starting soon / BRB / Ending
-scene; its editor reuses the `timer-*` layout classes from `timer.css`.
+`TimerOverlay` (`/timers/`), `SceneOverlay` (`/scenes/`), `ChatOverlay` (`/chats/`),
+`WinChallenge` (+ `WinChallengeGame`, `/winchallenges/`). `SceneOverlay` is a full-screen
+1920 × 1080 Starting soon / BRB / Ending scene; it and `ChatOverlay` reuse the `timer-*` editor
+layout classes from `timer.css`. `ChatOverlay` stores only channel, filters and design: the OBS
+page itself reads Twitch chat anonymously over IRC WebSocket and fetches 7TV / BetterTTV /
+FrankerFaceZ emotes and badge images (via `api.ivr.fi`) client-side, so no Twitch token is involved.
 Each has a view module in [app/views/](app/views/), a template dir under
 [app/templates/app/](app/templates/app/), and one CSS + one JS file in `app/static/`.
 
@@ -136,6 +139,10 @@ publish globals:
   fixed content blocks sit in `[data-element-id]` wrappers that are `display: contents` in classic
   mode and absolutely positioned on the free canvas; switching seeds the boxes from the classic
   layout. Public pages load it too, to apply layout changes from polling.
+- [chat.js](app/static/js/chat.js) — Twitch IRC client (reconnect with backoff, `CLEARMSG` /
+  `CLEARCHAT` handling), emote and badge loading, and DOM-only message rendering (chat text never
+  goes through `innerHTML`). Both the OBS page and the editor preview read the initial state from
+  the `chat-initial-state` `json_script`.
 
 Static assets are cache-busted with `?v={{ APP_VERSION }}` (from `APP_VERSION` or the `VERSION` file).
 

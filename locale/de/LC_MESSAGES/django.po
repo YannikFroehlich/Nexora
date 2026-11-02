@@ -4624,3 +4624,184 @@ msgstr "Der Spielname ist erforderlich."
 
 #~ msgid "Learn more"
 #~ msgstr "Mehr erfahren"
+
+msgid "Enter a Twitch channel name: letters, digits and underscores only."
+msgstr ""
+"Gib einen Twitch-Kanalnamen ein: nur Buchstaben, Ziffern und Unterstriche."
+
+msgid "Twitch Chat"
+msgstr "Twitch-Chat"
+
+msgid "Name and message in one line"
+msgstr "Name und Nachricht in einer Zeile"
+
+msgid "Name above message"
+msgstr "Name über der Nachricht"
+
+msgid "Newest message at the bottom"
+msgstr "Neueste Nachricht unten"
+
+msgid "Newest message at the top"
+msgstr "Neueste Nachricht oben"
+
+msgid "Slide in"
+msgstr "Hereingleiten"
+
+msgid "Fade in"
+msgstr "Einblenden"
+
+msgid "Twitch channel"
+msgstr "Twitch-Kanal"
+
+msgid "The channel name from twitch.tv/name. No login needed."
+msgstr "Der Kanalname aus twitch.tv/name. Kein Login nötig."
+
+msgid "Maximum visible messages"
+msgstr "Maximal sichtbare Nachrichten"
+
+msgid "Hide messages after seconds"
+msgstr "Nachrichten ausblenden nach Sekunden"
+
+msgid "Show badges"
+msgstr "Badges anzeigen"
+
+msgid "Show subs, gifts and raids"
+msgstr "Subs, Gifts und Raids anzeigen"
+
+msgid "Hide !commands"
+msgstr "!Befehle ausblenden"
+
+msgid "Hidden users"
+msgstr "Ausgeblendete Nutzer"
+
+msgid "7TV emotes"
+msgstr "7TV-Emotes"
+
+msgid "BetterTTV emotes"
+msgstr "BetterTTV-Emotes"
+
+msgid "FrankerFaceZ emotes"
+msgstr "FrankerFaceZ-Emotes"
+
+msgid "Message layout"
+msgstr "Nachrichten-Layout"
+
+msgid "Message order"
+msgstr "Reihenfolge"
+
+msgid "Animation"
+msgstr "Animation"
+
+msgid "Message background"
+msgstr "Nachrichtenhintergrund"
+
+msgid "Use Twitch name colors"
+msgstr "Twitch-Namensfarben verwenden"
+
+msgid "Name color"
+msgstr "Namensfarbe"
+
+msgid "Emote size"
+msgstr "Emote-Größe"
+
+msgid "Message spacing"
+msgstr "Nachrichtenabstand"
+
+msgid "Text shadow"
+msgstr "Textschatten"
+
+msgid "0 keeps messages until newer ones push them out."
+msgstr "0 lässt Nachrichten stehen, bis neuere sie verdrängen."
+
+msgid "Separate names with commas, for example bots."
+msgstr "Namen mit Komma trennen, zum Beispiel Bots."
+
+msgid "Used when Twitch name colors are off or a user has none."
+msgstr "Gilt, wenn Twitch-Namensfarben aus sind oder ein Nutzer keine hat."
+
+#, python-format
+msgid "%(name)s is not a valid Twitch user name."
+msgstr "%(name)s ist kein gültiger Twitch-Nutzername."
+
+msgid "Chat overlay created."
+msgstr "Chat-Overlay erstellt."
+
+msgid "Chat overlay saved."
+msgstr "Chat-Overlay gespeichert."
+
+#, python-format
+msgid "Chat overlay deleted: %(name)s"
+msgstr "Chat-Overlay gelöscht: %(name)s"
+
+#, python-format
+msgid "Chat overlay duplicated: %(name)s"
+msgstr "Chat-Overlay dupliziert: %(name)s"
+
+msgid "The chat overlay data is invalid."
+msgstr "Die Daten des Chat-Overlays sind ungültig."
+
+msgid "Create chat overlay"
+msgstr "Chat-Overlay erstellen"
+
+msgid "Twitch chat"
+msgstr "Twitch-Chat"
+
+msgid "Edit chat overlay"
+msgstr "Chat-Overlay bearbeiten"
+
+msgid ""
+"Show your Twitch chat on stream with Twitch, 7TV, BetterTTV and FrankerFaceZ "
+"emotes. The overlay reads the public chat, so no extra login is needed."
+msgstr ""
+"Zeige deinen Twitch-Chat im Stream mit Twitch-, 7TV-, BetterTTV- und "
+"FrankerFaceZ-Emotes. Das Overlay liest den öffentlichen Chat, ein "
+"zusätzlicher Login ist nicht nötig."
+
+msgid "Channel and messages"
+msgstr "Kanal und Nachrichten"
+
+msgid "Third-party emotes"
+msgstr "Emotes von Drittanbietern"
+
+msgid "Save chat overlay"
+msgstr "Chat-Overlay speichern"
+
+msgid "Add test message"
+msgstr "Testnachricht hinzufügen"
+
+msgid "Delete this chat overlay?"
+msgstr "Dieses Chat-Overlay löschen?"
+
+msgid "Connecting…"
+msgstr "Verbinde…"
+
+msgid "Live chat"
+msgstr "Live-Chat"
+
+msgid "No channel"
+msgstr "Kein Kanal"
+
+msgid "Welcome to the stream!"
+msgstr "Willkommen im Stream!"
+
+msgid "That play was insane"
+msgstr "Der Move war krass"
+
+msgid "Hello from the chat"
+msgstr "Hallo aus dem Chat"
+
+msgid "Good luck in the next round"
+msgstr "Viel Glück in der nächsten Runde"
+
+msgid "Chats"
+msgstr "Chats"
+
+msgid "No chat overlays yet"
+msgstr "Noch keine Chat-Overlays"
+
+msgid ""
+"Show your Twitch chat on stream with 7TV, BetterTTV and FrankerFaceZ emotes, "
+"styled the way you want."
+msgstr ""
+"Zeige deinen Twitch-Chat im Stream mit 7TV-, BetterTTV- und FrankerFaceZ-"
+"Emotes, gestaltet wie du willst."

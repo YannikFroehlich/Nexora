@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from app.models import (
+    ChatOverlay,
     OverlayAsset,
     OverlayPreset,
     OverlayVersion,
@@ -255,3 +256,11 @@ class SceneOverlayAdmin(admin.ModelAdmin):
     list_filter = ("active_scene", "design_template", "owner")
     search_fields = ("name", "public_token", "owner__username")
     readonly_fields = ("public_token", "control_token", "created_at", "updated_at")
+
+
+@admin.register(ChatOverlay)
+class ChatOverlayAdmin(admin.ModelAdmin):
+    list_display = ("display_name", "owner", "channel", "updated_at")
+    list_filter = ("design_template", "owner")
+    search_fields = ("name", "channel", "public_token", "owner__username")
+    readonly_fields = ("public_token", "created_at", "updated_at")

@@ -2383,3 +2383,215 @@ class SceneOverlay(OverlayBrandingMixin, models.Model):
                 **self.branding_payload(),
             },
         }
+
+
+twitch_login_validator = RegexValidator(
+    regex=r"^[a-z0-9_]{0,25}$",
+    message=_("Enter a Twitch channel name: letters, digits and underscores only."),
+)
+
+DEFAULT_HIDDEN_CHAT_USERS = "nightbot, streamelements, streamlabs, moobot, fossabot, wizebot"
+
+
+class ChatOverlay(OverlayBrandingMixin, models.Model):
+    """Live Twitch chat with Twitch, 7TV, BTTV and FFZ emotes, read anonymously in OBS."""
+
+    DEFAULT_NAME = _("Twitch Chat")
+
+    TEMPLATE_MINIMAL = "minimal"
+    TEMPLATE_GLASS = "glass"
+    TEMPLATE_NEON = "neon"
+    DESIGN_TEMPLATE_CHOICES = (
+        (TEMPLATE_MINIMAL, _("Minimal")),
+        (TEMPLATE_GLASS, _("Glass")),
+        (TEMPLATE_NEON, _("Neon")),
+    )
+
+    LAYOUT_INLINE = "inline"
+    LAYOUT_STACKED = "stacked"
+    LAYOUT_CHOICES = (
+        (LAYOUT_INLINE, _("Name and message in one line")),
+        (LAYOUT_STACKED, _("Name above message")),
+    )
+
+    DIRECTION_BOTTOM = "bottom"
+    DIRECTION_TOP = "top"
+    DIRECTION_CHOICES = (
+        (DIRECTION_BOTTOM, _("Newest message at the bottom")),
+        (DIRECTION_TOP, _("Newest message at the top")),
+    )
+
+    ANIMATION_SLIDE = "slide"
+    ANIMATION_FADE = "fade"
+    ANIMATION_NONE = "none"
+    ANIMATION_CHOICES = (
+        (ANIMATION_SLIDE, _("Slide in")),
+        (ANIMATION_FADE, _("Fade in")),
+        (ANIMATION_NONE, _("No animation")),
+    )
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="chat_overlays",
+        blank=True,
+        null=True,
+    )
+    public_token = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        db_index=True,
+    )
+    name = models.CharField(max_length=120, default="Twitch Chat", blank=True)
+    channel = models.CharField(
+        max_length=25,
+        blank=True,
+        validators=[twitch_login_validator],
+    )
+
+    max_messages = models.PositiveSmallIntegerField(
+        default=25,
+        validators=[MinValueValidator(1), MaxValueValidator(100)],
+    )
+    message_lifetime_seconds = models.PositiveSmallIntegerField(
+        default=0,
+        validators=[MaxValueValidator(600)],
+    )
+    show_badges = models.BooleanField(default=True)
+    show_events = models.BooleanField(default=True)
+    hide_commands = models.BooleanField(default=True)
+    hidden_users = models.CharField(max_length=500, default=DEFAULT_HIDDEN_CHAT_USERS, blank=True)
+    enable_7tv = models.BooleanField(default=True)
+    enable_bttv = models.BooleanField(default=True)
+    enable_ffz = models.BooleanField(default=True)
+
+    design_template = models.CharField(
+        max_length=20,
+        choices=DESIGN_TEMPLATE_CHOICES,
+        default=TEMPLATE_GLASS,
+    )
+    message_layout = models.CharField(
+        max_length=20,
+        choices=LAYOUT_CHOICES,
+        default=LAYOUT_INLINE,
+    )
+    message_direction = models.CharField(
+        max_length=20,
+        choices=DIRECTION_CHOICES,
+        default=DIRECTION_BOTTOM,
+    )
+    animation = models.CharField(
+        max_length=20,
+        choices=ANIMATION_CHOICES,
+        default=ANIMATION_SLIDE,
+    )
+    background_color = models.CharField(
+        max_length=7,
+        default="#0b1020",
+        validators=[hex_color_validator],
+    )
+    background_opacity = models.PositiveSmallIntegerField(
+        default=72,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+    text_color = models.CharField(
+        max_length=7,
+        default="#f8fafc",
+        validators=[hex_color_validator],
+    )
+    accent_color = models.CharField(
+        max_length=7,
+        default="#8b5cf6",
+        validators=[hex_color_validator],
+    )
+    use_twitch_name_colors = models.BooleanField(default=True)
+    name_color = models.CharField(
+        max_length=7,
+        default="#a78bfa",
+        validators=[hex_color_validator],
+    )
+    border_color = models.CharField(
+        max_length=7,
+        default="#a78bfa",
+        validators=[hex_color_validator],
+    )
+    border_width = models.PositiveSmallIntegerField(
+        default=1,
+        validators=[MinValueValidator(0), MaxValueValidator(8)],
+    )
+    corner_radius = models.PositiveSmallIntegerField(
+        default=14,
+        validators=[MinValueValidator(0), MaxValueValidator(32)],
+    )
+    font_size = models.PositiveSmallIntegerField(
+        default=20,
+        validators=[MinValueValidator(12), MaxValueValidator(48)],
+    )
+    emote_size = models.PositiveSmallIntegerField(
+        default=28,
+        validators=[MinValueValidator(16), MaxValueValidator(112)],
+    )
+    message_gap = models.PositiveSmallIntegerField(
+        default=8,
+        validators=[MaxValueValidator(32)],
+    )
+    shadow_enabled = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-updated_at", "-created_at")
+
+    def __str__(self):
+        return str(self.display_name)
+
+    @property
+    def display_name(self):
+        return self.name or self.DEFAULT_NAME
+
+    @property
+    def hidden_user_list(self):
+        return [login for login in self.hidden_users.replace(",", " ").split() if login]
+
+    @property
+    def background_rgba(self):
+        return hex_color_rgba(self.background_color, self.background_opacity)
+
+    def state_payload(self):
+        return {
+            "name": self.display_name,
+            "channel": self.channel,
+            "settings": {
+                "max_messages": self.max_messages,
+                "message_lifetime_seconds": self.message_lifetime_seconds,
+                "show_badges": self.show_badges,
+                "show_events": self.show_events,
+                "hide_commands": self.hide_commands,
+                "hidden_users": self.hidden_user_list,
+                "enable_7tv": self.enable_7tv,
+                "enable_bttv": self.enable_bttv,
+                "enable_ffz": self.enable_ffz,
+            },
+            "updated_at": self.updated_at.isoformat() if self.updated_at else "",
+            "design": {
+                "template": self.design_template,
+                "layout": self.message_layout,
+                "direction": self.message_direction,
+                "animation": self.animation,
+                "background_rgba": self.background_rgba,
+                "text_color": self.text_color,
+                "accent_color": self.accent_color,
+                "use_twitch_name_colors": self.use_twitch_name_colors,
+                "name_color": self.name_color,
+                "border_color": self.border_color,
+                "border_width": self.border_width,
+                "corner_radius": self.corner_radius,
+                "font_size": self.font_size,
+                "emote_size": self.emote_size,
+                "message_gap": self.message_gap,
+                "shadow_enabled": self.shadow_enabled,
+                **self.branding_payload(),
+            },
+        }

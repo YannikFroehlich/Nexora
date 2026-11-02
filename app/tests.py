@@ -42,6 +42,7 @@ from app.forms import (
     WinChallengeDesignForm,
 )
 from app.models import (
+    ChatOverlay,
     OverlayAsset,
     OverlayPreset,
     OverlayVersion,
@@ -321,13 +322,15 @@ class OverlayDashboardTests(TestCase):
         self.assertContains(response, 'id="timer-overlays"')
         self.assertContains(response, 'id="twitch-goal-overlays"')
         self.assertContains(response, 'id="scene-overlays"')
-        self.assertContains(response, 'class="dashboard-empty"', count=6)
+        self.assertContains(response, 'id="chat-overlays"')
+        self.assertContains(response, 'class="dashboard-empty"', count=7)
         self.assertEqual(content.count(f'href="{reverse("spotify_create")}"'), 1)
         self.assertEqual(content.count(f'href="{reverse("winchallenge_create")}"'), 1)
         self.assertEqual(content.count(f'href="{reverse("score_create")}"'), 1)
         self.assertEqual(content.count(f'href="{reverse("timer_create")}"'), 1)
         self.assertEqual(content.count(f'href="{reverse("twitch_goal_create")}"'), 1)
         self.assertEqual(content.count(f'href="{reverse("scene_create")}"'), 1)
+        self.assertEqual(content.count(f'href="{reverse("chat_create")}"'), 1)
 
     def test_dashboard_shows_saved_overlays_from_all_tools(self):
         spotify_overlay = SpotifyOverlay.objects.create(owner=self.user, name="Stream Music")
@@ -3781,6 +3784,195 @@ class SceneOverlayEndpointTests(TestCase):
         self.assertEqual((self.scene.border_width, self.scene.corner_radius), (12, 64))
 
 
+class ChatOverlayEndpointTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="chat-owner")
+        self.client.force_login(self.user)
+        self.chat = ChatOverlay.objects.create(owner=self.user, name="Chat", channel="nexora")
+
+    def chat_form_data(self, **updates):
+        data = {
+            field_name: getattr(self.chat, field_name)
+            for field_name in overlay_transfer.CHAT_FIELDS
+        }
+        data.update(updates)
+        return data
+
+    def test_create_starts_with_connected_twitch_channel_and_normalizes_urls(self):
+        TwitchConnection.objects.create(owner=self.user, twitch_login="StreamerName")
+
+        form_page = self.client.get(reverse("chat_create"))
+        response = self.client.post(
+            reverse("chat_create"),
+            self.chat_form_data(name="Fresh", channel="https://www.twitch.tv/Some_Streamer/"),
+        )
+
+        self.assertContains(form_page, 'value="streamername"')
+        created = ChatOverlay.objects.get(name="Fresh")
+        self.assertRedirects(response, reverse("chat_manage", args=[created.pk]))
+        self.assertEqual(created.channel, "some_streamer")
+        self.assertEqual(overlay_versions.versions_for(created).count(), 1)
+
+    def test_autosave_cleans_hidden_users_and_rejects_invalid_values(self):
+        url = reverse("chat_autosave", args=[self.chat.pk])
+
+        saved = self.client.post(
+            url,
+            self.chat_form_data(hidden_users="@NightBot,  streamelements nightbot", font_size=30),
+        )
+        bad_channel = self.client.post(url, self.chat_form_data(channel="not a channel!"))
+        bad_user = self.client.post(url, self.chat_form_data(hidden_users="ok, <script>"))
+        bad_size = self.client.post(url, self.chat_form_data(max_messages=0))
+
+        self.chat.refresh_from_db()
+        self.assertEqual(saved.json()["ok"], True)
+        self.assertEqual(self.chat.hidden_users, "nightbot, streamelements")
+        self.assertEqual(self.chat.hidden_user_list, ["nightbot", "streamelements"])
+        self.assertEqual(self.chat.font_size, 30)
+        for response, field in (
+            (bad_channel, "channel"),
+            (bad_user, "hidden_users"),
+            (bad_size, "max_messages"),
+        ):
+            with self.subTest(field=field):
+                self.assertEqual(response.status_code, 400)
+                self.assertIn(field, response.json()["errors"])
+        self.assertEqual(self.chat.channel, "nexora")
+
+    def test_public_page_and_state_work_unauthenticated_without_leaks(self):
+        self.client.logout()
+
+        page = self.client.get(reverse("chat_overlay", args=[self.chat.public_token]))
+        state = self.client.get(reverse("chat_overlay_state", args=[self.chat.public_token]))
+        payload = state.json()
+
+        self.assertEqual(page.status_code, 200)
+        self.assertEqual(page["Cache-Control"].split(",")[0], "no-store")
+        self.assertContains(page, 'id="chat-initial-state"')
+        self.assertEqual(payload["channel"], "nexora")
+        self.assertIn("nightbot", payload["settings"]["hidden_users"])
+        self.assertEqual(payload["design"]["template"], ChatOverlay.TEMPLATE_GLASS)
+        for secret in ("owner", "public_token"):
+            self.assertNotIn(secret, payload)
+        self.assertEqual(
+            self.client.get(
+                reverse("chat_overlay_state", args=[self.chat.public_token]),
+                HTTP_IF_NONE_MATCH=state["ETag"],
+            ).status_code,
+            304,
+        )
+
+    def test_export_import_and_duplicate_round_trip(self):
+        self.chat.message_direction = ChatOverlay.DIRECTION_TOP
+        self.chat.enable_ffz = False
+        self.chat.save()
+
+        export = self.client.get(reverse("chat_export", args=[self.chat.pk]))
+        payload = json.loads(export.content)
+        upload = SimpleUploadedFile(
+            "chat.json", json.dumps(payload).encode("utf-8"), content_type="application/json"
+        )
+        imported_response = self.client.post(reverse("overlay_import"), {"overlay_file": upload})
+        self.client.post(reverse("chat_duplicate", args=[self.chat.pk]))
+
+        self.assertEqual(payload["type"], overlay_transfer.CHAT_TYPE)
+        self.assertRedirects(
+            imported_response,
+            f"{reverse('overlay_dashboard')}#chat-overlays",
+            fetch_redirect_response=False,
+        )
+        copies = ChatOverlay.objects.exclude(pk=self.chat.pk)
+        self.assertEqual(copies.count(), 2)
+        for chat_copy in copies:
+            with self.subTest(copy=chat_copy.name):
+                self.assertEqual(chat_copy.channel, "nexora")
+                self.assertEqual(chat_copy.message_direction, ChatOverlay.DIRECTION_TOP)
+                self.assertFalse(chat_copy.enable_ffz)
+                self.assertNotEqual(chat_copy.public_token, self.chat.public_token)
+
+    def test_version_restore_recovers_settings(self):
+        overlay_versions.record_version(self.chat)
+        version = overlay_versions.versions_for(self.chat).get()
+        self.chat.channel = "changed"
+        self.chat.save()
+
+        response = self.client.post(
+            reverse(
+                "overlay_version_restore",
+                args=[overlay_transfer.CHAT_TYPE, self.chat.pk, version.pk],
+            )
+        )
+
+        self.chat.refresh_from_db()
+        self.assertRedirects(response, reverse("chat_manage", args=[self.chat.pk]))
+        self.assertEqual(self.chat.channel, "nexora")
+
+    def test_preset_applies_style_clamped_to_chat_limits(self):
+        preset = OverlayPreset.objects.create(
+            owner=self.user,
+            name="Wide",
+            style={
+                "background_color": "#101010",
+                "background_opacity": 50,
+                "border_color": "#ffffff",
+                "border_width": 24,
+                "corner_radius": 100,
+            },
+        )
+
+        self.client.post(
+            reverse("preset_apply", args=[overlay_transfer.CHAT_TYPE, self.chat.pk]),
+            {"preset_id": preset.pk},
+        )
+
+        self.chat.refresh_from_db()
+        self.assertEqual((self.chat.border_width, self.chat.corner_radius), (8, 32))
+        self.assertEqual(self.chat.background_color, "#101010")
+
+    def test_foreign_chat_routes_return_404_and_anonymous_users_must_log_in(self):
+        other_user = User.objects.create_user(username="chat-intruder")
+        self.client.force_login(other_user)
+
+        for method, name, data in (
+            ("get", "chat_manage", {}),
+            ("post", "chat_autosave", self.chat_form_data(name="Hijacked")),
+            ("post", "chat_delete", {}),
+            ("post", "chat_duplicate", {}),
+            ("get", "chat_export", {}),
+            ("post", "chat_renew_obs_link", {}),
+        ):
+            with self.subTest(route=name):
+                url = reverse(name, args=[self.chat.pk])
+                self.assertEqual(getattr(self.client, method)(url, data).status_code, 404)
+
+        self.chat.refresh_from_db()
+        self.assertEqual(self.chat.name, "Chat")
+        self.assertEqual(ChatOverlay.objects.count(), 1)
+
+        self.client.logout()
+        for name in ("chat_manage", "chat_export"):
+            with self.subTest(anonymous=name):
+                url = reverse(name, args=[self.chat.pk])
+                self.assertRedirects(self.client.get(url), f"{reverse('login')}?next={url}")
+
+    def test_renewing_obs_link_and_deleting_chat(self):
+        previous_token = self.chat.public_token
+        overlay_versions.record_version(self.chat)
+
+        self.client.post(reverse("chat_renew_obs_link", args=[self.chat.pk]))
+        self.chat.refresh_from_db()
+        old_state = self.client.get(reverse("chat_overlay_state", args=[previous_token]))
+        response = self.client.post(reverse("chat_delete", args=[self.chat.pk]))
+
+        self.assertNotEqual(self.chat.public_token, previous_token)
+        self.assertEqual(old_state.status_code, 404)
+        self.assertRedirects(response, f"{reverse('overlay_dashboard')}#chat-overlays")
+        self.assertFalse(ChatOverlay.objects.exists())
+        self.assertFalse(
+            OverlayVersion.objects.filter(overlay_type=overlay_transfer.CHAT_TYPE).exists()
+        )
+
+
 class ScoreOverlayEndpointTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="score-owner")
@@ -4409,6 +4601,12 @@ class PublicOBSLinkRotationTests(TestCase):
                 "winchallenge_overlay",
                 "winchallenge_overlay_state",
             ),
+            (
+                SceneOverlay.objects.create(owner=self.owner, name="Scenes"),
+                "scene_renew_obs_link",
+                "scene_overlay",
+                "scene_overlay_state",
+            ),
         )
 
     def test_owner_can_renew_and_revoke_each_public_obs_link(self):
@@ -4473,6 +4671,10 @@ class PublicOBSLinkRotationTests(TestCase):
                 WinChallenge.objects.create(owner=self.other_user, title="Foreign Challenge"),
                 "winchallenge_renew_obs_link",
             ),
+            (
+                SceneOverlay.objects.create(owner=self.other_user, name="Foreign Scenes"),
+                "scene_renew_obs_link",
+            ),
         )
 
         for overlay, renew_url_name in foreign_overlays:
@@ -4500,6 +4702,7 @@ class RemoteControlTests(TestCase):
         self.game = WinChallengeGame.objects.create(
             challenge=self.challenge, name="Game", sort_order=0
         )
+        self.scene = SceneOverlay.objects.create(owner=self.owner, name="Scenes")
 
     def score_url(self, position, action):
         return reverse("score_remote_control", args=[self.score.control_token, position, action])
@@ -4622,6 +4825,7 @@ class RemoteControlTests(TestCase):
             (self.score, "score", "score_manage"),
             (self.timer, "timer", "timer_manage"),
             (self.challenge, "winchallenge", "winchallenge_manage"),
+            (self.scene, "scene", "scene_manage"),
         ):
             with self.subTest(overlay_type=overlay_type):
                 previous_token = overlay.control_token
@@ -4667,7 +4871,7 @@ class RemoteControlTests(TestCase):
         self.assertIn(reverse("login"), response["Location"])
 
     def test_duplicates_get_their_own_control_token(self):
-        for overlay in (self.score, self.timer, self.challenge):
+        for overlay in (self.score, self.timer, self.challenge, self.scene):
             with self.subTest(overlay=overlay):
                 duplicate = overlay_transfer.duplicate_overlay(overlay, self.owner, "Copy")
                 self.assertNotEqual(duplicate.control_token, overlay.control_token)

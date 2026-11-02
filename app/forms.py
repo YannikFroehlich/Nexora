@@ -15,6 +15,7 @@ from django.utils.translation import gettext_lazy as _
 
 from app.models import (
     GOAL_LAYOUT_DIMENSIONS,
+    ChatOverlay,
     OverlayAsset,
     SceneOverlay,
     ScoreOverlay,
@@ -1814,3 +1815,187 @@ class SceneOverlayForm(forms.ModelForm):
             if field_name in cleaned_data:
                 cleaned_data[field_name] = cleaned_data[field_name].strip()
         return cleaned_data
+
+
+TWITCH_LOGIN_PATTERN = re.compile(r"^[a-z0-9_]{1,25}$")
+
+
+class ChatOverlayForm(forms.ModelForm):
+    """Channel, chat filters and message design for the Twitch chat overlay."""
+
+    # Longer than the model field: pasted channel URLs are cleaned down to the bare login.
+    channel = forms.CharField(
+        label=_("Twitch channel"),
+        help_text=_("The channel name from twitch.tv/name. No login needed."),
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                "class": BASE_INPUT_CLASS,
+                "placeholder": "channelname",
+                "autocomplete": "off",
+                "spellcheck": "false",
+            }
+        ),
+    )
+
+    class Meta:
+        model = ChatOverlay
+        fields = (
+            "name",
+            "channel",
+            "max_messages",
+            "message_lifetime_seconds",
+            "show_badges",
+            "show_events",
+            "hide_commands",
+            "hidden_users",
+            "enable_7tv",
+            "enable_bttv",
+            "enable_ffz",
+            "design_template",
+            "message_layout",
+            "message_direction",
+            "animation",
+            "background_color",
+            "background_opacity",
+            "text_color",
+            "accent_color",
+            "use_twitch_name_colors",
+            "name_color",
+            "border_color",
+            "border_width",
+            "corner_radius",
+            "font_size",
+            "emote_size",
+            "message_gap",
+            "shadow_enabled",
+            "font_family",
+            "font_asset",
+            "logo_asset",
+            "background_asset",
+        )
+        labels = {
+            "name": _("Overlay name"),
+            "max_messages": _("Maximum visible messages"),
+            "message_lifetime_seconds": _("Hide messages after seconds"),
+            "show_badges": _("Show badges"),
+            "show_events": _("Show subs, gifts and raids"),
+            "hide_commands": _("Hide !commands"),
+            "hidden_users": _("Hidden users"),
+            "enable_7tv": _("7TV emotes"),
+            "enable_bttv": _("BetterTTV emotes"),
+            "enable_ffz": _("FrankerFaceZ emotes"),
+            "design_template": _("Design template"),
+            "message_layout": _("Message layout"),
+            "message_direction": _("Message order"),
+            "animation": _("Animation"),
+            "background_color": _("Message background"),
+            "background_opacity": _("Background opacity"),
+            "text_color": _("Text color"),
+            "accent_color": _("Accent color"),
+            "use_twitch_name_colors": _("Use Twitch name colors"),
+            "name_color": _("Name color"),
+            "border_color": _("Border color"),
+            "border_width": _("Border width"),
+            "corner_radius": _("Corner radius"),
+            "font_size": _("Text size"),
+            "emote_size": _("Emote size"),
+            "message_gap": _("Message spacing"),
+            "shadow_enabled": _("Text shadow"),
+        }
+        help_texts = {
+            "message_lifetime_seconds": _("0 keeps messages until newer ones push them out."),
+            "hidden_users": _("Separate names with commas, for example bots."),
+            "background_opacity": _("0 is transparent, 100 is fully opaque."),
+            "name_color": _("Used when Twitch name colors are off or a user has none."),
+        }
+        widgets = {
+            "name": forms.TextInput(
+                attrs={"class": BASE_INPUT_CLASS, "placeholder": _("Twitch Chat")}
+            ),
+            "max_messages": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 1, "max": 100, "step": 1}
+            ),
+            "message_lifetime_seconds": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 600, "step": 1}
+            ),
+            "show_badges": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "show_events": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "hide_commands": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "hidden_users": forms.TextInput(
+                attrs={"class": BASE_INPUT_CLASS, "spellcheck": "false"}
+            ),
+            "enable_7tv": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "enable_bttv": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "enable_ffz": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "design_template": forms.Select(attrs={"class": BASE_INPUT_CLASS}),
+            "message_layout": forms.Select(attrs={"class": BASE_INPUT_CLASS}),
+            "message_direction": forms.Select(attrs={"class": BASE_INPUT_CLASS}),
+            "animation": forms.Select(attrs={"class": BASE_INPUT_CLASS}),
+            "background_color": ColorInput(attrs={"class": "color-control"}),
+            "background_opacity": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 100, "step": 1}
+            ),
+            "text_color": ColorInput(attrs={"class": "color-control"}),
+            "accent_color": ColorInput(attrs={"class": "color-control"}),
+            "use_twitch_name_colors": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "name_color": ColorInput(attrs={"class": "color-control"}),
+            "border_color": ColorInput(attrs={"class": "color-control"}),
+            "border_width": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 8, "step": 1}
+            ),
+            "corner_radius": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 32, "step": 1}
+            ),
+            "font_size": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 12, "max": 48, "step": 1}
+            ),
+            "emote_size": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 16, "max": 112, "step": 1}
+            ),
+            "message_gap": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 32, "step": 1}
+            ),
+            "shadow_enabled": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        asset_owner = kwargs.pop("asset_owner", None)
+        super().__init__(*args, **kwargs)
+        _configure_branding_fields(self, asset_owner)
+        self.fields["name"].required = False
+
+        if not self.is_bound and self.instance.pk is None:
+            self.initial["name"] = _("Twitch Chat")
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip() or "Twitch Chat"
+
+    def clean_channel(self):
+        # Accept pasted channel URLs and "#name" / "@name" as well as the bare login.
+        channel = self.cleaned_data["channel"].strip().lower()
+        channel = re.sub(r"^(https?://)?(www\.|m\.)?twitch\.tv/", "", channel)
+        channel = channel.strip("/").lstrip("#@")
+        if channel and not TWITCH_LOGIN_PATTERN.match(channel):
+            raise forms.ValidationError(
+                _("Enter a Twitch channel name: letters, digits and underscores only.")
+            )
+        return channel
+
+    def clean_hidden_users(self):
+        logins = []
+        for login in re.split(r"[\s,]+", self.cleaned_data["hidden_users"].lower()):
+            login = login.lstrip("@")
+            if not login:
+                continue
+            if not TWITCH_LOGIN_PATTERN.match(login):
+                raise forms.ValidationError(
+                    _("%(name)s is not a valid Twitch user name.") % {"name": login}
+                )
+            if login not in logins:
+                logins.append(login)
+        return ", ".join(logins)
+
+    def clean_font_family(self):
+        return _selected_font_family(self)

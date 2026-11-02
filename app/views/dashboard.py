@@ -10,6 +10,7 @@ from django.views.decorators.http import require_POST
 from app import overlay_transfer, overlay_versions
 from app.forms import OverlayAssetUploadForm, OverlayImportForm
 from app.models import (
+    ChatOverlay,
     OverlayVersion,
     SceneOverlay,
     ScoreOverlay,
@@ -70,6 +71,14 @@ def manageable_scene_overlays(request):
     ).filter(owner=request.user)
 
 
+def manageable_chat_overlays(request):
+    return ChatOverlay.objects.select_related(
+        "font_asset",
+        "logo_asset",
+        "background_asset",
+    ).filter(owner=request.user)
+
+
 def manageable_twitch_goal_overlays(request):
     return TwitchGoalOverlay.objects.select_related(
         "connection",
@@ -86,6 +95,7 @@ def overlay_dashboard_context(request, import_form=None):
     timer_overlays = list(manageable_timer_overlays(request))
     twitch_goal_overlays = list(manageable_twitch_goal_overlays(request))
     scene_overlays = list(manageable_scene_overlays(request))
+    chat_overlays = list(manageable_chat_overlays(request))
     return {
         "spotify_overlays": spotify_overlays,
         "win_challenges": win_challenges,
@@ -93,12 +103,14 @@ def overlay_dashboard_context(request, import_form=None):
         "timer_overlays": timer_overlays,
         "twitch_goal_overlays": twitch_goal_overlays,
         "scene_overlays": scene_overlays,
+        "chat_overlays": chat_overlays,
         "spotify_count": len(spotify_overlays),
         "winchallenge_count": len(win_challenges),
         "score_count": len(score_overlays),
         "timer_count": len(timer_overlays),
         "twitch_goal_count": len(twitch_goal_overlays),
         "scene_count": len(scene_overlays),
+        "chat_count": len(chat_overlays),
         "overlay_count": (
             len(spotify_overlays)
             + len(win_challenges)
@@ -106,6 +118,7 @@ def overlay_dashboard_context(request, import_form=None):
             + len(timer_overlays)
             + len(twitch_goal_overlays)
             + len(scene_overlays)
+            + len(chat_overlays)
         ),
         "import_form": import_form or OverlayImportForm(),
     }
@@ -150,6 +163,8 @@ def overlay_import(request):
                 section = "twitch-goal-overlays"
             elif isinstance(overlay, SceneOverlay):
                 section = "scene-overlays"
+            elif isinstance(overlay, ChatOverlay):
+                section = "chat-overlays"
             else:
                 section = "timer-overlays"
             return redirect(f"{reverse('overlay_dashboard')}#{section}")
@@ -198,6 +213,7 @@ def overlay_version_restore(request, overlay_type, pk, version_pk):
         overlay_transfer.SCORE_TYPE: (ScoreOverlay, "score_manage"),
         overlay_transfer.TWITCH_GOAL_TYPE: (TwitchGoalOverlay, "twitch_goal_manage"),
         overlay_transfer.SCENE_TYPE: (SceneOverlay, "scene_manage"),
+        overlay_transfer.CHAT_TYPE: (ChatOverlay, "chat_manage"),
     }
     model_config = model_and_redirect.get(overlay_type)
     if model_config is None:
