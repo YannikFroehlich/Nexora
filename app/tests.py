@@ -223,14 +223,17 @@ class LegalPagesTests(TestCase):
 
 
 class DemoViewTests(TestCase):
-    def test_demo_is_public_and_contains_both_interactive_previews(self):
+    def test_demo_is_public_and_contains_every_interactive_preview(self):
         response = self.client.get(reverse("demo"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'data-demo-card="spotify"')
-        self.assertContains(response, 'data-demo-card="winchallenge"')
-        self.assertContains(response, 'data-demo-style="neon"', count=2)
+        for card in ("spotify", "twitch-goal", "winchallenge", "timer", "score"):
+            self.assertContains(response, f'data-demo-card="{card}"')
+        self.assertContains(response, 'data-demo-style="neon"', count=4)
         self.assertContains(response, "data-demo-progress")
+        self.assertContains(response, 'data-demo-action="toggle"')
+        for name in ("timer_create", "score_create"):
+            self.assertContains(response, f'href="{reverse("signup")}?next={reverse(name)}"')
 
     def test_demo_signup_actions_return_to_selected_editor(self):
         response = self.client.get(reverse("demo"))

@@ -4,7 +4,7 @@
 
 {% block title %}{% translate "Interactive demo" %} · Nexora{% endblock %}
 
-{% block meta_description %}{% translate "Try Nexora's interactive Spotify, Twitch Goal and Win Challenge overlay demos without creating an account." %}{% endblock %}
+{% block meta_description %}{% translate "Try Nexora's interactive Spotify, Twitch Goal, Win Challenge, stream timer and Score HUD overlay demos without creating an account." %}{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/demo.css' %}?v={{ APP_VERSION }}">
@@ -23,6 +23,8 @@
     {% url 'spotify_create' as spotify_create_url %}
     {% url 'winchallenge_create' as winchallenge_create_url %}
     {% url 'twitch_goal_create' as twitch_goal_create_url %}
+    {% url 'timer_create' as timer_create_url %}
+    {% url 'score_create' as score_create_url %}
 
     <div class="demo-page" data-demo-page>
         <section class="demo-hero" aria-labelledby="demo-title">
@@ -185,9 +187,126 @@
                         </a>
                     </div>
                 </article>
+
+                <article class="demo-card" id="timer-demo" data-demo-card="timer">
+                    <header class="demo-card__header">
+                        <div class="demo-card__icon demo-card__icon--timer" aria-hidden="true">&#9719;</div>
+                        <div>
+                            <p class="demo-label">{% translate "Live control demo" %}</p>
+                            <h2>{% translate "Stream Timer" %}</h2>
+                        </div>
+                    </header>
+
+                    <div class="demo-stage demo-stage--timer">
+                        <div class="demo-overlay demo-overlay--timer" data-demo-preview data-style="glass">
+                            <span>{% translate "Countdown" %}</span>
+                            <strong data-demo-output="title">{% translate "Starting soon" %}</strong>
+                            <time data-demo-output="time" aria-live="off">05:00</time>
+                            <i aria-hidden="true"><b data-demo-progress></b></i>
+                        </div>
+                    </div>
+
+                    <div class="demo-controls" aria-label="{% translate 'Stream timer demo controls' %}">
+                        <label class="demo-field demo-field--wide">
+                            <span>{% translate "Title" %}</span>
+                            <input type="text" value="{% translate 'Starting soon' %}" maxlength="80" data-demo-field="title">
+                        </label>
+                        <label class="demo-field">
+                            <span>{% translate "Minutes" %}</span>
+                            <input type="number" value="5" min="1" max="180" data-demo-field="minutes">
+                        </label>
+                        <label class="demo-field demo-field--color">
+                            <span>{% translate "Accent color" %}</span>
+                            <input type="color" value="#8b5cf6" data-demo-field="accent">
+                        </label>
+                        <div class="demo-timer-actions">
+                            <button
+                                type="button"
+                                class="btn action-button"
+                                data-demo-action="toggle"
+                                data-start-label="{% translate 'Start' %}"
+                                data-pause-label="{% translate 'Pause' %}"
+                            >{% translate "Start" %}</button>
+                            <button type="button" class="btn glass-design" data-demo-action="reset">{% translate "Reset" %}</button>
+                        </div>
+                        <fieldset class="demo-style-picker">
+                            <legend>{% translate "Style" %}</legend>
+                            <button type="button" data-demo-style="minimal" aria-pressed="false">{% translate "Minimal" %}</button>
+                            <button type="button" data-demo-style="glass" aria-pressed="true">{% translate "Glass" %}</button>
+                            <button type="button" data-demo-style="neon" aria-pressed="false">{% translate "Neon" %}</button>
+                        </fieldset>
+                    </div>
+
+                    <div class="demo-card__actions">
+                        <a
+                            class="btn action-button"
+                            href="{% if user.is_authenticated %}{{ timer_create_url }}{% else %}{% url 'signup' %}?next={{ timer_create_url|urlencode }}{% endif %}"
+                        >
+                            {% translate "Create and save stream timer" %}
+                        </a>
+                    </div>
+                </article>
+
+                <article class="demo-card" id="score-demo" data-demo-card="score">
+                    <header class="demo-card__header">
+                        <div class="demo-card__icon demo-card__icon--score" aria-hidden="true">#</div>
+                        <div>
+                            <p class="demo-label">{% translate "Scoreboard demo" %}</p>
+                            <h2>{% translate "Score HUD" %}</h2>
+                        </div>
+                    </header>
+
+                    <div class="demo-stage demo-stage--score">
+                        <div class="demo-overlay demo-overlay--score" data-demo-preview data-style="glass">
+                            <span data-demo-output="player-a">Nova</span>
+                            <strong data-demo-output="score-a">3</strong>
+                            <i aria-hidden="true">:</i>
+                            <strong data-demo-output="score-b">2</strong>
+                            <span data-demo-output="player-b">Pixel</span>
+                        </div>
+                    </div>
+
+                    <div class="demo-controls" aria-label="{% translate 'Score HUD demo controls' %}">
+                        <label class="demo-field">
+                            <span>{% translate "Player 1" %}</span>
+                            <input type="text" value="Nova" maxlength="24" data-demo-field="player-a">
+                        </label>
+                        <label class="demo-field">
+                            <span>{% translate "Player 2" %}</span>
+                            <input type="text" value="Pixel" maxlength="24" data-demo-field="player-b">
+                        </label>
+                        <label class="demo-field">
+                            <span>{% translate "Score player 1" %}</span>
+                            <input type="number" value="3" min="0" max="999" data-demo-field="score-a">
+                        </label>
+                        <label class="demo-field">
+                            <span>{% translate "Score player 2" %}</span>
+                            <input type="number" value="2" min="0" max="999" data-demo-field="score-b">
+                        </label>
+                        <label class="demo-field demo-field--color">
+                            <span>{% translate "Accent color" %}</span>
+                            <input type="color" value="#38bdf8" data-demo-field="accent">
+                        </label>
+                        <fieldset class="demo-style-picker">
+                            <legend>{% translate "Style" %}</legend>
+                            <button type="button" data-demo-style="minimal" aria-pressed="false">{% translate "Minimal" %}</button>
+                            <button type="button" data-demo-style="glass" aria-pressed="true">{% translate "Glass" %}</button>
+                            <button type="button" data-demo-style="neon" aria-pressed="false">{% translate "Neon" %}</button>
+                        </fieldset>
+                    </div>
+
+                    <div class="demo-card__actions">
+                        <a
+                            class="btn action-button"
+                            href="{% if user.is_authenticated %}{{ score_create_url }}{% else %}{% url 'signup' %}?next={{ score_create_url|urlencode }}{% endif %}"
+                        >
+                            {% translate "Create and save Score HUD" %}
+                        </a>
+                    </div>
+                </article>
             </div>
             <p class="demo-more">
-                {% translate "Nexora also includes a Twitch chat, Score HUD, stream timer and stream scenes." %}
+                {% translate "Nexora also includes a Twitch chat and stream scenes." %}
                 <a href="{% url 'home' %}#overlays">{% translate "View all overlays" %}<span aria-hidden="true"> →</span></a>
             </p>
         </section>

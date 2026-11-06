@@ -56,15 +56,111 @@
         );
     };
 
+    const formatClock = (totalSeconds) => {
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    };
+
+    // The timer demo keeps its own countdown state; editing the minutes resets it.
+    const timerState = new WeakMap();
+
+    const timerFor = (card) => {
+        if (!timerState.has(card)) {
+            timerState.set(card, { duration: 300, remaining: 300, intervalId: null });
+        }
+        return timerState.get(card);
+    };
+
+    const renderTimer = (card) => {
+        const state = timerFor(card);
+        card.querySelector('[data-demo-output="time"]').textContent = formatClock(state.remaining);
+        card.querySelector("[data-demo-progress]").style.width = `${(state.remaining / state.duration) * 100}%`;
+        const toggle = card.querySelector('[data-demo-action="toggle"]');
+        toggle.textContent = state.intervalId ? toggle.dataset.pauseLabel : toggle.dataset.startLabel;
+    };
+
+    const stopTimer = (card) => {
+        const state = timerFor(card);
+        window.clearInterval(state.intervalId);
+        state.intervalId = null;
+    };
+
+    const updateTimer = (card, event) => {
+        const state = timerFor(card);
+        const preview = card.querySelector("[data-demo-preview]");
+
+        if (!event || event.target.dataset.demoField === "minutes") {
+            stopTimer(card);
+            state.duration = Math.max(1, Math.min(180, Math.round(numberValue(card, "minutes", 5)))) * 60;
+            state.remaining = state.duration;
+        }
+
+        card.querySelector('[data-demo-output="title"]').textContent = textValue(card, "title", "Starting soon");
+        preview.style.setProperty(
+            "--demo-accent",
+            card.querySelector('[data-demo-field="accent"]')?.value || "#8b5cf6",
+        );
+        renderTimer(card);
+    };
+
+    const bindTimerActions = (card) => {
+        card.querySelector('[data-demo-action="toggle"]').addEventListener("click", () => {
+            const state = timerFor(card);
+            if (state.intervalId) {
+                stopTimer(card);
+            } else {
+                if (state.remaining === 0) {
+                    state.remaining = state.duration;
+                }
+                state.intervalId = window.setInterval(() => {
+                    state.remaining = Math.max(0, state.remaining - 1);
+                    if (state.remaining === 0) {
+                        stopTimer(card);
+                    }
+                    renderTimer(card);
+                }, 1000);
+            }
+            renderTimer(card);
+        });
+
+        card.querySelector('[data-demo-action="reset"]').addEventListener("click", () => {
+            const state = timerFor(card);
+            stopTimer(card);
+            state.remaining = state.duration;
+            renderTimer(card);
+        });
+    };
+
+    const updateScore = (card) => {
+        const preview = card.querySelector("[data-demo-preview]");
+        const score = (name) => Math.max(0, Math.min(999, Math.round(numberValue(card, name, 0))));
+
+        card.querySelector('[data-demo-output="player-a"]').textContent = textValue(card, "player-a", "Nova");
+        card.querySelector('[data-demo-output="player-b"]').textContent = textValue(card, "player-b", "Pixel");
+        card.querySelector('[data-demo-output="score-a"]').textContent = String(score("score-a"));
+        card.querySelector('[data-demo-output="score-b"]').textContent = String(score("score-b"));
+        preview.style.setProperty(
+            "--demo-accent",
+            card.querySelector('[data-demo-field="accent"]')?.value || "#38bdf8",
+        );
+    };
+
     cards.forEach((card) => {
         const update = {
             spotify: updateSpotify,
             "twitch-goal": updateTwitchGoal,
             winchallenge: updateWinChallenge,
+            timer: updateTimer,
+            score: updateScore,
         }[card.dataset.demoCard];
+
+        if (card.dataset.demoCard === "timer") {
+            bindTimerActions(card);
+        }
         const preview = card.querySelector("[data-demo-preview]");
 
-        card.addEventListener("input", () => update(card));
+        card.addEventListener("input", (event) => update(card, event));
 
         card.querySelectorAll("[data-demo-style]").forEach((button) => {
             button.addEventListener("click", () => {

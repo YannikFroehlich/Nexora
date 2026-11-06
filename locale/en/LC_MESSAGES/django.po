@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-06 10:43+0100\n"
+"POT-Creation-Date: 2026-11-06 10:46+0100\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: English\n"
@@ -133,8 +133,9 @@ msgid "Text color"
 msgstr ""
 
 #: .\app\forms.py:492 .\app\forms.py:1286 .\app\forms.py:1545
-#: .\app\forms.py:1727 .\app\forms.py:1896 .\app\templates\app\demo.html:88
-#: .\app\templates\app\demo.html:115 .\app\templates\app\demo.html:168
+#: .\app\forms.py:1727 .\app\forms.py:1896 .\app\templates\app\demo.html:90
+#: .\app\templates\app\demo.html:117 .\app\templates\app\demo.html:170
+#: .\app\templates\app\demo.html:219 .\app\templates\app\demo.html:287
 msgid "Accent color"
 msgstr ""
 
@@ -274,8 +275,8 @@ msgstr ""
 msgid "Plays when a game gets a new win."
 msgstr ""
 
-#: .\app\forms.py:530 .\app\templates\app\demo.html:134
-#: .\app\templates\app\demo.html:153 .\app\templates\app\home.html:77
+#: .\app\forms.py:530 .\app\templates\app\demo.html:136
+#: .\app\templates\app\demo.html:155 .\app\templates\app\home.html:77
 #: .\app\templates\app\home.html:142
 #: .\app\templates\app\winchallenge\list.html:142
 msgid "Road to Diamond"
@@ -285,11 +286,11 @@ msgstr ""
 msgid "Winchallenge"
 msgstr ""
 
-#: .\app\forms.py:728 .\app\templates\app\demo.html:156
+#: .\app\forms.py:728 .\app\templates\app\demo.html:158
 msgid "Game name"
 msgstr ""
 
-#: .\app\forms.py:729 .\app\models.py:289 .\app\templates\app\demo.html:160
+#: .\app\forms.py:729 .\app\models.py:289 .\app\templates\app\demo.html:162
 #: .\app\templates\app\overlay_dashboard.html:274
 #: .\app\templates\app\overlay_dashboard.html:300
 #: .\app\templates\app\winchallenge\list.html:74
@@ -300,7 +301,7 @@ msgstr ""
 msgid "Wins"
 msgstr ""
 
-#: .\app\forms.py:730 .\app\templates\app\demo.html:164
+#: .\app\forms.py:730 .\app\templates\app\demo.html:166
 #: .\app\templates\app\winchallenge\manage.html:162
 msgid "Target wins"
 msgstr ""
@@ -373,7 +374,7 @@ msgid "When disabled, minus buttons stop at 0."
 msgstr ""
 
 #: .\app\forms.py:990 .\app\models.py:1748 .\app\templates\app\about.html:162
-#: .\app\templates\app\home.html:264
+#: .\app\templates\app\demo.html:255 .\app\templates\app\home.html:264
 #: .\app\templates\app\overlay_dashboard.html:392
 #: .\app\templates\app\partials\_dashboard_starter.html:67
 #: .\app\templates\app\score\create.html:53
@@ -392,11 +393,11 @@ msgstr ""
 msgid "Every score element needs a participant."
 msgstr ""
 
-#: .\app\forms.py:1125 .\app\forms.py:1130
+#: .\app\forms.py:1125 .\app\forms.py:1130 .\app\templates\app\demo.html:271
 msgid "Player 1"
 msgstr ""
 
-#: .\app\forms.py:1136 .\app\forms.py:1141
+#: .\app\forms.py:1136 .\app\forms.py:1141 .\app\templates\app\demo.html:275
 msgid "Player 2"
 msgstr ""
 
@@ -509,7 +510,7 @@ msgstr ""
 msgid "Hours"
 msgstr ""
 
-#: .\app\forms.py:1495
+#: .\app\forms.py:1495 .\app\templates\app\demo.html:215
 msgid "Minutes"
 msgstr ""
 
@@ -538,13 +539,15 @@ msgid "Optional text displayed above the time."
 msgstr ""
 
 #: .\app\forms.py:1562 .\app\forms.py:1617 .\app\models.py:1994
-#: .\app\templates\app\about.html:126 .\app\templates\app\home.html:196
+#: .\app\templates\app\about.html:126 .\app\templates\app\demo.html:196
+#: .\app\templates\app\home.html:196
 #: .\app\templates\app\partials\_dashboard_starter.html:47
 msgid "Stream Timer"
 msgstr ""
 
 #: .\app\forms.py:1565 .\app\forms.py:1618 .\app\forms.py:1800
-#: .\app\models.py:2210 .\app\templates\app\home.html:183
+#: .\app\models.py:2210 .\app\templates\app\demo.html:203
+#: .\app\templates\app\demo.html:212 .\app\templates\app\home.html:183
 #: .\app\templates\app\home.html:278 .\app\templates\app\home.html:280
 #: .\app\templates\app\scene\create.html:118
 msgid "Starting soon"
@@ -752,8 +755,8 @@ msgstr ""
 msgid "Restored"
 msgstr ""
 
-#: .\app\models.py:288 .\app\templates\app\demo.html:127
-#: .\app\templates\app\demo.html:133 .\app\templates\app\home.html:76
+#: .\app\models.py:288 .\app\templates\app\demo.html:129
+#: .\app\templates\app\demo.html:135 .\app\templates\app\home.html:76
 #: .\app\templates\app\home.html:141 .\app\templates\app\home.html:154
 #: .\app\templates\app\overlay_dashboard.html:271
 #: .\app\templates\app\overlay_dashboard.html:293
@@ -764,8 +767,9 @@ msgstr ""
 msgid "Win Challenge"
 msgstr ""
 
-#: .\app\models.py:293 .\app\templates\app\demo.html:80
-#: .\app\templates\app\demo.html:112 .\app\templates\app\demo.html:152
+#: .\app\models.py:293 .\app\templates\app\demo.html:82
+#: .\app\templates\app\demo.html:114 .\app\templates\app\demo.html:154
+#: .\app\templates\app\demo.html:211
 #: .\app\templates\app\spotify\create.html:194
 #: .\app\templates\app\spotify\create.html:195
 #: .\app\templates\app\twitch_goal\create.html:133
@@ -785,22 +789,25 @@ msgid "Page indicator"
 msgstr ""
 
 #: .\app\models.py:304 .\app\models.py:2014 .\app\models.py:2219
-#: .\app\models.py:2405 .\app\templates\app\demo.html:93
-#: .\app\templates\app\demo.html:173
+#: .\app\models.py:2405 .\app\templates\app\demo.html:95
+#: .\app\templates\app\demo.html:175 .\app\templates\app\demo.html:234
+#: .\app\templates\app\demo.html:292
 #: .\app\templates\app\winchallenge\create.html:117
 msgid "Minimal"
 msgstr ""
 
 #: .\app\models.py:305 .\app\models.py:2015 .\app\models.py:2220
-#: .\app\models.py:2406 .\app\templates\app\demo.html:94
-#: .\app\templates\app\demo.html:174
+#: .\app\models.py:2406 .\app\templates\app\demo.html:96
+#: .\app\templates\app\demo.html:176 .\app\templates\app\demo.html:235
+#: .\app\templates\app\demo.html:293
 #: .\app\templates\app\winchallenge\create.html:126
 msgid "Glass"
 msgstr ""
 
 #: .\app\models.py:306 .\app\models.py:2016 .\app\models.py:2221
-#: .\app\models.py:2407 .\app\templates\app\demo.html:95
-#: .\app\templates\app\demo.html:175
+#: .\app\models.py:2407 .\app\templates\app\demo.html:97
+#: .\app\templates\app\demo.html:177 .\app\templates\app\demo.html:236
+#: .\app\templates\app\demo.html:294
 #: .\app\templates\app\winchallenge\create.html:135
 msgid "Neon"
 msgstr ""
@@ -850,7 +857,7 @@ msgid "Broadcast list"
 msgstr ""
 
 #: .\app\models.py:1436 .\app\templates\app\about.html:138
-#: .\app\templates\app\demo.html:109 .\app\templates\app\home.html:226
+#: .\app\templates\app\demo.html:111 .\app\templates\app\home.html:226
 #: .\app\templates\app\partials\_dashboard_starter.html:37
 msgid "Twitch Goal"
 msgstr ""
@@ -944,7 +951,8 @@ msgstr ""
 msgid "Progress bar"
 msgstr ""
 
-#: .\app\models.py:2006 .\app\templates\app\home.html:182
+#: .\app\models.py:2006 .\app\templates\app\demo.html:202
+#: .\app\templates\app\home.html:182
 #: .\app\templates\app\partials\_timer_overlay.html:40
 #: .\app\templates\app\timer\create.html:36
 #: .\app\templates\app\timer\public_overlay.html:18
@@ -1272,7 +1280,7 @@ msgstr ""
 msgid "Playback"
 msgstr ""
 
-#: .\app\templates\app\about.html:100 .\app\templates\app\demo.html:62
+#: .\app\templates\app\about.html:100 .\app\templates\app\demo.html:64
 #: .\app\templates\app\home.html:113
 #: .\app\templates\app\partials\_dashboard_starter.html:17
 msgid "Spotify Overlay"
@@ -1455,7 +1463,7 @@ msgstr ""
 msgid "Choose a tool, make it yours and bring it into OBS."
 msgstr ""
 
-#: .\app\templates\app\about.html:231 .\app\templates\app\demo.html:191
+#: .\app\templates\app\about.html:231 .\app\templates\app\demo.html:310
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "View all overlays"
@@ -1920,59 +1928,59 @@ msgstr ""
 
 #: .\app\templates\app\demo.html:7
 msgid ""
-"Try Nexora's interactive Spotify, Twitch Goal and Win Challenge overlay "
-"demos without creating an account."
+"Try Nexora's interactive Spotify, Twitch Goal, Win Challenge, stream timer "
+"and Score HUD overlay demos without creating an account."
 msgstr ""
 
-#: .\app\templates\app\demo.html:29
+#: .\app\templates\app\demo.html:31
 msgid "Try Nexora before you sign up"
 msgstr ""
 
-#: .\app\templates\app\demo.html:30
+#: .\app\templates\app\demo.html:32
 msgid "Build a sample overlay in seconds"
 msgstr ""
 
-#: .\app\templates\app\demo.html:32
+#: .\app\templates\app\demo.html:34
 msgid ""
 "Change the content, color and style below. Nothing is saved until you create "
 "an account."
 msgstr ""
 
-#: .\app\templates\app\demo.html:35
+#: .\app\templates\app\demo.html:37
 msgid "Try the live demo"
 msgstr ""
 
-#: .\app\templates\app\demo.html:37 .\app\templates\app\home.html:33
+#: .\app\templates\app\demo.html:39 .\app\templates\app\home.html:33
 msgid "Create your first overlay"
 msgstr ""
 
-#: .\app\templates\app\demo.html:39 .\app\templates\app\home.html:37
+#: .\app\templates\app\demo.html:41 .\app\templates\app\home.html:37
 msgid "Create free account"
 msgstr ""
 
-#: .\app\templates\app\demo.html:43
+#: .\app\templates\app\demo.html:45
 msgid ""
 "An account is only required when you want to save an overlay, connect a "
 "service or use its OBS link."
 msgstr ""
 
-#: .\app\templates\app\demo.html:49
+#: .\app\templates\app\demo.html:51
 msgid "Overlay playground"
 msgstr ""
 
-#: .\app\templates\app\demo.html:50
+#: .\app\templates\app\demo.html:52
 msgid "Make it yours"
 msgstr ""
 
-#: .\app\templates\app\demo.html:51
+#: .\app\templates\app\demo.html:53
 msgid "Every change updates the preview immediately."
 msgstr ""
 
-#: .\app\templates\app\demo.html:61
+#: .\app\templates\app\demo.html:63
 msgid "Now-playing demo"
 msgstr ""
 
-#: .\app\templates\app\demo.html:70 .\app\templates\app\home.html:67
+#: .\app\templates\app\demo.html:72 .\app\templates\app\home.html:67
 #: .\app\templates\app\home.html:102
 #: .\app\templates\app\overlay_dashboard.html:173
 #: .\app\templates\app\spotify\_overlay.html:13
@@ -1981,68 +1989,120 @@ msgstr ""
 msgid "Now playing"
 msgstr ""
 
-#: .\app\templates\app\demo.html:78
+#: .\app\templates\app\demo.html:80
 msgid "Spotify demo controls"
 msgstr ""
 
-#: .\app\templates\app\demo.html:84 .\app\templates\app\spotify\create.html:197
+#: .\app\templates\app\demo.html:86 .\app\templates\app\spotify\create.html:197
 #: .\app\templates\app\spotify\create.html:198
 msgid "Artist"
 msgstr ""
 
-#: .\app\templates\app\demo.html:92 .\app\templates\app\demo.html:172
+#: .\app\templates\app\demo.html:94 .\app\templates\app\demo.html:174
+#: .\app\templates\app\demo.html:233 .\app\templates\app\demo.html:291
 #: .\app\templates\app\twitch_goal\create.html:118
 msgid "Style"
 msgstr ""
 
-#: .\app\templates\app\demo.html:104
+#: .\app\templates\app\demo.html:106
 msgid "Create and save Spotify overlay"
 msgstr ""
 
-#: .\app\templates\app\demo.html:109
+#: .\app\templates\app\demo.html:111
 msgid "Community goal demo"
 msgstr ""
 
-#: .\app\templates\app\demo.html:110 .\app\templates\app\demo.html:112
+#: .\app\templates\app\demo.html:112 .\app\templates\app\demo.html:114
 #: .\app\templates\app\home.html:223
 msgid "Road to 1,000"
 msgstr ""
 
-#: .\app\templates\app\demo.html:113
+#: .\app\templates\app\demo.html:115
 #: .\app\templates\app\twitch_goal\create.html:136
 msgid "Current"
 msgstr ""
 
-#: .\app\templates\app\demo.html:114
+#: .\app\templates\app\demo.html:116
 #: .\app\templates\app\overlay_dashboard.html:482
 #: .\app\templates\app\twitch_goal\create.html:137
 msgid "Target"
 msgstr ""
 
-#: .\app\templates\app\demo.html:117
+#: .\app\templates\app\demo.html:119
 msgid "Create and save Twitch Goal"
 msgstr ""
 
-#: .\app\templates\app\demo.html:126
+#: .\app\templates\app\demo.html:128
 msgid "Progress demo"
 msgstr ""
 
-#: .\app\templates\app\demo.html:142
+#: .\app\templates\app\demo.html:144
 msgid "Challenge progress"
 msgstr ""
 
-#: .\app\templates\app\demo.html:150
+#: .\app\templates\app\demo.html:152
 msgid "Win Challenge demo controls"
 msgstr ""
 
-#: .\app\templates\app\demo.html:184
+#: .\app\templates\app\demo.html:186
 msgid "Create and save Win Challenge"
 msgstr ""
 
-#: .\app\templates\app\demo.html:190
-msgid ""
-"Nexora also includes a Twitch chat, Score HUD, stream timer and stream "
-"scenes."
+#: .\app\templates\app\demo.html:195
+msgid "Live control demo"
+msgstr ""
+
+#: .\app\templates\app\demo.html:209
+msgid "Stream timer demo controls"
+msgstr ""
+
+#: .\app\templates\app\demo.html:227 .\app\templates\app\demo.html:229
+#: .\app\templates\app\timer\create.html:80 .\app\views\timer.py:44
+msgid "Start"
+msgstr ""
+
+#: .\app\templates\app\demo.html:228 .\app\templates\app\timer\create.html:81
+#: .\app\views\timer.py:45
+msgid "Pause"
+msgstr ""
+
+#: .\app\templates\app\demo.html:230 .\app\templates\app\timer\create.html:82
+#: .\app\views\score.py:108 .\app\views\timer.py:46
+msgid "Reset"
+msgstr ""
+
+#: .\app\templates\app\demo.html:245
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Create and save stream timer"
+msgstr "Spotify Overlay"
+
+#: .\app\templates\app\demo.html:254
+msgid "Scoreboard demo"
+msgstr ""
+
+#: .\app\templates\app\demo.html:269
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Score HUD demo controls"
+msgstr "Spotify Overlay"
+
+#: .\app\templates\app\demo.html:279
+msgid "Score player 1"
+msgstr ""
+
+#: .\app\templates\app\demo.html:283
+msgid "Score player 2"
+msgstr ""
+
+#: .\app\templates\app\demo.html:303
+#, fuzzy
+#| msgid "Spotify Overlay"
+msgid "Create and save Score HUD"
+msgstr "Spotify Overlay"
+
+#: .\app\templates\app\demo.html:309
+msgid "Nexora also includes a Twitch chat and stream scenes."
 msgstr ""
 
 #: .\app\templates\app\home.html:9
@@ -2123,7 +2183,8 @@ msgid "Create Spotify Overlay"
 msgstr ""
 
 #: .\app\templates\app\home.html:129 .\app\templates\app\home.html:170
-#: .\app\templates\app\home.html:231
+#: .\app\templates\app\home.html:212 .\app\templates\app\home.html:231
+#: .\app\templates\app\home.html:269
 msgid "Try demo"
 msgstr ""
 
@@ -2189,12 +2250,6 @@ msgstr ""
 msgid "Create Stream Timer"
 msgstr "Spotify Overlay"
 
-#: .\app\templates\app\home.html:212 .\app\templates\app\home.html:251
-#: .\app\templates\app\home.html:269 .\app\templates\app\home.html:289
-#: .\app\templates\app\home.html:299
-msgid "How it works"
-msgstr ""
-
 #: .\app\templates\app\home.html:227
 msgid ""
 "Show a live follower or subscription milestone and celebrate it "
@@ -2241,6 +2296,11 @@ msgstr ""
 
 #: .\app\templates\app\home.html:248
 msgid "Only your channel name needed, no Twitch login"
+msgstr ""
+
+#: .\app\templates\app\home.html:251 .\app\templates\app\home.html:289
+#: .\app\templates\app\home.html:299
+msgid "How it works"
 msgstr ""
 
 #: .\app\templates\app\home.html:265
@@ -4031,19 +4091,6 @@ msgstr ""
 
 #: .\app\templates\app\timer\create.html:69
 msgid "Timer controls"
-msgstr ""
-
-#: .\app\templates\app\timer\create.html:80 .\app\views\timer.py:44
-msgid "Start"
-msgstr ""
-
-#: .\app\templates\app\timer\create.html:81 .\app\views\timer.py:45
-msgid "Pause"
-msgstr ""
-
-#: .\app\templates\app\timer\create.html:82 .\app\views\score.py:108
-#: .\app\views\timer.py:46
-msgid "Reset"
 msgstr ""
 
 #: .\app\templates\app\timer\create.html:106

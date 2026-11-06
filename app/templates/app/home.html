@@ -208,8 +208,8 @@
                             >
                                 {% translate "Create Stream Timer" %}
                             </a>
-                            <a href="#how-it-works" class="btn glass-design overlay-card__action overlay-card__action--secondary">
-                                {% translate "How it works" %}
+                            <a href="{% url 'demo' %}#timer-demo" class="btn glass-design overlay-card__action overlay-card__action--secondary">
+                                {% translate "Try demo" %}
                             </a>
                         </div>
                         {% if not user.is_authenticated %}
@@ -266,7 +266,7 @@
                         <ul class="feature-list"><li>{% translate "Players or teams with live scores" %}</li><li>{% translate "Presets and free canvas" %}</li><li>{% translate "Score changes with one click" %}</li></ul>
                         <div class="overlay-card__actions">
                             <a href="{% if user.is_authenticated %}{{ score_create_url }}{% else %}{% url 'signup' %}?next={{ score_create_url|urlencode }}{% endif %}" class="btn action-button overlay-card__action">{% translate "Create Score HUD" %}</a>
-                            <a href="#how-it-works" class="btn glass-design overlay-card__action overlay-card__action--secondary">{% translate "How it works" %}</a>
+                            <a href="{% url 'demo' %}#score-demo" class="btn glass-design overlay-card__action overlay-card__action--secondary">{% translate "Try demo" %}</a>
                         </div>
                         {% if not user.is_authenticated %}<small class="overlay-card__account-note">{% translate "Free account required to save and use in OBS." %}</small>{% endif %}
                     </div>
