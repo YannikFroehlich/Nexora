@@ -6,7 +6,7 @@
     {% trans "Home" %} · Nexora
 {% endblock %}
 
-{% block meta_description %}{% translate "Design Spotify, timer and Win Challenge overlays for OBS and manage them from one browser-based workspace." %}{% endblock %}
+{% block meta_description %}{% translate "Design Spotify, Twitch chat, Twitch goal, timer, scoreboard, scene and Win Challenge overlays for OBS and manage them from one browser-based workspace." %}{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/home.css' %}?v={{ APP_VERSION }}">
@@ -17,6 +17,9 @@
     {% url 'timer_create' as timer_create_url %}
     {% url 'winchallenge_create' as winchallenge_create_url %}
     {% url 'twitch_goal_create' as twitch_goal_create_url %}
+    {% url 'chat_create' as chat_create_url %}
+    {% url 'score_create' as score_create_url %}
+    {% url 'scene_create' as scene_create_url %}
     <div class="home-page">
         <section class="hero" aria-labelledby="hero-title">
             <div class="hero__copy">
@@ -205,8 +208,8 @@
                             >
                                 {% translate "Create Stream Timer" %}
                             </a>
-                            <a href="#how-it-works" class="btn glass-design overlay-card__action overlay-card__action--secondary">
-                                {% translate "How it works" %}
+                            <a href="{% url 'demo' %}#timer-demo" class="btn glass-design overlay-card__action overlay-card__action--secondary">
+                                {% translate "Try demo" %}
                             </a>
                         </div>
                         {% if not user.is_authenticated %}
@@ -226,6 +229,64 @@
                         <div class="overlay-card__actions">
                             <a href="{% if user.is_authenticated %}{{ twitch_goal_create_url }}{% else %}{% url 'signup' %}?next={{ twitch_goal_create_url|urlencode }}{% endif %}" class="btn action-button overlay-card__action">{% translate "Create Twitch Goal" %}</a>
                             <a href="{% url 'demo' %}#twitch-goal-demo" class="btn glass-design overlay-card__action overlay-card__action--secondary">{% translate "Try demo" %}</a>
+                        </div>
+                        {% if not user.is_authenticated %}<small class="overlay-card__account-note">{% translate "Free account required to save and use in OBS." %}</small>{% endif %}
+                    </div>
+                </article>
+
+                <article class="overlay-card overlay-card--chat">
+                    <div class="overlay-card__preview" aria-hidden="true">
+                        <div class="home-chat-widget">
+                            <p><b>NovaWaves</b> {% translate "Let's go, Diamond today!" %}</p>
+                            <p><b>pixelpanda</b> GG <span class="home-chat-widget__emote">★</span></p>
+                            <p><b>streamfan42</b> {% translate "That song is a banger" %}</p>
+                        </div>
+                    </div>
+                    <div class="overlay-card__content">
+                        <div class="overlay-card__title"><div class="overlay-card__icon overlay-card__icon--chat" aria-hidden="true">&#128172;</div><h3>{% translate "Twitch Chat" %}</h3></div>
+                        <p>{% translate "Show your Twitch chat in your stream, styled to match your overlays." %}</p>
+                        <ul class="feature-list"><li>{% translate "7TV, BetterTTV and FrankerFaceZ emotes" %}</li><li>{% translate "Badges and Twitch name colors" %}</li><li>{% translate "Only your channel name needed, no Twitch login" %}</li></ul>
+                        <div class="overlay-card__actions">
+                            <a href="{% if user.is_authenticated %}{{ chat_create_url }}{% else %}{% url 'signup' %}?next={{ chat_create_url|urlencode }}{% endif %}" class="btn action-button overlay-card__action">{% translate "Create chat overlay" %}</a>
+                            <a href="#how-it-works" class="btn glass-design overlay-card__action overlay-card__action--secondary">{% translate "How it works" %}</a>
+                        </div>
+                        {% if not user.is_authenticated %}<small class="overlay-card__account-note">{% translate "Free account required to save and use in OBS." %}</small>{% endif %}
+                    </div>
+                </article>
+
+                <article class="overlay-card overlay-card--score">
+                    <div class="overlay-card__preview" aria-hidden="true">
+                        <div class="home-score-widget">
+                            <span>Nova</span><strong>3</strong><i>:</i><strong>2</strong><span>Pixel</span>
+                        </div>
+                    </div>
+                    <div class="overlay-card__content">
+                        <div class="overlay-card__title"><div class="overlay-card__icon overlay-card__icon--score" aria-hidden="true">#</div><h3>{% translate "Score HUD" %}</h3></div>
+                        <p>{% translate "Show a live scoreboard for players or teams and update it from your browser." %}</p>
+                        <ul class="feature-list"><li>{% translate "Players or teams with live scores" %}</li><li>{% translate "Presets and free canvas" %}</li><li>{% translate "Score changes with one click" %}</li></ul>
+                        <div class="overlay-card__actions">
+                            <a href="{% if user.is_authenticated %}{{ score_create_url }}{% else %}{% url 'signup' %}?next={{ score_create_url|urlencode }}{% endif %}" class="btn action-button overlay-card__action">{% translate "Create Score HUD" %}</a>
+                            <a href="{% url 'demo' %}#score-demo" class="btn glass-design overlay-card__action overlay-card__action--secondary">{% translate "Try demo" %}</a>
+                        </div>
+                        {% if not user.is_authenticated %}<small class="overlay-card__account-note">{% translate "Free account required to save and use in OBS." %}</small>{% endif %}
+                    </div>
+                </article>
+
+                <article class="overlay-card overlay-card--scene">
+                    <div class="overlay-card__preview" aria-hidden="true">
+                        <div class="home-scene-widget">
+                            <strong>{% translate "Starting soon" %}</strong>
+                            <time>04:59</time>
+                            <ul><li class="is-active">{% translate "Starting soon" %}</li><li>{% translate "Be right back" %}</li><li>{% translate "Stream ending" %}</li></ul>
+                        </div>
+                    </div>
+                    <div class="overlay-card__content">
+                        <div class="overlay-card__title"><div class="overlay-card__icon overlay-card__icon--scene" aria-hidden="true">&#9654;</div><h3>{% translate "Stream Scenes" %}</h3></div>
+                        <p>{% translate "Switch between Starting soon, Be right back and ending screens in a single browser source." %}</p>
+                        <ul class="feature-list"><li>{% translate "Full-screen 1920 × 1080 scenes" %}</li><li>{% translate "Optional countdown before you go live" %}</li><li>{% translate "Switch scenes live from the website" %}</li></ul>
+                        <div class="overlay-card__actions">
+                            <a href="{% if user.is_authenticated %}{{ scene_create_url }}{% else %}{% url 'signup' %}?next={{ scene_create_url|urlencode }}{% endif %}" class="btn action-button overlay-card__action">{% translate "Create stream scenes" %}</a>
+                            <a href="#how-it-works" class="btn glass-design overlay-card__action overlay-card__action--secondary">{% translate "How it works" %}</a>
                         </div>
                         {% if not user.is_authenticated %}<small class="overlay-card__account-note">{% translate "Free account required to save and use in OBS." %}</small>{% endif %}
                     </div>

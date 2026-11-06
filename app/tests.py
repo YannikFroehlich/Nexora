@@ -110,6 +110,36 @@ class HomeViewTests(TestCase):
         self.assertContains(response, '<link rel="canonical" href="http://testserver/">')
         self.assertContains(response, "imgs/icons/nexora_icon.png")
 
+    def test_public_pages_expose_link_preview_image(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(
+            response,
+            '<meta property="og:image" content="http://testserver/static/imgs/og-image.png">',
+        )
+        self.assertContains(response, '<meta name="twitter:card" content="summary_large_image">')
+
+        user = User.objects.create_user(username="share-preview-user")
+        self.client.force_login(user)
+        self.assertNotContains(self.client.get(reverse("overlay_dashboard")), "og:image")
+
+    def test_overlay_collection_offers_every_overlay_type(self):
+        user = User.objects.create_user(username="home-collection-user")
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("home"))
+
+        for create_url_name in (
+            "spotify_create",
+            "winchallenge_create",
+            "timer_create",
+            "twitch_goal_create",
+            "chat_create",
+            "score_create",
+            "scene_create",
+        ):
+            self.assertContains(response, f'href="{reverse(create_url_name)}"')
+
     def test_anonymous_header_surfaces_signup_without_losing_destination(self):
         response = self.client.get(reverse("demo"))
 
@@ -193,14 +223,17 @@ class LegalPagesTests(TestCase):
 
 
 class DemoViewTests(TestCase):
-    def test_demo_is_public_and_contains_both_interactive_previews(self):
+    def test_demo_is_public_and_contains_every_interactive_preview(self):
         response = self.client.get(reverse("demo"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'data-demo-card="spotify"')
-        self.assertContains(response, 'data-demo-card="winchallenge"')
-        self.assertContains(response, 'data-demo-style="neon"', count=2)
+        for card in ("spotify", "twitch-goal", "winchallenge", "timer", "score"):
+            self.assertContains(response, f'data-demo-card="{card}"')
+        self.assertContains(response, 'data-demo-style="neon"', count=4)
         self.assertContains(response, "data-demo-progress")
+        self.assertContains(response, 'data-demo-action="toggle"')
+        for name in ("timer_create", "score_create"):
+            self.assertContains(response, f'href="{reverse("signup")}?next={reverse(name)}"')
 
     def test_demo_signup_actions_return_to_selected_editor(self):
         response = self.client.get(reverse("demo"))
@@ -288,12 +321,18 @@ class AboutViewTests(TestCase):
         response = self.client.get(reverse("about"))
 
         self.assertContains(response, "Tools für Streams mit deiner Handschrift")
-        self.assertContains(response, "Vier Tools, ein einheitlicher Workflow")
+        self.assertContains(response, "Sieben Tools, ein einheitlicher Workflow")
         dashboard_url = reverse("overlay_dashboard")
-        self.assertContains(response, f'href="{dashboard_url}#spotify-overlays"')
-        self.assertContains(response, f'href="{dashboard_url}#winchallenge-overlays"')
-        self.assertContains(response, f'href="{dashboard_url}#timer-overlays"')
-        self.assertContains(response, f'href="{dashboard_url}#twitch-goal-overlays"')
+        for anchor in (
+            "spotify",
+            "winchallenge",
+            "timer",
+            "twitch-goal",
+            "chat",
+            "score",
+            "scene",
+        ):
+            self.assertContains(response, f'href="{dashboard_url}#{anchor}-overlays"')
 
     def test_about_page_is_available_in_english(self):
         self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = "en"
@@ -311,26 +350,43 @@ class OverlayDashboardTests(TestCase):
         self.user = User.objects.create_user(username="list-owner")
         self.client.force_login(self.user)
 
-    def test_empty_dashboard_shows_all_overlay_categories(self):
+    CREATE_URL_NAMES = (
+        "spotify_create",
+        "winchallenge_create",
+        "score_create",
+        "timer_create",
+        "twitch_goal_create",
+        "scene_create",
+        "chat_create",
+    )
+
+    def test_empty_dashboard_offers_starter_grid_instead_of_empty_sections(self):
         response = self.client.get(reverse("overlay_dashboard"))
         content = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'id="spotify-overlays"')
-        self.assertContains(response, 'id="winchallenge-overlays"')
-        self.assertContains(response, 'id="score-overlays"')
-        self.assertContains(response, 'id="timer-overlays"')
-        self.assertContains(response, 'id="twitch-goal-overlays"')
-        self.assertContains(response, 'id="scene-overlays"')
-        self.assertContains(response, 'id="chat-overlays"')
-        self.assertContains(response, 'class="dashboard-empty"', count=7)
-        self.assertEqual(content.count(f'href="{reverse("spotify_create")}"'), 1)
-        self.assertEqual(content.count(f'href="{reverse("winchallenge_create")}"'), 1)
-        self.assertEqual(content.count(f'href="{reverse("score_create")}"'), 1)
-        self.assertEqual(content.count(f'href="{reverse("timer_create")}"'), 1)
-        self.assertEqual(content.count(f'href="{reverse("twitch_goal_create")}"'), 1)
-        self.assertEqual(content.count(f'href="{reverse("scene_create")}"'), 1)
-        self.assertEqual(content.count(f'href="{reverse("chat_create")}"'), 1)
+        self.assertContains(response, 'class="dashboard-starter"')
+        self.assertContains(response, "Wähle dein erstes Overlay")
+        for url_name in self.CREATE_URL_NAMES:
+            self.assertEqual(content.count(f'href="{reverse(url_name)}"'), 1)
+        self.assertNotContains(response, "data-dashboard-section")
+        self.assertNotContains(response, 'class="dashboard-empty"')
+        self.assertNotContains(response, 'class="dashboard-jumps"')
+        self.assertNotContains(response, "data-dashboard-search-input")
+        self.assertContains(response, 'class="dashboard-transfer"')
+
+    def test_dashboard_with_one_overlay_shows_every_category_section(self):
+        TimerOverlay.objects.create(owner=self.user, name="Starting Soon")
+
+        response = self.client.get(reverse("overlay_dashboard"))
+        content = response.content.decode()
+
+        self.assertNotContains(response, 'class="dashboard-starter"')
+        self.assertContains(response, "data-dashboard-section", count=7)
+        self.assertContains(response, 'class="dashboard-empty"', count=6)
+        self.assertContains(response, 'class="dashboard-jumps"')
+        for url_name in self.CREATE_URL_NAMES:
+            self.assertEqual(content.count(f'href="{reverse(url_name)}"'), 1)
 
     def test_dashboard_shows_saved_overlays_from_all_tools(self):
         spotify_overlay = SpotifyOverlay.objects.create(owner=self.user, name="Stream Music")

@@ -518,6 +518,18 @@ class TwitchConnectionAndAPITests(TestCase):
         validate.assert_called_once()
         self.assertIn("Validated 1 Twitch token", output.getvalue())
 
+    def test_hourly_validation_command_reports_invalid_tokens(self):
+        output = StringIO()
+        errors = StringIO()
+        with patch(
+            "app.twitch_api.validate_connection",
+            side_effect=twitch_api.TwitchAPIError("token revoked"),
+        ):
+            call_command("validate_twitch_tokens", stdout=output, stderr=errors)
+
+        self.assertIn("1 invalid", output.getvalue())
+        self.assertIn(f"{self.connection.pk}: token revoked", errors.getvalue())
+
 
 @override_settings(
     TWITCH_CLIENT_ID="client-id",

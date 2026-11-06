@@ -76,6 +76,19 @@
     line-height: 1.5;
 }
 
+.demo-more {
+    margin: 28px 0 0;
+    color: var(--color-text-muted);
+    text-align: center;
+    line-height: 1.6;
+}
+
+.demo-more a {
+    margin-left: 6px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
 .demo-studio {
     margin-top: var(--page-section-space);
     scroll-margin-top: 22px;
@@ -330,6 +343,132 @@
     font-weight: 750;
 }
 
+.demo-card__icon--timer,
+.demo-card__icon--score {
+    font-size: 1.5rem;
+    font-weight: 900;
+}
+
+.demo-card__icon--timer {
+    color: var(--color-accent-timer);
+    background: rgba(139, 92, 246, 0.13);
+}
+
+.demo-card__icon--score {
+    color: #0284c7;
+    background: rgba(56, 189, 248, 0.13);
+}
+
+.demo-stage--timer {
+    background:
+        linear-gradient(var(--demo-stage), var(--demo-stage)),
+        radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.3), transparent 38%),
+        radial-gradient(circle at 80% 80%, rgba(45, 212, 191, 0.16), transparent 36%);
+}
+
+.demo-stage--score {
+    background:
+        linear-gradient(var(--demo-stage), var(--demo-stage)),
+        radial-gradient(circle at 20% 80%, rgba(56, 189, 248, 0.28), transparent 40%),
+        radial-gradient(circle at 80% 20%, rgba(244, 114, 182, 0.16), transparent 36%);
+}
+
+.demo-overlay--timer {
+    --demo-accent: #8b5cf6;
+    display: grid;
+    gap: 6px;
+    padding: 22px;
+    border-radius: 18px;
+}
+
+.demo-overlay--timer > span {
+    color: var(--demo-accent);
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.demo-overlay--timer strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.demo-overlay--timer time {
+    font-size: clamp(2.6rem, 6vw, 3.6rem);
+    font-variant-numeric: tabular-nums;
+    font-weight: 850;
+    letter-spacing: -0.05em;
+    line-height: 1;
+}
+
+.demo-overlay--timer i {
+    display: block;
+    height: 6px;
+    margin-top: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.3);
+}
+
+.demo-overlay--timer i b {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--demo-accent);
+    transition: width 1s linear;
+}
+
+.demo-timer-actions {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.demo-overlay--score {
+    --demo-accent: #38bdf8;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto auto minmax(0, 1fr);
+    align-items: center;
+    gap: 14px;
+    padding: 20px 22px;
+    border-radius: 18px;
+}
+
+.demo-overlay--score span {
+    overflow: hidden;
+    font-size: 0.86rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.demo-overlay--score span:last-child {
+    text-align: right;
+}
+
+.demo-overlay--score strong {
+    font-size: 2.6rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.demo-overlay--score i {
+    color: var(--demo-accent);
+    font-style: normal;
+    font-weight: 900;
+}
+
+/* Center an odd last demo instead of leaving it alone in the left column. */
+.demo-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: calc(50% - 12px);
+}
+
 .demo-field--wide {
     grid-column: 1 / -1;
 }
@@ -446,6 +585,17 @@
 @media (max-width: 900px) {
     .demo-grid {
         grid-template-columns: 1fr;
+    }
+
+    .demo-card:last-child:nth-child(odd) {
+        width: auto;
+        justify-self: stretch;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .demo-overlay--timer i b {
+        transition: none;
     }
 }
 

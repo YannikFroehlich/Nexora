@@ -87,7 +87,7 @@
         <section class="about-tools" aria-labelledby="tools-title">
             <div class="about-section-heading">
                 <p class="about-label">{% translate "Available now" %}</p>
-                <h2 id="tools-title">{% translate "Four tools, one consistent workflow" %}</h2>
+                <h2 id="tools-title">{% translate "Seven tools, one consistent workflow" %}</h2>
             </div>
 
             <div class="about-tools__grid">
@@ -139,6 +139,42 @@
                         <p>{% translate "Track followers, active subscriptions or sub points live and celebrate milestones in OBS." %}</p>
                         <a href="{% url 'overlay_dashboard' %}#twitch-goal-overlays">
                             {% translate "Open Twitch goals" %}<span aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="about-tool about-tool--chat">
+                    <div class="about-tool__icon" aria-hidden="true">&#128172;</div>
+                    <div class="about-tool__content">
+                        <p class="about-tool__type">{% translate "Community" %}</p>
+                        <h3>{% translate "Twitch Chat" %}</h3>
+                        <p>{% translate "Show your live chat with 7TV, BetterTTV and FrankerFaceZ emotes, badges and name colors. Only your channel name is needed." %}</p>
+                        <a href="{% url 'overlay_dashboard' %}#chat-overlays">
+                            {% translate "Open chat overlays" %}<span aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="about-tool about-tool--score">
+                    <div class="about-tool__icon" aria-hidden="true">#</div>
+                    <div class="about-tool__content">
+                        <p class="about-tool__type">{% translate "Competition" %}</p>
+                        <h3>{% translate "Score HUD" %}</h3>
+                        <p>{% translate "Keep a live scoreboard for players or teams and change scores from your browser while you stream." %}</p>
+                        <a href="{% url 'overlay_dashboard' %}#score-overlays">
+                            {% translate "Open Score HUDs" %}<span aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="about-tool about-tool--scene">
+                    <div class="about-tool__icon" aria-hidden="true">&#9654;</div>
+                    <div class="about-tool__content">
+                        <p class="about-tool__type">{% translate "Scenes" %}</p>
+                        <h3>{% translate "Stream Scenes" %}</h3>
+                        <p>{% translate "Switch full-screen Starting soon, Be right back and ending screens live, all in one browser source." %}</p>
+                        <a href="{% url 'overlay_dashboard' %}#scene-overlays">
+                            {% translate "Open stream scenes" %}<span aria-hidden="true">→</span>
                         </a>
                     </div>
                 </article>
