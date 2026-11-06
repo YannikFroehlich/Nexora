@@ -1,0 +1,85 @@
+{% load static %}
+{% load i18n %}
+<section class="dashboard-starter" aria-labelledby="dashboard-starter-title">
+    <div class="dashboard-starter__heading">
+        <p class="dashboard-label">{% translate "Get started" %}</p>
+        <h2 id="dashboard-starter-title">{% translate "Pick your first overlay" %}</h2>
+        <p>{% translate "Every overlay gets its own OBS link. You can add more at any time." %}</p>
+    </div>
+    <ul class="dashboard-starter__grid">
+        <li>
+            <a class="dashboard-starter__tile" href="{% url 'spotify_create' %}">
+                <span class="dashboard-collection__icon dashboard-collection__icon--spotify" aria-hidden="true">
+                    <img src="{% static 'imgs/icons/spotify.webp' %}" alt="">
+                </span>
+                <span class="dashboard-starter__copy">
+                    <small>{% translate "Music and playback" %}</small>
+                    <strong>{% translate "Spotify Overlay" %}</strong>
+                    <span>{% translate "Create a layout for the current track, artwork and playback progress." %}</span>
+                </span>
+            </a>
+        </li>
+        <li>
+            <a class="dashboard-starter__tile" href="{% url 'chat_create' %}">
+                <span class="dashboard-collection__icon dashboard-collection__icon--timer" aria-hidden="true">&#128172;</span>
+                <span class="dashboard-starter__copy">
+                    <small>{% translate "Live chat" %}</small>
+                    <strong>{% translate "Twitch Chat" %}</strong>
+                    <span>{% translate "Show your Twitch chat on stream with 7TV, BetterTTV and FrankerFaceZ emotes, styled the way you want." %}</span>
+                </span>
+            </a>
+        </li>
+        <li>
+            <a class="dashboard-starter__tile" href="{% url 'twitch_goal_create' %}">
+                <span class="dashboard-collection__icon dashboard-collection__icon--twitch" aria-hidden="true">♥</span>
+                <span class="dashboard-starter__copy">
+                    <small>{% translate "Community growth" %}</small>
+                    <strong>{% translate "Twitch Goal" %}</strong>
+                    <span>{% translate "Connect Twitch and build a responsive follower or subscription milestone." %}</span>
+                </span>
+            </a>
+        </li>
+        <li>
+            <a class="dashboard-starter__tile" href="{% url 'timer_create' %}">
+                <span class="dashboard-collection__icon dashboard-collection__icon--timer" aria-hidden="true">&#9719;</span>
+                <span class="dashboard-starter__copy">
+                    <small>{% translate "Time and pacing" %}</small>
+                    <strong>{% translate "Stream Timer" %}</strong>
+                    <span>{% translate "Create a countdown or stopwatch that you can control live during your stream." %}</span>
+                </span>
+            </a>
+        </li>
+        <li>
+            <a class="dashboard-starter__tile" href="{% url 'scene_create' %}">
+                <span class="dashboard-collection__icon dashboard-collection__icon--timer" aria-hidden="true">&#9654;</span>
+                <span class="dashboard-starter__copy">
+                    <small>{% translate "Full-screen scenes" %}</small>
+                    <strong>{% translate "Stream Scenes" %}</strong>
+                    <span>{% translate "Create Starting soon, Be right back and Stream ending screens that you switch live from one OBS browser source." %}</span>
+                </span>
+            </a>
+        </li>
+        <li>
+            <a class="dashboard-starter__tile" href="{% url 'score_create' %}">
+                <span class="dashboard-collection__icon dashboard-collection__icon--score" aria-hidden="true">#</span>
+                <span class="dashboard-starter__copy">
+                    <small>{% translate "Scores and matchups" %}</small>
+                    <strong>{% translate "Score HUD" %}</strong>
+                    <span>{% translate "Create a live scoreboard for players or teams with fully editable HUD elements." %}</span>
+                </span>
+            </a>
+        </li>
+        <li>
+            <a class="dashboard-starter__tile" href="{% url 'winchallenge_create' %}">
+                <span class="dashboard-collection__icon dashboard-collection__icon--challenge" aria-hidden="true">
+                    <img src="{% static 'imgs/icons/winchallenge.png' %}" alt="">
+                </span>
+                <span class="dashboard-starter__copy">
+                    <small>{% translate "Goals and progress" %}</small>
+                    <strong>{% translate "Win Challenge" %}</strong>
+                    <span>{% translate "Create a counter, add games and keep your stream audience up to date." %}</span>
+                </span>
+            </a>
+        </li>
+    </ul>
+</section>

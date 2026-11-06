@@ -26,6 +26,7 @@
                 <p class="dashboard-label"><span>Nexora</span> {% translate "Overlay dashboard" %}</p>
                 <h1 id="dashboard-title">{% translate "My overlays" %}</h1>
                 <p>{% translate "Manage all your overlays together, from Spotify and Twitch chat to scenes, open previews and copy OBS links without switching pages." %}</p>
+                {% if overlay_count %}
                 <nav class="dashboard-jumps" aria-label="{% translate 'Overlay categories' %}">
                     <a href="#spotify-overlays">
                         {% translate "Spotify" %}
@@ -56,9 +57,11 @@
                         <span aria-label="{% blocktranslate count counter=twitch_goal_count %}{{ counter }} overlay{% plural %}{{ counter }} overlays{% endblocktranslate %}">{{ twitch_goal_count }}</span>
                     </a>
                 </nav>
+                {% endif %}
             </div>
         </section>
 
+        {% if overlay_count %}
         <section class="dashboard-toolbar" aria-label="{% translate 'Filter overlays' %}">
             <div class="dashboard-search">
                 <label for="dashboard-search-input" class="sr-only">{% translate "Search overlays" %}</label>
@@ -88,6 +91,7 @@
                 hidden
             ></p>
         </section>
+        {% endif %}
 
         {% if messages %}
             <div class="dashboard-messages" role="status" aria-live="polite" aria-atomic="true">
@@ -95,6 +99,10 @@
                     <p>{{ message }}</p>
                 {% endfor %}
             </div>
+        {% endif %}
+
+        {% if not overlay_count %}
+            {% include "app/partials/_dashboard_starter.html" %}
         {% endif %}
 
         <section class="dashboard-transfer" aria-labelledby="overlay-import-title">
@@ -135,6 +143,7 @@
             </form>
         </section>
 
+        {% if overlay_count %}
         <section class="dashboard-collection" id="spotify-overlays" aria-labelledby="spotify-overlays-title" data-dashboard-section="spotify">
             <div class="dashboard-collection__header">
                 <div class="dashboard-collection__title">
@@ -782,6 +791,7 @@
                 </div>
             {% endif %}
         </section>
+        {% endif %}
 
         <p class="dashboard-toast" data-copy-toast role="status" aria-live="polite" aria-atomic="true" hidden>{% translate "OBS link copied" %}</p>
     </div>

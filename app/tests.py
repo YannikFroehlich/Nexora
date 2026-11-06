@@ -347,26 +347,43 @@ class OverlayDashboardTests(TestCase):
         self.user = User.objects.create_user(username="list-owner")
         self.client.force_login(self.user)
 
-    def test_empty_dashboard_shows_all_overlay_categories(self):
+    CREATE_URL_NAMES = (
+        "spotify_create",
+        "winchallenge_create",
+        "score_create",
+        "timer_create",
+        "twitch_goal_create",
+        "scene_create",
+        "chat_create",
+    )
+
+    def test_empty_dashboard_offers_starter_grid_instead_of_empty_sections(self):
         response = self.client.get(reverse("overlay_dashboard"))
         content = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'id="spotify-overlays"')
-        self.assertContains(response, 'id="winchallenge-overlays"')
-        self.assertContains(response, 'id="score-overlays"')
-        self.assertContains(response, 'id="timer-overlays"')
-        self.assertContains(response, 'id="twitch-goal-overlays"')
-        self.assertContains(response, 'id="scene-overlays"')
-        self.assertContains(response, 'id="chat-overlays"')
-        self.assertContains(response, 'class="dashboard-empty"', count=7)
-        self.assertEqual(content.count(f'href="{reverse("spotify_create")}"'), 1)
-        self.assertEqual(content.count(f'href="{reverse("winchallenge_create")}"'), 1)
-        self.assertEqual(content.count(f'href="{reverse("score_create")}"'), 1)
-        self.assertEqual(content.count(f'href="{reverse("timer_create")}"'), 1)
-        self.assertEqual(content.count(f'href="{reverse("twitch_goal_create")}"'), 1)
-        self.assertEqual(content.count(f'href="{reverse("scene_create")}"'), 1)
-        self.assertEqual(content.count(f'href="{reverse("chat_create")}"'), 1)
+        self.assertContains(response, 'class="dashboard-starter"')
+        self.assertContains(response, "Wähle dein erstes Overlay")
+        for url_name in self.CREATE_URL_NAMES:
+            self.assertEqual(content.count(f'href="{reverse(url_name)}"'), 1)
+        self.assertNotContains(response, "data-dashboard-section")
+        self.assertNotContains(response, 'class="dashboard-empty"')
+        self.assertNotContains(response, 'class="dashboard-jumps"')
+        self.assertNotContains(response, "data-dashboard-search-input")
+        self.assertContains(response, 'class="dashboard-transfer"')
+
+    def test_dashboard_with_one_overlay_shows_every_category_section(self):
+        TimerOverlay.objects.create(owner=self.user, name="Starting Soon")
+
+        response = self.client.get(reverse("overlay_dashboard"))
+        content = response.content.decode()
+
+        self.assertNotContains(response, 'class="dashboard-starter"')
+        self.assertContains(response, "data-dashboard-section", count=7)
+        self.assertContains(response, 'class="dashboard-empty"', count=6)
+        self.assertContains(response, 'class="dashboard-jumps"')
+        for url_name in self.CREATE_URL_NAMES:
+            self.assertEqual(content.count(f'href="{reverse(url_name)}"'), 1)
 
     def test_dashboard_shows_saved_overlays_from_all_tools(self):
         spotify_overlay = SpotifyOverlay.objects.create(owner=self.user, name="Stream Music")
