@@ -110,6 +110,19 @@ class HomeViewTests(TestCase):
         self.assertContains(response, '<link rel="canonical" href="http://testserver/">')
         self.assertContains(response, "imgs/icons/nexora_icon.png")
 
+    def test_public_pages_expose_link_preview_image(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(
+            response,
+            '<meta property="og:image" content="http://testserver/static/imgs/og-image.png">',
+        )
+        self.assertContains(response, '<meta name="twitter:card" content="summary_large_image">')
+
+        user = User.objects.create_user(username="share-preview-user")
+        self.client.force_login(user)
+        self.assertNotContains(self.client.get(reverse("overlay_dashboard")), "og:image")
+
     def test_overlay_collection_offers_every_overlay_type(self):
         user = User.objects.create_user(username="home-collection-user")
         self.client.force_login(user)
