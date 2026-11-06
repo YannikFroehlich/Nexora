@@ -52,6 +52,10 @@
                         {% translate "Chats" %}
                         <span aria-label="{% blocktranslate count counter=chat_count %}{{ counter }} overlay{% plural %}{{ counter }} overlays{% endblocktranslate %}">{{ chat_count }}</span>
                     </a>
+                    <a href="#twitch-alert-overlays">
+                        {% translate "Twitch Alerts" %}
+                        <span aria-label="{% blocktranslate count counter=twitch_alert_count %}{{ counter }} overlay{% plural %}{{ counter }} overlays{% endblocktranslate %}">{{ twitch_alert_count }}</span>
+                    </a>
                     <a href="#twitch-goal-overlays">
                         {% translate "Twitch Goals" %}
                         <span aria-label="{% blocktranslate count counter=twitch_goal_count %}{{ counter }} overlay{% plural %}{{ counter }} overlays{% endblocktranslate %}">{{ twitch_goal_count }}</span>
@@ -81,6 +85,7 @@
                 <button type="button" class="dashboard-filter-chip" data-filter-type="timer" aria-pressed="false">{% translate "Timers" %}</button>
                 <button type="button" class="dashboard-filter-chip" data-filter-type="scene" aria-pressed="false">{% translate "Scenes" %}</button>
                 <button type="button" class="dashboard-filter-chip" data-filter-type="chat" aria-pressed="false">{% translate "Chats" %}</button>
+                <button type="button" class="dashboard-filter-chip" data-filter-type="twitch-alert" aria-pressed="false">{% translate "Twitch Alerts" %}</button>
                 <button type="button" class="dashboard-filter-chip" data-filter-type="twitch-goal" aria-pressed="false">{% translate "Twitch Goals" %}</button>
             </div>
             <p
@@ -787,6 +792,95 @@
                     <div>
                         <h3>{% translate "No chat overlays yet" %}</h3>
                         <p>{% translate "Show your Twitch chat on stream with 7TV, BetterTTV and FrankerFaceZ emotes, styled the way you want." %}</p>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="dashboard-collection" id="twitch-alert-overlays" aria-labelledby="twitch-alert-overlays-title" data-dashboard-section="twitch-alert">
+            <div class="dashboard-collection__header">
+                <div class="dashboard-collection__title">
+                    <span class="dashboard-collection__icon dashboard-collection__icon--twitch" aria-hidden="true">&#9733;</span>
+                    <div>
+                        <p class="dashboard-label">{% translate "Live events" %}</p>
+                        <h2 id="twitch-alert-overlays-title">{% translate "Twitch alerts" %}</h2>
+                    </div>
+                </div>
+                <a class="btn action-button" href="{% url 'twitch_alert_create' %}">{% translate "Create alert overlay" %}</a>
+            </div>
+
+            {% if twitch_alert_overlays %}
+                <div class="dashboard-grid">
+                    {% for alert in twitch_alert_overlays %}
+                        {% url 'twitch_alert_overlay' alert.public_token as overlay_path %}
+                        <article class="dashboard-card" data-dashboard-name="{{ alert.display_name|lower }}">
+                            <div class="dashboard-card__preview dashboard-card__preview--timer" aria-label="{% translate 'Preview' %}">
+                                <div
+                                    class="timer-dashboard-preview timer-dashboard-preview--{{ alert.design_template }}"
+                                    style="--preview-background: {{ alert.background_rgba }}; --preview-accent: {{ alert.accent_color }}; --preview-text: {{ alert.text_color }}; --preview-border: {{ alert.border_color }}; --preview-radius: {{ alert.corner_radius }}px;"
+                                >
+                                    <div><small>{% translate "Twitch alerts" %}</small></div>
+                                    <strong>{% blocktranslate count counter=alert.enabled_event_types|length %}{{ counter }} event type{% plural %}{{ counter }} event types{% endblocktranslate %}</strong>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-card__content">
+                                <div class="dashboard-card__heading">
+                                    <div>
+                                        <p class="dashboard-card__type">{% translate "Twitch alerts" %}</p>
+                                        <h3>{{ alert.display_name }}</h3>
+                                    </div>
+                                </div>
+
+                                <dl class="dashboard-card__stats">
+                                    <div><dt>{% translate "Design" %}</dt><dd>{{ alert.get_design_template_display }}</dd></div>
+                                    <div><dt>{% translate "Updated" %}</dt><dd>{{ alert.updated_at|date:"d.m.Y H:i" }}</dd></div>
+                                </dl>
+
+                                <div class="dashboard-card__actions">
+                                    <a class="btn action-button" href="{% url 'twitch_alert_manage' alert.pk %}">{% translate "Edit" %}</a>
+                                    <a class="btn glass-design" href="{{ overlay_path }}" target="_blank" rel="noopener">
+                                        {% translate "Preview" %}<span class="sr-only"> ({% translate "opens in a new tab" %})</span>
+                                    </a>
+                                    <details class="dashboard-card__menu">
+                                        <summary class="btn glass-design">{% translate "More" %}</summary>
+                                        <div class="dashboard-card__menu-panel">
+                                            <form class="dashboard-card__action-form" action="{% url 'twitch_alert_duplicate' alert.pk %}" method="post">
+                                                {% csrf_token %}
+                                                <button class="btn glass-design" type="submit">{% translate "Duplicate" %}</button>
+                                            </form>
+                                            <a class="btn glass-design" href="{% url 'twitch_alert_export' alert.pk %}">{% translate "Export" %}</a>
+                                            <button class="btn glass-design" type="button" data-copy-url="{{ request.scheme }}://{{ request.get_host }}{{ overlay_path }}">
+                                                {% translate "Copy OBS link" %}
+                                            </button>
+                                            <form
+                                                class="dashboard-card__action-form"
+                                                action="{% url 'twitch_alert_renew_obs_link' alert.pk %}"
+                                                method="post"
+                                                data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+                                            >
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{% url 'overlay_dashboard' %}#twitch-alert-overlays">
+                                                <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
+                                            </form>
+                                            <form class="dashboard-card__delete" action="{% url 'twitch_alert_delete' alert.pk %}" method="post" data-confirm-delete="{% translate 'Delete this alert overlay?' %}">
+                                                {% csrf_token %}
+                                                <button class="btn dashboard-danger-button" type="submit">{% translate "Delete" %}</button>
+                                            </form>
+                                        </div>
+                                    </details>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+                <p class="dashboard-no-matches" data-no-matches hidden>{% translate "No overlays match your search." %}</p>
+            {% else %}
+                <div class="dashboard-empty">
+                    <span class="dashboard-empty__icon" aria-hidden="true">&#9733;</span>
+                    <div>
+                        <h3>{% translate "No alert overlays yet" %}</h3>
+                        <p>{% translate "Celebrate follows, subs, gifted subs, cheers and raids on stream with an animated alert and sound." %}</p>
                     </div>
                 </div>
             {% endif %}

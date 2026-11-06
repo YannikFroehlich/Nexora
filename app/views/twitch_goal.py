@@ -23,6 +23,7 @@ from app.views.common import (
 from app.views.dashboard import manageable_twitch_goal_overlays
 from app.views.pages import safe_next_url
 from app.views.presets import manageable_presets
+from app.views.twitch_alert import activate_alerts, get_manageable_twitch_alert
 
 
 def get_manageable_twitch_goal(request, pk):
@@ -222,25 +223,31 @@ def twitch_connect(request, pk):
 
 @login_required
 def twitch_callback(request):
-    oauth_session = request.session.pop("twitch_oauth", None)
+    oauth_session = request.session.pop("twitch_oauth", None) or {}
     received_state = request.GET.get("state", "")
-    overlay_id = oauth_session.get("overlay_id") if oauth_session else None
+    overlay_id = oauth_session.get("overlay_id")
+    alert_id = oauth_session.get("alert_id")
     if (
-        not oauth_session
-        or not overlay_id
+        not (overlay_id or alert_id)
         or not received_state
         or not secrets.compare_digest(received_state, oauth_session.get("state", ""))
     ):
         messages.error(request, _("The Twitch connection could not be verified."))
         return redirect(f"{reverse('overlay_dashboard')}#twitch-goal-overlays")
-    overlay = get_manageable_twitch_goal(request, overlay_id)
+    # The same Twitch app authorization serves goal and alert overlays.
+    if alert_id:
+        overlay = get_manageable_twitch_alert(request, alert_id)
+        manage_url = "twitch_alert_manage"
+    else:
+        overlay = get_manageable_twitch_goal(request, overlay_id)
+        manage_url = "twitch_goal_manage"
     if request.GET.get("error"):
         messages.error(request, _("Twitch access was not granted."))
-        return redirect("twitch_goal_manage", pk=overlay.pk)
+        return redirect(manage_url, pk=overlay.pk)
     code = request.GET.get("code", "")
     if not code:
         messages.error(request, _("Twitch returned no authorization code."))
-        return redirect("twitch_goal_manage", pk=overlay.pk)
+        return redirect(manage_url, pk=overlay.pk)
     try:
         connection = twitch_api.exchange_authorization_code(
             request,
@@ -251,10 +258,13 @@ def twitch_callback(request):
     except twitch_api.TwitchAPIError:
         messages.error(request, _("Twitch could not be connected. Check the app settings."))
     else:
-        overlay.connection = connection
-        overlay.save(update_fields=("connection", "updated_at"))
         messages.success(request, _("Twitch connected successfully."))
-    return redirect("twitch_goal_manage", pk=overlay.pk)
+        if alert_id:
+            activate_alerts(request, connection)
+        else:
+            overlay.connection = connection
+            overlay.save(update_fields=("connection", "updated_at"))
+    return redirect(manage_url, pk=overlay.pk)
 
 
 @login_required

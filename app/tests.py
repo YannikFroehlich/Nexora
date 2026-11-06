@@ -358,6 +358,7 @@ class OverlayDashboardTests(TestCase):
         "twitch_goal_create",
         "scene_create",
         "chat_create",
+        "twitch_alert_create",
     )
 
     def test_empty_dashboard_offers_starter_grid_instead_of_empty_sections(self):
@@ -382,8 +383,8 @@ class OverlayDashboardTests(TestCase):
         content = response.content.decode()
 
         self.assertNotContains(response, 'class="dashboard-starter"')
-        self.assertContains(response, "data-dashboard-section", count=7)
-        self.assertContains(response, 'class="dashboard-empty"', count=6)
+        self.assertContains(response, "data-dashboard-section", count=8)
+        self.assertContains(response, 'class="dashboard-empty"', count=7)
         self.assertContains(response, 'class="dashboard-jumps"')
         for url_name in self.CREATE_URL_NAMES:
             self.assertEqual(content.count(f'href="{reverse(url_name)}"'), 1)

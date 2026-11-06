@@ -22,6 +22,7 @@ from app.models import (
     ScoreParticipant,
     SpotifyOverlay,
     TimerOverlay,
+    TwitchAlertOverlay,
     TwitchGoalOverlay,
     WinChallenge,
     WinChallengeGame,
@@ -1996,6 +1997,155 @@ class ChatOverlayForm(forms.ModelForm):
             if login not in logins:
                 logins.append(login)
         return ", ".join(logins)
+
+    def clean_font_family(self):
+        return _selected_font_family(self)
+
+
+class TwitchAlertOverlayForm(forms.ModelForm):
+    """Event filters, alert texts, sound and design for the Twitch alert overlay."""
+
+    TEXT_FIELDS = ("follow_text", "subscription_text", "gift_text", "cheer_text", "raid_text")
+
+    class Meta:
+        model = TwitchAlertOverlay
+        fields = (
+            "name",
+            "show_follows",
+            "show_subscriptions",
+            "show_gifts",
+            "show_cheers",
+            "show_raids",
+            "minimum_bits",
+            "minimum_raid_viewers",
+            "show_user_message",
+            "alert_duration_seconds",
+            "follow_text",
+            "subscription_text",
+            "gift_text",
+            "cheer_text",
+            "raid_text",
+            "design_template",
+            "animation",
+            "sound_type",
+            "sound_volume",
+            "background_color",
+            "background_opacity",
+            "text_color",
+            "accent_color",
+            "border_color",
+            "border_width",
+            "corner_radius",
+            "font_size",
+            "shadow_enabled",
+            "font_family",
+            "font_asset",
+            "logo_asset",
+            "background_asset",
+        )
+        labels = {
+            "name": _("Overlay name"),
+            "show_follows": _("Follows"),
+            "show_subscriptions": _("Subscriptions and resubs"),
+            "show_gifts": _("Gifted subs"),
+            "show_cheers": _("Cheers"),
+            "show_raids": _("Raids"),
+            "minimum_bits": _("Minimum bits"),
+            "minimum_raid_viewers": _("Minimum raid viewers"),
+            "show_user_message": _("Show the viewer's message"),
+            "alert_duration_seconds": _("Alert duration in seconds"),
+            "follow_text": _("Follow text"),
+            "subscription_text": _("Subscription text"),
+            "gift_text": _("Gifted subs text"),
+            "cheer_text": _("Cheer text"),
+            "raid_text": _("Raid text"),
+            "design_template": _("Design template"),
+            "animation": _("Animation"),
+            "sound_type": _("Alert sound"),
+            "sound_volume": _("Volume"),
+            "background_color": _("Background color"),
+            "background_opacity": _("Background opacity"),
+            "text_color": _("Text color"),
+            "accent_color": _("Accent color"),
+            "border_color": _("Border color"),
+            "border_width": _("Border width"),
+            "corner_radius": _("Corner radius"),
+            "font_size": _("Text size"),
+            "shadow_enabled": _("Text shadow"),
+        }
+        help_texts = {
+            "background_opacity": _("0 is transparent, 100 is fully opaque."),
+        }
+        widgets = {
+            "name": forms.TextInput(
+                attrs={"class": BASE_INPUT_CLASS, "placeholder": _("Twitch Alerts")}
+            ),
+            "show_follows": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "show_subscriptions": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "show_gifts": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "show_cheers": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "show_raids": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "minimum_bits": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 1, "max": 1000000, "step": 1}
+            ),
+            "minimum_raid_viewers": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 1, "max": 1000000, "step": 1}
+            ),
+            "show_user_message": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+            "alert_duration_seconds": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 2, "max": 30, "step": 1}
+            ),
+            "design_template": forms.Select(attrs={"class": BASE_INPUT_CLASS}),
+            "animation": forms.Select(attrs={"class": BASE_INPUT_CLASS}),
+            "sound_type": forms.Select(attrs={"class": BASE_INPUT_CLASS}),
+            "sound_volume": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 100, "step": 1}
+            ),
+            "background_color": ColorInput(attrs={"class": "color-control"}),
+            "background_opacity": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 100, "step": 1}
+            ),
+            "text_color": ColorInput(attrs={"class": "color-control"}),
+            "accent_color": ColorInput(attrs={"class": "color-control"}),
+            "border_color": ColorInput(attrs={"class": "color-control"}),
+            "border_width": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 8, "step": 1}
+            ),
+            "corner_radius": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 0, "max": 48, "step": 1}
+            ),
+            "font_size": forms.NumberInput(
+                attrs={"class": BASE_INPUT_CLASS, "min": 16, "max": 72, "step": 1}
+            ),
+            "shadow_enabled": forms.CheckboxInput(attrs={"class": "toggle-control"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        asset_owner = kwargs.pop("asset_owner", None)
+        super().__init__(*args, **kwargs)
+        _configure_branding_fields(self, asset_owner)
+        self.fields["name"].required = False
+        defaults = TwitchAlertOverlay.DEFAULT_TEXTS
+        for field_name in self.TEXT_FIELDS:
+            event_type = field_name.removesuffix("_text")
+            self.fields[field_name].widget = forms.TextInput(
+                attrs={
+                    "class": BASE_INPUT_CLASS,
+                    "placeholder": defaults[event_type],
+                    "data-alert-text": event_type,
+                    "data-default-text": defaults[event_type],
+                }
+            )
+        self.fields["follow_text"].help_text = _(
+            "Leave empty for the default text. {name} is the viewer, {amount} the months, "
+            "subs, bits or raid viewers."
+        )
+
+        if not self.is_bound and self.instance.pk is None:
+            self.initial["name"] = _("Twitch Alerts")
+
+    def clean_name(self):
+        return self.cleaned_data["name"].strip() or "Twitch Alerts"
 
     def clean_font_family(self):
         return _selected_font_family(self)

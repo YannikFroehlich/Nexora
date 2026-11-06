@@ -12,6 +12,7 @@ from app.forms import (
     ScoreOverlayForm,
     SpotifyOverlayForm,
     TimerOverlayForm,
+    TwitchAlertOverlayForm,
     TwitchGoalOverlayForm,
 )
 from app.models import (
@@ -23,6 +24,7 @@ from app.models import (
     ScoreParticipant,
     SpotifyOverlay,
     TimerOverlay,
+    TwitchAlertOverlay,
     TwitchGoalOverlay,
     WinChallenge,
     WinChallengeGame,
@@ -51,6 +53,8 @@ def overlay_type_for(overlay):
         return overlay_transfer.SCENE_TYPE
     if isinstance(overlay, ChatOverlay):
         return overlay_transfer.CHAT_TYPE
+    if isinstance(overlay, TwitchAlertOverlay):
+        return overlay_transfer.TWITCH_ALERT_TYPE
     raise TypeError("Unsupported overlay model")
 
 
@@ -346,6 +350,20 @@ def _restore_chat(overlay, payload, assets):
     return form.save()
 
 
+def _restore_twitch_alert(overlay, payload, assets):
+    form_data = copy.deepcopy(payload["overlay"])
+    form_data.setdefault("font_family", overlay.FONT_SYSTEM)
+    form_data.update(_branding_data(overlay.owner, assets))
+    form = TwitchAlertOverlayForm(
+        data=form_data,
+        instance=overlay,
+        asset_owner=overlay.owner,
+    )
+    if not form.is_valid():
+        raise OverlayVersionError("Invalid Twitch alert version")
+    return form.save()
+
+
 @transaction.atomic
 def restore_version(overlay, version):
     overlay_type = overlay_type_for(overlay)
@@ -376,6 +394,8 @@ def restore_version(overlay, version):
         restored = _restore_scene(overlay, payload, assets)
     elif isinstance(overlay, ChatOverlay):
         restored = _restore_chat(overlay, payload, assets)
+    elif isinstance(overlay, TwitchAlertOverlay):
+        restored = _restore_twitch_alert(overlay, payload, assets)
     else:
         restored = _restore_score(overlay, payload, assets)
 

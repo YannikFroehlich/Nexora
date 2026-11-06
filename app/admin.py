@@ -11,6 +11,8 @@ from app.models import (
     SpotifyConnection,
     SpotifyOverlay,
     TimerOverlay,
+    TwitchAlertEvent,
+    TwitchAlertOverlay,
     TwitchConnection,
     TwitchGoalOverlay,
     WinChallenge,
@@ -264,3 +266,19 @@ class ChatOverlayAdmin(admin.ModelAdmin):
     list_filter = ("design_template", "owner")
     search_fields = ("name", "channel", "public_token", "owner__username")
     readonly_fields = ("public_token", "created_at", "updated_at")
+
+
+@admin.register(TwitchAlertOverlay)
+class TwitchAlertOverlayAdmin(admin.ModelAdmin):
+    list_display = ("display_name", "owner", "design_template", "updated_at")
+    list_filter = ("design_template", "owner")
+    search_fields = ("name", "public_token", "owner__username")
+    readonly_fields = ("public_token", "created_at", "updated_at")
+
+
+@admin.register(TwitchAlertEvent)
+class TwitchAlertEventAdmin(admin.ModelAdmin):
+    list_display = ("event_type", "user_name", "amount", "owner", "is_test", "created_at")
+    list_filter = ("event_type", "is_test")
+    search_fields = ("user_name", "message_id", "owner__username")
+    readonly_fields = ("message_id", "created_at")
