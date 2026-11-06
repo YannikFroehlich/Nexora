@@ -7,6 +7,7 @@ from django.urls import reverse
 from playwright.sync_api import expect, sync_playwright
 
 from app.models import (
+    ChatOverlay,
     SceneOverlay,
     SpotifyOverlay,
     TimerOverlay,
@@ -50,6 +51,10 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
             owner=self.user,
             name="Browser Scenes",
         )
+        self.chat = ChatOverlay.objects.create(
+            owner=self.user,
+            name="Browser Chat",
+        )
 
         self.client.force_login(self.user)
         session_cookie = self.client.cookies[settings.SESSION_COOKIE_NAME]
@@ -76,6 +81,17 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
         self.context.close()
         self.browser.close()
         self.playwright.stop()
+
+    def block_external_requests(self, context):
+        # The chat page loads emotes and badges from third-party APIs; keep tests offline.
+        context.route(
+            "**/*",
+            lambda route: (
+                route.continue_()
+                if route.request.url.startswith(self.live_server_url)
+                else route.abort()
+            ),
+        )
 
     def test_spotify_drag_autosave_undo_and_redo(self):
         page = self.context.new_page()
@@ -146,6 +162,7 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
             viewport={"width": 1920, "height": 1080},
             device_scale_factor=1,
         )
+        self.block_external_requests(obs_context)
         sources = (
             (
                 reverse("spotify_overlay", args=[self.spotify.public_token]),
@@ -171,6 +188,11 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
                 reverse("scene_overlay", args=[self.scene.public_token]),
                 "[data-scene-source]",
                 "[data-scene-overlay]",
+            ),
+            (
+                reverse("chat_overlay", args=[self.chat.public_token]),
+                "[data-chat-source]",
+                "[data-chat-overlay]",
             ),
         )
 
@@ -218,6 +240,23 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
             self.live_server_url + reverse("scene_overlay", args=[self.scene.public_token])
         )
         expect(public_page.locator("[data-scene-overlay]")).to_have_attribute("data-scene", "brb")
+
+    def test_chat_editor_preview_renders_test_messages_without_a_channel(self):
+        self.block_external_requests(self.context)
+        page = self.context.new_page()
+        page_errors = []
+        page.on("pageerror", lambda error: page_errors.append(error))
+        page.goto(self.live_server_url + reverse("chat_manage", args=[self.chat.pk]))
+
+        messages = page.locator("[data-chat-overlay] .chat-message")
+        expect(messages).to_have_count(4)
+        expect(page.locator("[data-chat-status]")).to_have_attribute("data-state", "offline")
+
+        page.locator("[data-chat-test-message]").click()
+
+        expect(messages).to_have_count(5)
+        expect(messages.last).to_contain_text("Nexora")
+        self.assertEqual(page_errors, [])
 
     def test_preset_font_updates_preview_and_public_overlay(self):
         page = self.context.new_page()
