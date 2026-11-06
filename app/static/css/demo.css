@@ -76,6 +76,19 @@
     line-height: 1.5;
 }
 
+.demo-more {
+    margin: 28px 0 0;
+    color: var(--color-text-muted);
+    text-align: center;
+    line-height: 1.6;
+}
+
+.demo-more a {
+    margin-left: 6px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
 .demo-studio {
     margin-top: var(--page-section-space);
     scroll-margin-top: 22px;

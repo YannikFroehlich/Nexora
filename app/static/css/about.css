@@ -280,6 +280,29 @@
     font-weight: 850;
 }
 
+.about-tool--chat .about-tool__icon {
+    background: rgba(145, 70, 255, 0.12);
+    font-size: 1.6rem;
+}
+
+.about-tool--score .about-tool__icon {
+    color: #0284c7;
+    background: rgba(56, 189, 248, 0.12);
+    font-size: 1.7rem;
+    font-weight: 950;
+}
+
+.about-tool--scene .about-tool__icon {
+    color: #0d9488;
+    background: rgba(20, 184, 166, 0.12);
+    font-size: 1.5rem;
+}
+
+/* An odd last tool spans both columns instead of sitting alone. */
+.about-tool:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+}
+
 .about-tool__icon img {
     display: block;
     width: 100%;

@@ -110,6 +110,23 @@ class HomeViewTests(TestCase):
         self.assertContains(response, '<link rel="canonical" href="http://testserver/">')
         self.assertContains(response, "imgs/icons/nexora_icon.png")
 
+    def test_overlay_collection_offers_every_overlay_type(self):
+        user = User.objects.create_user(username="home-collection-user")
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("home"))
+
+        for create_url_name in (
+            "spotify_create",
+            "winchallenge_create",
+            "timer_create",
+            "twitch_goal_create",
+            "chat_create",
+            "score_create",
+            "scene_create",
+        ):
+            self.assertContains(response, f'href="{reverse(create_url_name)}"')
+
     def test_anonymous_header_surfaces_signup_without_losing_destination(self):
         response = self.client.get(reverse("demo"))
 
@@ -288,12 +305,18 @@ class AboutViewTests(TestCase):
         response = self.client.get(reverse("about"))
 
         self.assertContains(response, "Tools für Streams mit deiner Handschrift")
-        self.assertContains(response, "Vier Tools, ein einheitlicher Workflow")
+        self.assertContains(response, "Sieben Tools, ein einheitlicher Workflow")
         dashboard_url = reverse("overlay_dashboard")
-        self.assertContains(response, f'href="{dashboard_url}#spotify-overlays"')
-        self.assertContains(response, f'href="{dashboard_url}#winchallenge-overlays"')
-        self.assertContains(response, f'href="{dashboard_url}#timer-overlays"')
-        self.assertContains(response, f'href="{dashboard_url}#twitch-goal-overlays"')
+        for anchor in (
+            "spotify",
+            "winchallenge",
+            "timer",
+            "twitch-goal",
+            "chat",
+            "score",
+            "scene",
+        ):
+            self.assertContains(response, f'href="{dashboard_url}#{anchor}-overlays"')
 
     def test_about_page_is_available_in_english(self):
         self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = "en"
