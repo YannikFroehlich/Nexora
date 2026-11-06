@@ -11,6 +11,7 @@ from app.models import (
     SceneOverlay,
     SpotifyOverlay,
     TimerOverlay,
+    TwitchAlertOverlay,
     TwitchGoalOverlay,
     WinChallenge,
     WinChallengeGame,
@@ -54,6 +55,10 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
         self.chat = ChatOverlay.objects.create(
             owner=self.user,
             name="Browser Chat",
+        )
+        self.alerts = TwitchAlertOverlay.objects.create(
+            owner=self.user,
+            name="Browser Alerts",
         )
 
         self.client.force_login(self.user)
@@ -193,6 +198,11 @@ class OverlayEditorBrowserTests(StaticLiveServerTestCase):
                 reverse("chat_overlay", args=[self.chat.public_token]),
                 "[data-chat-source]",
                 "[data-chat-overlay]",
+            ),
+            (
+                reverse("twitch_alert_overlay", args=[self.alerts.public_token]),
+                "[data-alert-source]",
+                "[data-alert-overlay]",
             ),
         )
 

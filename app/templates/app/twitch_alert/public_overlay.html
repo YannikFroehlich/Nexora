@@ -1,0 +1,24 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'de' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="{% static 'css/twitch-alert.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
+    <title>{{ overlay.display_name }}</title>
+</head>
+<body
+    class="alert-overlay-source"
+    data-alert-source
+    data-state-url="{% url 'twitch_alert_overlay_state' overlay.public_token %}"
+>
+    {% include "app/partials/_twitch_alert_overlay.html" with overlay=overlay %}
+    <script src="{% static 'js/polling.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/twitch-alert.js' %}?v={{ APP_VERSION }}"></script>
+</body>
+</html>

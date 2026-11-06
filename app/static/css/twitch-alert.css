@@ -1,0 +1,247 @@
+/* Twitch alerts: one centered card on a 16:9 canvas, scaled with the frame width ------ */
+
+.alert-frame {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    border-radius: 18px;
+    container-type: size;
+    background-color: #131821;
+    background-image:
+        linear-gradient(45deg, rgba(255,255,255,.055) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255,255,255,.055) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255,255,255,.055) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,.055) 75%);
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+    background-size: 20px 20px;
+}
+
+/* Sizes are designed for a 1280px wide source and scale with the frame. */
+.alert-frame > .alert-overlay {
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    display: grid;
+    place-items: center;
+    padding: 5cqw;
+    color: var(--alert-text, #f8fafc);
+    font-family: var(--nexora-overlay-font, Inter, ui-sans-serif, system-ui, sans-serif);
+    font-size: calc(var(--alert-font-size, 34) / 1280 * 100cqw);
+}
+
+.alert-card {
+    box-sizing: border-box;
+    display: flex;
+    max-width: 80%;
+    padding: .7em 1.4em .8em;
+    flex-direction: column;
+    align-items: center;
+    gap: .3em;
+    border: var(--alert-border-width, 2px) solid var(--alert-border, #a78bfa);
+    border-radius: calc(var(--alert-radius, 24) / 1280 * 100cqw);
+    background: var(--alert-background, rgba(11, 16, 32, .86));
+    text-align: center;
+}
+
+.alert-card[hidden] {
+    display: none;
+}
+
+.alert-card__icon {
+    display: grid;
+    width: 1.9em;
+    height: 1.9em;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--alert-accent, #9146ff);
+    color: #fff;
+    font-size: .9em;
+    line-height: 1;
+}
+
+.alert-card__title {
+    margin: 0;
+    font-weight: 700;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.alert-card__title strong {
+    color: var(--alert-accent, #9146ff);
+    font-weight: 900;
+}
+
+.alert-card__message {
+    max-width: 32em;
+    margin: 0;
+    font-size: .58em;
+    line-height: 1.4;
+    opacity: .9;
+    overflow-wrap: anywhere;
+}
+
+.alert-overlay[data-shadow="true"] .alert-card {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .9), 0 0 8px rgba(0, 0, 0, .5);
+}
+
+.alert-overlay--glass .alert-card {
+    backdrop-filter: blur(16px) saturate(140%);
+    box-shadow: 0 1em 2.4em rgba(0, 0, 0, .35);
+}
+
+.alert-overlay--minimal .alert-card {
+    border-width: 0;
+    background: transparent;
+}
+
+.alert-overlay--neon .alert-card {
+    box-shadow:
+        0 0 1em color-mix(in srgb, var(--alert-accent, #9146ff) 60%, transparent),
+        inset 0 0 .8em color-mix(in srgb, var(--alert-accent, #9146ff) 22%, transparent);
+}
+
+.alert-overlay--neon .alert-card__title strong {
+    text-shadow: 0 0 .4em var(--alert-accent, #9146ff);
+}
+
+.alert-overlay[data-animation="pop"] .alert-card.is-entering {
+    animation: alert-pop .55s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+
+.alert-overlay[data-animation="slide"] .alert-card.is-entering {
+    animation: alert-slide .5s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.alert-overlay[data-animation="fade"] .alert-card.is-entering {
+    animation: alert-fade .5s ease-out both;
+}
+
+.alert-card.is-entering .alert-card__icon {
+    animation: alert-icon .9s .15s ease-out both;
+}
+
+.alert-card.is-leaving {
+    opacity: 0;
+    transform: scale(.96);
+    transition: opacity .45s ease, transform .45s ease;
+}
+
+@keyframes alert-pop {
+    from { opacity: 0; transform: scale(.4); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes alert-slide {
+    from { opacity: 0; transform: translateY(-1.6em); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes alert-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes alert-icon {
+    0% { transform: scale(.6) rotate(-20deg); }
+    60% { transform: scale(1.2) rotate(8deg); }
+    100% { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .alert-overlay .alert-card.is-entering,
+    .alert-overlay .alert-card.is-entering .alert-card__icon {
+        animation: none;
+    }
+
+    .alert-card.is-leaving {
+        transform: none;
+    }
+}
+
+/* OBS browser source: the frame fills the viewport without a checkerboard. */
+
+.alert-overlay-source {
+    margin: 0;
+    overflow: hidden;
+    background: transparent;
+}
+
+.alert-overlay-source .alert-frame {
+    width: 100vw;
+    height: 100vh;
+    aspect-ratio: auto;
+    border-radius: 0;
+    background: none;
+}
+
+/* Editor ----------------------------------------------------------------- */
+
+.alert-fieldset {
+    margin: 16px 0;
+    padding: 16px 16px 4px;
+    border: 1px solid rgba(148, 163, 184, .24);
+    border-radius: 16px;
+}
+
+.alert-fieldset legend {
+    padding: 0 7px;
+    font-size: .8rem;
+    font-weight: 800;
+}
+
+.alert-connection p {
+    margin: 0 0 12px;
+}
+
+.alert-connection__status {
+    font-weight: 700;
+}
+
+.alert-connection__status::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 8px;
+    border-radius: 50%;
+    background: #94a3b8;
+}
+
+.alert-connection__status[data-state="live"]::before {
+    background: #22c55e;
+}
+
+.alert-connection__error {
+    color: #ef4444;
+}
+
+.alert-connection__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.alert-connection__actions form {
+    margin: 0;
+}
+
+.alert-test {
+    margin-top: 14px;
+}
+
+.alert-test__title {
+    margin: 0 0 8px;
+    font-size: .85rem;
+    font-weight: 700;
+}
+
+.alert-test__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.alert-test__buttons .btn {
+    flex: 1 1 auto;
+}

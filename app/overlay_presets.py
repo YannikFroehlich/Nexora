@@ -5,6 +5,7 @@ from app.models import (
     ScoreOverlay,
     SpotifyOverlay,
     TimerOverlay,
+    TwitchAlertOverlay,
     TwitchGoalOverlay,
     WinChallenge,
 )
@@ -26,6 +27,7 @@ MODEL_BY_TYPE = {
     overlay_transfer.TWITCH_GOAL_TYPE: TwitchGoalOverlay,
     overlay_transfer.SCENE_TYPE: SceneOverlay,
     overlay_transfer.CHAT_TYPE: ChatOverlay,
+    overlay_transfer.TWITCH_ALERT_TYPE: TwitchAlertOverlay,
 }
 
 

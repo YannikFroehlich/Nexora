@@ -1,5 +1,8 @@
 """Server-side Twitch OAuth and cached Helix metric client."""
 
+import hashlib
+import hmac
+import itertools
 import json
 from datetime import timedelta
 from urllib import error as urlerror
@@ -7,13 +10,15 @@ from urllib import parse as urlparse
 from urllib import request as urlrequest
 
 from django.conf import settings
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext as _
 
-from app.models import TwitchConnection, TwitchGoalOverlay
+from app.models import TwitchAlertEvent, TwitchConnection, TwitchGoalOverlay
 
 AUTHORIZE_URL = "https://id.twitch.tv/oauth2/authorize"
 TOKEN_URL = "https://id.twitch.tv/oauth2/token"
@@ -23,8 +28,24 @@ USERS_URL = "https://api.twitch.tv/helix/users"
 FOLLOWERS_URL = "https://api.twitch.tv/helix/channels/followers"
 SUBSCRIPTIONS_URL = "https://api.twitch.tv/helix/subscriptions"
 
+EVENTSUB_URL = "https://api.twitch.tv/helix/eventsub/subscriptions"
+
 FOLLOWER_SCOPE = "moderator:read:followers"
 SUBSCRIPTION_SCOPE = "channel:read:subscriptions"
+BITS_SCOPE = "bits:read"
+ALERT_SCOPES = (FOLLOWER_SCOPE, SUBSCRIPTION_SCOPE, BITS_SCOPE)
+
+# EventSub type -> (version, required scope or None, condition key for the broadcaster id).
+ALERT_SUBSCRIPTIONS = {
+    "channel.follow": ("2", FOLLOWER_SCOPE, "broadcaster_user_id"),
+    "channel.subscribe": ("1", SUBSCRIPTION_SCOPE, "broadcaster_user_id"),
+    "channel.subscription.message": ("1", SUBSCRIPTION_SCOPE, "broadcaster_user_id"),
+    "channel.subscription.gift": ("1", SUBSCRIPTION_SCOPE, "broadcaster_user_id"),
+    "channel.cheer": ("1", BITS_SCOPE, "broadcaster_user_id"),
+    "channel.raid": ("1", None, "to_broadcaster_user_id"),
+}
+APP_TOKEN_CACHE_KEY = "nexora:twitch-app-access-token"
+EVENTSUB_MAX_MESSAGE_AGE = timedelta(minutes=10)
 
 
 class TwitchAPIError(Exception):
@@ -91,6 +112,7 @@ def disconnect(owner):
     connection = TwitchConnection.objects.filter(owner=owner).first()
     if connection is None:
         return
+    delete_alert_subscriptions(connection)
     token = connection.access_token
     if token and settings.TWITCH_CLIENT_ID:
         request = urlrequest.Request(
@@ -480,6 +502,238 @@ def _api_request(url, access_token, params):
         method="GET",
     )
     return _read_json_response(request)
+
+
+def eventsub_secret():
+    # Derived from SECRET_KEY so no extra setting is needed; rotating the key means
+    # re-activating alerts, because Twitch keeps signing with the old secret.
+    digest = hmac.new(settings.SECRET_KEY.encode("utf-8"), b"twitch-eventsub", hashlib.sha256)
+    return digest.hexdigest()
+
+
+def eventsub_callback_url(request):
+    path = reverse("twitch_eventsub_callback")
+    if settings.TWITCH_REDIRECT_URI:
+        # The OAuth redirect URI is the public address Twitch already knows.
+        return urlparse.urljoin(settings.TWITCH_REDIRECT_URI, path)
+    return request.build_absolute_uri(path)
+
+
+def verify_eventsub_signature(headers, body):
+    message_id = headers.get("Twitch-Eventsub-Message-Id", "")
+    timestamp = headers.get("Twitch-Eventsub-Message-Timestamp", "")
+    signature = headers.get("Twitch-Eventsub-Message-Signature", "")
+    if not message_id or not timestamp or not signature:
+        return False
+    sent_at = parse_datetime(_trim_fractional_seconds(timestamp))
+    if sent_at is None or abs(timezone.now() - sent_at) > EVENTSUB_MAX_MESSAGE_AGE:
+        return False
+    expected = hmac.new(
+        eventsub_secret().encode("utf-8"),
+        message_id.encode("utf-8") + timestamp.encode("utf-8") + body,
+        hashlib.sha256,
+    ).hexdigest()
+    return hmac.compare_digest(f"sha256={expected}", signature)
+
+
+def _trim_fractional_seconds(timestamp):
+    # Twitch sends nanoseconds (RFC 3339); Python parses at most microseconds.
+    head, dot, rest = timestamp.partition(".")
+    if not dot:
+        return timestamp
+    digits = "".join(itertools.takewhile(str.isdigit, rest))
+    return f"{head}.{digits[:6]}{rest[len(digits) :]}"
+
+
+def alert_event_from_notification(subscription_type, event):
+    """Map an EventSub notification to (event_type, user_name, amount, message) or None."""
+    if subscription_type == "channel.follow":
+        return "follow", event.get("user_name"), 0, ""
+    if subscription_type == "channel.subscribe":
+        if event.get("is_gift"):
+            # Gifted subs arrive once more as channel.subscription.gift for the gifter.
+            return None
+        return "subscription", event.get("user_name"), 1, ""
+    if subscription_type == "channel.subscription.message":
+        message = (event.get("message") or {}).get("text") or ""
+        return "subscription", event.get("user_name"), event.get("cumulative_months"), message
+    if subscription_type == "channel.subscription.gift":
+        name = "" if event.get("is_anonymous") else event.get("user_name")
+        return "gift", name, event.get("total"), ""
+    if subscription_type == "channel.cheer":
+        name = "" if event.get("is_anonymous") else event.get("user_name")
+        return "cheer", name, event.get("bits"), event.get("message") or ""
+    if subscription_type == "channel.raid":
+        return "raid", event.get("from_broadcaster_user_name"), event.get("viewers"), ""
+    return None
+
+
+def record_alert_notification(message_id, payload):
+    subscription = payload.get("subscription") or {}
+    event = payload.get("event") or {}
+    mapped = alert_event_from_notification(subscription.get("type"), event)
+    if mapped is None:
+        return 0
+    event_type, user_name, amount, message = mapped
+    condition = subscription.get("condition") or {}
+    broadcaster_id = str(
+        condition.get("broadcaster_user_id") or condition.get("to_broadcaster_user_id") or ""
+    )
+    owners = TwitchConnection.objects.filter(twitch_user_id=broadcaster_id).exclude(
+        twitch_user_id=""
+    )
+    try:
+        amount = max(int(amount or 0), 0)
+    except (TypeError, ValueError):
+        amount = 0
+    created = 0
+    now = timezone.now()
+    for owner_id in owners.values_list("owner_id", flat=True):
+        _event, was_created = TwitchAlertEvent.objects.get_or_create(
+            message_id=f"{message_id}:{owner_id}"[:100],
+            defaults={
+                "owner_id": owner_id,
+                "event_type": event_type,
+                "user_name": str(user_name or "")[:80],
+                "amount": amount,
+                "message": str(message or "")[:500],
+                "created_at": now,
+            },
+        )
+        created += int(was_created)
+        TwitchAlertEvent.objects.filter(
+            owner_id=owner_id,
+            created_at__lt=now - timedelta(hours=TwitchAlertEvent.RETENTION_HOURS),
+        ).delete()
+    return created
+
+
+def forget_alert_subscription(subscription_id):
+    for connection in TwitchConnection.objects.exclude(eventsub_subscriptions={}):
+        remaining = {
+            subscription_type: stored_id
+            for subscription_type, stored_id in connection.eventsub_subscriptions.items()
+            if stored_id != subscription_id
+        }
+        if remaining != connection.eventsub_subscriptions:
+            connection.eventsub_subscriptions = remaining
+            connection.save(update_fields=("eventsub_subscriptions", "updated_at"))
+
+
+def missing_alert_scopes(connection):
+    return [scope for scope in ALERT_SCOPES if not connection.has_scope(scope)]
+
+
+def sync_alert_subscriptions(connection, callback_url):
+    """Create the EventSub webhook subscriptions this connection's scopes allow.
+
+    Returns the subscription types that are active afterwards. Raises TwitchAPIError when
+    Twitch cannot be reached or rejects the request; the message is stored on the connection.
+    """
+    if not callback_url.startswith("https://"):
+        raise TwitchAPIError(_("Twitch alerts need a public HTTPS address."))
+    try:
+        validate_connection(connection)
+        broadcaster_id = connection.twitch_user_id
+        existing = {}
+        for subscription in _app_api_request("GET", EVENTSUB_URL, {"user_id": broadcaster_id}).get(
+            "data", []
+        ):
+            if subscription.get("transport", {}).get("callback") != callback_url:
+                continue
+            if subscription.get("status") in {"enabled", "webhook_callback_verification_pending"}:
+                existing[subscription.get("type")] = subscription.get("id")
+            else:
+                _delete_subscription(subscription.get("id"))
+
+        active = {}
+        for subscription_type, (version, scope, condition_key) in ALERT_SUBSCRIPTIONS.items():
+            if scope and not connection.has_scope(scope):
+                continue
+            if subscription_type in existing:
+                active[subscription_type] = existing[subscription_type]
+                continue
+            condition = {condition_key: broadcaster_id}
+            if subscription_type == "channel.follow":
+                condition["moderator_user_id"] = broadcaster_id
+            response = _app_api_request(
+                "POST",
+                EVENTSUB_URL,
+                body={
+                    "type": subscription_type,
+                    "version": version,
+                    "condition": condition,
+                    "transport": {
+                        "method": "webhook",
+                        "callback": callback_url,
+                        "secret": eventsub_secret(),
+                    },
+                },
+            )
+            active[subscription_type] = (response.get("data") or [{}])[0].get("id", "")
+    except TwitchAPIError as error:
+        connection.eventsub_error = str(error)[:240]
+        connection.save(update_fields=("eventsub_error", "updated_at"))
+        raise
+    connection.eventsub_subscriptions = active
+    connection.eventsub_error = ""
+    connection.save(update_fields=("eventsub_subscriptions", "eventsub_error", "updated_at"))
+    return list(active)
+
+
+def delete_alert_subscriptions(connection):
+    for subscription_id in (connection.eventsub_subscriptions or {}).values():
+        try:
+            _delete_subscription(subscription_id)
+        except TwitchAPIError:
+            pass
+    connection.eventsub_subscriptions = {}
+    connection.eventsub_error = ""
+    connection.save(update_fields=("eventsub_subscriptions", "eventsub_error", "updated_at"))
+
+
+def _delete_subscription(subscription_id):
+    if subscription_id:
+        _app_api_request("DELETE", EVENTSUB_URL, {"id": subscription_id}, allow_empty=True)
+
+
+def _app_access_token(force_refresh=False):
+    token = None if force_refresh else cache.get(APP_TOKEN_CACHE_KEY)
+    if token:
+        return token
+    data = _token_request({"grant_type": "client_credentials"})
+    token = data.get("access_token")
+    if not token:
+        raise TwitchAPIError(_("Twitch returned no access token."))
+    try:
+        expires_in = int(data.get("expires_in") or 3600)
+    except (TypeError, ValueError):
+        expires_in = 3600
+    cache.set(APP_TOKEN_CACHE_KEY, token, max(expires_in - 300, 60))
+    return token
+
+
+def _app_api_request(method, url, params=None, body=None, allow_empty=False):
+    def send(token):
+        query = urlparse.urlencode(params or {})
+        request = urlrequest.Request(
+            f"{url}?{query}" if query else url,
+            data=json.dumps(body).encode("utf-8") if body is not None else None,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Client-Id": settings.TWITCH_CLIENT_ID,
+                "Content-Type": "application/json",
+            },
+            method=method,
+        )
+        return _read_json_response(request, allow_empty=allow_empty)
+
+    try:
+        return send(_app_access_token())
+    except TwitchAPIError as error:
+        if error.status_code != 401:
+            raise
+        return send(_app_access_token(force_refresh=True))
 
 
 def _read_json_response(request, allow_empty=False):
