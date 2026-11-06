@@ -13,10 +13,13 @@ URLs, WSGI/ASGI). `app/` is the only application: models, forms, admin, migratio
 `app/static/css/`, `app/static/js/`, and `app/static/imgs/`, translations under `locale/de` and
 `locale/en`.
 
-Five parallel overlay families, each an independent model + editor + public page: `SpotifyOverlay`
+Seven parallel overlay families, each an independent model + editor + public page: `SpotifyOverlay`
 (`/spotify/`), `TwitchGoalOverlay` (`/goals/`), `ScoreOverlay` (`/scores/`), `TimerOverlay`
-(`/timers/`), `WinChallenge` plus `WinChallengeGame` (`/winchallenges/`). Each has a view module in
-`app/views/`, a template directory under `app/templates/app/`, and one CSS + one JS file.
+(`/timers/`), `SceneOverlay` (`/scenes/`), `ChatOverlay` (`/chats/`), `WinChallenge` plus
+`WinChallengeGame` (`/winchallenges/`). Each has a view module in `app/views/`, a template directory
+under `app/templates/app/`, and one CSS + one JS file. `SceneOverlay` is a full-screen 1920 × 1080
+Starting soon / BRB / Ending scene. `ChatOverlay` reads Twitch chat anonymously in the browser (only
+a channel name, no OAuth) and adds 7TV, BetterTTV and FrankerFaceZ emotes.
 
 Cross-cutting modules worth reading before changing overlay behavior:
 
@@ -31,6 +34,9 @@ Cross-cutting modules worth reading before changing overlay behavior:
 - `app/overlay_transfer.py` — JSON export/import (`nexora-overlay` envelope, `FORMAT_VERSION`) and
   `duplicate_overlay()`. Explicit per-type field tuples plus `<type>_export_payload` /
   `_import_<type>` functions; import validates envelope keys strictly.
+- `app/overlay_presets.py` — `OverlayPreset` (the template gallery): a named, cross-type snapshot of
+  the branding/style fields every overlay type shares. `apply_style()` clamps numeric fields to the
+  target type's own validators, and applying records a version snapshot first.
 - `app/encrypted_fields.py` — `EncryptedTextField` (Fernet, `fernet$` prefix) for all OAuth tokens.
   The key comes from `NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY`, falls back to
   `SPOTIFY_TOKEN_ENCRYPTION_KEY`, then to a digest of `DJANGO_SECRET_KEY`. Changing the effective key
@@ -122,7 +128,11 @@ scripts that publish globals: `app/static/js/polling.js` →
 exponential backoff to 30 s, slower cadence while `document.hidden`);
 `app/static/js/editor-state.js` (undo/redo history, dirty tracking, debounced autosave POSTs,
 `localStorage` drafts, driven entirely by `data-editor-*` attributes on the markup);
-`app/static/js/overlay-branding.js`. Static assets are cache-busted with `?v={{ APP_VERSION }}`.
+`app/static/js/overlay-branding.js`; `app/static/js/canvas-editor.js` → `window.NexoraCanvasEditor`
+(drag, resize handles and arrow-key nudging for the Spotify, Score and Twitch Goal canvases);
+`app/static/js/overlay-layout.js` → `window.NexoraLayout` (the optional free canvas of Timer and Win
+Challenge, `OverlayLayoutMixin` in `models.py`). Static assets are cache-busted with
+`?v={{ APP_VERSION }}` from the `VERSION` file, so bump it on every release that changes CSS or JS.
 
 ## Testing Guidelines
 
