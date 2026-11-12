@@ -13,13 +13,18 @@ URLs, WSGI/ASGI). `app/` is the only application: models, forms, admin, migratio
 `app/static/css/`, `app/static/js/`, and `app/static/imgs/`, translations under `locale/de` and
 `locale/en`.
 
-Seven parallel overlay families, each an independent model + editor + public page: `SpotifyOverlay`
-(`/spotify/`), `TwitchGoalOverlay` (`/goals/`), `ScoreOverlay` (`/scores/`), `TimerOverlay`
+Eight parallel overlay families, each an independent model + editor + public page: `SpotifyOverlay`
+(`/spotify/`), `TwitchGoalOverlay` (`/goals/`), `TwitchAlertOverlay` (`/alerts/`), `ScoreOverlay`
+(`/scores/`), `TimerOverlay`
 (`/timers/`), `SceneOverlay` (`/scenes/`), `ChatOverlay` (`/chats/`), `WinChallenge` plus
 `WinChallengeGame` (`/winchallenges/`). Each has a view module in `app/views/`, a template directory
 under `app/templates/app/`, and one CSS + one JS file. `SceneOverlay` is a full-screen 1920 × 1080
 Starting soon / BRB / Ending scene. `ChatOverlay` reads Twitch chat anonymously in the browser (only
-a channel name, no OAuth) and adds 7TV, BetterTTV and FrankerFaceZ emotes.
+a channel name, no OAuth) and adds 7TV, BetterTTV and FrankerFaceZ emotes. `TwitchAlertOverlay`
+plays follows, subs, gifts, cheers and raids that Twitch EventSub posts to the signed webhook
+`/twitch/eventsub/`; events are stored as `TwitchAlertEvent` rows per owner and polled by the OBS
+page. Twitch needs a public HTTPS callback (taken from `TWITCH_REDIRECT_URI`'s origin), so local
+setups rely on the editor's test alerts.
 
 Cross-cutting modules worth reading before changing overlay behavior:
 

@@ -16,6 +16,7 @@ from app.models import (
     ScoreOverlay,
     SpotifyOverlay,
     TimerOverlay,
+    TwitchAlertOverlay,
     TwitchGoalOverlay,
     WinChallenge,
 )
@@ -79,6 +80,14 @@ def manageable_chat_overlays(request):
     ).filter(owner=request.user)
 
 
+def manageable_twitch_alert_overlays(request):
+    return TwitchAlertOverlay.objects.select_related(
+        "font_asset",
+        "logo_asset",
+        "background_asset",
+    ).filter(owner=request.user)
+
+
 def manageable_twitch_goal_overlays(request):
     return TwitchGoalOverlay.objects.select_related(
         "connection",
@@ -96,6 +105,7 @@ def overlay_dashboard_context(request, import_form=None):
     twitch_goal_overlays = list(manageable_twitch_goal_overlays(request))
     scene_overlays = list(manageable_scene_overlays(request))
     chat_overlays = list(manageable_chat_overlays(request))
+    twitch_alert_overlays = list(manageable_twitch_alert_overlays(request))
     return {
         "spotify_overlays": spotify_overlays,
         "win_challenges": win_challenges,
@@ -104,6 +114,7 @@ def overlay_dashboard_context(request, import_form=None):
         "twitch_goal_overlays": twitch_goal_overlays,
         "scene_overlays": scene_overlays,
         "chat_overlays": chat_overlays,
+        "twitch_alert_overlays": twitch_alert_overlays,
         "spotify_count": len(spotify_overlays),
         "winchallenge_count": len(win_challenges),
         "score_count": len(score_overlays),
@@ -111,6 +122,7 @@ def overlay_dashboard_context(request, import_form=None):
         "twitch_goal_count": len(twitch_goal_overlays),
         "scene_count": len(scene_overlays),
         "chat_count": len(chat_overlays),
+        "twitch_alert_count": len(twitch_alert_overlays),
         "overlay_count": (
             len(spotify_overlays)
             + len(win_challenges)
@@ -119,6 +131,7 @@ def overlay_dashboard_context(request, import_form=None):
             + len(twitch_goal_overlays)
             + len(scene_overlays)
             + len(chat_overlays)
+            + len(twitch_alert_overlays)
         ),
         "import_form": import_form or OverlayImportForm(),
     }
@@ -165,6 +178,8 @@ def overlay_import(request):
                 section = "scene-overlays"
             elif isinstance(overlay, ChatOverlay):
                 section = "chat-overlays"
+            elif isinstance(overlay, TwitchAlertOverlay):
+                section = "twitch-alert-overlays"
             else:
                 section = "timer-overlays"
             return redirect(f"{reverse('overlay_dashboard')}#{section}")
@@ -214,6 +229,7 @@ def overlay_version_restore(request, overlay_type, pk, version_pk):
         overlay_transfer.TWITCH_GOAL_TYPE: (TwitchGoalOverlay, "twitch_goal_manage"),
         overlay_transfer.SCENE_TYPE: (SceneOverlay, "scene_manage"),
         overlay_transfer.CHAT_TYPE: (ChatOverlay, "chat_manage"),
+        overlay_transfer.TWITCH_ALERT_TYPE: (TwitchAlertOverlay, "twitch_alert_manage"),
     }
     model_config = model_and_redirect.get(overlay_type)
     if model_config is None:

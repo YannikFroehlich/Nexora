@@ -40,6 +40,16 @@
             </a>
         </li>
         <li>
+            <a class="dashboard-starter__tile" href="{% url 'twitch_alert_create' %}">
+                <span class="dashboard-collection__icon dashboard-collection__icon--twitch" aria-hidden="true">&#9733;</span>
+                <span class="dashboard-starter__copy">
+                    <small>{% translate "Live events" %}</small>
+                    <strong>{% translate "Twitch Alerts" %}</strong>
+                    <span>{% translate "Celebrate follows, subs, gifted subs, cheers and raids on stream with an animated alert and sound." %}</span>
+                </span>
+            </a>
+        </li>
+        <li>
             <a class="dashboard-starter__tile" href="{% url 'timer_create' %}">
                 <span class="dashboard-collection__icon dashboard-collection__icon--timer" aria-hidden="true">&#9719;</span>
                 <span class="dashboard-starter__copy">

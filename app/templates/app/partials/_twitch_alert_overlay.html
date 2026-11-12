@@ -1,0 +1,37 @@
+{% load i18n %}
+
+{% if overlay.font_asset_id %}
+    <style>@font-face { font-family: "NexoraUploadedOverlayFont"; src: url("{{ overlay.font_asset.public_url }}"); font-display: swap; }</style>
+{% endif %}
+{{ overlay.state_payload|json_script:"twitch-alert-initial-state" }}
+
+<div class="alert-frame" data-alert-frame>
+    <section
+        class="alert-overlay alert-overlay--{{ overlay.design_template }}"
+        data-alert-overlay
+        data-overlay-branding-root
+        data-animation="{{ overlay.animation }}"
+        data-shadow="{{ overlay.shadow_enabled|yesno:'true,false' }}"
+        aria-label="{% translate 'Twitch alerts' %}"
+        style="
+            --alert-background: {{ overlay.background_rgba }};
+            --alert-text: {{ overlay.text_color }};
+            --alert-accent: {{ overlay.accent_color }};
+            --alert-border: {{ overlay.border_color }};
+            --alert-border-width: {{ overlay.border_width }}px;
+            --alert-radius: {{ overlay.corner_radius }};
+            --alert-font-size: {{ overlay.font_size }};
+            --nexora-overlay-font: {% if overlay.font_asset_id %}'NexoraUploadedOverlayFont'{% else %}{{ overlay.font_css_stack }}{% endif %};
+            {% if overlay.background_asset_id %}--nexora-overlay-background-image: url("{{ overlay.background_asset.public_url }}");{% endif %}
+        "
+    >
+        {% if overlay.logo_asset_id %}
+            <img class="overlay-custom-logo" src="{{ overlay.logo_asset.public_url }}" alt="" data-overlay-custom-logo>
+        {% endif %}
+        <div class="alert-card" data-alert-card role="status" aria-live="polite" hidden>
+            <span class="alert-card__icon" data-alert-icon aria-hidden="true"></span>
+            <p class="alert-card__title" data-alert-title></p>
+            <p class="alert-card__message" data-alert-message hidden></p>
+        </div>
+    </section>
+</div>

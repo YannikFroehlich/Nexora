@@ -12,6 +12,7 @@ from app.forms import (
     ScoreOverlayForm,
     SpotifyOverlayForm,
     TimerOverlayForm,
+    TwitchAlertOverlayForm,
     TwitchGoalOverlayForm,
 )
 from app.models import (
@@ -23,6 +24,7 @@ from app.models import (
     SpotifyConnection,
     SpotifyOverlay,
     TimerOverlay,
+    TwitchAlertOverlay,
     TwitchConnection,
     TwitchGoalOverlay,
     WinChallenge,
@@ -41,6 +43,7 @@ SCORE_TYPE = "score"
 TWITCH_GOAL_TYPE = "twitch_goal"
 SCENE_TYPE = "scene"
 CHAT_TYPE = "chat"
+TWITCH_ALERT_TYPE = "twitch_alert"
 
 SPOTIFY_FIELDS = (
     "name",
@@ -251,6 +254,39 @@ CHAT_FIELDS = (
 )
 
 
+TWITCH_ALERT_FIELDS = (
+    "name",
+    "show_follows",
+    "show_subscriptions",
+    "show_gifts",
+    "show_cheers",
+    "show_raids",
+    "minimum_bits",
+    "minimum_raid_viewers",
+    "show_user_message",
+    "alert_duration_seconds",
+    "follow_text",
+    "subscription_text",
+    "gift_text",
+    "cheer_text",
+    "raid_text",
+    "design_template",
+    "animation",
+    "sound_type",
+    "sound_volume",
+    "background_color",
+    "background_opacity",
+    "text_color",
+    "accent_color",
+    "border_color",
+    "border_width",
+    "corner_radius",
+    "font_size",
+    "shadow_enabled",
+    "font_family",
+)
+
+
 class OverlayTransferError(ValueError):
     """Safe, user-facing error for invalid import files."""
 
@@ -330,6 +366,15 @@ def chat_export_payload(chat):
     }
 
 
+def twitch_alert_export_payload(overlay):
+    return {
+        "format": FORMAT_NAME,
+        "version": FORMAT_VERSION,
+        "type": TWITCH_ALERT_TYPE,
+        "overlay": _model_fields(overlay, TWITCH_ALERT_FIELDS),
+    }
+
+
 def export_payload(overlay):
     if isinstance(overlay, SpotifyOverlay):
         return spotify_export_payload(overlay)
@@ -351,6 +396,9 @@ def export_payload(overlay):
 
     if isinstance(overlay, ChatOverlay):
         return chat_export_payload(overlay)
+
+    if isinstance(overlay, TwitchAlertOverlay):
+        return twitch_alert_export_payload(overlay)
 
     raise TypeError("Unsupported overlay model")
 
@@ -508,6 +556,7 @@ def _validate_envelope(payload):
         TWITCH_GOAL_TYPE,
         SCENE_TYPE,
         CHAT_TYPE,
+        TWITCH_ALERT_TYPE,
     ):
         raise OverlayTransferError(_("The overlay type is not supported."))
 
@@ -698,6 +747,18 @@ def _import_chat(payload, owner):
     return chat
 
 
+def _import_twitch_alert(payload, owner):
+    overlay_data = _overlay_data_with_defaults(payload["overlay"])
+    _require_exact_keys(overlay_data, TWITCH_ALERT_FIELDS)
+    form = TwitchAlertOverlayForm(data=overlay_data, asset_owner=owner)
+    if not form.is_valid():
+        raise OverlayTransferError(_("The Twitch alert overlay data is invalid."))
+    overlay = form.save(commit=False)
+    overlay.owner = owner
+    overlay.save()
+    return overlay
+
+
 def _import_winchallenge(payload, owner):
     overlay_data = winchallenge_data_with_defaults(_overlay_data_with_defaults(payload["overlay"]))
     games_data = payload["games"]
@@ -743,6 +804,9 @@ def import_payload(payload, owner):
 
     if overlay_type == CHAT_TYPE:
         return _import_chat(payload, owner)
+
+    if overlay_type == TWITCH_ALERT_TYPE:
+        return _import_twitch_alert(payload, owner)
 
     return _import_winchallenge(payload, owner)
 

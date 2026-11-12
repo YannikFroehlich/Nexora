@@ -53,14 +53,21 @@ Hourly production job for Twitch token validation: `python manage.py validate_tw
 
 ### Overlay types
 
-Seven parallel overlay families, each an independent model + editor + public page:
-`SpotifyOverlay` (`/spotify/`), `TwitchGoalOverlay` (`/goals/`), `ScoreOverlay` (`/scores/`),
-`TimerOverlay` (`/timers/`), `SceneOverlay` (`/scenes/`), `ChatOverlay` (`/chats/`),
-`WinChallenge` (+ `WinChallengeGame`, `/winchallenges/`). `SceneOverlay` is a full-screen
+Eight parallel overlay families, each an independent model + editor + public page:
+`SpotifyOverlay` (`/spotify/`), `TwitchGoalOverlay` (`/goals/`), `TwitchAlertOverlay`
+(`/alerts/`), `ScoreOverlay` (`/scores/`), `TimerOverlay` (`/timers/`), `SceneOverlay`
+(`/scenes/`), `ChatOverlay` (`/chats/`), `WinChallenge` (+ `WinChallengeGame`, `/winchallenges/`). `SceneOverlay` is a full-screen
 1920 × 1080 Starting soon / BRB / Ending scene; it and `ChatOverlay` reuse the `timer-*` editor
 layout classes from `timer.css`. `ChatOverlay` stores only channel, filters and design: the OBS
 page itself reads Twitch chat anonymously over IRC WebSocket and fetches 7TV / BetterTTV /
 FrankerFaceZ emotes and badge images (via `api.ivr.fi`) client-side, so no Twitch token is involved.
+`TwitchAlertOverlay` is fed by Twitch EventSub webhooks: `POST /twitch/eventsub/`
+(`twitch_eventsub_callback`) verifies the HMAC signature with `twitch_api.eventsub_secret()`
+(derived from `SECRET_KEY`) and stores `TwitchAlertEvent` rows per owner; every alert overlay of
+that owner polls them and plays events newer than the last one it saw. Subscriptions are created
+with an app access token by `sync_alert_subscriptions()` and tracked in
+`TwitchConnection.eventsub_subscriptions`. Twitch only delivers to a public HTTPS callback, which is
+derived from `TWITCH_REDIRECT_URI`'s origin; locally, use the editor's test alerts.
 Each has a view module in [app/views/](app/views/), a template dir under
 [app/templates/app/](app/templates/app/), and one CSS + one JS file in `app/static/`.
 

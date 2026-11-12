@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -1413,6 +1413,9 @@ class TwitchConnection(models.Model):
     refresh_started_at = models.DateTimeField(blank=True, null=True)
     last_error = models.CharField(max_length=240, blank=True)
     needs_reconnect = models.BooleanField(default=False)
+    # EventSub subscription ids for alert overlays, keyed by subscription type.
+    eventsub_subscriptions = models.JSONField(default=dict, blank=True)
+    eventsub_error = models.CharField(max_length=240, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -2594,4 +2597,275 @@ class ChatOverlay(OverlayBrandingMixin, models.Model):
                 "shadow_enabled": self.shadow_enabled,
                 **self.branding_payload(),
             },
+        }
+
+
+class TwitchAlertOverlay(OverlayBrandingMixin, models.Model):
+    """Follow, subscription, gift, cheer and raid alerts delivered through Twitch EventSub."""
+
+    DEFAULT_NAME = _("Twitch Alerts")
+
+    TEMPLATE_MINIMAL = "minimal"
+    TEMPLATE_GLASS = "glass"
+    TEMPLATE_NEON = "neon"
+    DESIGN_TEMPLATE_CHOICES = (
+        (TEMPLATE_MINIMAL, _("Minimal")),
+        (TEMPLATE_GLASS, _("Glass")),
+        (TEMPLATE_NEON, _("Neon")),
+    )
+
+    ANIMATION_POP = "pop"
+    ANIMATION_SLIDE = "slide"
+    ANIMATION_FADE = "fade"
+    ANIMATION_CHOICES = (
+        (ANIMATION_POP, _("Pop in")),
+        (ANIMATION_SLIDE, _("Slide in")),
+        (ANIMATION_FADE, _("Fade in")),
+    )
+
+    DEFAULT_TEXTS = {
+        "follow": _("{name} is now following!"),
+        "subscription": _("{name} just subscribed!"),
+        "gift": _("{name} gifted {amount} subs!"),
+        "cheer": _("{name} cheered {amount} bits!"),
+        "raid": _("{name} is raiding with {amount} viewers!"),
+    }
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="twitch_alert_overlays",
+        blank=True,
+        null=True,
+    )
+    public_token = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        db_index=True,
+    )
+    name = models.CharField(max_length=120, default="Twitch Alerts", blank=True)
+
+    show_follows = models.BooleanField(default=True)
+    show_subscriptions = models.BooleanField(default=True)
+    show_gifts = models.BooleanField(default=True)
+    show_cheers = models.BooleanField(default=True)
+    show_raids = models.BooleanField(default=True)
+    minimum_bits = models.PositiveIntegerField(
+        default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(1_000_000)],
+    )
+    minimum_raid_viewers = models.PositiveIntegerField(
+        default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(1_000_000)],
+    )
+    show_user_message = models.BooleanField(default=True)
+    alert_duration_seconds = models.PositiveSmallIntegerField(
+        default=6,
+        validators=[MinValueValidator(2), MaxValueValidator(30)],
+    )
+    follow_text = models.CharField(max_length=120, blank=True)
+    subscription_text = models.CharField(max_length=120, blank=True)
+    gift_text = models.CharField(max_length=120, blank=True)
+    cheer_text = models.CharField(max_length=120, blank=True)
+    raid_text = models.CharField(max_length=120, blank=True)
+
+    design_template = models.CharField(
+        max_length=20,
+        choices=DESIGN_TEMPLATE_CHOICES,
+        default=TEMPLATE_GLASS,
+    )
+    animation = models.CharField(
+        max_length=20,
+        choices=ANIMATION_CHOICES,
+        default=ANIMATION_POP,
+    )
+    sound_type = models.CharField(
+        max_length=20,
+        choices=TwitchGoalOverlay.SOUND_CHOICES,
+        default=TwitchGoalOverlay.SOUND_CHIME,
+    )
+    sound_volume = models.PositiveSmallIntegerField(
+        default=70,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+    background_color = models.CharField(
+        max_length=7,
+        default="#0b1020",
+        validators=[hex_color_validator],
+    )
+    background_opacity = models.PositiveSmallIntegerField(
+        default=86,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+    text_color = models.CharField(
+        max_length=7,
+        default="#f8fafc",
+        validators=[hex_color_validator],
+    )
+    accent_color = models.CharField(
+        max_length=7,
+        default="#9146ff",
+        validators=[hex_color_validator],
+    )
+    border_color = models.CharField(
+        max_length=7,
+        default="#a78bfa",
+        validators=[hex_color_validator],
+    )
+    border_width = models.PositiveSmallIntegerField(
+        default=2,
+        validators=[MinValueValidator(0), MaxValueValidator(8)],
+    )
+    corner_radius = models.PositiveSmallIntegerField(
+        default=24,
+        validators=[MinValueValidator(0), MaxValueValidator(48)],
+    )
+    font_size = models.PositiveSmallIntegerField(
+        default=34,
+        validators=[MinValueValidator(16), MaxValueValidator(72)],
+    )
+    shadow_enabled = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-updated_at", "-created_at")
+
+    def __str__(self):
+        return str(self.display_name)
+
+    @property
+    def display_name(self):
+        return self.name or self.DEFAULT_NAME
+
+    @property
+    def background_rgba(self):
+        return hex_color_rgba(self.background_color, self.background_opacity)
+
+    @property
+    def enabled_event_types(self):
+        return [
+            event_type
+            for event_type, enabled in (
+                (TwitchAlertEvent.TYPE_FOLLOW, self.show_follows),
+                (TwitchAlertEvent.TYPE_SUBSCRIPTION, self.show_subscriptions),
+                (TwitchAlertEvent.TYPE_GIFT, self.show_gifts),
+                (TwitchAlertEvent.TYPE_CHEER, self.show_cheers),
+                (TwitchAlertEvent.TYPE_RAID, self.show_raids),
+            )
+            if enabled
+        ]
+
+    def alert_texts(self):
+        custom = {
+            TwitchAlertEvent.TYPE_FOLLOW: self.follow_text,
+            TwitchAlertEvent.TYPE_SUBSCRIPTION: self.subscription_text,
+            TwitchAlertEvent.TYPE_GIFT: self.gift_text,
+            TwitchAlertEvent.TYPE_CHEER: self.cheer_text,
+            TwitchAlertEvent.TYPE_RAID: self.raid_text,
+        }
+        return {
+            event_type: custom[event_type].strip() or str(default)
+            for event_type, default in self.DEFAULT_TEXTS.items()
+        }
+
+    def shown_events_filter(self):
+        thresholds = {
+            TwitchAlertEvent.TYPE_CHEER: self.minimum_bits,
+            TwitchAlertEvent.TYPE_RAID: self.minimum_raid_viewers,
+        }
+        shown = Q(pk__in=[])
+        for event_type in self.enabled_event_types:
+            if event_type in thresholds:
+                shown |= Q(event_type=event_type, amount__gte=thresholds[event_type])
+            else:
+                shown |= Q(event_type=event_type)
+        return shown
+
+    def recent_events(self, limit=20):
+        if not self.owner_id:
+            return []
+        since = timezone.now() - timedelta(minutes=TwitchAlertEvent.REPLAY_WINDOW_MINUTES)
+        # Filter before limiting, so hidden event types cannot push shown alerts out.
+        latest = TwitchAlertEvent.objects.filter(
+            self.shown_events_filter(), owner_id=self.owner_id, created_at__gte=since
+        )
+        return list(reversed(latest.order_by("-id")[:limit]))
+
+    def state_payload(self):
+        return {
+            "name": self.display_name,
+            "events": [event.payload() for event in self.recent_events()],
+            "settings": {
+                "duration_seconds": self.alert_duration_seconds,
+                "show_user_message": self.show_user_message,
+                "texts": self.alert_texts(),
+                "sound": self.sound_type,
+                "volume": self.sound_volume,
+            },
+            "updated_at": self.updated_at.isoformat() if self.updated_at else "",
+            "design": {
+                "template": self.design_template,
+                "animation": self.animation,
+                "background_rgba": self.background_rgba,
+                "text_color": self.text_color,
+                "accent_color": self.accent_color,
+                "border_color": self.border_color,
+                "border_width": self.border_width,
+                "corner_radius": self.corner_radius,
+                "font_size": self.font_size,
+                "shadow_enabled": self.shadow_enabled,
+                **self.branding_payload(),
+            },
+        }
+
+
+class TwitchAlertEvent(models.Model):
+    """One Twitch event or test alert that every alert overlay of its owner can play."""
+
+    REPLAY_WINDOW_MINUTES = 10
+    RETENTION_HOURS = 24
+
+    TYPE_FOLLOW = "follow"
+    TYPE_SUBSCRIPTION = "subscription"
+    TYPE_GIFT = "gift"
+    TYPE_CHEER = "cheer"
+    TYPE_RAID = "raid"
+    TYPE_CHOICES = (
+        (TYPE_FOLLOW, _("Follow")),
+        (TYPE_SUBSCRIPTION, _("Subscription")),
+        (TYPE_GIFT, _("Gifted subs")),
+        (TYPE_CHEER, _("Cheer")),
+        (TYPE_RAID, _("Raid")),
+    )
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="twitch_alert_events",
+    )
+    message_id = models.CharField(max_length=100, unique=True)
+    event_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    user_name = models.CharField(max_length=80, blank=True)
+    amount = models.PositiveIntegerField(default=0)
+    message = models.CharField(max_length=500, blank=True)
+    is_test = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.event_type}: {self.user_name or '-'}"
+
+    def payload(self):
+        return {
+            "id": self.pk,
+            "type": self.event_type,
+            "name": self.user_name or str(_("Anonymous")),
+            "amount": self.amount,
+            "message": self.message,
+            "is_test": self.is_test,
         }

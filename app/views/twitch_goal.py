@@ -221,43 +221,6 @@ def twitch_connect(request, pk):
 
 
 @login_required
-def twitch_callback(request):
-    oauth_session = request.session.pop("twitch_oauth", None)
-    received_state = request.GET.get("state", "")
-    overlay_id = oauth_session.get("overlay_id") if oauth_session else None
-    if (
-        not oauth_session
-        or not overlay_id
-        or not received_state
-        or not secrets.compare_digest(received_state, oauth_session.get("state", ""))
-    ):
-        messages.error(request, _("The Twitch connection could not be verified."))
-        return redirect(f"{reverse('overlay_dashboard')}#twitch-goal-overlays")
-    overlay = get_manageable_twitch_goal(request, overlay_id)
-    if request.GET.get("error"):
-        messages.error(request, _("Twitch access was not granted."))
-        return redirect("twitch_goal_manage", pk=overlay.pk)
-    code = request.GET.get("code", "")
-    if not code:
-        messages.error(request, _("Twitch returned no authorization code."))
-        return redirect("twitch_goal_manage", pk=overlay.pk)
-    try:
-        connection = twitch_api.exchange_authorization_code(
-            request,
-            request.user,
-            code,
-            oauth_session.get("scopes") or [],
-        )
-    except twitch_api.TwitchAPIError:
-        messages.error(request, _("Twitch could not be connected. Check the app settings."))
-    else:
-        overlay.connection = connection
-        overlay.save(update_fields=("connection", "updated_at"))
-        messages.success(request, _("Twitch connected successfully."))
-    return redirect("twitch_goal_manage", pk=overlay.pk)
-
-
-@login_required
 @require_POST
 def twitch_disconnect(request):
     next_url = safe_next_url(request, fallback="overlay_dashboard")

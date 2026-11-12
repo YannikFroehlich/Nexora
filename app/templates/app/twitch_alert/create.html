@@ -1,0 +1,312 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% if is_create %}{% translate "Create alert overlay" %}{% else %}{{ overlay.display_name }}{% endif %} · Nexora{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/timer.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/twitch-alert.css' %}?v={{ APP_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/overlay-shared.css' %}?v={{ APP_VERSION }}">
+{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="{% translate 'Breadcrumb' %}">
+        <ol>
+            <li><a href="{% url 'home' %}">{% translate "Home" %}</a></li>
+            <li><a href="{% url 'overlay_dashboard' %}#twitch-alert-overlays">{% translate "My overlays" %}</a></li>
+            <li aria-current="page">{% if is_create %}{% translate "Create" %}{% else %}{% translate "Edit" %}{% endif %}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <div
+        class="timer-page"
+        data-alert-editor
+        data-overlay-branding-editor
+        data-editor-state
+        data-editor-create="{{ is_create|yesno:'true,false' }}"
+        data-editor-draft-key="nexora:draft:twitch-alert:{{ user.pk }}:{% if is_create %}new{% else %}{{ overlay.pk }}{% endif %}"
+        data-status-saved="{% if is_create %}{% translate 'No unsaved changes' %}{% else %}{% translate 'All changes saved' %}{% endif %}"
+        data-status-unsaved="{% translate 'Unsaved changes' %}"
+        data-status-saving="{% translate 'Saving changes...' %}"
+        data-status-failed="{% translate 'Autosave failed. Use the save button to try again.' %}"
+        data-status-draft-saved="{% translate 'Draft saved locally' %}"
+        data-status-draft-restored="{% translate 'Local draft restored' %}"
+        {% if not is_create %}data-test-url="{% url 'twitch_alert_test' overlay.pk %}"{% endif %}
+    >
+        <section class="timer-hero" aria-labelledby="alert-editor-title">
+            <div>
+                <p class="timer-kicker"><span>Nexora</span> {% translate "Twitch alerts" %}</p>
+                <h1 id="alert-editor-title">
+                    {% if is_create %}{% translate "Create alert overlay" %}{% else %}{% translate "Edit alert overlay" %}{% endif %}
+                </h1>
+                <p>{% translate "Celebrate follows, subs, gifted subs, cheers and raids on stream. Twitch reports each event to Nexora the moment it happens." %}</p>
+            </div>
+            <a class="btn glass-design" href="{% url 'overlay_dashboard' %}#twitch-alert-overlays">{% translate "Back to my overlays" %}</a>
+        </section>
+
+        {% include "app/partials/_editor_state_toolbar.html" %}
+
+        {% if messages %}
+            <div class="timer-messages" role="status" aria-live="polite" aria-atomic="true">
+                {% for message in messages %}<p>{{ message }}</p>{% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="timer-editor-layout">
+            <div class="timer-editor-sidebar">
+                {% if not is_create %}
+                    <section class="timer-panel alert-connection" aria-labelledby="alert-connection-title">
+                        <div class="timer-panel__heading">
+                            <span aria-hidden="true">01</span>
+                            <div>
+                                <p class="timer-kicker">{% translate "Twitch" %}</p>
+                                <h2 id="alert-connection-title">{% translate "Connection" %}</h2>
+                            </div>
+                        </div>
+                        {% if not twitch_configured %}
+                            <p>{% translate "Twitch client credentials are not configured on this server yet. Test alerts still work." %}</p>
+                        {% elif not twitch_connection %}
+                            <p>{% translate "Connect Twitch so Nexora receives your follows, subs, cheers and raids." %}</p>
+                            <a class="btn action-button" href="{% url 'twitch_alert_connect' overlay.pk %}">{% translate "Connect Twitch" %}</a>
+                        {% else %}
+                            <p>
+                                {% blocktranslate with name=twitch_connection.display_name|default:twitch_connection.twitch_login %}Connected as {{ name }}.{% endblocktranslate %}
+                            </p>
+                            {% if active_alert_types %}
+                                <p class="alert-connection__status" data-state="live">{% blocktranslate count counter=active_alert_types|length %}{{ counter }} Twitch event type is active.{% plural %}{{ counter }} Twitch event types are active.{% endblocktranslate %}</p>
+                            {% else %}
+                                <p class="alert-connection__status" data-state="off">{% translate "Alerts are not active yet." %}</p>
+                            {% endif %}
+                            {% if twitch_connection.eventsub_error %}
+                                <p class="alert-connection__error" role="alert">{{ twitch_connection.eventsub_error }}</p>
+                            {% endif %}
+                            {% if not callback_is_public %}
+                                <p>{% translate "Twitch can only deliver events to a public HTTPS address. On a local server, use the test alerts instead." %}</p>
+                            {% endif %}
+                            <div class="alert-connection__actions">
+                                {% if missing_scopes %}
+                                    <a class="btn action-button" href="{% url 'twitch_alert_connect' overlay.pk %}">{% translate "Grant alert permissions" %}</a>
+                                {% endif %}
+                                <form action="{% url 'twitch_alert_activate' overlay.pk %}" method="post">
+                                    {% csrf_token %}
+                                    <button class="btn {% if missing_scopes %}glass-design{% else %}action-button{% endif %}" type="submit">
+                                        {% if active_alert_types %}{% translate "Refresh alerts" %}{% else %}{% translate "Activate alerts" %}{% endif %}
+                                    </button>
+                                </form>
+                            </div>
+                            {% if missing_scopes %}
+                                <small>{% translate "Follows, subs and cheers need extra Twitch permissions. Raids work without them." %}</small>
+                            {% endif %}
+                        {% endif %}
+                    </section>
+                {% endif %}
+
+                <form
+                    class="timer-form"
+                    method="post"
+                    novalidate
+                    data-alert-form
+                    data-editor-state-form
+                    data-editor-form-key="twitch-alert"
+                    {% if not is_create %}data-autosave-url="{% url 'twitch_alert_autosave' overlay.pk %}"{% endif %}
+                >
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}<div class="timer-form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+
+                    <section class="timer-panel" aria-labelledby="alert-content-title">
+                        <div class="timer-panel__heading">
+                            <span aria-hidden="true">{% if is_create %}01{% else %}02{% endif %}</span>
+                            <div>
+                                <p class="timer-kicker">{% translate "Content" %}</p>
+                                <h2 id="alert-content-title">{% translate "Events and texts" %}</h2>
+                            </div>
+                        </div>
+
+                        <div class="timer-field">
+                            <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                            {{ form.name }}{{ form.name.errors }}
+                        </div>
+
+                        <fieldset class="alert-fieldset">
+                            <legend>{% translate "Show alerts for" %}</legend>
+                            <div class="timer-toggles">
+                                {% for field in form %}
+                                    {% if field.name == "show_follows" or field.name == "show_subscriptions" or field.name == "show_gifts" or field.name == "show_cheers" or field.name == "show_raids" %}
+                                        <label for="{{ field.id_for_label }}">{{ field }}<span>{{ field.label }}</span></label>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </fieldset>
+
+                        <div class="timer-field-grid">
+                            {% for field in form %}
+                                {% if field.name == "minimum_bits" or field.name == "minimum_raid_viewers" or field.name == "alert_duration_seconds" %}
+                                    <div class="timer-field">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {{ field }}{{ field.errors }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="timer-toggles">
+                            <label for="{{ form.show_user_message.id_for_label }}">{{ form.show_user_message }}<span>{{ form.show_user_message.label }}</span></label>
+                        </div>
+
+                        {% for field in form %}
+                            {% if field.name == "follow_text" or field.name == "subscription_text" or field.name == "gift_text" or field.name == "cheer_text" or field.name == "raid_text" %}
+                                <div class="timer-field">
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {{ field }}{{ field.errors }}
+                                    {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </section>
+
+                    <section class="timer-panel" aria-labelledby="alert-design-title">
+                        <div class="timer-panel__heading">
+                            <span aria-hidden="true">{% if is_create %}02{% else %}03{% endif %}</span>
+                            <div>
+                                <p class="timer-kicker">{% translate "Appearance" %}</p>
+                                <h2 id="alert-design-title">{% translate "Overlay design" %}</h2>
+                            </div>
+                        </div>
+
+                        <div class="timer-field-grid">
+                            {% for field in form %}
+                                {% if field.name == "design_template" or field.name == "animation" or field.name == "sound_type" or field.name == "sound_volume" %}
+                                    <div class="timer-field">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {{ field }}{{ field.errors }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="timer-field-grid timer-field-grid--colors">
+                            {% for field in form %}
+                                {% if field.name == "background_color" or field.name == "text_color" or field.name == "accent_color" or field.name == "border_color" %}
+                                    <div class="timer-field">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {{ field }}{{ field.errors }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="timer-field-grid">
+                            {% for field in form %}
+                                {% if field.name == "background_opacity" or field.name == "border_width" or field.name == "corner_radius" or field.name == "font_size" %}
+                                    <div class="timer-field">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {{ field }}{{ field.errors }}
+                                        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="timer-toggles">
+                            <label for="{{ form.shadow_enabled.id_for_label }}">{{ form.shadow_enabled }}<span>{{ form.shadow_enabled.label }}</span></label>
+                        </div>
+
+                        {% include "app/partials/_overlay_branding_controls.html" with branding_form=form overlay=overlay overlay_type="twitch_alert" %}
+
+                        <button class="btn action-button timer-save" type="submit">
+                            {% if is_create %}{% translate "Create alert overlay" %}{% else %}{% translate "Save alert overlay" %}{% endif %}
+                        </button>
+                    </section>
+                </form>
+
+                <form id="overlay-asset-upload-form" action="{% url 'overlay_asset_upload' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                </form>
+
+                {% if not is_create %}
+                    <section class="timer-panel" aria-labelledby="alert-obs-title">
+                        <div class="timer-panel__heading">
+                            <span aria-hidden="true">04</span>
+                            <div>
+                                <p class="timer-kicker">{% translate "Browser source" %}</p>
+                                <h2 id="alert-obs-title">{% translate "OBS Link" %}</h2>
+                            </div>
+                        </div>
+                        <div class="timer-obs-copy">
+                            <input class="form-control" type="text" value="{{ obs_url }}" readonly data-obs-url>
+                            <button class="btn action-button" type="button" data-copy-url="{{ obs_url }}">{% translate "Copy OBS Link" %}</button>
+                        </div>
+                        <form
+                            class="obs-link-renew-form"
+                            action="{% url 'twitch_alert_renew_obs_link' overlay.pk %}"
+                            method="post"
+                            data-confirm-action="{% translate 'The previous OBS link will stop working immediately. Continue?' %}"
+                        >
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{% url 'twitch_alert_manage' overlay.pk %}">
+                            <button class="btn glass-design" type="submit">{% translate "Renew OBS link" %}</button>
+                        </form>
+                        <p>{% blocktranslate with width=1920 height=1080 %}Recommended browser-source size: {{ width }} × {{ height }} pixels.{% endblocktranslate %}</p>
+                        <div class="timer-danger-zone">
+                            <a class="btn glass-design" href="{% url 'twitch_alert_overlay' overlay.public_token %}" target="_blank" rel="noopener">{% translate "Open preview" %}</a>
+                            <form action="{% url 'twitch_alert_delete' overlay.pk %}" method="post" data-confirm-delete="{% translate 'Delete this alert overlay?' %}">
+                                {% csrf_token %}
+                                <button class="btn timer-danger-button" type="submit">{% translate "Delete" %}</button>
+                            </form>
+                        </div>
+                    </section>
+                    <form id="overlay-preset-save-form" action="{% url 'preset_save' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="overlay_type" value="twitch_alert">
+                        <input type="hidden" name="pk" value="{{ overlay.pk }}">
+                    </form>
+                    <form
+                        id="overlay-preset-apply-form"
+                        action="{% url 'preset_apply' overlay_type='twitch_alert' pk=overlay.pk %}"
+                        method="post"
+                        data-confirm-action="{% translate 'This replaces the current font, images, colors, border and corner radius. Continue?' %}"
+                    >
+                        {% csrf_token %}
+                    </form>
+                {% endif %}
+            </div>
+
+            <aside class="timer-preview-panel" aria-labelledby="alert-preview-title">
+                <div class="timer-preview-panel__heading">
+                    <div>
+                        <p class="timer-kicker">{% translate "Live preview" %}</p>
+                        <h2 id="alert-preview-title">{% translate "Overlay preview" %}</h2>
+                    </div>
+                </div>
+                {% include "app/partials/_twitch_alert_overlay.html" with overlay=overlay %}
+                <div class="alert-test" role="group" aria-labelledby="alert-test-title">
+                    <p class="alert-test__title" id="alert-test-title">
+                        {% if is_create %}{% translate "Preview an alert" %}{% else %}{% translate "Send a test alert to the preview and OBS" %}{% endif %}
+                    </p>
+                    <div class="alert-test__buttons">
+                        {% for value, label in test_alert_types %}
+                            <button class="btn glass-design" type="button" data-alert-test="{{ value }}">{{ label }}</button>
+                        {% endfor %}
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        {% if not is_create %}
+            {% include "app/partials/_overlay_version_history.html" with overlay=overlay %}
+        {% endif %}
+
+        <p class="timer-toast" data-copy-toast role="status" aria-live="polite" aria-atomic="true" hidden>{% translate "OBS link copied" %}</p>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/overlay-branding.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/twitch-alert.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/editor-state.js' %}?v={{ APP_VERSION }}"></script>
+{% endblock %}

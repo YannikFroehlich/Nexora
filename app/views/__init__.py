@@ -104,8 +104,23 @@ from app.views.timer import (
     timer_remote_control,
     timer_renew_obs_link,
 )
+from app.views.twitch_alert import (
+    twitch_alert_activate,
+    twitch_alert_autosave,
+    twitch_alert_connect,
+    twitch_alert_create,
+    twitch_alert_delete,
+    twitch_alert_duplicate,
+    twitch_alert_export,
+    twitch_alert_list,
+    twitch_alert_manage,
+    twitch_alert_overlay,
+    twitch_alert_overlay_state,
+    twitch_alert_renew_obs_link,
+    twitch_alert_test,
+    twitch_eventsub_callback,
+)
 from app.views.twitch_goal import (
-    twitch_callback,
     twitch_connect,
     twitch_disconnect,
     twitch_goal_autosave,
@@ -121,6 +136,7 @@ from app.views.twitch_goal import (
     twitch_goal_renew_obs_link,
     twitch_goal_replay,
 )
+from app.views.twitch_oauth import twitch_callback
 from app.views.winchallenge import (
     winchallenge_autosave,
     winchallenge_create,
@@ -140,6 +156,20 @@ from app.views.winchallenge import (
 )
 
 __all__ = [
+    "twitch_alert_activate",
+    "twitch_alert_autosave",
+    "twitch_alert_connect",
+    "twitch_alert_create",
+    "twitch_alert_delete",
+    "twitch_alert_duplicate",
+    "twitch_alert_export",
+    "twitch_alert_list",
+    "twitch_alert_manage",
+    "twitch_alert_overlay",
+    "twitch_alert_overlay_state",
+    "twitch_alert_renew_obs_link",
+    "twitch_alert_test",
+    "twitch_eventsub_callback",
     "RateLimitedPasswordResetView",
     "about",
     "account_delete",
