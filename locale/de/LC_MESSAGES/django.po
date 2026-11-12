@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-06 11:13+0100\n"
+"POT-Creation-Date: 2026-11-12 12:12+0100\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: German\n"
@@ -732,7 +732,7 @@ msgstr "Follows"
 msgid "Subscriptions and resubs"
 msgstr "Abos und Resubs"
 
-#: .\app\forms.py:2050 .\app\models.py:2834
+#: .\app\forms.py:2050 .\app\models.py:2839
 msgid "Gifted subs"
 msgstr "Verschenkte Abos"
 
@@ -801,7 +801,9 @@ msgstr "Twitch-Alerts"
 msgid ""
 "Leave empty for the default text. {name} is the viewer, {amount} the months, "
 "subs, bits or raid viewers."
-msgstr "Leer lassen für den Standardtext. {name} ist der Zuschauer, {amount} die Monate, Abos, Bits oder Raid-Zuschauer."
+msgstr ""
+"Leer lassen für den Standardtext. {name} ist der Zuschauer, {amount} die "
+"Monate, Abos, Bits oder Raid-Zuschauer."
 
 #: .\app\models.py:20
 msgid "Enter a valid hex color, for example #14b8a6."
@@ -1118,23 +1120,23 @@ msgstr "{name} hat {amount} Bits gecheert!"
 msgid "{name} is raiding with {amount} viewers!"
 msgstr "{name} raidet mit {amount} Zuschauern!"
 
-#: .\app\models.py:2832
+#: .\app\models.py:2837
 msgid "Follow"
 msgstr "Follow"
 
-#: .\app\models.py:2833
+#: .\app\models.py:2838
 msgid "Subscription"
 msgstr "Abo"
 
-#: .\app\models.py:2835
+#: .\app\models.py:2840
 msgid "Cheer"
 msgstr "Cheer"
 
-#: .\app\models.py:2836
+#: .\app\models.py:2841
 msgid "Raid"
 msgstr "Raid"
 
-#: .\app\models.py:2862
+#: .\app\models.py:2867
 msgid "Anonymous"
 msgstr "Anonym"
 
@@ -3307,7 +3309,9 @@ msgstr "Noch keine Alert-Overlays"
 msgid ""
 "Celebrate follows, subs, gifted subs, cheers and raids on stream with an "
 "animated alert and sound."
-msgstr "Feiere Follows, Abos, verschenkte Abos, Cheers und Raids im Stream mit animiertem Alert und Sound."
+msgstr ""
+"Feiere Follows, Abos, verschenkte Abos, Cheers und Raids im Stream mit "
+"animiertem Alert und Sound."
 
 #: .\app\templates\app\partials\_dashboard_starter.html:6
 msgid "Pick your first overlay"
@@ -4523,7 +4527,9 @@ msgstr "Alert-Overlay bearbeiten"
 msgid ""
 "Celebrate follows, subs, gifted subs, cheers and raids on stream. Twitch "
 "reports each event to Nexora the moment it happens."
-msgstr "Feiere Follows, Abos, verschenkte Abos, Cheers und Raids im Stream. Twitch meldet jedes Ereignis sofort an Nexora."
+msgstr ""
+"Feiere Follows, Abos, verschenkte Abos, Cheers und Raids im Stream. Twitch "
+"meldet jedes Ereignis sofort an Nexora."
 
 #: .\app\templates\app\twitch_alert\create.html:65
 msgid "Twitch"
@@ -4537,11 +4543,14 @@ msgstr "Verbindung"
 msgid ""
 "Twitch client credentials are not configured on this server yet. Test alerts "
 "still work."
-msgstr "Auf diesem Server sind noch keine Twitch-Zugangsdaten eingerichtet. Test-Alerts funktionieren trotzdem."
+msgstr ""
+"Auf diesem Server sind noch keine Twitch-Zugangsdaten eingerichtet. Test-"
+"Alerts funktionieren trotzdem."
 
 #: .\app\templates\app\twitch_alert\create.html:72
 msgid "Connect Twitch so Nexora receives your follows, subs, cheers and raids."
-msgstr "Verbinde Twitch, damit Nexora deine Follows, Abos, Cheers und Raids empfängt."
+msgstr ""
+"Verbinde Twitch, damit Nexora deine Follows, Abos, Cheers und Raids empfängt."
 
 #: .\app\templates\app\twitch_alert\create.html:73
 msgid "Connect Twitch"
@@ -4567,7 +4576,9 @@ msgstr "Alerts sind noch nicht aktiv."
 msgid ""
 "Twitch can only deliver events to a public HTTPS address. On a local server, "
 "use the test alerts instead."
-msgstr "Twitch kann Ereignisse nur an eine öffentliche HTTPS-Adresse senden. Nutze auf einem lokalen Server stattdessen die Test-Alerts."
+msgstr ""
+"Twitch kann Ereignisse nur an eine öffentliche HTTPS-Adresse senden. Nutze "
+"auf einem lokalen Server stattdessen die Test-Alerts."
 
 #: .\app\templates\app\twitch_alert\create.html:91
 msgid "Grant alert permissions"
@@ -4585,7 +4596,9 @@ msgstr "Alerts aktivieren"
 msgid ""
 "Follows, subs and cheers need extra Twitch permissions. Raids work without "
 "them."
-msgstr "Follows, Abos und Cheers brauchen zusätzliche Twitch-Berechtigungen. Raids funktionieren auch ohne."
+msgstr ""
+"Follows, Abos und Cheers brauchen zusätzliche Twitch-Berechtigungen. Raids "
+"funktionieren auch ohne."
 
 #: .\app\templates\app\twitch_alert\create.html:125
 msgid "Events and texts"
@@ -5033,43 +5046,43 @@ msgstr "Lege eine passende Breite und Höhe fest"
 msgid "Enable refresh when the scene becomes active if desired"
 msgstr "Aktiviere bei Bedarf das Aktualisieren, wenn die Szene aktiv wird"
 
-#: .\app\twitch_api.py:79 .\app\twitch_api.py:470
+#: .\app\twitch_api.py:81 .\app\twitch_api.py:472
 msgid "Twitch credentials are not configured."
 msgstr "Die Twitch-Zugangsdaten sind nicht konfiguriert."
 
-#: .\app\twitch_api.py:106
+#: .\app\twitch_api.py:108
 msgid "Twitch did not grant all required permissions."
 msgstr "Twitch hat nicht alle erforderlichen Berechtigungen erteilt."
 
-#: .\app\twitch_api.py:175
+#: .\app\twitch_api.py:177
 msgid "Twitch is not connected."
 msgstr "Twitch ist nicht verbunden."
 
-#: .\app\twitch_api.py:200
+#: .\app\twitch_api.py:202
 msgid "The Twitch token belongs to another application."
 msgstr "Das Twitch-Token gehört zu einer anderen Anwendung."
 
-#: .\app\twitch_api.py:439 .\app\twitch_api.py:707
+#: .\app\twitch_api.py:441 .\app\twitch_api.py:729
 msgid "Twitch returned no access token."
 msgstr "Twitch hat kein Zugriffstoken zurückgegeben."
 
-#: .\app\twitch_api.py:634
+#: .\app\twitch_api.py:648
 msgid "Twitch alerts need a public HTTPS address."
 msgstr "Twitch-Alerts brauchen eine öffentliche HTTPS-Adresse."
 
-#: .\app\twitch_api.py:749
+#: .\app\twitch_api.py:771
 msgid "Twitch request failed."
 msgstr "Die Twitch-Anfrage ist fehlgeschlagen."
 
-#: .\app\twitch_api.py:751
+#: .\app\twitch_api.py:773
 msgid "Twitch could not be reached."
 msgstr "Twitch konnte nicht erreicht werden."
 
-#: .\app\twitch_api.py:755
+#: .\app\twitch_api.py:777
 msgid "Twitch returned an empty response."
 msgstr "Twitch hat eine leere Antwort zurückgegeben."
 
-#: .\app\twitch_api.py:759
+#: .\app\twitch_api.py:781
 msgid "Twitch returned an invalid response."
 msgstr "Twitch hat eine ungültige Antwort zurückgegeben."
 
@@ -5132,7 +5145,7 @@ msgstr "Chat-Overlay gelöscht: %(name)s"
 
 #: .\app\views\chat.py:131 .\app\views\scene.py:187 .\app\views\score.py:335
 #: .\app\views\spotify.py:167 .\app\views\timer.py:229
-#: .\app\views\twitch_alert.py:151 .\app\views\twitch_goal.py:175
+#: .\app\views\twitch_alert.py:151 .\app\views\twitch_goal.py:174
 #: .\app\views\winchallenge.py:255
 msgid "Copy"
 msgstr "Kopie"
@@ -5356,11 +5369,11 @@ msgstr "Twitch-Alert-Overlay gelöscht: %(name)s"
 msgid "Twitch alert overlay duplicated: %(name)s"
 msgstr "Twitch-Alert-Overlay dupliziert: %(name)s"
 
-#: .\app\views\twitch_alert.py:186 .\app\views\twitch_goal.py:210
+#: .\app\views\twitch_alert.py:186 .\app\views\twitch_goal.py:209
 msgid "Add Twitch client credentials before connecting."
 msgstr "Trage vor dem Verbinden deine Twitch-Client-Zugangsdaten ein."
 
-#: .\app\views\twitch_alert.py:205 .\app\views\twitch_goal.py:286
+#: .\app\views\twitch_alert.py:205 .\app\views\twitch_goal.py:239
 msgid "Connect Twitch first."
 msgstr "Verbinde zuerst Twitch."
 
@@ -5372,55 +5385,55 @@ msgstr "Unbekannter Alert-Typ."
 msgid "This is a test alert from Nexora."
 msgstr "Das ist ein Test-Alert von Nexora."
 
-#: .\app\views\twitch_goal.py:110
+#: .\app\views\twitch_goal.py:109
 msgid "Twitch goal overlay created."
 msgstr "Twitch-Ziel-Overlay erstellt."
 
-#: .\app\views\twitch_goal.py:133
+#: .\app\views\twitch_goal.py:132
 msgid "Twitch goal overlay saved."
 msgstr "Twitch-Ziel-Overlay gespeichert."
 
-#: .\app\views\twitch_goal.py:167
+#: .\app\views\twitch_goal.py:166
 #, python-format
 msgid "Twitch goal overlay deleted: %(name)s"
 msgstr "Twitch-Ziel-Overlay gelöscht: %(name)s"
 
-#: .\app\views\twitch_goal.py:179
+#: .\app\views\twitch_goal.py:178
 #, python-format
 msgid "Twitch goal overlay duplicated: %(name)s"
 msgstr "Twitch-Ziel-Overlay dupliziert: %(name)s"
 
-#: .\app\views\twitch_goal.py:235
-msgid "The Twitch connection could not be verified."
-msgstr "Die Twitch-Verbindung konnte nicht verifiziert werden."
-
-#: .\app\views\twitch_goal.py:245
-msgid "Twitch access was not granted."
-msgstr "Der Twitch-Zugriff wurde nicht gewährt."
-
-#: .\app\views\twitch_goal.py:249
-msgid "Twitch returned no authorization code."
-msgstr "Twitch hat keinen Autorisierungscode zurückgegeben."
-
-#: .\app\views\twitch_goal.py:259
-msgid "Twitch could not be connected. Check the app settings."
-msgstr "Twitch konnte nicht verbunden werden. Prüfe deine App-Einstellungen."
-
-#: .\app\views\twitch_goal.py:261
-msgid "Twitch connected successfully."
-msgstr "Twitch wurde erfolgreich verbunden."
-
-#: .\app\views\twitch_goal.py:275
+#: .\app\views\twitch_goal.py:228
 msgid "Twitch disconnected from all goal overlays."
 msgstr "Twitch wurde von allen Ziel-Overlays getrennt."
 
-#: .\app\views\twitch_goal.py:284
+#: .\app\views\twitch_goal.py:237
 msgid "This is not a campaign goal."
 msgstr "Dies ist kein Kampagnenziel."
 
-#: .\app\views\twitch_goal.py:290
+#: .\app\views\twitch_goal.py:243
 msgid "No Twitch value is available."
 msgstr "Es ist kein Twitch-Wert verfügbar."
+
+#: .\app\views\twitch_oauth.py:56
+msgid "The Twitch connection could not be verified."
+msgstr "Die Twitch-Verbindung konnte nicht verifiziert werden."
+
+#: .\app\views\twitch_oauth.py:60
+msgid "Twitch access was not granted."
+msgstr "Der Twitch-Zugriff wurde nicht gewährt."
+
+#: .\app\views\twitch_oauth.py:64
+msgid "Twitch returned no authorization code."
+msgstr "Twitch hat keinen Autorisierungscode zurückgegeben."
+
+#: .\app\views\twitch_oauth.py:74
+msgid "Twitch could not be connected. Check the app settings."
+msgstr "Twitch konnte nicht verbunden werden. Prüfe deine App-Einstellungen."
+
+#: .\app\views\twitch_oauth.py:76
+msgid "Twitch connected successfully."
+msgstr "Twitch wurde erfolgreich verbunden."
 
 #: .\app\views\winchallenge.py:121
 msgid "Win Challenge created."

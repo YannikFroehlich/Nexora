@@ -121,7 +121,6 @@ from app.views.twitch_alert import (
     twitch_eventsub_callback,
 )
 from app.views.twitch_goal import (
-    twitch_callback,
     twitch_connect,
     twitch_disconnect,
     twitch_goal_autosave,
@@ -137,6 +136,7 @@ from app.views.twitch_goal import (
     twitch_goal_renew_obs_link,
     twitch_goal_replay,
 )
+from app.views.twitch_oauth import twitch_callback
 from app.views.winchallenge import (
     winchallenge_autosave,
     winchallenge_create,

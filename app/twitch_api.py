@@ -46,6 +46,8 @@ ALERT_SUBSCRIPTIONS = {
 }
 APP_TOKEN_CACHE_KEY = "nexora:twitch-app-access-token"
 EVENTSUB_MAX_MESSAGE_AGE = timedelta(minutes=10)
+ALERT_PRUNE_CACHE_KEY = "nexora:twitch-alert-prune"
+ALERT_PRUNE_INTERVAL_SECONDS = 600
 
 
 class TwitchAPIError(Exception):
@@ -525,8 +527,14 @@ def verify_eventsub_signature(headers, body):
     signature = headers.get("Twitch-Eventsub-Message-Signature", "")
     if not message_id or not timestamp or not signature:
         return False
-    sent_at = parse_datetime(_trim_fractional_seconds(timestamp))
-    if sent_at is None or abs(timezone.now() - sent_at) > EVENTSUB_MAX_MESSAGE_AGE:
+    try:
+        sent_at = parse_datetime(_trim_fractional_seconds(timestamp))
+    except ValueError:
+        return False
+    # Twitch always sends UTC with an offset; a naive value cannot be compared safely.
+    if sent_at is None or timezone.is_naive(sent_at):
+        return False
+    if abs(timezone.now() - sent_at) > EVENTSUB_MAX_MESSAGE_AGE:
         return False
     expected = hmac.new(
         eventsub_secret().encode("utf-8"),
@@ -601,11 +609,17 @@ def record_alert_notification(message_id, payload):
             },
         )
         created += int(was_created)
-        TwitchAlertEvent.objects.filter(
-            owner_id=owner_id,
-            created_at__lt=now - timedelta(hours=TwitchAlertEvent.RETENTION_HOURS),
-        ).delete()
+    prune_alert_events()
     return created
+
+
+def prune_alert_events():
+    """Delete expired alert events of all owners, at most once per prune interval."""
+    if not cache.add(ALERT_PRUNE_CACHE_KEY, True, ALERT_PRUNE_INTERVAL_SECONDS):
+        return
+    TwitchAlertEvent.objects.filter(
+        created_at__lt=timezone.now() - timedelta(hours=TwitchAlertEvent.RETENTION_HOURS)
+    ).delete()
 
 
 def forget_alert_subscription(subscription_id):
@@ -635,23 +649,18 @@ def sync_alert_subscriptions(connection, callback_url):
     try:
         validate_connection(connection)
         broadcaster_id = connection.twitch_user_id
-        existing = {}
+        # Recreate instead of reusing: Twitch does not reveal which secret an existing
+        # subscription signs with, so after a SECRET_KEY rotation a healthy-looking one would
+        # keep failing. This also drops duplicates and types the scopes no longer allow.
         for subscription in _app_api_request("GET", EVENTSUB_URL, {"user_id": broadcaster_id}).get(
             "data", []
         ):
-            if subscription.get("transport", {}).get("callback") != callback_url:
-                continue
-            if subscription.get("status") in {"enabled", "webhook_callback_verification_pending"}:
-                existing[subscription.get("type")] = subscription.get("id")
-            else:
+            if subscription.get("transport", {}).get("callback") == callback_url:
                 _delete_subscription(subscription.get("id"))
 
         active = {}
         for subscription_type, (version, scope, condition_key) in ALERT_SUBSCRIPTIONS.items():
             if scope and not connection.has_scope(scope):
-                continue
-            if subscription_type in existing:
-                active[subscription_type] = existing[subscription_type]
                 continue
             condition = {condition_key: broadcaster_id}
             if subscription_type == "channel.follow":
@@ -678,18 +687,31 @@ def sync_alert_subscriptions(connection, callback_url):
     connection.eventsub_subscriptions = active
     connection.eventsub_error = ""
     connection.save(update_fields=("eventsub_subscriptions", "eventsub_error", "updated_at"))
+    # Subscriptions belong to the Twitch channel, so every Nexora account linked to the same
+    # channel now shares these ids.
+    _connections_sharing_channel(connection).update(eventsub_subscriptions=active)
     return list(active)
 
 
 def delete_alert_subscriptions(connection):
-    for subscription_id in (connection.eventsub_subscriptions or {}).values():
-        try:
-            _delete_subscription(subscription_id)
-        except TwitchAPIError:
-            pass
+    # Another Nexora account on the same channel still receives alerts through them.
+    if not _connections_sharing_channel(connection).exists():
+        for subscription_id in (connection.eventsub_subscriptions or {}).values():
+            try:
+                _delete_subscription(subscription_id)
+            except TwitchAPIError:
+                pass
     connection.eventsub_subscriptions = {}
     connection.eventsub_error = ""
     connection.save(update_fields=("eventsub_subscriptions", "eventsub_error", "updated_at"))
+
+
+def _connections_sharing_channel(connection):
+    if not connection.twitch_user_id:
+        return TwitchConnection.objects.none()
+    return TwitchConnection.objects.filter(twitch_user_id=connection.twitch_user_id).exclude(
+        pk=connection.pk
+    )
 
 
 def _delete_subscription(subscription_id):

@@ -225,6 +225,7 @@ def twitch_alert_test(request, pk):
         message=_("This is a test alert from Nexora.") if has_message else "",
         is_test=True,
     )
+    twitch_api.prune_alert_events()
     return JsonResponse({"ok": True, "event": event.payload()})
 
 

@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -2771,23 +2771,28 @@ class TwitchAlertOverlay(OverlayBrandingMixin, models.Model):
             for event_type, default in self.DEFAULT_TEXTS.items()
         }
 
-    def shows_event(self, event):
-        if event.event_type not in self.enabled_event_types:
-            return False
-        if event.event_type == TwitchAlertEvent.TYPE_CHEER:
-            return event.amount >= self.minimum_bits
-        if event.event_type == TwitchAlertEvent.TYPE_RAID:
-            return event.amount >= self.minimum_raid_viewers
-        return True
+    def shown_events_filter(self):
+        thresholds = {
+            TwitchAlertEvent.TYPE_CHEER: self.minimum_bits,
+            TwitchAlertEvent.TYPE_RAID: self.minimum_raid_viewers,
+        }
+        shown = Q(pk__in=[])
+        for event_type in self.enabled_event_types:
+            if event_type in thresholds:
+                shown |= Q(event_type=event_type, amount__gte=thresholds[event_type])
+            else:
+                shown |= Q(event_type=event_type)
+        return shown
 
     def recent_events(self, limit=20):
         if not self.owner_id:
             return []
         since = timezone.now() - timedelta(minutes=TwitchAlertEvent.REPLAY_WINDOW_MINUTES)
-        latest = TwitchAlertEvent.objects.filter(owner_id=self.owner_id, created_at__gte=since)
-        return [
-            event for event in reversed(latest.order_by("-id")[:limit]) if self.shows_event(event)
-        ]
+        # Filter before limiting, so hidden event types cannot push shown alerts out.
+        latest = TwitchAlertEvent.objects.filter(
+            self.shown_events_filter(), owner_id=self.owner_id, created_at__gte=since
+        )
+        return list(reversed(latest.order_by("-id")[:limit]))
 
     def state_payload(self):
         return {

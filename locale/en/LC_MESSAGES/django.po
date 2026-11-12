@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-06 11:13+0100\n"
+"POT-Creation-Date: 2026-11-12 12:12+0100\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: English\n"
@@ -726,7 +726,7 @@ msgstr ""
 msgid "Subscriptions and resubs"
 msgstr ""
 
-#: .\app\forms.py:2050 .\app\models.py:2834
+#: .\app\forms.py:2050 .\app\models.py:2839
 msgid "Gifted subs"
 msgstr ""
 
@@ -1107,23 +1107,23 @@ msgstr ""
 msgid "{name} is raiding with {amount} viewers!"
 msgstr ""
 
-#: .\app\models.py:2832
+#: .\app\models.py:2837
 msgid "Follow"
 msgstr ""
 
-#: .\app\models.py:2833
+#: .\app\models.py:2838
 msgid "Subscription"
 msgstr ""
 
-#: .\app\models.py:2835
+#: .\app\models.py:2840
 msgid "Cheer"
 msgstr ""
 
-#: .\app\models.py:2836
+#: .\app\models.py:2841
 msgid "Raid"
 msgstr ""
 
-#: .\app\models.py:2862
+#: .\app\models.py:2867
 msgid "Anonymous"
 msgstr ""
 
@@ -4861,43 +4861,43 @@ msgstr ""
 msgid "Enable refresh when the scene becomes active if desired"
 msgstr ""
 
-#: .\app\twitch_api.py:79 .\app\twitch_api.py:470
+#: .\app\twitch_api.py:81 .\app\twitch_api.py:472
 msgid "Twitch credentials are not configured."
 msgstr ""
 
-#: .\app\twitch_api.py:106
+#: .\app\twitch_api.py:108
 msgid "Twitch did not grant all required permissions."
 msgstr ""
 
-#: .\app\twitch_api.py:175
+#: .\app\twitch_api.py:177
 msgid "Twitch is not connected."
 msgstr ""
 
-#: .\app\twitch_api.py:200
+#: .\app\twitch_api.py:202
 msgid "The Twitch token belongs to another application."
 msgstr ""
 
-#: .\app\twitch_api.py:439 .\app\twitch_api.py:707
+#: .\app\twitch_api.py:441 .\app\twitch_api.py:729
 msgid "Twitch returned no access token."
 msgstr ""
 
-#: .\app\twitch_api.py:634
+#: .\app\twitch_api.py:648
 msgid "Twitch alerts need a public HTTPS address."
 msgstr ""
 
-#: .\app\twitch_api.py:749
+#: .\app\twitch_api.py:771
 msgid "Twitch request failed."
 msgstr ""
 
-#: .\app\twitch_api.py:751
+#: .\app\twitch_api.py:773
 msgid "Twitch could not be reached."
 msgstr ""
 
-#: .\app\twitch_api.py:755
+#: .\app\twitch_api.py:777
 msgid "Twitch returned an empty response."
 msgstr ""
 
-#: .\app\twitch_api.py:759
+#: .\app\twitch_api.py:781
 msgid "Twitch returned an invalid response."
 msgstr ""
 
@@ -4964,7 +4964,7 @@ msgstr ""
 
 #: .\app\views\chat.py:131 .\app\views\scene.py:187 .\app\views\score.py:335
 #: .\app\views\spotify.py:167 .\app\views\timer.py:229
-#: .\app\views\twitch_alert.py:151 .\app\views\twitch_goal.py:175
+#: .\app\views\twitch_alert.py:151 .\app\views\twitch_goal.py:174
 #: .\app\views\winchallenge.py:255
 msgid "Copy"
 msgstr ""
@@ -5213,11 +5213,11 @@ msgstr "Spotify Overlay"
 msgid "Twitch alert overlay duplicated: %(name)s"
 msgstr "Spotify Overlay"
 
-#: .\app\views\twitch_alert.py:186 .\app\views\twitch_goal.py:210
+#: .\app\views\twitch_alert.py:186 .\app\views\twitch_goal.py:209
 msgid "Add Twitch client credentials before connecting."
 msgstr ""
 
-#: .\app\views\twitch_alert.py:205 .\app\views\twitch_goal.py:286
+#: .\app\views\twitch_alert.py:205 .\app\views\twitch_goal.py:239
 msgid "Connect Twitch first."
 msgstr ""
 
@@ -5229,60 +5229,60 @@ msgstr ""
 msgid "This is a test alert from Nexora."
 msgstr ""
 
-#: .\app\views\twitch_goal.py:110
+#: .\app\views\twitch_goal.py:109
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Twitch goal overlay created."
 msgstr "Spotify Overlay"
 
-#: .\app\views\twitch_goal.py:133
+#: .\app\views\twitch_goal.py:132
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Twitch goal overlay saved."
 msgstr "Spotify Overlay"
 
-#: .\app\views\twitch_goal.py:167
+#: .\app\views\twitch_goal.py:166
 #, fuzzy, python-format
 #| msgid "Spotify Overlay"
 msgid "Twitch goal overlay deleted: %(name)s"
 msgstr "Spotify Overlay"
 
-#: .\app\views\twitch_goal.py:179
+#: .\app\views\twitch_goal.py:178
 #, fuzzy, python-format
 #| msgid "Spotify Overlay"
 msgid "Twitch goal overlay duplicated: %(name)s"
 msgstr "Spotify Overlay"
 
-#: .\app\views\twitch_goal.py:235
-msgid "The Twitch connection could not be verified."
-msgstr ""
-
-#: .\app\views\twitch_goal.py:245
-msgid "Twitch access was not granted."
-msgstr ""
-
-#: .\app\views\twitch_goal.py:249
-msgid "Twitch returned no authorization code."
-msgstr ""
-
-#: .\app\views\twitch_goal.py:259
-msgid "Twitch could not be connected. Check the app settings."
-msgstr ""
-
-#: .\app\views\twitch_goal.py:261
-msgid "Twitch connected successfully."
-msgstr ""
-
-#: .\app\views\twitch_goal.py:275
+#: .\app\views\twitch_goal.py:228
 msgid "Twitch disconnected from all goal overlays."
 msgstr ""
 
-#: .\app\views\twitch_goal.py:284
+#: .\app\views\twitch_goal.py:237
 msgid "This is not a campaign goal."
 msgstr ""
 
-#: .\app\views\twitch_goal.py:290
+#: .\app\views\twitch_goal.py:243
 msgid "No Twitch value is available."
+msgstr ""
+
+#: .\app\views\twitch_oauth.py:56
+msgid "The Twitch connection could not be verified."
+msgstr ""
+
+#: .\app\views\twitch_oauth.py:60
+msgid "Twitch access was not granted."
+msgstr ""
+
+#: .\app\views\twitch_oauth.py:64
+msgid "Twitch returned no authorization code."
+msgstr ""
+
+#: .\app\views\twitch_oauth.py:74
+msgid "Twitch could not be connected. Check the app settings."
+msgstr ""
+
+#: .\app\views\twitch_oauth.py:76
+msgid "Twitch connected successfully."
 msgstr ""
 
 #: .\app\views\winchallenge.py:121

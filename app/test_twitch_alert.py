@@ -29,8 +29,10 @@ def form_data(overlay, **overrides):
     return data
 
 
-def signed_headers(body, message_type="notification", message_id="message-1", sent_at=None):
-    timestamp = (sent_at or timezone.now()).strftime("%Y-%m-%dT%H:%M:%S.123456789Z")
+def signed_headers(
+    body, message_type="notification", message_id="message-1", sent_at=None, timestamp=None
+):
+    timestamp = timestamp or (sent_at or timezone.now()).strftime("%Y-%m-%dT%H:%M:%S.123456789Z")
     signature = hmac.new(
         twitch_api.eventsub_secret().encode(),
         message_id.encode() + timestamp.encode() + body,
@@ -93,6 +95,17 @@ class TwitchAlertModelTests(TestCase):
         names = [event["name"] for event in self.overlay.state_payload()["events"]]
 
         self.assertEqual(names, ["BigCheer", "BigRaid"])
+
+    def test_hidden_events_cannot_push_shown_alerts_out_of_the_limit(self):
+        self.overlay.show_follows = False
+        self.overlay.save()
+        self.event("cheer", 500, user_name="Cheerer")
+        for _index in range(25):
+            self.event("follow", user_name="FollowBot")
+
+        names = [event["name"] for event in self.overlay.state_payload()["events"]]
+
+        self.assertEqual(names, ["Cheerer"])
 
     def test_texts_fall_back_to_defaults_and_anonymous_names_are_labeled(self):
         self.overlay.raid_text = "  {name} brings {amount} friends  "
@@ -326,6 +339,24 @@ class TwitchEventSubWebhookTests(TestCase):
         self.assertEqual(unsigned.status_code, 403)
         self.assertFalse(TwitchAlertEvent.objects.exists())
 
+    def test_timestamps_without_offset_or_impossible_dates_are_rejected(self):
+        body = json.dumps(notification("channel.follow", {"user_name": "Viewer"})).encode()
+        timestamps = (
+            timezone.now().strftime("%Y-%m-%dT%H:%M:%S"),
+            "2026-13-40T10:00:00Z",
+        )
+        for timestamp in timestamps:
+            with self.subTest(timestamp=timestamp):
+                response = self.client.post(
+                    self.url,
+                    body,
+                    content_type="application/json",
+                    **signed_headers(body, timestamp=timestamp),
+                )
+
+                self.assertEqual(response.status_code, 403)
+        self.assertFalse(TwitchAlertEvent.objects.exists())
+
     def test_notifications_become_alert_events_once(self):
         payloads = (
             ("follow", notification("channel.follow", {"user_name": "Follower"})),
@@ -380,6 +411,7 @@ class TwitchEventSubWebhookTests(TestCase):
         )
 
     def test_old_events_are_pruned_and_revocations_are_forgotten(self):
+        twitch_api.cache.delete(twitch_api.ALERT_PRUNE_CACHE_KEY)
         TwitchAlertEvent.objects.create(
             owner=self.owner,
             message_id="ancient",
@@ -400,6 +432,20 @@ class TwitchEventSubWebhookTests(TestCase):
         )
         self.connection.refresh_from_db()
         self.assertEqual(self.connection.eventsub_subscriptions, {})
+
+    def test_pruning_runs_at_most_once_per_interval(self):
+        twitch_api.cache.delete(twitch_api.ALERT_PRUNE_CACHE_KEY)
+        self.post(notification("channel.follow", {"user_name": "First"}), message_id="first")
+        TwitchAlertEvent.objects.create(
+            owner=self.owner,
+            message_id="ancient",
+            event_type="follow",
+            created_at=timezone.now() - timedelta(days=2),
+        )
+
+        self.post(notification("channel.follow", {"user_name": "Second"}), message_id="second")
+
+        self.assertTrue(TwitchAlertEvent.objects.filter(message_id="ancient").exists())
 
     def test_get_and_malformed_bodies_are_rejected(self):
         body = b"not json"
@@ -435,7 +481,7 @@ class TwitchAlertSubscriptionTests(TestCase):
     def test_callback_url_uses_the_public_redirect_origin(self):
         self.assertEqual(twitch_api.eventsub_callback_url(None), self.CALLBACK)
 
-    def test_sync_creates_only_subscriptions_the_scopes_allow_and_keeps_existing(self):
+    def test_sync_recreates_only_subscriptions_the_scopes_allow(self):
         existing = {
             "data": [
                 {
@@ -448,6 +494,12 @@ class TwitchAlertSubscriptionTests(TestCase):
                     "id": "broken-id",
                     "type": "channel.follow",
                     "status": "notification_failures_exceeded",
+                    "transport": {"callback": self.CALLBACK},
+                },
+                {
+                    "id": "unscoped-id",
+                    "type": "channel.cheer",
+                    "status": "enabled",
                     "transport": {"callback": self.CALLBACK},
                 },
                 {
@@ -472,19 +524,53 @@ class TwitchAlertSubscriptionTests(TestCase):
             active = twitch_api.sync_alert_subscriptions(self.connection, self.CALLBACK)
 
         self.assertEqual(sorted(active), ["channel.follow", "channel.raid"])
-        self.assertIn(("DELETE", {"id": "broken-id"}, None), calls)
-        created = [body for method, _params, body in calls if method == "POST"]
-        self.assertEqual(len(created), 1)
+        deleted = [params["id"] for method, params, _body in calls if method == "DELETE"]
+        # Existing ones are recreated, since their secret may be outdated; foreign callbacks stay.
+        self.assertEqual(sorted(deleted), ["broken-id", "raid-id", "unscoped-id"])
+        created = {body["type"]: body for method, _params, body in calls if method == "POST"}
+        self.assertEqual(sorted(created), ["channel.follow", "channel.raid"])
         self.assertEqual(
-            created[0]["condition"],
+            created["channel.follow"]["condition"],
             {"broadcaster_user_id": "1234", "moderator_user_id": "1234"},
         )
-        self.assertEqual(created[0]["transport"]["secret"], twitch_api.eventsub_secret())
+        self.assertEqual(
+            created["channel.raid"]["transport"]["secret"], twitch_api.eventsub_secret()
+        )
         self.connection.refresh_from_db()
         self.assertEqual(
             self.connection.eventsub_subscriptions,
-            {"channel.follow": "new-channel.follow", "channel.raid": "raid-id"},
+            {"channel.follow": "new-channel.follow", "channel.raid": "new-channel.raid"},
         )
+
+    def test_accounts_on_the_same_channel_share_subscriptions(self):
+        other = TwitchConnection.objects.create(
+            owner=User.objects.create_user(username="sync-co-owner"),
+            access_token="token",
+            twitch_user_id="1234",
+            eventsub_subscriptions={"channel.raid": "stale-id"},
+        )
+
+        def fake_request(method, url, params=None, body=None, allow_empty=False):
+            if method == "POST":
+                return {"data": [{"id": f"new-{body['type']}"}]}
+            return {"data": []}
+
+        with patch("app.twitch_api._app_api_request", side_effect=fake_request):
+            twitch_api.sync_alert_subscriptions(self.connection, self.CALLBACK)
+        other.refresh_from_db()
+        self.assertEqual(
+            other.eventsub_subscriptions,
+            {"channel.follow": "new-channel.follow", "channel.raid": "new-channel.raid"},
+        )
+
+        with (
+            patch("app.twitch_api._app_api_request") as request,
+            patch("app.twitch_api._read_json_response", return_value={}),
+        ):
+            twitch_api.disconnect(self.owner)
+        request.assert_not_called()
+        other.refresh_from_db()
+        self.assertEqual(len(other.eventsub_subscriptions), 2)
 
     def test_sync_refuses_non_https_callbacks_and_records_api_errors(self):
         with self.assertRaises(twitch_api.TwitchAPIError):
@@ -547,6 +633,37 @@ class TwitchAlertSubscriptionTests(TestCase):
         self.assertRedirects(callback, reverse("twitch_alert_manage", args=[self.overlay.pk]))
         exchange.assert_called_once()
         sync.assert_called_once()
+
+    @override_settings(TWITCH_REDIRECT_URI="http://localhost:8000/goals/twitch/callback/")
+    def test_callback_without_public_https_connects_without_activation_error(self):
+        self.client.get(reverse("twitch_alert_connect", args=[self.overlay.pk]))
+        oauth = self.client.session["twitch_oauth"]
+
+        with (
+            patch("app.twitch_api.exchange_authorization_code", return_value=self.connection),
+            patch("app.twitch_api.sync_alert_subscriptions") as sync,
+        ):
+            callback = self.client.get(
+                reverse("twitch_callback"),
+                {"state": oauth["state"], "code": "code"},
+                follow=True,
+            )
+
+        sync.assert_not_called()
+        self.assertNotContains(callback, "Twitch-Alerts konnten nicht aktiviert werden.")
+
+    def test_failed_alert_verification_returns_to_the_alert_section(self):
+        session = self.client.session
+        session["twitch_oauth"] = {"state": "expected", "alert_id": self.overlay.pk}
+        session.save()
+
+        response = self.client.get(reverse("twitch_callback"), {"state": "wrong", "code": "c"})
+
+        self.assertRedirects(
+            response,
+            f"{reverse('overlay_dashboard')}#twitch-alert-overlays",
+            fetch_redirect_response=False,
+        )
 
     def test_disconnect_deletes_alert_subscriptions(self):
         self.connection.eventsub_subscriptions = {"channel.raid": "raid-id"}
