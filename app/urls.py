@@ -8,6 +8,8 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("robots.txt", views.robots_txt, name="robots_txt"),
     path("sitemap.xml", views.sitemap, name="sitemap"),
+    path("favicon.ico", views.site_icon),
+    path("apple-touch-icon.png", views.site_icon),
     path("demo/", views.demo, name="demo"),
     path("about/", views.about, name="about"),
     path("imprint/", views.imprint, name="imprint"),

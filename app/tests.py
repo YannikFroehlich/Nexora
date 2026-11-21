@@ -280,6 +280,14 @@ class DiscoverabilityTests(TestCase):
         self.assertIn("Disallow: /winchallenges/", content)
         self.assertIn("Sitemap: http://testserver/sitemap.xml", content)
 
+    def test_root_icon_paths_redirect_to_app_icon(self):
+        for path in ("/favicon.ico", "/apple-touch-icon.png"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+
+                self.assertEqual(response.status_code, 302)
+                self.assertTrue(response["Location"].endswith("imgs/icons/nexora_icon.png"))
+
     def test_sitemap_contains_only_public_marketing_pages(self):
         response = self.client.get(reverse("sitemap"))
         content = response.content.decode()
