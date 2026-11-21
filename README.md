@@ -613,7 +613,7 @@ Falls auf dem Server noch kein Python 3 installiert ist, funktioniert alternativ
 das offizielle Python-Image:
 
 ```bash
-docker run --rm python:3.12-slim python -c "import secrets; print(secrets.token_urlsafe(64))"
+docker run --rm python:3.15-slim python -c "import secrets; print(secrets.token_urlsafe(64))"
 ```
 
 Die wesentlichen Serverwerte in `.env` sind:
