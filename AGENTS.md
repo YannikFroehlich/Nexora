@@ -1,6 +1,6 @@
 # Repository Guidelines
 
-Nexora is a Django 6 / Python 3.12 app that generates browser overlays for OBS. Users design an
+Nexora is a Django 6 / Python 3.12+ (Docker: 3.15) app that generates browser overlays for OBS. Users design an
 overlay in an authenticated editor; OBS loads a public, UUID-tokenized URL that polls a JSON state
 endpoint. Single Django app (`app/`), SQLite, no frontend build step, stdlib `urllib` for all
 outbound HTTP (no `requests`).
