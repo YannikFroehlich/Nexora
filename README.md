@@ -558,6 +558,8 @@ Update-Skript liegen daneben, damit ein Update sie nie überschreibt:
 ~/services/nexora/
 ├── compose.yaml   # baut ./src, bindet ./data ein
 ├── .env           # Serverwerte, nicht im Repository
+├── backup.sh      # vom systemd-Timer jede Nacht ausgeführt
+├── backups/       # die 14 neuesten Backup-Archive
 ├── data/          # SQLite-Datenbank und hochgeladene Dateien
 ├── src/           # Git-Klon dieses Repositorys, nicht von Hand ändern
 └── update.sh      # vom systemd-Timer alle 5 Minuten ausgeführt
@@ -769,25 +771,89 @@ systemctl list-timers nexora-twitch-tokens.timer
 journalctl -u nexora-twitch-tokens.service -n 50
 ```
 
-Ist der Container gerade gestoppt, etwa während eines Backups, schlägt dieser
+Ist der Container gerade gestoppt, etwa während eines Updates, schlägt dieser
 Lauf fehl. Der nächste stündliche Lauf holt die Prüfung nach.
 
-### SQLite-Datenbank sichern
+### Automatische Backups
 
-Für eine konsistente einfache Dateikopie sollte der Web-Container während des
-Backups gestoppt sein. Steht währenddessen ein Update an, startet der Timer den
-Container wieder; pausiere ihn bei längeren Arbeiten mit
-`sudo systemctl stop nexora-update.timer` und starte ihn danach mit `start`
-erneut.
+`~/services/nexora/backup.sh` sichert jede Nacht die SQLite-Datenbank und die
+hochgeladenen Dateien nach `~/services/nexora/backups/` und behält die 14
+neuesten Archive. Die Datenbank wird über die Backup-API von SQLite im laufenden
+Container kopiert, der Container muss dafür also nicht gestoppt werden:
+
+```sh
+#!/bin/sh
+# Nightly Nexora backup: online SQLite copy plus uploads, keeps the 14 newest.
+# Run by nexora-backup.timer. Needs the web container to be running.
+set -e
+cd "$(dirname "$0")"
+mkdir -p backups
+docker compose exec -T web python -c "import sqlite3; d = sqlite3.connect('/app/data/backup.sqlite3'); sqlite3.connect('/app/data/db.sqlite3').backup(d); d.close()"
+tar -czf "backups/nexora-$(date +%Y%m%d-%H%M%S).tar.gz" \
+    --exclude=./db.sqlite3 --exclude=./db.sqlite3-wal --exclude=./db.sqlite3-shm -C data .
+rm -f data/backup.sqlite3
+ls -1t backups/nexora-*.tar.gz | tail -n +15 | xargs -r rm -f
+```
+
+`/etc/systemd/system/nexora-backup.service`:
+
+```ini
+[Unit]
+Description=Back up Nexora SQLite database and uploads
+After=docker.service
+
+[Service]
+Type=oneshot
+User=BENUTZERNAME
+ExecStart=/home/BENUTZERNAME/services/nexora/backup.sh
+Nice=10
+```
+
+`/etc/systemd/system/nexora-backup.timer`:
+
+```ini
+[Unit]
+Description=Back up Nexora every night
+
+[Timer]
+OnCalendar=*-*-* 03:00:00 Europe/Berlin
+Persistent=true
+RandomizedDelaySec=10m
+
+[Install]
+WantedBy=timers.target
+```
+
+```bash
+chmod +x ~/services/nexora/backup.sh
+sudo systemctl daemon-reload
+sudo systemctl enable --now nexora-backup.timer
+
+# Backup sofort erstellen, ohne auf den Timer zu warten
+sudo systemctl start nexora-backup.service
+journalctl -u nexora-backup.service -n 50
+```
+
+Ein Archiv enthält die Datenbank als `backup.sqlite3` sowie den Ordner `media/`.
+Wiederherstellen, mit gestopptem Update-Timer, damit er den Container nicht
+zwischendurch startet:
 
 ```bash
 cd ~/services/nexora
+sudo systemctl stop nexora-update.timer
 docker compose stop web
-cp data/db.sqlite3 "data/db.sqlite3.backup-$(date +%Y%m%d-%H%M%S)"
+mkdir -p /tmp/nexora-restore
+tar -xzf backups/nexora-DATUM.tar.gz -C /tmp/nexora-restore
+cp /tmp/nexora-restore/backup.sqlite3 data/db.sqlite3
+rm -f data/db.sqlite3-wal data/db.sqlite3-shm
+cp -a /tmp/nexora-restore/media/. data/media/
+rm -rf /tmp/nexora-restore
 docker compose start web
+sudo systemctl start nexora-update.timer
 ```
 
-Bewahre zusätzliche Kopien der Backups außerhalb dieses Servers auf.
+Die Archive liegen nur auf diesem Server. Bewahre zusätzliche Kopien außerhalb
+davon auf.
 
 ### Bestehende lokale Datenbank auf den Server kopieren
 
