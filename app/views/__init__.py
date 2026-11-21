@@ -39,6 +39,7 @@ from app.views.pages import (
     privacy_policy,
     robots_txt,
     signup,
+    site_icon,
     sitemap,
 )
 from app.views.presets import preset_apply, preset_delete, preset_list, preset_save
@@ -231,6 +232,7 @@ __all__ = [
     "score_renew_obs_link",
     "score_reset_all",
     "signup",
+    "site_icon",
     "sitemap",
     "spotify_api",
     "spotify_autosave",

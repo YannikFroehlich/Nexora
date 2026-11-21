@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 
@@ -31,6 +32,11 @@ def imprint(request):
 
 def privacy_policy(request):
     return render(request, "app/privacy.html")
+
+
+def site_icon(request):
+    # Browsers and start pages probe /favicon.ico and /apple-touch-icon.png without reading <link>.
+    return redirect(static("imgs/icons/nexora_icon.png"))
 
 
 def robots_txt(request):
