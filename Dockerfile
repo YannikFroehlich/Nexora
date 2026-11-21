@@ -2,6 +2,8 @@ FROM python:3.15-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+# /app is root-owned, so the nexora user cannot create pip's cache in its home dir.
+ENV PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
 
@@ -9,8 +11,8 @@ RUN groupadd --gid 1000 nexora \
     && useradd --uid 1000 --gid nexora --home-dir /app --shell /usr/sbin/nologin nexora
 
 COPY requirements.txt .
-RUN python -m pip install --no-cache-dir --upgrade pip \
-    && python -m pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install --upgrade pip \
+    && python -m pip install -r requirements.txt
 
 COPY --chown=nexora:nexora . .
 
