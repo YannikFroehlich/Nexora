@@ -5259,6 +5259,46 @@ class SignUpTests(TestCase):
 
         self.assertRedirects(response, reverse("home"))
 
+    @override_settings(SIGNUP_ENABLED=False)
+    def test_disabled_signup_redirects_to_login_and_creates_no_account(self):
+        next_url = reverse("spotify_create")
+
+        get_response = self.client.get(reverse("signup"), {"next": next_url})
+        post_response = self.client.post(
+            reverse("signup"),
+            {
+                "username": "blocked-signup",
+                "password1": "Strong-Password-2026!",
+                "password2": "Strong-Password-2026!",
+            },
+        )
+
+        self.assertRedirects(get_response, f"{reverse('login')}?next={next_url}")
+        self.assertRedirects(post_response, reverse("login"))
+        self.assertFalse(User.objects.filter(username="blocked-signup").exists())
+
+    @override_settings(SIGNUP_ENABLED=False)
+    def test_disabled_signup_hides_create_account_links(self):
+        # Overlay call-to-action links may still point at signup; the view sends them to login.
+        signup_url = reverse("signup")
+        header_link = f'class="btn action-button account-button" href="{signup_url}'
+
+        for name in ("login", "home", "demo"):
+            response = self.client.get(reverse(name))
+
+            self.assertEqual(response.status_code, 200)
+            self.assertNotContains(response, header_link)
+            self.assertNotContains(response, f'href="{signup_url}"')
+
+    def test_enabled_signup_shows_create_account_links(self):
+        signup_url = reverse("signup")
+
+        self.assertContains(
+            self.client.get(reverse("home")),
+            f'class="btn action-button account-button" href="{signup_url}',
+        )
+        self.assertContains(self.client.get(reverse("login")), f'href="{signup_url}"')
+
 
 class PasswordResetTests(TestCase):
     def setUp(self):
@@ -5342,6 +5382,58 @@ class RateLimitTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'class="auth-error-summary"')
         self.assertNotIn("_auth_user_id", self.client.session)
+
+    @override_settings(
+        LOGIN_RATE_LIMIT_ATTEMPTS=2,
+        LOGIN_RATE_LIMIT_WINDOW_SECONDS=300,
+        CLIENT_IP_HEADER="CF-Connecting-IP",
+    )
+    def test_login_limit_uses_client_ip_header_behind_proxy(self):
+        # Every request arrives from the proxy's address; only the header tells visitors apart.
+        for _ in range(2):
+            self.client.post(
+                reverse("login"),
+                {"username": "throttle-user", "password": "wrong"},
+                REMOTE_ADDR="127.0.0.1",
+                HTTP_CF_CONNECTING_IP="203.0.113.7",
+            )
+
+        blocked = self.client.post(
+            reverse("login"),
+            {"username": "throttle-user", "password": "Correct-Password-2026!"},
+            REMOTE_ADDR="127.0.0.1",
+            HTTP_CF_CONNECTING_IP="203.0.113.7",
+        )
+        other_visitor = self.client.post(
+            reverse("login"),
+            {"username": "throttle-user", "password": "Correct-Password-2026!"},
+            REMOTE_ADDR="127.0.0.1",
+            HTTP_CF_CONNECTING_IP="198.51.100.4",
+        )
+
+        self.assertContains(blocked, 'class="auth-error-summary"')
+        self.assertRedirects(other_visitor, reverse("home"))
+
+    @override_settings(
+        LOGIN_RATE_LIMIT_ATTEMPTS=2,
+        LOGIN_RATE_LIMIT_WINDOW_SECONDS=300,
+        CLIENT_IP_HEADER="",
+    )
+    def test_login_limit_ignores_forwarded_ip_header_unless_configured(self):
+        for ip in ("203.0.113.7", "198.51.100.4"):
+            self.client.post(
+                reverse("login"),
+                {"username": "throttle-user", "password": "wrong"},
+                HTTP_CF_CONNECTING_IP=ip,
+            )
+
+        response = self.client.post(
+            reverse("login"),
+            {"username": "throttle-user", "password": "Correct-Password-2026!"},
+            HTTP_CF_CONNECTING_IP="192.0.2.1",
+        )
+
+        self.assertContains(response, 'class="auth-error-summary"')
 
     @override_settings(LOGIN_RATE_LIMIT_ATTEMPTS=0)
     def test_login_rate_limit_can_be_disabled(self):

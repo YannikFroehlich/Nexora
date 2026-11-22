@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth import views as auth_views
@@ -109,6 +111,13 @@ class RateLimitedPasswordResetView(auth_views.PasswordResetView):
 def signup(request):
     if request.user.is_authenticated:
         return redirect(safe_next_url(request))
+
+    if not settings.SIGNUP_ENABLED:
+        # Sign-up links across the site keep working and lead to the login page instead.
+        # The login view validates `next` itself.
+        next_url = request.POST.get("next") or request.GET.get("next") or ""
+        query = f"?{urlencode({'next': next_url})}" if next_url else ""
+        return redirect(reverse("login") + query)
 
     if request.method == "POST":
         form = SignUpForm(request.POST, request=request)

@@ -139,6 +139,15 @@ SECURE_HSTS_SECONDS = _environment_non_negative_int(
     default=0,
 )
 
+# Behind a TLS-terminating proxy such as a Cloudflare Tunnel, which forwards plain HTTP and
+# sets X-Forwarded-Proto. Only enable it when that proxy overwrites the header on every request.
+if _environment_bool("DJANGO_SECURE_PROXY_SSL_HEADER", default=False):
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Request header holding the real client IP behind a proxy, e.g. CF-Connecting-IP. Rate limits
+# use it instead of REMOTE_ADDR, which is the proxy's own address for every visitor.
+CLIENT_IP_HEADER = os.environ.get("DJANGO_CLIENT_IP_HEADER", "").strip()
+
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID", "").strip()
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET", "").strip()
 SPOTIFY_REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI", "").strip()
@@ -269,6 +278,8 @@ AUTH_PASSWORD_VALIDATORS = [
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
+
+SIGNUP_ENABLED = _environment_bool("DJANGO_SIGNUP_ENABLED", default=True)
 
 LOGIN_RATE_LIMIT_ATTEMPTS = _environment_non_negative_int(
     "DJANGO_LOGIN_RATE_LIMIT_ATTEMPTS",
