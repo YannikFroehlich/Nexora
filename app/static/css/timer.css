@@ -43,6 +43,8 @@
 }
 
 .timer-messages {
+    display: grid;
+    gap: 10px;
     margin: 18px 0;
 }
 
