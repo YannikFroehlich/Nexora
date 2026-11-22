@@ -124,9 +124,11 @@
                                 </button>
                             </form>
                         {% else %}
-                            <a class="btn action-button account-button" href="{% url 'signup' %}{% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'signup' %}?next={{ request.get_full_path|urlencode }}{% endif %}">
-                                {% translate "Create account" %}
-                            </a>
+                            {% if SIGNUP_ENABLED %}
+                                <a class="btn action-button account-button" href="{% url 'signup' %}{% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'signup' %}?next={{ request.get_full_path|urlencode }}{% endif %}">
+                                    {% translate "Create account" %}
+                                </a>
+                            {% endif %}
                             <a
                                 class="btn glass-design account-button"
                                 href="{% url 'login' %}{% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'signup' %}?next={{ request.get_full_path|urlencode }}{% endif %}"

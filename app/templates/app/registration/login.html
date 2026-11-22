@@ -69,12 +69,14 @@
                 </button>
             </form>
 
-            <p class="auth-switch">
-                {% translate "No account yet?" %}
-                <a href="{% url 'signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}">
-                    {% translate "Create account" %}
-                </a>
-            </p>
+            {% if SIGNUP_ENABLED %}
+                <p class="auth-switch">
+                    {% translate "No account yet?" %}
+                    <a href="{% url 'signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}">
+                        {% translate "Create account" %}
+                    </a>
+                </p>
+            {% endif %}
         </div>
     </section>
 {% endblock %}

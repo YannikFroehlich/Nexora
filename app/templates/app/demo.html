@@ -37,7 +37,7 @@
                 <a class="btn action-button" href="#demo-studio">{% translate "Try the live demo" %}</a>
                 {% if user.is_authenticated %}
                     <a class="btn glass-design" href="{% url 'home' %}#overlays">{% translate "Create your first overlay" %}</a>
-                {% else %}
+                {% elif SIGNUP_ENABLED %}
                     <a class="btn glass-design" href="{% url 'signup' %}">{% translate "Create free account" %}</a>
                 {% endif %}
             </div>
