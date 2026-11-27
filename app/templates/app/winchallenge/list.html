@@ -2,9 +2,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}
-    {% translate "Win Challenges" %} &middot; Nexora
-{% endblock %}
+{% block title %}{% translate "Win Challenges" %} &middot; Nexora{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/winchallenge.css' %}?v={{ APP_VERSION }}">
