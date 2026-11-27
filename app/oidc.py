@@ -94,7 +94,11 @@ def exchange_code(request, code, login_session):
     token_request = urlrequest.Request(
         _endpoint("token"),
         data=request_data,
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        # Cloudflare in front of Keycloak rejects urllib's default User-Agent (error 1010).
+        headers={
+            "Content-Type": "application/x-www-form-urlencoded",
+            "User-Agent": f"Nexora/{settings.APP_VERSION}",
+        },
         method="POST",
     )
     try:
