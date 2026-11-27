@@ -30,6 +30,7 @@ from app.views.dashboard import (
     overlay_renew_control_link,
     overlay_version_restore,
 )
+from app.views.oidc import LogoutView, oidc_callback, oidc_login
 from app.views.pages import (
     RateLimitedPasswordResetView,
     about,
@@ -157,6 +158,9 @@ from app.views.winchallenge import (
 )
 
 __all__ = [
+    "LogoutView",
+    "oidc_callback",
+    "oidc_login",
     "twitch_alert_activate",
     "twitch_alert_autosave",
     "twitch_alert_connect",

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nexora\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 12:12+0100\n"
+"POT-Creation-Date: 2026-11-27 23:02+0100\n"
 "PO-Revision-Date: 2026-07-11 00:00+0200\n"
 "Last-Translator: Nexora Team\n"
 "Language-Team: English\n"
@@ -33,14 +33,14 @@ msgstr ""
 msgid "Background image"
 msgstr ""
 
-#: .\app\forms.py:75 .\app\models.py:1478 .\app\models.py:1501
+#: .\app\forms.py:75 .\app\models.py:1493 .\app\models.py:1516
 msgid "None"
 msgstr ""
 
 #: .\app\forms.py:98 .\app\forms.py:1281
 #: .\app\templates\app\partials\_overlay_layout_controls.html:8
 #: .\app\templates\app\twitch_goal\create.html:103
-#: .\app\templates\app\winchallenge\create.html:202
+#: .\app\templates\app\winchallenge\create.html:200
 msgid "Layout"
 msgstr ""
 
@@ -129,7 +129,7 @@ msgstr ""
 
 #: .\app\forms.py:492 .\app\forms.py:1286 .\app\forms.py:1545
 #: .\app\forms.py:1727 .\app\forms.py:1896 .\app\forms.py:2068
-#: .\app\templates\app\score\create.html:287
+#: .\app\templates\app\score\create.html:285
 msgid "Text color"
 msgstr ""
 
@@ -155,8 +155,8 @@ msgstr ""
 
 #: .\app\forms.py:496 .\app\forms.py:816 .\app\forms.py:982 .\app\forms.py:1292
 #: .\app\forms.py:1549 .\app\forms.py:1731 .\app\forms.py:1902
-#: .\app\forms.py:2072 .\app\templates\app\score\create.html:295
-#: .\app\templates\app\spotify\create.html:273
+#: .\app\forms.py:2072 .\app\templates\app\score\create.html:293
+#: .\app\templates\app\spotify\create.html:271
 msgid "Corner radius"
 msgstr ""
 
@@ -165,14 +165,14 @@ msgid "Padding"
 msgstr ""
 
 #: .\app\forms.py:498 .\app\forms.py:1550
-#: .\app\templates\app\score\create.html:272
-#: .\app\templates\app\spotify\create.html:250
+#: .\app\templates\app\score\create.html:270
+#: .\app\templates\app\spotify\create.html:248
 msgid "Width"
 msgstr ""
 
 #: .\app\forms.py:499 .\app\forms.py:1551
-#: .\app\templates\app\score\create.html:276
-#: .\app\templates\app\spotify\create.html:254
+#: .\app\templates\app\score\create.html:274
+#: .\app\templates\app\spotify\create.html:252
 msgid "Height"
 msgstr ""
 
@@ -225,7 +225,7 @@ msgstr ""
 msgid "Progress bar gradient"
 msgstr ""
 
-#: .\app\forms.py:512 .\app\templates\app\spotify\create.html:269
+#: .\app\forms.py:512 .\app\templates\app\spotify\create.html:267
 msgid "Track color"
 msgstr ""
 
@@ -259,7 +259,7 @@ msgstr ""
 
 #: .\app\forms.py:522 .\app\forms.py:986 .\app\forms.py:1558
 #: .\app\forms.py:1737 .\app\forms.py:1911 .\app\forms.py:2077
-#: .\app\templates\app\spotify\create.html:157
+#: .\app\templates\app\spotify\create.html:155
 msgid "0 is transparent, 100 is fully opaque."
 msgstr ""
 
@@ -282,11 +282,11 @@ msgstr ""
 #: .\app\forms.py:531 .\app\templates\app\demo.html:136
 #: .\app\templates\app\demo.html:155 .\app\templates\app\home.html:77
 #: .\app\templates\app\home.html:142
-#: .\app\templates\app\winchallenge\list.html:142
+#: .\app\templates\app\winchallenge\list.html:140
 msgid "Road to Diamond"
 msgstr ""
 
-#: .\app\forms.py:659 .\app\models.py:287
+#: .\app\forms.py:659 .\app\models.py:302
 msgid "Winchallenge"
 msgstr ""
 
@@ -294,19 +294,19 @@ msgstr ""
 msgid "Game name"
 msgstr ""
 
-#: .\app\forms.py:730 .\app\models.py:289 .\app\templates\app\demo.html:162
+#: .\app\forms.py:730 .\app\models.py:304 .\app\templates\app\demo.html:162
 #: .\app\templates\app\overlay_dashboard.html:279
 #: .\app\templates\app\overlay_dashboard.html:305
-#: .\app\templates\app\winchallenge\list.html:74
-#: .\app\templates\app\winchallenge\manage.html:46
-#: .\app\templates\app\winchallenge\manage.html:161
-#: .\app\templates\app\winchallenge\manage.html:164
-#: .\app\templates\app\winchallenge\manage.html:190
+#: .\app\templates\app\winchallenge\list.html:72
+#: .\app\templates\app\winchallenge\manage.html:44
+#: .\app\templates\app\winchallenge\manage.html:159
+#: .\app\templates\app\winchallenge\manage.html:162
+#: .\app\templates\app\winchallenge\manage.html:188
 msgid "Wins"
 msgstr ""
 
 #: .\app\forms.py:731 .\app\templates\app\demo.html:166
-#: .\app\templates\app\winchallenge\manage.html:162
+#: .\app\templates\app\winchallenge\manage.html:160
 msgid "Target wins"
 msgstr ""
 
@@ -328,7 +328,7 @@ msgstr ""
 msgid "Overlay height"
 msgstr ""
 
-#: .\app\forms.py:820 .\app\models.py:1279
+#: .\app\forms.py:820 .\app\models.py:1294
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Spotify-Overlay"
@@ -378,11 +378,11 @@ msgstr ""
 msgid "When disabled, minus buttons stop at 0."
 msgstr ""
 
-#: .\app\forms.py:991 .\app\models.py:1751 .\app\templates\app\about.html:162
+#: .\app\forms.py:991 .\app\models.py:1766 .\app\templates\app\about.html:162
 #: .\app\templates\app\demo.html:255 .\app\templates\app\home.html:264
 #: .\app\templates\app\overlay_dashboard.html:397
 #: .\app\templates\app\partials\_dashboard_starter.html:77
-#: .\app\templates\app\score\create.html:53
+#: .\app\templates\app\score\create.html:51
 msgid "Score HUD"
 msgstr ""
 
@@ -410,12 +410,12 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
-#: .\app\forms.py:1182 .\app\templates\app\spotify\create.html:265
+#: .\app\forms.py:1182 .\app\templates\app\spotify\create.html:263
 #: .\app\templates\app\twitch_goal\create.html:156
 msgid "Color"
 msgstr ""
 
-#: .\app\forms.py:1183 .\app\models.py:42
+#: .\app\forms.py:1183 .\app\models.py:57
 msgid "Image"
 msgstr ""
 
@@ -523,7 +523,7 @@ msgstr ""
 msgid "Seconds"
 msgstr ""
 
-#: .\app\forms.py:1540 .\app\models.py:292 .\app\models.py:2001
+#: .\app\forms.py:1540 .\app\models.py:307 .\app\models.py:2016
 msgid "Label"
 msgstr ""
 
@@ -543,7 +543,7 @@ msgstr ""
 msgid "Optional text displayed above the time."
 msgstr ""
 
-#: .\app\forms.py:1563 .\app\forms.py:1618 .\app\models.py:1997
+#: .\app\forms.py:1563 .\app\forms.py:1618 .\app\models.py:2012
 #: .\app\templates\app\about.html:126 .\app\templates\app\demo.html:196
 #: .\app\templates\app\home.html:196
 #: .\app\templates\app\partials\_dashboard_starter.html:57
@@ -551,7 +551,7 @@ msgid "Stream Timer"
 msgstr ""
 
 #: .\app\forms.py:1566 .\app\forms.py:1619 .\app\forms.py:1801
-#: .\app\models.py:2213 .\app\templates\app\demo.html:203
+#: .\app\models.py:2228 .\app\templates\app\demo.html:203
 #: .\app\templates\app\demo.html:212 .\app\templates\app\home.html:183
 #: .\app\templates\app\home.html:278 .\app\templates\app\home.html:280
 #: .\app\templates\app\scene\create.html:118
@@ -590,13 +590,13 @@ msgstr ""
 msgid "0 hides the countdown."
 msgstr ""
 
-#: .\app\forms.py:1743 .\app\forms.py:1800 .\app\models.py:2206
+#: .\app\forms.py:1743 .\app\forms.py:1800 .\app\models.py:2221
 #: .\app\templates\app\about.html:174 .\app\templates\app\home.html:284
 #: .\app\templates\app\partials\_dashboard_starter.html:67
 msgid "Stream Scenes"
 msgstr ""
 
-#: .\app\forms.py:1802 .\app\models.py:2214 .\app\templates\app\home.html:280
+#: .\app\forms.py:1802 .\app\models.py:2229 .\app\templates\app\home.html:280
 #: .\app\templates\app\scene\create.html:135
 msgid "Be right back"
 msgstr ""
@@ -674,8 +674,8 @@ msgid "Name color"
 msgstr ""
 
 #: .\app\forms.py:1903 .\app\forms.py:2073
-#: .\app\templates\app\score\create.html:283
-#: .\app\templates\app\spotify\create.html:261
+#: .\app\templates\app\score\create.html:281
+#: .\app\templates\app\spotify\create.html:259
 msgid "Text size"
 msgstr ""
 
@@ -703,13 +703,13 @@ msgstr ""
 msgid "Used when Twitch name colors are off or a user has none."
 msgstr ""
 
-#: .\app\forms.py:1916 .\app\forms.py:1971 .\app\models.py:2402
+#: .\app\forms.py:1916 .\app\forms.py:1971 .\app\models.py:2417
 #: .\app\templates\app\about.html:150 .\app\templates\app\home.html:246
 #: .\app\templates\app\partials\_dashboard_starter.html:27
 msgid "Twitch Chat"
 msgstr ""
 
-#: .\app\forms.py:1983 .\app\models.py:2393
+#: .\app\forms.py:1983 .\app\models.py:2408
 msgid "Enter a Twitch channel name: letters, digits and underscores only."
 msgstr ""
 
@@ -726,7 +726,7 @@ msgstr ""
 msgid "Subscriptions and resubs"
 msgstr ""
 
-#: .\app\forms.py:2050 .\app\models.py:2839
+#: .\app\forms.py:2050 .\app\models.py:2854
 msgid "Gifted subs"
 msgstr ""
 
@@ -782,7 +782,7 @@ msgstr ""
 msgid "Volume"
 msgstr ""
 
-#: .\app\forms.py:2081 .\app\forms.py:2145 .\app\models.py:2606
+#: .\app\forms.py:2081 .\app\forms.py:2145 .\app\models.py:2621
 #: .\app\templates\app\overlay_dashboard.html:56
 #: .\app\templates\app\overlay_dashboard.html:88
 #: .\app\templates\app\partials\_dashboard_starter.html:47
@@ -800,242 +800,242 @@ msgstr ""
 msgid "Enter a valid hex color, for example #14b8a6."
 msgstr ""
 
-#: .\app\models.py:43 .\app\templates\app\presets\list.html:67
+#: .\app\models.py:58 .\app\templates\app\presets\list.html:67
 msgid "Font"
 msgstr ""
 
-#: .\app\models.py:87
+#: .\app\models.py:102
 msgid "System default"
 msgstr ""
 
-#: .\app\models.py:166
+#: .\app\models.py:181
 msgid "Classic"
 msgstr ""
 
-#: .\app\models.py:167
+#: .\app\models.py:182
 msgid "Free canvas"
 msgstr ""
 
 #
-#: .\app\models.py:186
+#: .\app\models.py:201
 msgid "The layout elements are invalid."
 msgstr ""
 
-#: .\app\models.py:233
+#: .\app\models.py:248
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Created"
 msgstr "Spotify Overlay"
 
-#: .\app\models.py:234
+#: .\app\models.py:249
 msgid "Saved manually"
 msgstr ""
 
-#: .\app\models.py:235
+#: .\app\models.py:250
 msgid "Autosaved"
 msgstr ""
 
-#: .\app\models.py:236
+#: .\app\models.py:251
 msgid "Restored"
 msgstr ""
 
-#: .\app\models.py:288 .\app\templates\app\demo.html:129
+#: .\app\models.py:303 .\app\templates\app\demo.html:129
 #: .\app\templates\app\demo.html:135 .\app\templates\app\home.html:76
 #: .\app\templates\app\home.html:141 .\app\templates\app\home.html:154
 #: .\app\templates\app\overlay_dashboard.html:276
 #: .\app\templates\app\overlay_dashboard.html:298
 #: .\app\templates\app\partials\_dashboard_starter.html:89
-#: .\app\templates\app\winchallenge\list.html:141
-#: .\app\templates\app\winchallenge\manage.html:42
+#: .\app\templates\app\winchallenge\list.html:139
+#: .\app\templates\app\winchallenge\manage.html:40
 #: .\app\views\winchallenge.py:131
 msgid "Win Challenge"
 msgstr ""
 
-#: .\app\models.py:293 .\app\templates\app\demo.html:82
+#: .\app\models.py:308 .\app\templates\app\demo.html:82
 #: .\app\templates\app\demo.html:114 .\app\templates\app\demo.html:154
 #: .\app\templates\app\demo.html:211
-#: .\app\templates\app\spotify\create.html:194
-#: .\app\templates\app\spotify\create.html:195
+#: .\app\templates\app\spotify\create.html:192
+#: .\app\templates\app\spotify\create.html:193
 #: .\app\templates\app\twitch_goal\create.html:133
 msgid "Title"
 msgstr ""
 
-#: .\app\models.py:294 .\app\templates\app\winchallenge\manage.html:80
+#: .\app\models.py:309 .\app\templates\app\winchallenge\manage.html:78
 msgid "Total wins"
 msgstr ""
 
-#: .\app\models.py:295
+#: .\app\models.py:310
 msgid "Games list"
 msgstr ""
 
-#: .\app\models.py:296
+#: .\app\models.py:311
 msgid "Page indicator"
 msgstr ""
 
-#: .\app\models.py:304 .\app\models.py:2017 .\app\models.py:2222
-#: .\app\models.py:2408 .\app\models.py:2612 .\app\templates\app\demo.html:95
+#: .\app\models.py:319 .\app\models.py:2032 .\app\models.py:2237
+#: .\app\models.py:2423 .\app\models.py:2627 .\app\templates\app\demo.html:95
 #: .\app\templates\app\demo.html:175 .\app\templates\app\demo.html:234
 #: .\app\templates\app\demo.html:292
-#: .\app\templates\app\winchallenge\create.html:117
+#: .\app\templates\app\winchallenge\create.html:115
 msgid "Minimal"
 msgstr ""
 
-#: .\app\models.py:305 .\app\models.py:2018 .\app\models.py:2223
-#: .\app\models.py:2409 .\app\models.py:2613 .\app\templates\app\demo.html:96
+#: .\app\models.py:320 .\app\models.py:2033 .\app\models.py:2238
+#: .\app\models.py:2424 .\app\models.py:2628 .\app\templates\app\demo.html:96
 #: .\app\templates\app\demo.html:176 .\app\templates\app\demo.html:235
 #: .\app\templates\app\demo.html:293
-#: .\app\templates\app\winchallenge\create.html:126
+#: .\app\templates\app\winchallenge\create.html:124
 msgid "Glass"
 msgstr ""
 
-#: .\app\models.py:306 .\app\models.py:2019 .\app\models.py:2224
-#: .\app\models.py:2410 .\app\models.py:2614 .\app\templates\app\demo.html:97
+#: .\app\models.py:321 .\app\models.py:2034 .\app\models.py:2239
+#: .\app\models.py:2425 .\app\models.py:2629 .\app\templates\app\demo.html:97
 #: .\app\templates\app\demo.html:177 .\app\templates\app\demo.html:236
 #: .\app\templates\app\demo.html:294
-#: .\app\templates\app\winchallenge\create.html:135
+#: .\app\templates\app\winchallenge\create.html:133
 msgid "Neon"
 msgstr ""
 
-#: .\app\models.py:314 .\app\models.py:2433
+#: .\app\models.py:329 .\app\models.py:2448
 msgid "No animation"
 msgstr ""
 
-#: .\app\models.py:315
+#: .\app\models.py:330
 msgid "Pulse"
 msgstr ""
 
-#: .\app\models.py:316
+#: .\app\models.py:331
 msgid "Glow"
 msgstr ""
 
-#: .\app\models.py:465
+#: .\app\models.py:480
 msgid "Set a height for the free canvas."
 msgstr ""
 
-#: .\app\models.py:733
+#: .\app\models.py:748
 msgid "Horizontal bar"
 msgstr ""
 
-#: .\app\models.py:734
+#: .\app\models.py:749
 msgid "Compact bar"
 msgstr ""
 
-#: .\app\models.py:735
+#: .\app\models.py:750
 msgid "Vertical card"
 msgstr ""
 
-#: .\app\models.py:736
+#: .\app\models.py:751
 msgid "Radial goal"
 msgstr ""
 
-#: .\app\models.py:737 .\app\models.py:1016
+#: .\app\models.py:752 .\app\models.py:1031
 msgid "Custom"
 msgstr ""
 
-#: .\app\models.py:1014
+#: .\app\models.py:1029
 msgid "Broadcast duel"
 msgstr ""
 
-#: .\app\models.py:1015
+#: .\app\models.py:1030
 msgid "Broadcast list"
 msgstr ""
 
-#: .\app\models.py:1439 .\app\templates\app\about.html:138
+#: .\app\models.py:1454 .\app\templates\app\about.html:138
 #: .\app\templates\app\demo.html:111 .\app\templates\app\home.html:226
 #: .\app\templates\app\partials\_dashboard_starter.html:37
 msgid "Twitch Goal"
 msgstr ""
 
-#: .\app\models.py:1446 .\app\models.py:1639 .\app\templates\app\home.html:223
+#: .\app\models.py:1461 .\app\models.py:1654 .\app\templates\app\home.html:223
 msgid "Follower goal"
 msgstr ""
 
-#: .\app\models.py:1447
+#: .\app\models.py:1462
 msgid "Subscription goal"
 msgstr ""
 
-#: .\app\models.py:1453
+#: .\app\models.py:1468
 msgid "Active subscriptions"
 msgstr ""
 
-#: .\app\models.py:1454
+#: .\app\models.py:1469
 msgid "Subscription points"
 msgstr ""
 
-#: .\app\models.py:1460
+#: .\app\models.py:1475
 msgid "Total count"
 msgstr ""
 
-#: .\app\models.py:1461
+#: .\app\models.py:1476
 msgid "Campaign growth"
 msgstr ""
 
-#: .\app\models.py:1479
+#: .\app\models.py:1494
 msgid "Confetti"
 msgstr ""
 
-#: .\app\models.py:1480
+#: .\app\models.py:1495
 msgid "Fireworks"
 msgstr ""
 
-#: .\app\models.py:1481
+#: .\app\models.py:1496
 msgid "Neon burst"
 msgstr ""
 
-#: .\app\models.py:1482
+#: .\app\models.py:1497
 msgid "Bounce and pulse"
 msgstr ""
 
-#: .\app\models.py:1483
+#: .\app\models.py:1498
 msgid "Particle rain"
 msgstr ""
 
-#: .\app\models.py:1490
+#: .\app\models.py:1505
 msgid "Low"
 msgstr ""
 
-#: .\app\models.py:1491
+#: .\app\models.py:1506
 msgid "Medium"
 msgstr ""
 
-#: .\app\models.py:1492
+#: .\app\models.py:1507
 msgid "High"
 msgstr ""
 
-#: .\app\models.py:1502
+#: .\app\models.py:1517
 msgid "Chime"
 msgstr ""
 
-#: .\app\models.py:1503
+#: .\app\models.py:1518
 msgid "Fanfare"
 msgstr ""
 
-#: .\app\models.py:1504
+#: .\app\models.py:1519
 msgid "Arcade win"
 msgstr ""
 
-#: .\app\models.py:1505
+#: .\app\models.py:1520
 msgid "Sparkle"
 msgstr ""
 
-#: .\app\models.py:1639
+#: .\app\models.py:1654
 msgid "Sub goal"
 msgstr ""
 
-#: .\app\models.py:2000
+#: .\app\models.py:2015
 msgid "Type and status"
 msgstr ""
 
-#: .\app\models.py:2002 .\app\templates\app\about.html:125
+#: .\app\models.py:2017 .\app\templates\app\about.html:125
 msgid "Time"
 msgstr ""
 
-#: .\app\models.py:2003 .\app\templates\app\spotify\create.html:206
-#: .\app\templates\app\spotify\create.html:207
+#: .\app\models.py:2018 .\app\templates\app\spotify\create.html:204
+#: .\app\templates\app\spotify\create.html:205
 msgid "Progress bar"
 msgstr ""
 
-#: .\app\models.py:2009 .\app\templates\app\demo.html:202
+#: .\app\models.py:2024 .\app\templates\app\demo.html:202
 #: .\app\templates\app\home.html:182
 #: .\app\templates\app\partials\_timer_overlay.html:40
 #: .\app\templates\app\timer\create.html:36
@@ -1043,88 +1043,104 @@ msgstr ""
 msgid "Countdown"
 msgstr ""
 
-#: .\app\models.py:2010 .\app\templates\app\partials\_timer_overlay.html:40
+#: .\app\models.py:2025 .\app\templates\app\partials\_timer_overlay.html:40
 #: .\app\templates\app\timer\create.html:37
 #: .\app\templates\app\timer\public_overlay.html:19
 msgid "Stopwatch"
 msgstr ""
 
-#: .\app\models.py:2215 .\app\templates\app\home.html:280
+#: .\app\models.py:2230 .\app\templates\app\home.html:280
 #: .\app\templates\app\scene\create.html:152
 msgid "Stream ending"
 msgstr ""
 
-#: .\app\models.py:2416
+#: .\app\models.py:2431
 msgid "Name and message in one line"
 msgstr ""
 
-#: .\app\models.py:2417
+#: .\app\models.py:2432
 msgid "Name above message"
 msgstr ""
 
-#: .\app\models.py:2423
+#: .\app\models.py:2438
 msgid "Newest message at the bottom"
 msgstr ""
 
-#: .\app\models.py:2424
+#: .\app\models.py:2439
 msgid "Newest message at the top"
 msgstr ""
 
-#: .\app\models.py:2431 .\app\models.py:2622
+#: .\app\models.py:2446 .\app\models.py:2637
 msgid "Slide in"
 msgstr ""
 
-#: .\app\models.py:2432 .\app\models.py:2623
+#: .\app\models.py:2447 .\app\models.py:2638
 msgid "Fade in"
 msgstr ""
 
-#: .\app\models.py:2621
+#: .\app\models.py:2636
 msgid "Pop in"
 msgstr ""
 
-#: .\app\models.py:2627
+#: .\app\models.py:2642
 #, python-brace-format
 msgid "{name} is now following!"
 msgstr ""
 
-#: .\app\models.py:2628
+#: .\app\models.py:2643
 #, python-brace-format
 msgid "{name} just subscribed!"
 msgstr ""
 
-#: .\app\models.py:2629
+#: .\app\models.py:2644
 #, python-brace-format
 msgid "{name} gifted {amount} subs!"
 msgstr ""
 
-#: .\app\models.py:2630
+#: .\app\models.py:2645
 #, python-brace-format
 msgid "{name} cheered {amount} bits!"
 msgstr ""
 
-#: .\app\models.py:2631
+#: .\app\models.py:2646
 #, python-brace-format
 msgid "{name} is raiding with {amount} viewers!"
 msgstr ""
 
-#: .\app\models.py:2837
+#: .\app\models.py:2852
 msgid "Follow"
 msgstr ""
 
-#: .\app\models.py:2838
+#: .\app\models.py:2853
 msgid "Subscription"
 msgstr ""
 
-#: .\app\models.py:2840
+#: .\app\models.py:2855
 msgid "Cheer"
 msgstr ""
 
-#: .\app\models.py:2841
+#: .\app\models.py:2856
 msgid "Raid"
 msgstr ""
 
-#: .\app\models.py:2867
+#: .\app\models.py:2882
 msgid "Anonymous"
+msgstr ""
+
+#: .\app\oidc.py:104 .\app\oidc.py:107
+msgid "The login server could not complete the sign-in."
+msgstr ""
+
+#: .\app\oidc.py:116 .\app\oidc.py:118 .\app\oidc.py:130
+msgid "The login server returned an invalid sign-in."
+msgstr ""
+
+#: .\app\oidc.py:138
+msgid "Your account has no access to this Nexora instance."
+msgstr ""
+
+#: .\app\oidc.py:165
+msgid "This Nexora account is deactivated."
 msgstr ""
 
 #: .\app\overlay_transfer.py:416
@@ -1264,7 +1280,7 @@ msgid "Spotify returned an invalid response."
 msgstr ""
 
 #: .\app\templates\app\about.html:5 .\app\templates\app\about.html:17
-#: .\app\templates\app\base.html:107 .\app\templates\app\base.html:189
+#: .\app\templates\app\base.html:107 .\app\templates\app\base.html:191
 msgid "About"
 msgstr ""
 
@@ -1286,21 +1302,21 @@ msgstr ""
 #: .\app\templates\app\registration\password_reset_done.html:12
 #: .\app\templates\app\registration\signup.html:12
 #: .\app\templates\app\scene\create.html:14
-#: .\app\templates\app\score\create.html:15
-#: .\app\templates\app\spotify\create.html:15
+#: .\app\templates\app\score\create.html:13
+#: .\app\templates\app\spotify\create.html:13
 #: .\app\templates\app\spotify\list.html:12
 #: .\app\templates\app\timer\create.html:13
 #: .\app\templates\app\twitch_alert\create.html:14
 #: .\app\templates\app\twitch_goal\create.html:13
-#: .\app\templates\app\winchallenge\create.html:15
-#: .\app\templates\app\winchallenge\list.html:14
-#: .\app\templates\app\winchallenge\manage.html:15
+#: .\app\templates\app\winchallenge\create.html:13
+#: .\app\templates\app\winchallenge\list.html:12
+#: .\app\templates\app\winchallenge\manage.html:13
 msgid "Breadcrumb"
 msgstr ""
 
-#: .\app\templates\app\about.html:16 .\app\templates\app\base.html:187
+#: .\app\templates\app\about.html:16 .\app\templates\app\base.html:189
 #: .\app\templates\app\chat\create.html:16 .\app\templates\app\demo.html:16
-#: .\app\templates\app\home.html:6 .\app\templates\app\imprint.html:14
+#: .\app\templates\app\home.html:5 .\app\templates\app\imprint.html:14
 #: .\app\templates\app\overlay_dashboard.html:16
 #: .\app\templates\app\presets\list.html:16 .\app\templates\app\privacy.html:14
 #: .\app\templates\app\registration\account_settings.html:14
@@ -1311,15 +1327,15 @@ msgstr ""
 #: .\app\templates\app\registration\password_reset_done.html:14
 #: .\app\templates\app\registration\signup.html:14
 #: .\app\templates\app\scene\create.html:16
-#: .\app\templates\app\score\create.html:17
-#: .\app\templates\app\spotify\create.html:17
+#: .\app\templates\app\score\create.html:15
+#: .\app\templates\app\spotify\create.html:15
 #: .\app\templates\app\spotify\list.html:14
 #: .\app\templates\app\timer\create.html:15
 #: .\app\templates\app\twitch_alert\create.html:16
 #: .\app\templates\app\twitch_goal\create.html:15
-#: .\app\templates\app\winchallenge\create.html:17
-#: .\app\templates\app\winchallenge\list.html:16
-#: .\app\templates\app\winchallenge\manage.html:17
+#: .\app\templates\app\winchallenge\create.html:15
+#: .\app\templates\app\winchallenge\list.html:14
+#: .\app\templates\app\winchallenge\manage.html:15
 msgid "Home"
 msgstr ""
 
@@ -1361,12 +1377,12 @@ msgstr ""
 
 #: .\app\templates\app\about.html:57 .\app\templates\app\chat\create.html:18
 #: .\app\templates\app\scene\create.html:18
-#: .\app\templates\app\score\create.html:20
-#: .\app\templates\app\spotify\create.html:20
+#: .\app\templates\app\score\create.html:18
+#: .\app\templates\app\spotify\create.html:18
 #: .\app\templates\app\timer\create.html:17
 #: .\app\templates\app\twitch_alert\create.html:18
 #: .\app\templates\app\twitch_goal\create.html:17
-#: .\app\templates\app\winchallenge\create.html:19
+#: .\app\templates\app\winchallenge\create.html:17
 msgid "Create"
 msgstr ""
 
@@ -1642,13 +1658,13 @@ msgstr ""
 #: .\app\templates\app\overlay_dashboard.html:17
 #: .\app\templates\app\overlay_dashboard.html:27
 #: .\app\templates\app\scene\create.html:17
-#: .\app\templates\app\score\create.html:18
-#: .\app\templates\app\spotify\create.html:18
+#: .\app\templates\app\score\create.html:16
+#: .\app\templates\app\spotify\create.html:16
 #: .\app\templates\app\timer\create.html:16
 #: .\app\templates\app\twitch_alert\create.html:17
 #: .\app\templates\app\twitch_goal\create.html:16
-#: .\app\templates\app\winchallenge\create.html:18
-#: .\app\templates\app\winchallenge\manage.html:18
+#: .\app\templates\app\winchallenge\create.html:16
+#: .\app\templates\app\winchallenge\manage.html:16
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "My overlays"
@@ -1661,7 +1677,7 @@ msgstr "Spotify Overlay"
 msgid "Templates"
 msgstr ""
 
-#: .\app\templates\app\base.html:100 .\app\templates\app\base.html:188
+#: .\app\templates\app\base.html:100 .\app\templates\app\base.html:190
 msgid "Live demo"
 msgstr ""
 
@@ -1677,8 +1693,8 @@ msgstr ""
 msgid "Sign out"
 msgstr ""
 
-#: .\app\templates\app\base.html:128
-#: .\app\templates\app\registration\login.html:75
+#: .\app\templates\app\base.html:129
+#: .\app\templates\app\registration\login.html:91
 #: .\app\templates\app\registration\signup.html:5
 #: .\app\templates\app\registration\signup.html:15
 #: .\app\templates\app\registration\signup.html:24
@@ -1686,48 +1702,48 @@ msgstr ""
 msgid "Create account"
 msgstr ""
 
-#: .\app\templates\app\base.html:134
+#: .\app\templates\app\base.html:136
 #: .\app\templates\app\registration\login.html:5
 #: .\app\templates\app\registration\login.html:15
 #: .\app\templates\app\registration\login.html:24
-#: .\app\templates\app\registration\login.html:68
+#: .\app\templates\app\registration\login.html:83
 #: .\app\templates\app\registration\password_reset.html:15
 #: .\app\templates\app\registration\password_reset_complete.html:30
 #: .\app\templates\app\registration\signup.html:74
 msgid "Sign in"
 msgstr ""
 
-#: .\app\templates\app\base.html:141
+#: .\app\templates\app\base.html:143
 msgid "Language"
 msgstr ""
 
-#: .\app\templates\app\base.html:154
+#: .\app\templates\app\base.html:156
 msgid "Apply"
 msgstr ""
 
-#: .\app\templates\app\base.html:161 .\app\templates\app\base.html:164
+#: .\app\templates\app\base.html:163 .\app\templates\app\base.html:166
 msgid "Switch to dark theme"
 msgstr ""
 
-#: .\app\templates\app\base.html:163
+#: .\app\templates\app\base.html:165
 msgid "Switch to light theme"
 msgstr ""
 
-#: .\app\templates\app\base.html:186
+#: .\app\templates\app\base.html:188
 msgid "Footer navigation"
 msgstr ""
 
-#: .\app\templates\app\base.html:190 .\app\templates\app\imprint.html:5
+#: .\app\templates\app\base.html:192 .\app\templates\app\imprint.html:5
 #: .\app\templates\app\imprint.html:15 .\app\templates\app\imprint.html:23
 msgid "Legal notice"
 msgstr ""
 
-#: .\app\templates\app\base.html:191 .\app\templates\app\privacy.html:5
+#: .\app\templates\app\base.html:193 .\app\templates\app\privacy.html:5
 #: .\app\templates\app\privacy.html:15 .\app\templates\app\privacy.html:23
 msgid "Privacy policy"
 msgstr ""
 
-#: .\app\templates\app\base.html:196
+#: .\app\templates\app\base.html:198
 msgid "Version"
 msgstr ""
 
@@ -1743,8 +1759,8 @@ msgstr ""
 #: .\app\templates\app\overlay_dashboard.html:752
 #: .\app\templates\app\overlay_dashboard.html:841
 #: .\app\templates\app\scene\create.html:18
-#: .\app\templates\app\score\create.html:20
-#: .\app\templates\app\spotify\create.html:20
+#: .\app\templates\app\score\create.html:18
+#: .\app\templates\app\spotify\create.html:18
 #: .\app\templates\app\spotify\list.html:70
 #: .\app\templates\app\timer\create.html:17
 #: .\app\templates\app\twitch_alert\create.html:18
@@ -1754,84 +1770,84 @@ msgstr ""
 
 #: .\app\templates\app\chat\create.html:31
 #: .\app\templates\app\scene\create.html:31
-#: .\app\templates\app\score\create.html:34
-#: .\app\templates\app\spotify\create.html:34
+#: .\app\templates\app\score\create.html:32
+#: .\app\templates\app\spotify\create.html:32
 #: .\app\templates\app\timer\create.html:30
 #: .\app\templates\app\twitch_alert\create.html:31
 #: .\app\templates\app\twitch_goal\create.html:31
-#: .\app\templates\app\winchallenge\create.html:32
+#: .\app\templates\app\winchallenge\create.html:30
 msgid "No unsaved changes"
 msgstr ""
 
 #: .\app\templates\app\chat\create.html:31
 #: .\app\templates\app\partials\_editor_state_toolbar.html:21
 #: .\app\templates\app\scene\create.html:31
-#: .\app\templates\app\score\create.html:34
-#: .\app\templates\app\spotify\create.html:34
+#: .\app\templates\app\score\create.html:32
+#: .\app\templates\app\spotify\create.html:32
 #: .\app\templates\app\timer\create.html:30
 #: .\app\templates\app\twitch_alert\create.html:31
 #: .\app\templates\app\twitch_goal\create.html:31
-#: .\app\templates\app\winchallenge\manage.html:32
+#: .\app\templates\app\winchallenge\manage.html:30
 msgid "All changes saved"
 msgstr ""
 
 #: .\app\templates\app\chat\create.html:32
 #: .\app\templates\app\scene\create.html:32
-#: .\app\templates\app\score\create.html:35
-#: .\app\templates\app\spotify\create.html:35
+#: .\app\templates\app\score\create.html:33
+#: .\app\templates\app\spotify\create.html:33
 #: .\app\templates\app\timer\create.html:31
 #: .\app\templates\app\twitch_alert\create.html:32
 #: .\app\templates\app\twitch_goal\create.html:32
-#: .\app\templates\app\winchallenge\create.html:33
-#: .\app\templates\app\winchallenge\manage.html:33
+#: .\app\templates\app\winchallenge\create.html:31
+#: .\app\templates\app\winchallenge\manage.html:31
 msgid "Unsaved changes"
 msgstr ""
 
 #: .\app\templates\app\chat\create.html:33
 #: .\app\templates\app\scene\create.html:33
-#: .\app\templates\app\score\create.html:36
-#: .\app\templates\app\spotify\create.html:36
+#: .\app\templates\app\score\create.html:34
+#: .\app\templates\app\spotify\create.html:34
 #: .\app\templates\app\timer\create.html:32
 #: .\app\templates\app\twitch_alert\create.html:33
 #: .\app\templates\app\twitch_goal\create.html:33
-#: .\app\templates\app\winchallenge\create.html:34
-#: .\app\templates\app\winchallenge\manage.html:34
+#: .\app\templates\app\winchallenge\create.html:32
+#: .\app\templates\app\winchallenge\manage.html:32
 msgid "Saving changes..."
 msgstr ""
 
 #: .\app\templates\app\chat\create.html:34
 #: .\app\templates\app\scene\create.html:34
-#: .\app\templates\app\score\create.html:37
-#: .\app\templates\app\spotify\create.html:37
+#: .\app\templates\app\score\create.html:35
+#: .\app\templates\app\spotify\create.html:35
 #: .\app\templates\app\timer\create.html:33
 #: .\app\templates\app\twitch_alert\create.html:34
 #: .\app\templates\app\twitch_goal\create.html:34
-#: .\app\templates\app\winchallenge\create.html:35
-#: .\app\templates\app\winchallenge\manage.html:35
+#: .\app\templates\app\winchallenge\create.html:33
+#: .\app\templates\app\winchallenge\manage.html:33
 msgid "Autosave failed. Use the save button to try again."
 msgstr ""
 
 #: .\app\templates\app\chat\create.html:35
 #: .\app\templates\app\scene\create.html:35
-#: .\app\templates\app\score\create.html:38
-#: .\app\templates\app\spotify\create.html:38
+#: .\app\templates\app\score\create.html:36
+#: .\app\templates\app\spotify\create.html:36
 #: .\app\templates\app\timer\create.html:34
 #: .\app\templates\app\twitch_alert\create.html:35
 #: .\app\templates\app\twitch_goal\create.html:35
-#: .\app\templates\app\winchallenge\create.html:36
-#: .\app\templates\app\winchallenge\manage.html:36
+#: .\app\templates\app\winchallenge\create.html:34
+#: .\app\templates\app\winchallenge\manage.html:34
 msgid "Draft saved locally"
 msgstr ""
 
 #: .\app\templates\app\chat\create.html:36
 #: .\app\templates\app\scene\create.html:36
-#: .\app\templates\app\score\create.html:39
-#: .\app\templates\app\spotify\create.html:39
+#: .\app\templates\app\score\create.html:37
+#: .\app\templates\app\spotify\create.html:37
 #: .\app\templates\app\timer\create.html:35
 #: .\app\templates\app\twitch_alert\create.html:36
 #: .\app\templates\app\twitch_goal\create.html:36
-#: .\app\templates\app\winchallenge\create.html:37
-#: .\app\templates\app\winchallenge\manage.html:37
+#: .\app\templates\app\winchallenge\create.html:35
+#: .\app\templates\app\winchallenge\manage.html:35
 msgid "Local draft restored"
 msgstr ""
 
@@ -1855,8 +1871,8 @@ msgstr ""
 
 #: .\app\templates\app\chat\create.html:46
 #: .\app\templates\app\scene\create.html:46
-#: .\app\templates\app\score\create.html:63
-#: .\app\templates\app\spotify\create.html:53
+#: .\app\templates\app\score\create.html:61
+#: .\app\templates\app\spotify\create.html:51
 #: .\app\templates\app\timer\create.html:50
 #: .\app\templates\app\twitch_alert\create.html:47
 #: .\app\templates\app\twitch_goal\create.html:44
@@ -1867,7 +1883,7 @@ msgstr "Spotify Overlay"
 
 #: .\app\templates\app\chat\create.html:76
 #: .\app\templates\app\scene\create.html:107
-#: .\app\templates\app\spotify\create.html:188
+#: .\app\templates\app\spotify\create.html:186
 #: .\app\templates\app\timer\create.html:105
 #: .\app\templates\app\twitch_alert\create.html:124
 msgid "Content"
@@ -1903,12 +1919,12 @@ msgstr ""
 
 #: .\app\templates\app\chat\create.html:178
 #: .\app\templates\app\scene\create.html:223
-#: .\app\templates\app\score\create.html:228
-#: .\app\templates\app\spotify\create.html:330
+#: .\app\templates\app\score\create.html:226
+#: .\app\templates\app\spotify\create.html:328
 #: .\app\templates\app\timer\create.html:203
 #: .\app\templates\app\twitch_alert\create.html:236
 #: .\app\templates\app\twitch_goal\create.html:184
-#: .\app\templates\app\winchallenge\manage.html:459
+#: .\app\templates\app\winchallenge\manage.html:457
 msgid "Browser source"
 msgstr ""
 
@@ -1916,8 +1932,8 @@ msgstr ""
 #: .\app\templates\app\scene\create.html:224
 #: .\app\templates\app\timer\create.html:204
 #: .\app\templates\app\twitch_alert\create.html:237
-#: .\app\templates\app\winchallenge\manage.html:67
-#: .\app\templates\app\winchallenge\manage.html:460
+#: .\app\templates\app\winchallenge\manage.html:65
+#: .\app\templates\app\winchallenge\manage.html:458
 msgid "OBS Link"
 msgstr ""
 
@@ -1925,8 +1941,8 @@ msgstr ""
 #: .\app\templates\app\scene\create.html:229
 #: .\app\templates\app\timer\create.html:209
 #: .\app\templates\app\twitch_alert\create.html:242
-#: .\app\templates\app\winchallenge\list.html:102
-#: .\app\templates\app\winchallenge\manage.html:466
+#: .\app\templates\app\winchallenge\list.html:100
+#: .\app\templates\app\winchallenge\manage.html:464
 msgid "Copy OBS Link"
 msgstr ""
 
@@ -1940,12 +1956,12 @@ msgstr ""
 #: .\app\templates\app\overlay_dashboard.html:771
 #: .\app\templates\app\overlay_dashboard.html:860
 #: .\app\templates\app\scene\create.html:235
-#: .\app\templates\app\score\create.html:380
-#: .\app\templates\app\spotify\create.html:425
+#: .\app\templates\app\score\create.html:378
+#: .\app\templates\app\spotify\create.html:423
 #: .\app\templates\app\timer\create.html:215
 #: .\app\templates\app\twitch_alert\create.html:248
 #: .\app\templates\app\twitch_goal\create.html:223
-#: .\app\templates\app\winchallenge\manage.html:473
+#: .\app\templates\app\winchallenge\manage.html:471
 msgid "The previous OBS link will stop working immediately. Continue?"
 msgstr ""
 
@@ -1959,12 +1975,12 @@ msgstr ""
 #: .\app\templates\app\overlay_dashboard.html:775
 #: .\app\templates\app\overlay_dashboard.html:864
 #: .\app\templates\app\scene\create.html:239
-#: .\app\templates\app\score\create.html:238
-#: .\app\templates\app\spotify\create.html:341
+#: .\app\templates\app\score\create.html:236
+#: .\app\templates\app\spotify\create.html:339
 #: .\app\templates\app\timer\create.html:219
 #: .\app\templates\app\twitch_alert\create.html:252
 #: .\app\templates\app\twitch_goal\create.html:187
-#: .\app\templates\app\winchallenge\manage.html:477
+#: .\app\templates\app\winchallenge\manage.html:475
 msgid "Renew OBS link"
 msgstr ""
 
@@ -2003,18 +2019,18 @@ msgstr ""
 #: .\app\templates\app\spotify\list.html:79
 #: .\app\templates\app\timer\create.html:228
 #: .\app\templates\app\twitch_alert\create.html:259
-#: .\app\templates\app\winchallenge\list.html:111
+#: .\app\templates\app\winchallenge\list.html:109
 msgid "Delete"
 msgstr ""
 
 #: .\app\templates\app\chat\create.html:214
 #: .\app\templates\app\scene\create.html:261
-#: .\app\templates\app\score\create.html:403
-#: .\app\templates\app\spotify\create.html:450
+#: .\app\templates\app\score\create.html:401
+#: .\app\templates\app\spotify\create.html:448
 #: .\app\templates\app\timer\create.html:241
 #: .\app\templates\app\twitch_alert\create.html:272
 #: .\app\templates\app\twitch_goal\create.html:234
-#: .\app\templates\app\winchallenge\manage.html:521
+#: .\app\templates\app\winchallenge\manage.html:519
 msgid ""
 "This replaces the current font, images, colors, border and corner radius. "
 "Continue?"
@@ -2022,15 +2038,15 @@ msgstr ""
 
 #: .\app\templates\app\chat\create.html:224
 #: .\app\templates\app\scene\create.html:271
-#: .\app\templates\app\score\create.html:331
-#: .\app\templates\app\spotify\create.html:369
+#: .\app\templates\app\score\create.html:329
+#: .\app\templates\app\spotify\create.html:367
 #: .\app\templates\app\timer\create.html:251
 #: .\app\templates\app\twitch_alert\create.html:282
-#: .\app\templates\app\winchallenge\create.html:65
-#: .\app\templates\app\winchallenge\list.html:116
-#: .\app\templates\app\winchallenge\list.html:117
-#: .\app\templates\app\winchallenge\list.html:136
-#: .\app\templates\app\winchallenge\manage.html:498
+#: .\app\templates\app\winchallenge\create.html:63
+#: .\app\templates\app\winchallenge\list.html:114
+#: .\app\templates\app\winchallenge\list.html:115
+#: .\app\templates\app\winchallenge\list.html:134
+#: .\app\templates\app\winchallenge\manage.html:496
 msgid "Live preview"
 msgstr ""
 
@@ -2038,8 +2054,8 @@ msgstr ""
 #: .\app\templates\app\scene\create.html:272
 #: .\app\templates\app\timer\create.html:252
 #: .\app\templates\app\twitch_alert\create.html:283
-#: .\app\templates\app\winchallenge\create.html:66
-#: .\app\templates\app\winchallenge\manage.html:499
+#: .\app\templates\app\winchallenge\create.html:64
+#: .\app\templates\app\winchallenge\manage.html:497
 msgid "Overlay preview"
 msgstr ""
 
@@ -2082,14 +2098,14 @@ msgstr ""
 #: .\app\templates\app\chat\create.html:243
 #: .\app\templates\app\overlay_dashboard.html:890
 #: .\app\templates\app\scene\create.html:284
-#: .\app\templates\app\score\create.html:409
-#: .\app\templates\app\spotify\create.html:456
+#: .\app\templates\app\score\create.html:407
+#: .\app\templates\app\spotify\create.html:454
 #: .\app\templates\app\spotify\list.html:109
 #: .\app\templates\app\timer\create.html:266
 #: .\app\templates\app\twitch_alert\create.html:304
 #: .\app\templates\app\twitch_goal\create.html:241
-#: .\app\templates\app\winchallenge\list.html:163
-#: .\app\templates\app\winchallenge\manage.html:528
+#: .\app\templates\app\winchallenge\list.html:161
+#: .\app\templates\app\winchallenge\manage.html:526
 msgid "OBS link copied"
 msgstr ""
 
@@ -2121,11 +2137,11 @@ msgstr ""
 msgid "Try the live demo"
 msgstr ""
 
-#: .\app\templates\app\demo.html:39 .\app\templates\app\home.html:33
+#: .\app\templates\app\demo.html:39 .\app\templates\app\home.html:31
 msgid "Create your first overlay"
 msgstr ""
 
-#: .\app\templates\app\demo.html:41 .\app\templates\app\home.html:37
+#: .\app\templates\app\demo.html:41 .\app\templates\app\home.html:36
 msgid "Create free account"
 msgstr ""
 
@@ -2164,8 +2180,8 @@ msgstr ""
 msgid "Spotify demo controls"
 msgstr ""
 
-#: .\app\templates\app\demo.html:86 .\app\templates\app\spotify\create.html:197
-#: .\app\templates\app\spotify\create.html:198
+#: .\app\templates\app\demo.html:86 .\app\templates\app\spotify\create.html:195
+#: .\app\templates\app\spotify\create.html:196
 msgid "Artist"
 msgstr ""
 
@@ -2276,27 +2292,27 @@ msgstr "Spotify Overlay"
 msgid "Nexora also includes a Twitch chat and stream scenes."
 msgstr ""
 
-#: .\app\templates\app\home.html:9
+#: .\app\templates\app\home.html:7
 msgid ""
 "Design Spotify, Twitch chat, Twitch goal, timer, scoreboard, scene and Win "
 "Challenge overlays for OBS and manage them from one browser-based workspace."
 msgstr ""
 
-#: .\app\templates\app\home.html:26
+#: .\app\templates\app\home.html:24
 msgid "Browser-based overlays for creators"
 msgstr ""
 
-#: .\app\templates\app\home.html:27
+#: .\app\templates\app\home.html:25
 msgid "Custom OBS overlays made simple"
 msgstr ""
 
-#: .\app\templates\app\home.html:29
+#: .\app\templates\app\home.html:27
 msgid ""
 "Create and customize browser-based overlays for Spotify, win challenges and "
 "more — then add them directly to OBS as a browser source."
 msgstr ""
 
-#: .\app\templates\app\home.html:34 .\app\templates\app\home.html:36
+#: .\app\templates\app\home.html:32 .\app\templates\app\home.html:34
 msgid "Try live demo"
 msgstr ""
 
@@ -2307,7 +2323,7 @@ msgid ""
 msgstr ""
 
 #: .\app\templates\app\home.html:47
-#: .\app\templates\app\winchallenge\list.html:128
+#: .\app\templates\app\winchallenge\list.html:126
 msgid "Example overlay preview"
 msgstr ""
 
@@ -2347,7 +2363,7 @@ msgstr ""
 msgid "Custom colors and layouts"
 msgstr ""
 
-#: .\app\templates\app\home.html:126 .\app\templates\app\spotify\create.html:6
+#: .\app\templates\app\home.html:126 .\app\templates\app\spotify\create.html:5
 #: .\app\templates\app\spotify\list.html:43
 #: .\app\templates\app\spotify\list.html:104
 msgid "Create Spotify Overlay"
@@ -2367,7 +2383,7 @@ msgid "Free account required to save and use in OBS."
 msgstr ""
 
 #: .\app\templates\app\home.html:152
-#: .\app\templates\app\winchallenge\list.html:63
+#: .\app\templates\app\winchallenge\list.html:61
 msgid "Win challenge medal"
 msgstr ""
 
@@ -2389,8 +2405,8 @@ msgstr ""
 
 #: .\app\templates\app\home.html:167
 #: .\app\templates\app\overlay_dashboard.html:263
-#: .\app\templates\app\winchallenge\create.html:6
-#: .\app\templates\app\winchallenge\list.html:50
+#: .\app\templates\app\winchallenge\create.html:5
+#: .\app\templates\app\winchallenge\list.html:48
 msgid "Create Win Challenge"
 msgstr ""
 
@@ -2493,7 +2509,7 @@ msgstr ""
 
 #: .\app\templates\app\home.html:268
 #: .\app\templates\app\overlay_dashboard.html:369
-#: .\app\templates\app\score\create.html:6
+#: .\app\templates\app\score\create.html:5
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Create Score HUD"
@@ -2737,8 +2753,8 @@ msgstr[1] ""
 #: .\app\templates\app\overlay_dashboard.html:36
 #: .\app\templates\app\overlay_dashboard.html:83
 #: .\app\templates\app\overlay_dashboard.html:260
-#: .\app\templates\app\winchallenge\list.html:6
-#: .\app\templates\app\winchallenge\list.html:17
+#: .\app\templates\app\winchallenge\list.html:5
+#: .\app\templates\app\winchallenge\list.html:15
 msgid "Win Challenges"
 msgstr ""
 
@@ -2813,7 +2829,7 @@ msgid "Music and playback"
 msgstr ""
 
 #: .\app\templates\app\overlay_dashboard.html:160
-#: .\app\templates\app\spotify\create.html:43
+#: .\app\templates\app\spotify\create.html:41
 #: .\app\templates\app\spotify\list.html:15
 #: .\app\templates\app\spotify\list.html:24
 #, fuzzy
@@ -2861,14 +2877,14 @@ msgstr ""
 
 #: .\app\templates\app\overlay_dashboard.html:193
 #: .\app\templates\app\overlay_dashboard.html:484
-#: .\app\templates\app\spotify\create.html:298
+#: .\app\templates\app\spotify\create.html:296
 #: .\app\templates\app\spotify\list.html:66
 msgid "Connected"
 msgstr ""
 
 #: .\app\templates\app\overlay_dashboard.html:193
 #: .\app\templates\app\overlay_dashboard.html:484
-#: .\app\templates\app\spotify\create.html:310
+#: .\app\templates\app\spotify\create.html:308
 #: .\app\templates\app\twitch_goal\create.html:94
 msgid "Not connected"
 msgstr ""
@@ -2880,7 +2896,7 @@ msgstr ""
 
 #: .\app\templates\app\overlay_dashboard.html:199
 #: .\app\templates\app\overlay_dashboard.html:405
-#: .\app\templates\app\score\create.html:353
+#: .\app\templates\app\score\create.html:351
 #: .\app\templates\app\spotify\list.html:63
 #: .\app\templates\app\twitch_goal\create.html:131
 msgid "Elements"
@@ -2895,8 +2911,8 @@ msgstr ""
 #: .\app\templates\app\overlay_dashboard.html:748
 #: .\app\templates\app\overlay_dashboard.html:837
 #: .\app\templates\app\presets\list.html:68
-#: .\app\templates\app\winchallenge\list.html:82
-#: .\app\templates\app\winchallenge\manage.html:88
+#: .\app\templates\app\winchallenge\list.html:80
+#: .\app\templates\app\winchallenge\manage.html:86
 msgid "Updated"
 msgstr ""
 
@@ -2908,7 +2924,7 @@ msgstr ""
 #: .\app\templates\app\overlay_dashboard.html:754
 #: .\app\templates\app\overlay_dashboard.html:843
 #: .\app\templates\app\spotify\list.html:72
-#: .\app\templates\app\winchallenge\list.html:95
+#: .\app\templates\app\winchallenge\list.html:93
 msgid "opens in a new tab"
 msgstr ""
 
@@ -2958,7 +2974,7 @@ msgid "Copy OBS link"
 msgstr ""
 
 #: .\app\templates\app\overlay_dashboard.html:229
-#: .\app\templates\app\spotify\create.html:437
+#: .\app\templates\app\spotify\create.html:435
 #: .\app\templates\app\spotify\list.html:77
 #, fuzzy
 #| msgid "Spotify Overlay"
@@ -3002,11 +3018,11 @@ msgid "Ready for OBS"
 msgstr ""
 
 #: .\app\templates\app\overlay_dashboard.html:306
-#: .\app\templates\app\winchallenge\list.html:78
-#: .\app\templates\app\winchallenge\manage.html:49
-#: .\app\templates\app\winchallenge\manage.html:65
-#: .\app\templates\app\winchallenge\manage.html:84
-#: .\app\templates\app\winchallenge\manage.html:122
+#: .\app\templates\app\winchallenge\list.html:76
+#: .\app\templates\app\winchallenge\manage.html:47
+#: .\app\templates\app\winchallenge\manage.html:63
+#: .\app\templates\app\winchallenge\manage.html:82
+#: .\app\templates\app\winchallenge\manage.html:120
 #: .\app\views\winchallenge.py:293
 msgid "Games"
 msgstr ""
@@ -3014,7 +3030,7 @@ msgstr ""
 #: .\app\templates\app\overlay_dashboard.html:311
 #: .\app\templates\app\overlay_dashboard.html:410
 #: .\app\templates\app\overlay_dashboard.html:492
-#: .\app\templates\app\winchallenge\list.html:89
+#: .\app\templates\app\winchallenge\list.html:87
 msgid "Manage"
 msgstr ""
 
@@ -3022,14 +3038,14 @@ msgstr ""
 #: .\app\templates\app\overlay_dashboard.html:653
 #: .\app\templates\app\overlay_dashboard.html:747
 #: .\app\templates\app\overlay_dashboard.html:836
-#: .\app\templates\app\winchallenge\create.html:101
-#: .\app\templates\app\winchallenge\manage.html:66
-#: .\app\templates\app\winchallenge\manage.html:256
+#: .\app\templates\app\winchallenge\create.html:99
+#: .\app\templates\app\winchallenge\manage.html:64
+#: .\app\templates\app\winchallenge\manage.html:254
 msgid "Design"
 msgstr ""
 
 #: .\app\templates\app\overlay_dashboard.html:337
-#: .\app\templates\app\winchallenge\list.html:108
+#: .\app\templates\app\winchallenge\list.html:106
 msgid "Delete this Win Challenge?"
 msgstr ""
 
@@ -3056,7 +3072,7 @@ msgid "Participants"
 msgstr ""
 
 #: .\app\templates\app\overlay_dashboard.html:435
-#: .\app\templates\app\score\create.html:390
+#: .\app\templates\app\score\create.html:388
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Delete this Score HUD?"
@@ -3141,15 +3157,15 @@ msgid "Type"
 msgstr ""
 
 #: .\app\templates\app\overlay_dashboard.html:562
-#: .\app\templates\app\spotify\create.html:212
-#: .\app\templates\app\spotify\create.html:213
+#: .\app\templates\app\spotify\create.html:210
+#: .\app\templates\app\spotify\create.html:211
 #: .\app\templates\app\timer\create.html:125
 msgid "Duration"
 msgstr ""
 
 #: .\app\templates\app\overlay_dashboard.html:567
 #: .\app\templates\app\overlay_dashboard.html:658
-#: .\app\templates\app\score\create.html:186
+#: .\app\templates\app\score\create.html:184
 msgid "Control"
 msgstr ""
 
@@ -3409,10 +3425,10 @@ msgstr ""
 #: .\app\templates\app\partials\_winchallenge_overlay.html:76
 #: .\app\templates\app\partials\_winchallenge_overlay.html:97
 #: .\app\templates\app\partials\_winchallenge_overlay.html:98
-#: .\app\templates\app\winchallenge\manage.html:166
-#: .\app\templates\app\winchallenge\manage.html:178
-#: .\app\templates\app\winchallenge\manage.html:179
-#: .\app\templates\app\winchallenge\manage.html:184
+#: .\app\templates\app\winchallenge\manage.html:164
+#: .\app\templates\app\winchallenge\manage.html:176
+#: .\app\templates\app\winchallenge\manage.html:177
+#: .\app\templates\app\winchallenge\manage.html:182
 msgid "Completed"
 msgstr ""
 
@@ -3707,7 +3723,7 @@ msgstr ""
 #: .\app\templates\app\registration\account_settings.html:45
 #: .\app\templates\app\registration\account_settings.html:80
 #: .\app\templates\app\registration\account_settings.html:132
-#: .\app\templates\app\registration\login.html:34
+#: .\app\templates\app\registration\login.html:49
 #: .\app\templates\app\registration\password_reset.html:35
 #: .\app\templates\app\registration\password_reset_confirm.html:34
 #: .\app\templates\app\registration\signup.html:34
@@ -3725,7 +3741,7 @@ msgstr ""
 
 #: .\app\templates\app\registration\account_settings.html:96
 #: .\app\templates\app\registration\account_settings.html:148
-#: .\app\templates\app\registration\login.html:50
+#: .\app\templates\app\registration\login.html:65
 #: .\app\templates\app\registration\password_reset.html:51
 #: .\app\templates\app\registration\password_reset_confirm.html:50
 #: .\app\templates\app\registration\signup.html:50
@@ -3761,11 +3777,19 @@ msgstr ""
 msgid "Sign in to manage your private overlay library."
 msgstr ""
 
-#: .\app\templates\app\registration\login.html:64
+#: .\app\templates\app\registration\login.html:39
+msgid "Sign in with yfserver account"
+msgstr ""
+
+#: .\app\templates\app\registration\login.html:41
+msgid "Or sign in with your Nexora password:"
+msgstr ""
+
+#: .\app\templates\app\registration\login.html:79
 msgid "Forgot your password?"
 msgstr ""
 
-#: .\app\templates\app\registration\login.html:73
+#: .\app\templates\app\registration\login.html:89
 msgid "No account yet?"
 msgstr ""
 
@@ -3899,174 +3923,174 @@ msgstr ""
 msgid "Save scenes"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:40
+#: .\app\templates\app\score\create.html:38
 msgid ""
 "This replaces the current custom element positions with the selected "
 "broadcast preset. Continue?"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:56
+#: .\app\templates\app\score\create.html:54
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Create a Score HUD"
 msgstr "Spotify Overlay"
 
-#: .\app\templates\app\score\create.html:58
+#: .\app\templates\app\score\create.html:56
 msgid "Edit Score HUD"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:61
+#: .\app\templates\app\score\create.html:59
 msgid "Place player images, names and scores freely on a clean OBS overlay."
 msgstr ""
 
-#: .\app\templates\app\score\create.html:101
-#: .\app\templates\app\spotify\create.html:90
+#: .\app\templates\app\score\create.html:99
+#: .\app\templates\app\spotify\create.html:88
 msgid "General"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:102
+#: .\app\templates\app\score\create.html:100
 msgid "HUD settings"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:187
+#: .\app\templates\app\score\create.html:185
 msgid "Participants and scores"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:194
+#: .\app\templates\app\score\create.html:192
 msgid "Score"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:195
+#: .\app\templates\app\score\create.html:193
 msgid "Minus one"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:196
+#: .\app\templates\app\score\create.html:194
 msgid "Plus one"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:197
+#: .\app\templates\app\score\create.html:195
 msgid "Reset score"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:198
+#: .\app\templates\app\score\create.html:196
 msgid "Save participant"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:199
+#: .\app\templates\app\score\create.html:197
 msgid "Delete participant"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:200
+#: .\app\templates\app\score\create.html:198
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Delete this participant?"
 msgstr "Spotify Overlay"
 
-#: .\app\templates\app\score\create.html:218
+#: .\app\templates\app\score\create.html:216
 msgid "Add participant"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:222 .\app\views\score.py:119
+#: .\app\templates\app\score\create.html:220 .\app\views\score.py:119
 msgid "Reset all scores"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:229
-#: .\app\templates\app\spotify\create.html:331
+#: .\app\templates\app\score\create.html:227
+#: .\app\templates\app\spotify\create.html:329
 msgid "OBS link"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:234
-#: .\app\templates\app\spotify\create.html:336
+#: .\app\templates\app\score\create.html:232
+#: .\app\templates\app\spotify\create.html:334
 #: .\app\templates\app\twitch_goal\create.html:185
 msgid "Copy link"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:241
+#: .\app\templates\app\score\create.html:239
 msgid "Recommended source size:"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:254
-#: .\app\templates\app\spotify\create.html:232
+#: .\app\templates\app\score\create.html:252
+#: .\app\templates\app\spotify\create.html:230
 #: .\app\templates\app\twitch_goal\create.html:148
 msgid "Selected element"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:255
-#: .\app\templates\app\spotify\create.html:233
+#: .\app\templates\app\score\create.html:253
+#: .\app\templates\app\spotify\create.html:231
 msgid "Select an element"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:258
-#: .\app\templates\app\spotify\create.html:236
+#: .\app\templates\app\score\create.html:256
+#: .\app\templates\app\spotify\create.html:234
 msgid "Click an element in the preview or in the list to edit it."
 msgstr ""
 
-#: .\app\templates\app\score\create.html:291
+#: .\app\templates\app\score\create.html:289
 msgid "Background"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:299
+#: .\app\templates\app\score\create.html:297
 msgid "Alignment"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:301
+#: .\app\templates\app\score\create.html:299
 #: .\app\templates\app\twitch_goal\create.html:161
 msgid "Left"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:302
+#: .\app\templates\app\score\create.html:300
 #: .\app\templates\app\twitch_goal\create.html:161
 msgid "Center"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:303
+#: .\app\templates\app\score\create.html:301
 #: .\app\templates\app\twitch_goal\create.html:161
 msgid "Right"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:312
+#: .\app\templates\app\score\create.html:310
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Create HUD"
 msgstr "Spotify Overlay"
 
-#: .\app\templates\app\score\create.html:312
-#: .\app\templates\app\spotify\create.html:357
+#: .\app\templates\app\score\create.html:310
+#: .\app\templates\app\spotify\create.html:355
 #: .\app\templates\app\twitch_goal\create.html:191
 msgid "Save changes"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:323
+#: .\app\templates\app\score\create.html:321
 msgid "Delete HUD"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:332
+#: .\app\templates\app\score\create.html:330
 msgid "Drag the HUD into shape"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:334
+#: .\app\templates\app\score\create.html:332
 msgid "Layout tools"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:335
+#: .\app\templates\app\score\create.html:333
 msgid "Broadcast Duel"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:336
+#: .\app\templates\app\score\create.html:334
 msgid "Broadcast List"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:340
+#: .\app\templates\app\score\create.html:338
 msgid "Grid"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:342
-#: .\app\templates\app\spotify\create.html:387
+#: .\app\templates\app\score\create.html:340
+#: .\app\templates\app\spotify\create.html:385
 msgid "Grid size"
 msgstr ""
 
-#: .\app\templates\app\score\create.html:360
-#: .\app\templates\app\spotify\create.html:402
+#: .\app\templates\app\score\create.html:358
+#: .\app\templates\app\spotify\create.html:400
 msgid "OBS browser source"
 msgstr ""
 
@@ -4080,186 +4104,186 @@ msgstr ""
 msgid "Move overlay element"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:46
+#: .\app\templates\app\spotify\create.html:44
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Create a Spotify overlay"
 msgstr "Spotify Overlay"
 
-#: .\app\templates\app\spotify\create.html:48
+#: .\app\templates\app\spotify\create.html:46
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Edit Spotify overlay"
 msgstr "Spotify Overlay"
 
-#: .\app\templates\app\spotify\create.html:51
+#: .\app\templates\app\spotify\create.html:49
 msgid ""
 "Add playback elements, style them and drag them to the exact position you "
 "want."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:91
+#: .\app\templates\app\spotify\create.html:89
 msgid "Overlay settings"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:99
+#: .\app\templates\app\spotify\create.html:97
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Default: Spotify-Overlay"
 msgstr "Spotify Overlay"
 
-#: .\app\templates\app\spotify\create.html:119
+#: .\app\templates\app\spotify\create.html:117
 msgid "Overlay background"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:120
+#: .\app\templates\app\spotify\create.html:118
 msgid "Choose the background color and how strongly it should be visible."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:153
+#: .\app\templates\app\spotify\create.html:151
 msgid "Transparent"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:155
+#: .\app\templates\app\spotify\create.html:153
 msgid "Opaque"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:189
+#: .\app\templates\app\spotify\create.html:187
 msgid "Add elements"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:200
-#: .\app\templates\app\spotify\create.html:201
+#: .\app\templates\app\spotify\create.html:198
+#: .\app\templates\app\spotify\create.html:199
 msgid "Album"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:203
-#: .\app\templates\app\spotify\create.html:204
+#: .\app\templates\app\spotify\create.html:201
+#: .\app\templates\app\spotify\create.html:202
 msgid "Cover"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:209
+#: .\app\templates\app\spotify\create.html:207
 msgid "Elapsed time"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:210
+#: .\app\templates\app\spotify\create.html:208
 msgid "Elapsed"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:215
+#: .\app\templates\app\spotify\create.html:213
 msgid "Playback status"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:216
+#: .\app\templates\app\spotify\create.html:214
 msgid "Status"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:218
-#: .\app\templates\app\spotify\create.html:219
+#: .\app\templates\app\spotify\create.html:216
+#: .\app\templates\app\spotify\create.html:217
 msgid "Up next"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:218
+#: .\app\templates\app\spotify\create.html:216
 msgid "Requires reconnecting Spotify to grant access to the queue."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:224
+#: .\app\templates\app\spotify\create.html:222
 msgid "Elements in the overlay"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:279
+#: .\app\templates\app\spotify\create.html:277
 msgid "Remove element"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:287
+#: .\app\templates\app\spotify\create.html:285
 #: .\app\templates\app\twitch_goal\create.html:87
 msgid "Live data"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:288
+#: .\app\templates\app\spotify\create.html:286
 msgid "Spotify connection"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:291
+#: .\app\templates\app\spotify\create.html:289
 msgid "This Spotify connection is shared by all your Spotify overlays."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:299
+#: .\app\templates\app\spotify\create.html:297
 msgid "Playback data is available to the overlay."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:300
+#: .\app\templates\app\spotify\create.html:298
 msgid ""
 "Using the 'Up next' element? Reconnect Spotify once to grant it access to "
 "your queue."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:304
+#: .\app\templates\app\spotify\create.html:302
 msgid "Disconnect Spotify"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:311
+#: .\app\templates\app\spotify\create.html:309
 msgid "Connect the Spotify account whose playback should be shown."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:315
+#: .\app\templates\app\spotify\create.html:313
 msgid "Connect with Spotify"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:319
+#: .\app\templates\app\spotify\create.html:317
 msgid "Spotify credentials are missing"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:321
+#: .\app\templates\app\spotify\create.html:319
 msgid ""
 "Copy .env.example to .env, add your Spotify app credentials and expose those "
 "variables to Django."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:345
+#: .\app\templates\app\spotify\create.html:343
 msgid "Recommended size so the shadow remains fully visible:"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:357
+#: .\app\templates\app\spotify\create.html:355
 #: .\app\templates\app\twitch_goal\create.html:191
 msgid "Create overlay"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:361
+#: .\app\templates\app\spotify\create.html:359
 #: .\app\templates\app\twitch_goal\create.html:191
 msgid "Delete overlay"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:370
+#: .\app\templates\app\spotify\create.html:368
 msgid "Drag elements into position"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:373
+#: .\app\templates\app\spotify\create.html:371
 msgid ""
 "Click and drag elements. Arrow keys move the selected element one pixel; "
 "hold Shift for ten pixels."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:374
+#: .\app\templates\app\spotify\create.html:372
 msgid ""
 "Press Delete to remove the selection. Drag the green handles to resize it."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:375
+#: .\app\templates\app\spotify\create.html:373
 msgid ""
 "Drag the dashed border around the whole preview to resize the overlay itself."
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:377
+#: .\app\templates\app\spotify\create.html:375
 msgid "Alignment tools"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:382
+#: .\app\templates\app\spotify\create.html:380
 #: .\app\templates\app\twitch_goal\create.html:201
 msgid "Snap to grid"
 msgstr ""
 
-#: .\app\templates\app\spotify\create.html:383
+#: .\app\templates\app\spotify\create.html:381
 #: .\app\templates\app\twitch_goal\create.html:202
 msgid "Show a grid and align movements to it."
 msgstr ""
@@ -4280,7 +4304,7 @@ msgid ""
 msgstr ""
 
 #: .\app\templates\app\spotify\list.html:40
-#: .\app\templates\app\winchallenge\list.html:46
+#: .\app\templates\app\winchallenge\list.html:44
 msgid "Your collection"
 msgstr ""
 
@@ -4295,7 +4319,7 @@ msgid "Open"
 msgstr ""
 
 #: .\app\templates\app\spotify\list.html:101
-#: .\app\templates\app\winchallenge\list.html:153
+#: .\app\templates\app\winchallenge\list.html:151
 msgid "No overlays yet"
 msgstr ""
 
@@ -4652,212 +4676,212 @@ msgstr ""
 msgid "Live Twitch data"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:38
-#: .\app\templates\app\winchallenge\manage.html:38
+#: .\app\templates\app\winchallenge\create.html:36
+#: .\app\templates\app\winchallenge\manage.html:36
 msgid "Increase value"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:39
-#: .\app\templates\app\winchallenge\manage.html:39
+#: .\app\templates\app\winchallenge\create.html:37
+#: .\app\templates\app\winchallenge\manage.html:37
 msgid "Decrease value"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:42
+#: .\app\templates\app\winchallenge\create.html:40
 msgid "New overlay"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:43
+#: .\app\templates\app\winchallenge\create.html:41
 msgid "Create a Win Challenge"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:44
+#: .\app\templates\app\winchallenge\create.html:42
 msgid ""
 "Set a goal, choose a starter design and adjust the preview before saving."
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:82
+#: .\app\templates\app\winchallenge\create.html:80
 msgid "General settings"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:83
+#: .\app\templates\app\winchallenge\create.html:81
 msgid "Challenge"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:90
+#: .\app\templates\app\winchallenge\create.html:88
 msgid "Optional: default Winchallenge"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:102
+#: .\app\templates\app\winchallenge\create.html:100
 msgid "Customize the overlay"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:108
+#: .\app\templates\app\winchallenge\create.html:106
 msgid "Quick presets"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:118
+#: .\app\templates\app\winchallenge\create.html:116
 msgid "Clean and compact"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:127
+#: .\app\templates\app\winchallenge\create.html:125
 msgid "Soft depth"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:136
+#: .\app\templates\app\winchallenge\create.html:134
 msgid "Bright accents"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:150
+#: .\app\templates\app\winchallenge\create.html:148
 msgid "Colors"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:259
+#: .\app\templates\app\winchallenge\create.html:257
 msgid "Typography"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:298
+#: .\app\templates\app\winchallenge\create.html:296
 msgid "Options"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:330
+#: .\app\templates\app\winchallenge\create.html:328
 msgid "Texts"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:368
+#: .\app\templates\app\winchallenge\create.html:366
 msgid "Cancel"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\create.html:369
+#: .\app\templates\app\winchallenge\create.html:367
 msgid "Save Win Challenge"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\list.html:26
+#: .\app\templates\app\winchallenge\list.html:24
 msgid "Win Challenge overlays"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\list.html:27
+#: .\app\templates\app\winchallenge\list.html:25
 msgid "Manage your win counters"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\list.html:29
+#: .\app\templates\app\winchallenge\list.html:27
 msgid ""
 "Create browser-source overlays for OBS, track wins per game and keep the "
 "public overlay updated automatically."
 msgstr ""
 
-#: .\app\templates\app\winchallenge\list.html:47
+#: .\app\templates\app\winchallenge\list.html:45
 msgid "Saved Win Challenges"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\list.html:67
-#: .\app\templates\app\winchallenge\manage.html:64
+#: .\app\templates\app\winchallenge\list.html:65
+#: .\app\templates\app\winchallenge\manage.html:62
 #, fuzzy
 #| msgid "Spotify Overlay"
 msgid "Overlay"
 msgstr "Spotify Overlay"
 
-#: .\app\templates\app\winchallenge\list.html:92
+#: .\app\templates\app\winchallenge\list.html:90
 msgid "Edit Design"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\list.html:95
+#: .\app\templates\app\winchallenge\list.html:93
 msgid "Open Preview"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\list.html:154
-#: .\app\templates\app\winchallenge\list.html:157
+#: .\app\templates\app\winchallenge\list.html:152
+#: .\app\templates\app\winchallenge\list.html:155
 msgid "Create your first Win Challenge"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\list.html:155
+#: .\app\templates\app\winchallenge\list.html:153
 msgid ""
 "Start with a design preset, add games later and copy the generated OBS "
 "browser-source link."
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:63
+#: .\app\templates\app\winchallenge\manage.html:61
 msgid "Win Challenge sections"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:74
-#: .\app\templates\app\winchallenge\manage.html:75
+#: .\app\templates\app\winchallenge\manage.html:72
+#: .\app\templates\app\winchallenge\manage.html:73
 msgid "Settings"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:116
+#: .\app\templates\app\winchallenge\manage.html:114
 msgid "Save settings"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:123
+#: .\app\templates\app\winchallenge\manage.html:121
 msgid "Manage games"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:145
+#: .\app\templates\app\winchallenge\manage.html:143
 msgid "Add game"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:152
-#: .\app\templates\app\winchallenge\manage.html:249
+#: .\app\templates\app\winchallenge\manage.html:150
+#: .\app\templates\app\winchallenge\manage.html:247
 msgid "No games added yet."
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:156
-#: .\app\templates\app\winchallenge\manage.html:211
-#: .\app\templates\app\winchallenge\manage.html:212
+#: .\app\templates\app\winchallenge\manage.html:154
+#: .\app\templates\app\winchallenge\manage.html:209
+#: .\app\templates\app\winchallenge\manage.html:210
 msgid "Increase wins"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:157
-#: .\app\templates\app\winchallenge\manage.html:199
-#: .\app\templates\app\winchallenge\manage.html:200
+#: .\app\templates\app\winchallenge\manage.html:155
+#: .\app\templates\app\winchallenge\manage.html:197
+#: .\app\templates\app\winchallenge\manage.html:198
 msgid "Decrease wins"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:158
-#: .\app\templates\app\winchallenge\manage.html:223
-#: .\app\templates\app\winchallenge\manage.html:224
+#: .\app\templates\app\winchallenge\manage.html:156
+#: .\app\templates\app\winchallenge\manage.html:221
+#: .\app\templates\app\winchallenge\manage.html:222
 msgid "Edit game"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:159
-#: .\app\templates\app\winchallenge\manage.html:235
-#: .\app\templates\app\winchallenge\manage.html:236
+#: .\app\templates\app\winchallenge\manage.html:157
+#: .\app\templates\app\winchallenge\manage.html:233
+#: .\app\templates\app\winchallenge\manage.html:234
 msgid "Delete game"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:160
+#: .\app\templates\app\winchallenge\manage.html:158
 msgid "Rename game"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:163
+#: .\app\templates\app\winchallenge\manage.html:161
 msgid "Delete this game?"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:165
+#: .\app\templates\app\winchallenge\manage.html:163
 msgid "of"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:257
+#: .\app\templates\app\winchallenge\manage.html:255
 msgid "Edit overlay design"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:453
+#: .\app\templates\app\winchallenge\manage.html:451
 msgid "Save design"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:481
+#: .\app\templates\app\winchallenge\manage.html:479
 msgid "Add a new browser source in OBS"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:482
+#: .\app\templates\app\winchallenge\manage.html:480
 msgid "Paste the generated URL"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:483
+#: .\app\templates\app\winchallenge\manage.html:481
 msgid "Set a suitable width and height"
 msgstr ""
 
-#: .\app\templates\app\winchallenge\manage.html:484
+#: .\app\templates\app\winchallenge\manage.html:482
 msgid "Enable refresh when the scene becomes active if desired"
 msgstr ""
 
@@ -5005,6 +5029,14 @@ msgstr "Spotify Overlay"
 
 #: .\app\views\dashboard.py:277
 msgid "Stream Deck links renewed. Update your buttons with the new URLs."
+msgstr ""
+
+#: .\app\views\oidc.py:36
+msgid "The sign-in could not be verified. Please try again."
+msgstr ""
+
+#: .\app\views\oidc.py:40
+msgid "The sign-in was cancelled."
 msgstr ""
 
 #: .\app\views\presets.py:49
