@@ -280,6 +280,8 @@ LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
 SIGNUP_ENABLED = _environment_bool("DJANGO_SIGNUP_ENABLED", default=True)
+# Appended to every page title, e.g. "-dev" on the dev instance ("Nexora-dev").
+TITLE_SUFFIX = os.environ.get("NEXORA_TITLE_SUFFIX", "").strip()
 
 LOGIN_RATE_LIMIT_ATTEMPTS = _environment_non_negative_int(
     "DJANGO_LOGIN_RATE_LIMIT_ATTEMPTS",

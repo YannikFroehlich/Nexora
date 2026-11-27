@@ -667,17 +667,23 @@ per Bind-Mount gespeicherte Datenbank und Branding-Dateien im lokalen
 
 ### Automatische Updates
 
-`~/services/nexora/update.sh` holt `origin/main` und baut den Container nur neu,
-wenn sich `main` seit dem letzten Lauf bewegt hat:
+`~/services/nexora/update.sh` holt `origin/main` (oder den Branch aus
+`NEXORA_BRANCH`) und baut den Container nur neu, wenn sich der Branch seit dem
+letzten Lauf bewegt hat. Die Sperrdatei `.deploy.lock` teilt es mit dem nächtlichen
+Datenabgleich der Dev-Instanz:
 
 ```sh
 #!/bin/sh
-# Pull origin/main and rebuild only when it moved. Run by nexora-update.timer.
+# Pull origin/$NEXORA_BRANCH (default main) and rebuild only when it moved.
+# Run by nexora-update.timer (prod) and nexora-dev-update.timer (dev, NEXORA_BRANCH=develop).
 set -e
 cd "$(dirname "$0")"
-git -C src fetch -q origin main
-[ "$(git -C src rev-parse HEAD)" = "$(git -C src rev-parse origin/main)" ] && exit 0
-git -C src merge --ff-only -q origin/main
+BRANCH="${NEXORA_BRANCH:-main}"
+exec 9>.deploy.lock
+flock 9
+git -C src fetch -q origin "$BRANCH"
+[ "$(git -C src rev-parse HEAD)" = "$(git -C src rev-parse "origin/$BRANCH")" ] && exit 0
+git -C src merge --ff-only -q "origin/$BRANCH"
 echo "Updating to $(git -C src log -1 --format="%h %s")"
 docker compose up -d --build
 docker image prune -f
@@ -730,6 +736,31 @@ journalctl -u nexora-update.service -n 50
 # Update sofort einspielen, ohne auf den Timer zu warten
 ~/services/nexora/update.sh
 ```
+
+### Dev-Instanz (`develop`)
+
+Seit 27. November 2026 läuft neben der Produktion eine Dev-Instanz unter
+`https://nexora-dev.yfserver.de` (hinter Cloudflare Access, nur freigegebene E-Mail-Adressen).
+Ablauf: Feature-Branch → Pull Request auf `develop` → auf der Dev-Instanz prüfen → Pull
+Request `develop` → `main`.
+
+- Verzeichnis `~/services/nexora-dev/` mit eigenem `src/` (Branch `develop`), `data/`, `.env`
+  und `compose.yaml` (Container `nexora-dev`, nur `127.0.0.1:8002`). Die Route
+  `nexora-dev.yfserver.de` → `http://localhost:8002` liegt im Tunnel `lunora-yfsrv1`.
+- `.env` stammt aus der produktiven, mit eigenem `DJANGO_SECRET_KEY`, eigenem
+  `NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY`, Dev-Hostname, Dev-Redirect-URIs für Spotify und Twitch,
+  Console-Mail-Backend und `NEXORA_TITLE_SUFFIX=-dev`. Damit Spotify/Twitch auf Dev
+  verbunden werden können, müssen die Dev-Redirect-URIs in den jeweiligen Entwicklerkonsolen
+  eingetragen sein.
+- `nexora-dev-update.timer` (alle zwei Minuten) startet dasselbe `update.sh` mit
+  `Environment=NEXORA_BRANCH=develop`.
+- `nexora-dev-refresh.timer` startet täglich um 03:00 (Europe/Berlin)
+  `~/services/nexora-dev/refresh.sh`: Dev-Container anhalten, die produktive SQLite-Datenbank
+  per SQLite-Backup-API nur lesend kopieren, `data/media/` per `rsync --delete` spiegeln, die
+  kopierten Spotify- und Twitch-Tokens leeren (Dev darf nie mit den Konten der Nutzer
+  arbeiten) und den Container wieder starten. Das Skript bricht ab, solange die Dev-`.env`
+  nicht das Console-Mail-Backend setzt. Änderungen auf Dev gehen beim nächsten Abgleich
+  verloren; die Produktion wird nur gelesen.
 
 ### Twitch-Tokens stündlich prüfen
 

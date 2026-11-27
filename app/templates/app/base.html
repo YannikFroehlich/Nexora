@@ -37,7 +37,7 @@
     <link rel="stylesheet" href="{% static 'css/theme.css' %}?v={{ APP_VERSION }}">
     <link rel="stylesheet" href="{% static 'css/base.css' %}?v={{ APP_VERSION }}">
 
-    <title>{% block title %}Nexora{% endblock %}</title>
+    <title>{% block title %}Nexora{% endblock %}{{ TITLE_SUFFIX }}</title>
 
     {% block extra_css %}{% endblock %}
 </head>

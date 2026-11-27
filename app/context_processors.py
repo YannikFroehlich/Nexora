@@ -13,4 +13,5 @@ def app_metadata(request):
         "IS_PUBLIC_INDEXABLE": current_url in PUBLIC_INDEXABLE_URLS,
         "SHARE_IMAGE_URL": request.build_absolute_uri(static("imgs/og-image.png")),
         "SIGNUP_ENABLED": settings.SIGNUP_ENABLED,
+        "TITLE_SUFFIX": settings.TITLE_SUFFIX,
     }
