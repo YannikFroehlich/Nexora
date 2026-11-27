@@ -107,9 +107,11 @@ class OIDCLoginTests(TestCase):
         self.assertFalse(user.has_usable_password())
         self.assertEqual(user.oidc_identity.subject, "kc-user-1")
         self.assertIn(ID_TOKEN_SESSION_KEY, self.client.session)
-        sent = parse_qs(urlopen.call_args.args[0].data.decode())
+        token_request = urlopen.call_args.args[0]
+        sent = parse_qs(token_request.data.decode())
         self.assertEqual(sent["client_secret"], ["client-secret"])
         self.assertIn("code_verifier", sent)
+        self.assertTrue(token_request.get_header("User-agent").startswith("Nexora/"))
 
     def test_callback_links_existing_account_by_verified_email(self):
         existing = get_user_model().objects.create_user("local", "Streamer@Example.com", "pw")
