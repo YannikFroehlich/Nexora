@@ -161,6 +161,12 @@ Static assets are cache-busted with `?v={{ APP_VERSION }}` (from `APP_VERSION` o
 `ImproperlyConfigured` on bad input. With `DJANGO_DEBUG=false` it also rejects the placeholder secret
 keys. Add new settings through these helpers and mirror them in `.env.example`.
 
+## Deployment
+
+Production runs on the home server `yfsrv1` at `https://nexora.yfserver.de`: `nexora-update.timer` fast-forwards `~/services/nexora/src` to `origin/main` and rebuilds the container, so every merge to `main` goes live within about five minutes. Every push to `develop` is deployed the same way to the dev instance `https://nexora-dev.yfserver.de` (`~/services/nexora-dev`, behind Cloudflare Access). Its data is replaced by a copy of production every night at 03:00, with the copied Spotify/Twitch tokens blanked and the console mail backend enforced, so it holds real user data. Work goes feature branch -> PR to `develop` -> check on nexora-dev -> PR `develop` -> `main`. Details: README "Automatische Updates" and "Dev-Instanz".
+
+Page titles use ` • ` as separator (`Start • Nexora`) and `base.html` appends `NEXORA_TITLE_SUFFIX` (`-dev` on the dev instance) right after the title block, so `{% block title %}` must stay on one line (`TitleSuffixTests` checks every template).
+
 ## Conventions
 
 - Ruff: line length 100, double quotes, `select = ["B", "E4", "E7", "E9", "F", "I"]`,
