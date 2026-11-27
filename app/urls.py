@@ -22,11 +22,9 @@ urlpatterns = [
         ),
         name="login",
     ),
-    path(
-        "accounts/logout/",
-        auth_views.LogoutView.as_view(),
-        name="logout",
-    ),
+    path("accounts/logout/", views.LogoutView.as_view(), name="logout"),
+    path("accounts/oidc/login/", views.oidc_login, name="oidc_login"),
+    path("accounts/oidc/callback/", views.oidc_callback, name="oidc_callback"),
     path(
         "accounts/password-reset/",
         views.RateLimitedPasswordResetView.as_view(

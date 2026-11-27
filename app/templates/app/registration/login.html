@@ -26,6 +26,21 @@
         </div>
 
         <div class="auth-card glass-design card">
+            {% if messages %}
+                <div class="auth-messages" role="status" aria-live="polite" aria-atomic="true">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if OIDC_ENABLED %}
+                <a class="btn action-button auth-submit" href="{% url 'oidc_login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">
+                    {% translate "Sign in with yfserver account" %}
+                </a>
+                <p class="auth-switch">{% translate "Or sign in with your Nexora password:" %}</p>
+            {% endif %}
+
             <form class="auth-form" method="post" action="{% url 'login' %}">
                 {% csrf_token %}
 

@@ -104,6 +104,12 @@ Each has a view module in [app/views/](app/views/), a template dir under
   radius). `apply_style()` clamps numeric fields to the *target* type's own validators before
   saving, since max bounds differ per type (e.g. `corner_radius` maxes out at 64/80/100 depending on
   the overlay). Applying records a version snapshot first, so it stays reversible.
+- [app/oidc.py](app/oidc.py) + [app/views/oidc.py](app/views/oidc.py) — optional sign-in through
+  the central Keycloak realm (`OIDC_*` settings; code flow with PKCE over stdlib urllib). Users are
+  matched by `OIDCIdentity.subject`, linked once by verified email, otherwise created. When the ID
+  token carries `groups`, membership in `admins` sets `is_staff`/`is_superuser`;
+  `OIDC_REQUIRED_GROUP` limits sign-in (dev instance: `dev-access`). Logout also ends the Keycloak
+  session. The password login stays as a fallback until all apps are migrated.
 - [app/encrypted_fields.py](app/encrypted_fields.py) — `EncryptedTextField` (Fernet, `fernet$`
   prefix) used for all OAuth tokens. The key comes from `NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY`, falls
   back to `SPOTIFY_TOKEN_ENCRYPTION_KEY`, then to a digest of `DJANGO_SECRET_KEY`. Changing the
@@ -160,6 +166,12 @@ Static assets are cache-busted with `?v={{ APP_VERSION }}` (from `APP_VERSION` o
 `_environment_bool` / `_environment_list` / `_environment_non_negative_int`, raising
 `ImproperlyConfigured` on bad input. With `DJANGO_DEBUG=false` it also rejects the placeholder secret
 keys. Add new settings through these helpers and mirror them in `.env.example`.
+
+## Deployment
+
+Production runs on the home server `yfsrv1` at `https://nexora.yfserver.de`: `nexora-update.timer` fast-forwards `~/services/nexora/src` to `origin/main` and rebuilds the container, so every merge to `main` goes live within about five minutes. Every push to `develop` is deployed the same way to the dev instance `https://nexora-dev.yfserver.de` (`~/services/nexora-dev`, behind Cloudflare Access). Its data is replaced by a copy of production every night at 03:00, with the copied Spotify/Twitch tokens blanked and the console mail backend enforced, so it holds real user data. Work goes feature branch -> PR to `develop` -> check on nexora-dev -> PR `develop` -> `main`. Details: README "Automatische Updates" and "Dev-Instanz".
+
+Page titles use ` • ` as separator (`Start • Nexora`) and `base.html` appends `NEXORA_TITLE_SUFFIX` (`-dev` on the dev instance) right after the title block, so `{% block title %}` must stay on one line (`TitleSuffixTests` checks every template).
 
 ## Conventions
 

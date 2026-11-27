@@ -181,6 +181,13 @@ TWITCH_METRIC_CACHE_SECONDS = _environment_non_negative_int(
     default=15,
 )
 
+# Sign-in through the central Keycloak realm; enabled when issuer, client ID and secret are set.
+OIDC_ISSUER = os.environ.get("OIDC_ISSUER", "").strip().rstrip("/")
+OIDC_CLIENT_ID = os.environ.get("OIDC_CLIENT_ID", "").strip()
+OIDC_CLIENT_SECRET = os.environ.get("OIDC_CLIENT_SECRET", "").strip()
+# Only members of this Keycloak group may sign in, e.g. dev-access on the dev instance.
+OIDC_REQUIRED_GROUP = os.environ.get("OIDC_REQUIRED_GROUP", "").strip()
+
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DJANGO_DEFAULT_FROM_EMAIL",
     "Nexora <noreply@nexora.local>",
