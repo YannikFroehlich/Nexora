@@ -2,9 +2,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}
-    {{ challenge.display_title }} &middot; Nexora
-{% endblock %}
+{% block title %}{{ challenge.display_title }} &middot; Nexora{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/winchallenge.css' %}?v={{ APP_VERSION }}">
