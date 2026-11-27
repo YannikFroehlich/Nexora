@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.templatetags.static import static
 
+from app import oidc
+
 PUBLIC_INDEXABLE_URLS = {"home", "demo", "about"}
 
 
@@ -11,6 +13,7 @@ def app_metadata(request):
         "APP_VERSION": settings.APP_VERSION,
         "CANONICAL_URL": request.build_absolute_uri(request.path),
         "IS_PUBLIC_INDEXABLE": current_url in PUBLIC_INDEXABLE_URLS,
+        "OIDC_ENABLED": oidc.is_configured(),
         "SHARE_IMAGE_URL": request.build_absolute_uri(static("imgs/og-image.png")),
         "SIGNUP_ENABLED": settings.SIGNUP_ENABLED,
         "TITLE_SUFFIX": settings.TITLE_SUFFIX,
