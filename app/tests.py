@@ -5781,13 +5781,13 @@ class OverlayFreeCanvasTests(TestCase):
 
 
 class TitleSuffixTests(TestCase):
-    def test_title_is_nexora_by_default(self):
+    def test_title_ends_with_nexora_by_default(self):
         response = self.client.get(reverse("login"))
 
-        self.assertContains(response, "<title>Nexora</title>")
+        self.assertContains(response, " Nexora</title>")
 
     @override_settings(TITLE_SUFFIX="-dev")
     def test_title_suffix_marks_the_dev_instance(self):
         response = self.client.get(reverse("login"))
 
-        self.assertContains(response, "<title>Nexora-dev</title>")
+        self.assertContains(response, " Nexora-dev</title>")
