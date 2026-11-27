@@ -2,7 +2,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}{% if is_create %}{% translate "Create alert overlay" %}{% else %}{{ overlay.display_name }}{% endif %} · Nexora{% endblock %}
+{% block title %}{% if is_create %}{% translate "Create alert overlay" %}{% else %}{{ overlay.display_name }}{% endif %} • Nexora{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/timer.css' %}?v={{ APP_VERSION }}">

@@ -2,9 +2,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}
-    {% if is_create %}{% translate "Create Spotify Overlay" %}{% else %}{{ overlay.display_name }}{% endif %}
-{% endblock %}
+{% block title %}{% if is_create %}{% translate "Create Spotify Overlay" %}{% else %}{{ overlay.display_name }}{% endif %}{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/spotify.css' %}?v={{ APP_VERSION }}">

@@ -2,10 +2,12 @@ import base64
 import copy
 import hashlib
 import json
+import re
 import struct
 import zlib
 from datetime import timedelta
 from io import BytesIO
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 from urllib import error as urlerror
 
@@ -5791,3 +5793,13 @@ class TitleSuffixTests(TestCase):
         response = self.client.get(reverse("login"))
 
         self.assertContains(response, " Nexora-dev</title>")
+
+    def test_title_blocks_have_no_surrounding_whitespace(self):
+        # The suffix is appended right after the block, so a trailing newline would show up
+        # as "Nexora -dev" in the tab.
+        templates = Path(settings.BASE_DIR, "app", "templates").rglob("*.html")
+        pattern = re.compile(r"\{% block title %\}(.*?)\{% endblock", re.S)
+        for template in templates:
+            for title in pattern.findall(template.read_text(encoding="utf-8")):
+                with self.subTest(template=template.name):
+                    self.assertEqual(title, title.strip())
