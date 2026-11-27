@@ -182,6 +182,14 @@ part of the history is German, part English. Keep commits focused. Pull requests
 brief description, the testing performed, a linked issue where applicable, and screenshots for
 template, CSS, or image changes.
 
+## Deployment
+
+Merges to `main` deploy to `https://nexora.yfserver.de` within about five minutes; pushes to
+`develop` deploy to the dev instance `https://nexora-dev.yfserver.de` (Cloudflare Access,
+nightly copy of production data with OAuth tokens blanked). Keep `{% block title %}` on one
+line and use ` • ` as title separator; `NEXORA_TITLE_SUFFIX` is appended after it. Details:
+README "Automatische Updates" and "Dev-Instanz".
+
 ## Security & Configuration Tips
 
 `nexora/settings.py` parses `.env` itself (`_load_local_environment`, using `os.environ.setdefault`,
