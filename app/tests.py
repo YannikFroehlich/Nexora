@@ -5778,3 +5778,16 @@ class OverlayFreeCanvasTests(TestCase):
         self.challenge.refresh_from_db()
         self.assertEqual(self.challenge.layout_mode, "custom")
         self.assertEqual(len(self.challenge.elements), len(self.challenge_blocks))
+
+
+class TitleSuffixTests(TestCase):
+    def test_title_is_nexora_by_default(self):
+        response = self.client.get(reverse("login"))
+
+        self.assertContains(response, "<title>Nexora</title>")
+
+    @override_settings(TITLE_SUFFIX="-dev")
+    def test_title_suffix_marks_the_dev_instance(self):
+        response = self.client.get(reverse("login"))
+
+        self.assertContains(response, "<title>Nexora-dev</title>")
