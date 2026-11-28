@@ -15,6 +15,7 @@ def app_metadata(request):
         "IS_PUBLIC_INDEXABLE": current_url in PUBLIC_INDEXABLE_URLS,
         "OIDC_ENABLED": oidc.is_configured(),
         "SHARE_IMAGE_URL": request.build_absolute_uri(static("imgs/og-image.png")),
-        "SIGNUP_ENABLED": settings.SIGNUP_ENABLED,
+        "OIDC_ONLY": oidc.oidc_only(),
+        "SIGNUP_ENABLED": settings.SIGNUP_ENABLED and not oidc.oidc_only(),
         "TITLE_SUFFIX": settings.TITLE_SUFFIX,
     }

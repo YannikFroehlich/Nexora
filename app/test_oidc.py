@@ -228,3 +228,37 @@ class OIDCLoginTests(TestCase):
         self.client.force_login(user)
         response = self.client.post(reverse("logout"))
         self.assertRedirects(response, reverse("home"), fetch_redirect_response=False)
+
+
+@override_settings(**OIDC_SETTINGS, OIDC_ONLY=True)
+class OIDCOnlyTests(TestCase):
+    def setUp(self):
+        user_model = get_user_model()
+        self.user = user_model.objects.create_user("ada", "ada@example.com", "pw-123456789")
+        self.admin = user_model.objects.create_user("root", "root@example.com", "pw-123456789", is_staff=True)
+
+    def password_login(self, username):
+        return self.client.post(reverse("login"), {"username": username, "password": "pw-123456789"})
+
+    def test_login_page_offers_password_only_as_break_glass(self):
+        response = self.client.get(reverse("login"))
+        self.assertContains(response, 'class="auth-break-glass"')
+        self.assertNotContains(response, reverse("signup"))
+        self.assertNotContains(response, reverse("password_reset"))
+
+    def test_password_login_is_left_to_staff(self):
+        response = self.password_login("ada")
+        codes = [error.code for error in response.context["form"].non_field_errors().as_data()]
+        self.assertEqual(codes, ["oidc_only"])
+        self.assertNotIn("_auth_user_id", self.client.session)
+        self.password_login("root")
+        self.assertEqual(int(self.client.session["_auth_user_id"]), self.admin.pk)
+
+    def test_signup_and_password_reset_lead_to_login(self):
+        for name in ("signup", "password_reset"):
+            self.assertRedirects(self.client.get(reverse(name)), reverse("login"), fetch_redirect_response=False)
+
+    @override_settings(OIDC_CLIENT_SECRET="")
+    def test_has_no_effect_without_keycloak(self):
+        self.password_login("ada")
+        self.assertEqual(int(self.client.session["_auth_user_id"]), self.user.pk)

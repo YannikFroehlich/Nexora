@@ -5518,3 +5518,9 @@ msgstr "Der Spielname ist erforderlich."
 
 #~ msgid "Learn more"
 #~ msgstr "Mehr erfahren"
+
+msgid "Please sign in with your yfserver account."
+msgstr "Bitte melde dich mit deinem yfserver-Konto an."
+
+msgid "Emergency sign-in for administrators"
+msgstr "Notfall-Login für Administratoren"
