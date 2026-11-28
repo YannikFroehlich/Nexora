@@ -33,6 +33,15 @@ def is_configured():
     return bool(settings.OIDC_ISSUER and settings.OIDC_CLIENT_ID and settings.OIDC_CLIENT_SECRET)
 
 
+def oidc_only():
+    return settings.OIDC_ONLY and is_configured()
+
+
+def local_login_allowed(user):
+    """With OIDC_ONLY, password sign-in is left to staff as a break-glass login."""
+    return not oidc_only() or user.is_staff or user.is_superuser
+
+
 def _endpoint(name):
     # Keycloak's fixed endpoint layout; saves a discovery request per sign-in.
     return f"{settings.OIDC_ISSUER}/protocol/openid-connect/{name}"

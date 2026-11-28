@@ -182,6 +182,13 @@ class LoginForm(AuthenticationForm):
             )
         return super().clean()
 
+    def confirm_login_allowed(self, user):
+        from app import oidc
+
+        super().confirm_login_allowed(user)
+        if not oidc.local_login_allowed(user):
+            raise forms.ValidationError(_("Please sign in with your yfserver account."), code="oidc_only")
+
 
 class SignUpForm(UserCreationForm):
     """Create a standard Django user for a private overlay library."""

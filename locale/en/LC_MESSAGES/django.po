@@ -5360,3 +5360,9 @@ msgstr ""
 #~| msgid "Spotify Overlay"
 #~ msgid "All Spotify overlays"
 #~ msgstr "Spotify Overlay"
+
+msgid "Please sign in with your yfserver account."
+msgstr ""
+
+msgid "Emergency sign-in for administrators"
+msgstr ""

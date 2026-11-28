@@ -38,7 +38,12 @@
                 <a class="btn action-button auth-submit" href="{% url 'oidc_login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">
                     {% translate "Sign in with yfserver account" %}
                 </a>
-                <p class="auth-switch">{% translate "Or sign in with your Nexora password:" %}</p>
+                {% if OIDC_ONLY %}
+                    <details class="auth-break-glass">
+                        <summary class="auth-switch">{% translate "Emergency sign-in for administrators" %}</summary>
+                {% else %}
+                    <p class="auth-switch">{% translate "Or sign in with your Nexora password:" %}</p>
+                {% endif %}
             {% endif %}
 
             <form class="auth-form" method="post" action="{% url 'login' %}">
@@ -75,14 +80,17 @@
                     <input type="hidden" name="next" value="{{ next }}">
                 {% endif %}
 
-                <p class="auth-switch">
-                    <a href="{% url 'password_reset' %}">{% translate "Forgot your password?" %}</a>
-                </p>
+                {% if not OIDC_ONLY %}
+                    <p class="auth-switch">
+                        <a href="{% url 'password_reset' %}">{% translate "Forgot your password?" %}</a>
+                    </p>
+                {% endif %}
 
                 <button class="btn action-button auth-submit" type="submit">
                     {% translate "Sign in" %}
                 </button>
             </form>
+            {% if OIDC_ONLY %}</details>{% endif %}
 
             {% if SIGNUP_ENABLED %}
                 <p class="auth-switch">

@@ -10,7 +10,7 @@ from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 
-from app import spotify_api
+from app import oidc, spotify_api
 from app.forms import SignUpForm
 from app.models import ScoreOverlay, SpotifyOverlay, TimerOverlay, WinChallenge
 from app.rate_limit import register_attempt
@@ -97,6 +97,11 @@ class RateLimitedPasswordResetView(auth_views.PasswordResetView):
     identical to a real one, keeping the existing no-enumeration behavior.
     """
 
+    def dispatch(self, request, *args, **kwargs):
+        if oidc.oidc_only():
+            return redirect("login")
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request, *args, **kwargs):
         if register_attempt(
             request,
@@ -112,7 +117,7 @@ def signup(request):
     if request.user.is_authenticated:
         return redirect(safe_next_url(request))
 
-    if not settings.SIGNUP_ENABLED:
+    if not settings.SIGNUP_ENABLED or oidc.oidc_only():
         # Sign-up links across the site keep working and lead to the login page instead.
         # The login view validates `next` itself.
         next_url = request.POST.get("next") or request.GET.get("next") or ""

@@ -108,7 +108,7 @@ Each has a view module in [app/views/](app/views/), a template dir under
   the central Keycloak realm (`OIDC_*` settings; code flow with PKCE over stdlib urllib). Users are
   matched by `OIDCIdentity.subject`, linked once by verified email, otherwise created. When the ID
   token carries `groups`, membership in `admins` sets `is_staff`/`is_superuser`;
-  `OIDC_REQUIRED_GROUP` limits sign-in (dev instance: `dev-access`). Logout also ends the Keycloak
+  `OIDC_REQUIRED_GROUP` limits sign-in (dev instance: `dev-access`). `OIDC_ONLY=true` makes Keycloak the only login: password sign-in is left to staff as break-glass (`oidc.local_login_allowed`), sign-up and password reset redirect to login. Logout also ends the Keycloak
   session. The password login stays as a fallback until all apps are migrated.
 - [app/encrypted_fields.py](app/encrypted_fields.py) — `EncryptedTextField` (Fernet, `fernet$`
   prefix) used for all OAuth tokens. The key comes from `NEXORA_OAUTH_TOKEN_ENCRYPTION_KEY`, falls
